@@ -98,7 +98,7 @@ class ImportOrchestrationTests(SimpleTestCase):
                         "add_final_subsection_to_step_3",
                         "add_line_breaks_to_key_dates_values",
                     }
-                    else "nofos.document_processing."
+                    else "nofos.content_processing."
                 )
                 stack.enter_context(
                     patch(module + function, side_effect=step(name, result))

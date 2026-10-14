@@ -14,10 +14,7 @@ from django.utils import timezone
 from easyaudit.models import CRUDEvent
 from slugify import slugify
 
-
-def clean_string(string):
-    """Cleans the given string by removing extra whitespace."""
-    return re.sub(r"\s+", " ", string.strip())
+from .content_text import clean_string  # compatibility re-export
 
 
 def user_is_nih_group(user):

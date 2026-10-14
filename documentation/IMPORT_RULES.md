@@ -7,8 +7,9 @@ This document catalogs every automatic content rule the NOFO Builder applies whe
 **Not to be confused with import error *codes*.** The `IMPORT-NNN` IDs here are numbered rule identifiers for content transformations. The `IMPORT-NAME` strings a user sees when an import is blocked (`IMPORT-NO-SECTIONS`, `IMPORT-OPDIV-BLANK`, and so on) are a separate namespace, catalogued in [`IMPORT_ERROR_CODES.md`](IMPORT_ERROR_CODES.md). A rule here can be the *reason* an error code fires; they are not the same registry.
 
 **Source files covered by this document:**
-- `nofos/nofos/document_processing.py` — shared content orchestration; rule implementations remain in their existing modules, with unchanged order and behavior. See [DOCUMENT_PROCESSING.md](DOCUMENT_PROCESSING.md).
-- `nofos/nofos/nofo.py` — `process_nofo_html()` and the ~20 cleanup passes it runs, plus sectioning/subsectioning and metadata-suggestion logic
+- `nofos/nofos/content_processing.py` — framework-independent normalization, section parsing and shared source recognition; existing helpers are reexported by `nofo.py`.
+- `nofos/nofos/document_processing.py` — application error translation and DEBUG capture adapter; see [DOCUMENT_PROCESSING.md](DOCUMENT_PROCESSING.md).
+- `nofos/nofos/nofo.py` — Word conversion, metadata defaults, persistence and workflow; compatibility entry points forward content processing to the shared core
 - `nofos/nofos/utils.py` — `style_map_manager`, the Mammoth DOCX→HTML style-name map
 - `nofos/nofos/import_transforms.py` — pre-Mammoth DOCX document transform (`transform_word_document`)
 - `nofos/nofos/nofo_markdown.py` — `NofoMarkdownConverter`, the HTML→Markdown conversion rules
@@ -135,7 +136,7 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 - **Type:** conversion
 - **Trigger:** Paragraph style `heading 7` or `heading 8` (the app has no native support past `h6`).
 - **Action:** `heading 7` → `<div role="heading" aria-level="7">` (recognized elsewhere as `is_h7()`); `heading 8` → `<div class="heading-8">`.
-- **Source:** `utils.py::style_map_manager`; consumed by `nofo.py::is_h7`
+- **Source:** `utils.py::style_map_manager`; consumed by `content_processing.py::is_h7`
 - **Status:** active
 
 ### IMPORT-004 — Mis-styled bullet/numbered paragraphs → real lists
@@ -174,21 +175,21 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 - **Type:** repair
 - **Trigger:** Raw file content contains `\xa0` or `&nbsp;` (both non-breaking spaces), or the checkbox glyph variants U+2610 (☐), U+00A8 (¨), or U+007F (DEL).
 - **Action:** Non-breaking spaces → regular space. Checkbox variants → unified to U+25FB (◻).
-- **Source:** `nofo.py::replace_chars`
+- **Source:** `content_processing.py::replace_chars`
 - **Status:** active
 
 ### IMPORT-009 — Hardcoded broken-link fix
 - **Type:** repair
 - **Trigger:** Raw content contains one of 3 hardcoded known-broken URLs (`grants.gov/web/grants/search-grants.html`, `grants.gov/web/grants/forms/sf-424-family.html`, `cdc.gov/grants/dictionary/index.html`) — noted as broken because they don't redirect but return HTTP 200.
 - **Action:** String-replaced with the correct current URL.
-- **Source:** `nofo.py::replace_links`
+- **Source:** `content_processing.py::replace_links`
 - **Status:** active
 
 ### IMPORT-010 — Metadata value sanitization
 - **Type:** repair
 - **Trigger:** Any metadata field value extracted during import (opportunity number, deadline, title, etc.).
 - **Action:** Unicode NFKC-normalize, strip all Unicode "control/format/invisible" category characters (including zero-width spaces), collapse whitespace, and trim.
-- **Source:** `nofo.py::sanitize_imported_text`
+- **Source:** `content_processing.py::sanitize_imported_text`
 - **Status:** active
 
 ---
@@ -199,7 +200,7 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 - **Type:** validation
 - **Trigger:** Document contains an `h2` before its first `h1`.
 - **Action:** Import is blocked with a `ValidationError` naming the offending headings, rather than silently picking a heading level and discarding earlier content. The user sees error code `IMPORT-AMBIGUOUS-HEADINGS`.
-- **Source:** `nofo.py::resolve_section_heading_level`
+- **Source:** `content_processing.py::resolve_section_heading_level`; application adapters retain the existing Django validation error and detail fields
 - **Guidance:** Only a single final H1 following at least two eligible H2 headings gets a likely Word fix naming the H1 and suggesting Heading 2, conditional on those headings being peer main sections. Blank and table-contained headings do not count. Other ambiguous structures retain neutral guidance; valid leading-H1 hierarchies are unchanged. This is advice only, not an automatic repair.
 - **Status:** active
 
@@ -207,7 +208,7 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 - **Type:** validation
 - **Trigger:** Document has no `h1` at all.
 - **Action:** Section-level heading defaults to `h2`.
-- **Source:** `nofo.py::resolve_section_heading_level`
+- **Source:** `content_processing.py::resolve_section_heading_level`; application adapters retain the existing Django validation error and detail fields
 - **Status:** active
 
 ### IMPORT-013 — Heading tag cleanup
@@ -215,7 +216,7 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 - **Trigger:** Any heading (`h1`-`h6`) containing `<span>` wrappers, extra internal whitespace, or leading/trailing whitespace; or a heading that becomes empty after this cleanup.
 - **Action:** Unwrap spans, collapse whitespace to single spaces, trim; decompose (remove) the heading entirely if empty.
 - **Recovery metadata:** Preserve a search-text version with spaces at manual line breaks in a temporary attribute before cleanup. The section parser consumes that attribute for IMPORT-055 guidance; stored heading text still follows the existing cleanup rule.
-- **Source:** `nofo.py::clean_heading_tags`
+- **Source:** `content_processing.py::clean_heading_tags`
 - **Status:** active
 
 ### IMPORT-014 — Heading ID generation & link rewriting
@@ -233,7 +234,7 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 - **Type:** repair
 - **Trigger:** An `h1`–`h6` or synthetic H7 heading is nested in an uninterrupted chain of ordinary, role-free `div` wrappers beneath the document body.
 - **Action:** Unwrap only those ancestors, preserving content order and heading IDs so sections and subsections are parsed structurally. A wrapper ID is transferred to its first supported heading when that heading has no ID; otherwise links to the wrapper are redirected to the heading's existing ID. Tables, lists, figures, semantic-role containers, synthetic H7 headings themselves, and unrelated wrappers are not flattened. Existing Word heading demotion, table, and callout rules remain unchanged.
-- **Source:** `nofo.py::unwrap_heading_containers`, called by `process_nofo_html`
+- **Source:** `content_processing.py::unwrap_heading_containers`, called by `process_nofo_html`
 - **Status:** active
 
 ### IMPORT-055 — Long heading validation and recovery
@@ -253,7 +254,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Type:** conversion
 - **Trigger:** No heading already reads exactly "Endnotes", **and** either (a) the document ends in an `<hr>` with no `style` attribute (Google Docs export pattern), or (b) a final `<ol>` whose first `<li>` has an `id` starting with `footnote` or `endnote` (docx export pattern).
 - **Action:** (a) Repurpose that `<hr>` as an `h1`/`h2` with text "Endnotes"; (b) insert a new `h1`/`h2` "Endnotes" heading immediately before that `<ol>`.
-- **Source:** `nofo.py::add_endnotes_header_if_exists`
+- **Source:** `content_processing.py::add_endnotes_header_if_exists`
 - **Status:** active
 - **Note:** covers a *missing* heading. See IMPORT-049 for the case where a note-section heading exists but reads "Footnotes"/"Footnote:"/etc. instead of "Endnotes".
 
@@ -277,14 +278,14 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Type:** conversion
 - **Trigger:** A heading (`h1`-`h7`, including the synthetic H7 `div`) whose text, ignoring case and an optional trailing colon, reads "endnote", "endnotes", "footnote", or "footnotes".
 - **Action:** Rewrite the heading's text to the canonical "Endnotes", so downstream detection (IMPORT-050, IMPORT-051) and the reader both see one consistent heading regardless of which variant the author used. If more than one such heading exists in the document, none are renamed and no bracketed-endnote linking (IMPORT-050) happens at all — the ambiguity is left for the author to resolve rather than guessed at.
-- **Source:** `nofo.py::rename_footnotes_heading_to_endnotes` (via `endnotes.py::is_endnotes_heading`)
+- **Source:** `content_processing.py::rename_footnotes_heading_to_endnotes` (via `endnotes.py::is_endnotes_heading`)
 - **Status:** active
 
 ### IMPORT-050 — Bracketed manual endnote reference/citation linking
 - **Type:** conversion
 - **Trigger:** The document has exactly one recognized Endnotes heading (after IMPORT-049), and contains a `[N]` marker in body text (a "reference") that unambiguously pairs with a `[N]` marker starting a paragraph under that heading (a "citation"): each number used exactly once as a reference and once as a citation, neither already linked, and not colliding with a native Word/Google note number already in the document.
 - **Action:** Wrap the in-body `[N]` marker in a forward link to its citation (rendered as a superscript), give the citation paragraph a matching target id, and append a `↑` return link back to the reference. Numbering gaps or out-of-sequence citations are only advisory and don't block linking an otherwise-valid pair. Anything ambiguous — a missing, duplicate, empty, or conflicting marker, or more than one candidate Endnotes heading — is left completely unlinked; NOFO Builder never silently renumbers or guesses at a bracketed reference. Conversion runs on both fresh import and reimport; it never modifies the original source Word file.
-- **Source:** `nofo.py::process_nofo_html` (via `endnotes.py::convert_bracketed_endnotes`, `_inspect`, `_scan`)
+- **Source:** `content_processing.py::process_nofo_html` (via `endnotes.py::convert_bracketed_endnotes`, `_inspect`, `_scan`)
 - **Status:** active
 - **Note:** If note evidence exists only as non-structural text such as a bold "Endnotes" paragraph, the heading warning is associated with that text so the editor can direct the user to the content that needs a structural heading.
 
@@ -300,7 +301,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Type:** repair
 - **Trigger:** Mammoth emits a native footnote/endnote link containing a bracketed number such as `[1]` inside a nested superscript, immediately followed within the same outer superscript by the identical bracketed number. This is the HTML shape produced when Word stores a custom note mark with `customMarkFollows=1` and Mammoth renders both the linked reference and its following display text.
 - **Action:** Remove the repeated unlinked body marker and the matching custom mark at the start of the native ordered-list citation, leaving one linked body marker, one list number, and the native citation relationship intact. Ignore bracketed custom marks inside native citation targets when analyzing previously stored content, so older imports are not mistaken for manually-authored citations. A bracketed number outside those native-note structures is preserved and continues through normal manual-endnote detection.
-- **Source:** `nofo.py::process_nofo_html` (via `endnotes.py::remove_duplicate_native_note_custom_marks`)
+- **Source:** `content_processing.py::process_nofo_html` (via `endnotes.py::remove_duplicate_native_note_custom_marks`)
 - **Status:** active
 
 ---
@@ -311,14 +312,14 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Type:** repair
 - **Trigger:** Two adjacent `<ul>`/`<ol>` siblings. If they share the same Mammoth-generated list class, they're siblings that should be one list; if classes differ, the second is meant to be nested under the first.
 - **Action:** Same class → merge into a single list. Different class → nest the second list inside the last `<li>` of the first (recursing into any already-nested list there).
-- **Source:** `nofo.py::join_nested_lists`
+- **Source:** `content_processing.py::join_nested_lists`
 - **Status:** active
 
 ### IMPORT-019 — Redundant list-wrapper unwrapping
 - **Type:** repair
 - **Trigger:** An `<li>` whose only content is a nested `<ul>` (no direct text); or a `<ul>` directly nested inside another `<ul>` with no intervening `<li>`.
 - **Action:** Unwrap the redundant wrapper level.
-- **Source:** `nofo.py::unwrap_nested_lists`
+- **Source:** `content_processing.py::unwrap_nested_lists`
 - **Status:** active
 
 ### IMPORT-020 — Numbered-list-start / table-cell lists kept as raw HTML
@@ -339,7 +340,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Type:** repair
 - **Trigger:** Imported metadata identifies an ACF NOFO by opportunity number or OpDiv; an "Agency priorities" subsection is inside Step 1; its opening content is either a bold paragraph or an immediately nested heading whose exact text is "Required alignment with ACF Vision, Mission, Values, Priorities, and Guiding Principles"; its first prose paragraph begins with the canonical required-alignment language; and three unordered or ordered lists contain the six expected bold principle labels in order (groups of 1, 2, and 3 items).
 - **Action:** Normalize only those three `<ul>`/`<ol>` containers as ordered lists starting at 1, 2, and 4. The first list becomes normal Markdown numbering; the latter two retain `<ol start="2">` / `<ol start="4">` through IMPORT-020. All source wording, links, emphasis, headings, and intervening paragraphs remain unchanged. If any agency, hierarchy, title, opening-text, list-count, or label check fails, leave the subsection untouched.
-- **Source:** `nofo.py::repair_acf_required_alignment_lists` (using `is_acf_nofo_metadata`)
+- **Source:** `content_processing.py::repair_acf_required_alignment_lists` (using `is_acf_nofo_metadata`)
 - **Status:** active
 
 ---
@@ -350,35 +351,35 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Type:** repair *(the ambiguous case flagged in the Rule Types section above — could also be read as conversion)*
 - **Trigger:** A table's first `<tr>` uses `<td>` cells (no header row marked).
 - **Action:** Convert that row's cells to `<th>`, treating it as the header row.
-- **Source:** `nofo.py::convert_table_first_row_to_header_row`
+- **Source:** `content_processing.py::convert_table_first_row_to_header_row`
 - **Status:** active
 
 ### IMPORT-023 — Multi-row `<thead>` repair
 - **Type:** repair
 - **Trigger:** A table has a `<thead>` containing more than one row, no `<tbody>`, and no cell has `rowspan`/`colspan` ≠ 1.
 - **Action:** Create a `<tbody>`; move every row after the first into it, converting their `<th>` cells back to `<td>`.
-- **Source:** `nofo.py::convert_table_with_all_ths_to_a_regular_table`
+- **Source:** `content_processing.py::convert_table_with_all_ths_to_a_regular_table`
 - **Status:** active
 
 ### IMPORT-024 — Callout box detection
 - **Type:** conversion
 - **Trigger:** A table has exactly 1 row and 1 column, and that single cell is either all `<th>` or all `<td>` (not mixed).
 - **Action:** Recognized as a "callout box" — the cell becomes a `<div>`-based subsection instead of a normal table.
-- **Source:** `nofo.py::is_callout_box_table`, consumed in `get_subsections_from_sections`
+- **Source:** `content_processing.py::is_callout_box_table`, consumed in `get_subsections_from_sections`
 - **Status:** active
 
 ### IMPORT-025 — Key callout title normalization
 - **Type:** conversion
 - **Trigger:** A callout box's (IMPORT-024) heading text, cleaned and cased, reads exactly "key facts", "key dates" or "application due date". Existing recognition of a matching heading/paragraph immediately before a one-cell table also applies; it remains an ordinary, non-callout heading.
 - **Action:** Retitled to canonical capitalization ("Key facts"/"Key dates"/"Application due date") and forced to `h4`. Keep the supplied deadline title rather than renaming it or synthesizing another box. Preserve date text and links to ordinary Key dates content. New imports and authorized re-imports share this behavior; no saved-record migration or template-date gate. At rendering, named Application due date callouts use the same first-section portrait sidebar as legacy Key dates; their simple date/link body does not receive the legacy colon formatting. Both source boxes, if supplied, remain in source order with no selection or deletion. Plain headings/prose are not floating callouts.
-- **Source:** `nofo.py::get_subsections_from_sections` (`key_callout_titles`)
+- **Source:** `content_processing.py::get_subsections_from_sections` (`key_callout_titles`)
 - **Status:** active
 
 ### IMPORT-026 — Table cell span unwrapping
 - **Type:** repair
 - **Trigger:** A `<span>` inside any `<td>`/`<th>`.
 - **Action:** Unwrapped, keeping the text content.
-- **Source:** `nofo.py::clean_table_cells`
+- **Source:** `content_processing.py::clean_table_cells`
 - **Status:** active
 
 ### IMPORT-027 — Spanned-cell tables kept as raw HTML + auto width classes
@@ -410,14 +411,14 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Type:** repair
 - **Trigger:** An `<a href>` starts with `https://www.google.com/url?` (Google Docs export's link-tracking redirect wrapper).
 - **Action:** Rewritten to the real destination URL, extracted from the `q=` query parameter.
-- **Source:** `nofo.py::remove_google_tracking_info_from_links`
+- **Source:** `content_processing.py::remove_google_tracking_info_from_links`
 - **Status:** active
 
 ### IMPORT-029 — Consecutive link merging
 - **Type:** repair
 - **Trigger:** Consecutive `<a>` tags share the same `href` (Word often splits one logical link across multiple runs); separately, whitespace appears between a link and trailing punctuation (`. , ; ! ?`).
 - **Action:** Merge the links into one (preserving a single space if whitespace separated them originally); trim the whitespace before trailing punctuation.
-- **Source:** `nofo.py::combine_consecutive_links`
+- **Source:** `content_processing.py::combine_consecutive_links`
 - **Status:** active
 
 ### IMPORT-030 — Bookmark/heading/table-heading anchor preservation
@@ -425,7 +426,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Trigger:** An empty `<a id="...">` (no text) that is a Word bookmark target, immediately precedes a heading, or immediately precedes a table (as a "table heading" anchor) — these get removed later by empty-tag cleanup (IMPORT-032) unless rescued first.
 - **Action:** Transfer the `id` to the adjacent surviving element (next paragraph, parent heading, or paragraph before the table) before the empty anchor is decomposed, and rewrite any existing links pointing at the old id. Broken/unreferenced bookmarks are prefixed (`#__id`, `nb_bookmark_id`) so they're identifiable rather than silently dead.
 - **Referenced list items:** Move a unique, referenced non-native `<li id="...">` target to a minimal empty anchor at the start of the item, retained by the Markdown converter. Remove the copied ID from the item so HTML-preserved lists do not emit duplicate targets. Unused and duplicate IDs are not assigned new targets; native Word footnote/endnote IDs retain their existing raw-list behavior and numbering.
-- **Source:** `nofo.py::preserve_bookmark_links`, `preserve_bookmark_targets`, `preserve_heading_links`, `preserve_table_heading_links`
+- **Source:** `content_processing.py::preserve_bookmark_links`, `preserve_bookmark_targets`, `preserve_heading_links`, `preserve_table_heading_links`
 - **Status:** active
 
   Before normal bookmark rescue, Builder's IMPORT-062 captures bookmarks inside
@@ -440,7 +441,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Type:** repair
 - **Trigger:** An `<em>`, `<span>`, `<strong>`, or `<sup>` with no text content and no image inside.
 - **Action:** Unwrapped (tag removed, no content to lose).
-- **Source:** `nofo.py::unwrap_empty_elements`
+- **Source:** `content_processing.py::unwrap_empty_elements`
 - **Status:** active
 
 ### IMPORT-032 — Empty block/list-item removal
@@ -448,7 +449,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Trigger:** A direct child of `<body>`, or any `<li>`/`<p>`, with no text and no `<img>` descendant (and not `<br>`/`<hr>`/`<img>`) — commonly junk left over from PDF-sourced or heavily-edited Word documents.
 - **Action:** Decomposed (removed entirely).
 - **Image exception:** A standalone body-level `<img>` is itself preserved, just like a paragraph-wrapped image. Existing descriptive, intentionally empty, and missing-alt handling remains unchanged (IMPORT-033/IMPORT-034).
-- **Source:** `nofo.py::decompose_empty_tags`
+- **Source:** `content_processing.py::decompose_empty_tags`
 - **Status:** active
 
 ---
@@ -459,14 +460,14 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Type:** repair
 - **Trigger:** An `<img>` has no `alt` attribute at all (as opposed to an intentionally empty `alt=""`).
 - **Action:** Backfill `alt=""` plus an internal marker attribute (`data-nofo-missing-alt-text`), so missing alt text is visible/greppable rather than silently absent; the Markdown converter then keeps that image as raw HTML instead of `![]()` syntax, since Markdown can't distinguish "backfilled empty" from "originally empty".
-- **Source:** `nofo.py::add_missing_alt_text_to_imgs`; consumed in `nofo_markdown.py::NofoMarkdownConverter.convert_img`
+- **Source:** `content_processing.py::add_missing_alt_text_to_imgs`; consumed in `nofo_markdown.py::NofoMarkdownConverter.convert_img`
 - **Status:** active
 
 ### IMPORT-034 — Alt-text whitespace normalization
 - **Type:** repair
 - **Trigger:** An image's `alt` attribute contains a double newline (`\n\n`).
 - **Action:** Collapsed to a single newline.
-- **Source:** `nofo.py::normalize_whitespace_img_alt_text`
+- **Source:** `content_processing.py::normalize_whitespace_img_alt_text`
 - **Status:** active
 
 ### IMPORT-035 — Inline image path rewriting
@@ -483,15 +484,15 @@ The example that prompted this document: detecting a footnote/endnote list and f
 ### IMPORT-036 — CSS-based bold detection
 - **Type:** conversion
 - **Trigger:** The document's embedded `<style>` block defines a CSS class with `font-weight: 700` and a font-size under 18pt (18pt+ is assumed to be a heading rather than bold body text) — this is how Google Docs exports encode bold, since it doesn't use semantic tags.
-- **Action:** Every element using that class is wrapped in `<strong>`, except elements inside a table's first row (already header cells).
-- **Source:** `nofo.py::add_strongs_to_soup`, `_get_classnames_for_font_weight_bold`
+- **Action:** Every element using that class is wrapped in `<strong>`, except elements inside a table's first row (already header cells). Only top-level embedded style rules participate. The parser does not fetch external `@import` URLs; imported rules were not part of the existing class selection.
+- **Source:** `content_processing.py::add_strongs_to_soup`, `_get_classnames_for_font_weight_bold`
 - **Status:** active
 
 ### IMPORT-037 — "De minimis" auto-italicization
 - **Type:** conversion
 - **Trigger:** The literal text "de minimis" (case-insensitive) appears in a text node outside `<em>`, `<script>`, or `<style>`.
 - **Action:** Wrapped in `<em>` — a hardcoded, domain-specific house-style rule. Only text nodes are changed; attributes (including temporary heading search text), comments, and existing emphasis remain untouched.
-- **Source:** `nofo.py::add_em_to_de_minimis`
+- **Source:** `content_processing.py::add_em_to_de_minimis`
 - **Status:** active
 
 ---
@@ -502,7 +503,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Type:** removal
 - **Trigger:** A heading (`h1`-`h6`) whose normalized text reads exactly "before you begin" (GrantSolutions Announcement Module exports include this).
 - **Action:** Remove that heading and everything after it, up to whichever comes first: the next heading of the same or higher level, a line that looks like a metadata label (e.g. `Opportunity Number:`), or a recognized Metadata heading/field block (IMPORT-041), even at a lower heading level. Preserve that heading so the block remains authoritative during metadata extraction. The removed intro content duplicates the "Before you begin" page NOFO Builder generates itself from its own `before_you_begin` field.
-- **Source:** `nofo.py::decompose_before_you_begin_section`
+- **Source:** `content_processing.py::decompose_before_you_begin_section`
 - **Status:** active
 
   Builder imports also recognize **Before You Get Started**, before cleanup. Only
@@ -523,14 +524,14 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Type:** removal
 - **Trigger:** Explicit Builder import/re-import with one or more recognized Metadata blocks under IMPORT-041.
 - **Action:** Keep the intact extraction soup for field resolution, validation and the existing number-mismatch confirmation session. Use a separate content copy to resolve main heading level and build sections/subsections, removing every recognized Metadata heading and its bounded field/blank paragraphs. Preserve parent sections, incidental Metadata mentions and all following headings, prose, tables, lists, media and notes. A paragraph with images/media is not a blank separator. Links targeting only consumed IDs become plain text; links with a surviving destination are retained. No hidden subsection or new persistent field is added. Composer/Compare do not opt in; saved records are untouched outside authorized re-import.
-- **Source:** `nofo.py::builder_import_content`, `_metadata_block`; `views.py::BaseNofoImportView`, `NofosConfirmReimportView`
+- **Source:** `content_processing.py::builder_import_content`, `_metadata_block`; `views.py::BaseNofoImportView`, `NofosConfirmReimportView`
 - **Status:** active (Builder only)
 
 ### IMPORT-039 — Writer-instructions table extraction
 - **Type:** extraction
 - **Trigger:** A single-cell table whose text starts with "Instructions for NOFO writers", "Instructions for new NOFO team", or matches the pattern `*-specific instructions`.
 - **Action:** Extracted (removed) from the document body, then matched by title to the corresponding subsection and reattached there as that subsection's "instructions" field (Composer import only).
-- **Source:** `nofo.py::decompose_instructions_tables`, `add_instructions_to_subsections`
+- **Source:** `content_processing.py::decompose_instructions_tables`, `add_instructions_to_subsections`
 - **Status:** active
 
 ### IMPORT-058 — Pale-blue Word instruction-container cleanup
@@ -548,7 +549,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Type:** repair
 - **Trigger:** Under an `h3`/`h4` heading whose text is exactly "Funding details", a `<p>` ending in `:` is immediately followed by another `<p>` whose text doesn't itself end in `:`.
 - **Action:** Merge the two paragraphs into one (rejoins a label like "Award ceiling:" that Word had split from its value onto a separate paragraph).
-- **Source:** `nofo.py::merge_funding_details_label_value_paragraphs`
+- **Source:** `content_processing.py::merge_funding_details_label_value_paragraphs`
 - **Status:** active
 
 ---
@@ -567,7 +568,7 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
   **Builder tagline precedence.** If IMPORT-059 finds a scoped new-format Tagline heading, use that source even when blank. Otherwise retain this legacy `Tagline:` scanner and its underscore-only blank behavior. Composer and Compare keep their existing path.
 
   **Tagline exception — underscore-only placeholders.** `Tagline:` alone gets one extra check: if the extracted value is made up entirely of underscores and whitespace (`"Tagline: _________"`, the ruled blank an HHS Word template leaves for a writer to fill in), the tagline is suggested as empty instead. In isolation this step is a **repair**, the same shape as IMPORT-048 for `{placeholder}` PDF metadata values; it's documented here rather than as its own rule because it only ever runs as part of this rule's tagline extraction. IMPORT-010's sanitization keeps underscores — they are ordinary printable characters — so without this the row of underscores would be saved as the tagline and rendered on the NOFO cover. A value that merely *contains* underscores is untouched (`"Apply by ____ to be considered"` imports as written), and no other metadata field treats underscores as blank, so an underscore-only `Agency:` still imports literally. The check lives next to `suggest_nofo_tagline()` rather than in the shared scanner precisely to keep it that narrow.
-- **Source:** `nofo.py::metadata_block_fields`, `recognized_metadata_block`, `_suggest_by_startswith_string` and the `suggest_nofo_*` family; the tagline exception in `nofo.py::suggest_nofo_tagline`, `_is_underscore_placeholder`
+- **Source:** `content_processing.py::metadata_block_fields`, `recognized_metadata_block`, `_suggest_by_startswith_string` and the `suggest_nofo_*` family; the tagline exception in `nofo.py::suggest_nofo_tagline`, `_is_underscore_placeholder`
 - **Status:** active
 
   Builder captures values from the intact extraction source and consumes all
@@ -579,7 +580,7 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
 - **Type:** extraction
 - **Trigger:** Builder new import or authorized re-import has a real, immediate-child Tagline heading under Basic information, itself immediately within Step 1: Review the Opportunity. Use heading hierarchy with the resolved section level; ignore normal case/whitespace differences. Other locations, nested/table headings and incidental prose do not qualify.
 - **Action:** Use only the immediate following paragraph, preserving inline Markdown emphasis and links and applying IMPORT-010 normalization. Consume the source heading and only that paragraph; keep subsequent paragraphs visible in a nameless body subsection rather than merging them into suppressed Basic information metadata. Do not create an empty subsection when no body remains. No immediate paragraph, an empty paragraph, a table/list/heading boundary, or an image-containing paragraph means a blank field; do not search ahead. Preserve image-containing paragraphs. Retain empty Word paragraphs until this decision, then apply normal cleanup. Inline links pass through normal source repairs and the existing generated-heading ID mapping. A present new source, even blank, takes precedence over legacy `Tagline:`. Missing new source uses IMPORT-041. Do not concatenate values, remove curly-brace guidance, enforce a word limit, add punctuation or introduce an alert/error; the field remains optional.
-- **Source:** `nofo.py::extract_basic_information_tagline`, `consume_tagline_paragraph`, `get_subsections_from_sections`, `add_headings_to_document`; Builder-only opt-in and explicit value transport in `views.py`. Links to the consumed heading are redirected to the visible Basic information heading, including blank-source cases.
+- **Source:** `content_processing.py::extract_basic_information_tagline`, `consume_tagline_paragraph`, `get_subsections_from_sections`, `add_headings_to_document`; Builder-only opt-in and explicit value transport in `views.py`. Links to the consumed heading are redirected to the visible Basic information heading, including blank-source cases.
 - **Status:** active only on Builder imports/re-imports. The existing metadata contract re-suggests the tagline from the incoming document (including blank), while preserving the existing identity/theme/cover/page-break rules and transactional rollback. Opportunity-number confirmation carries the explicit source value and an intact parsed source. No migration, backfill, render-time extraction or saved-record cleanup. Composer/Compare do not opt in. See [tagline import and editing](TAGLINE_IMPORT.md).
 
 ### IMPORT-042 — Cover theme suggestion

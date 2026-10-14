@@ -33,7 +33,7 @@ def capture_introductory_page(soup):
     The private body attribute survives the existing confirmation serialization;
     it is not copied into stored sections or rendered output.
     """
-    from .nofo import add_body_if_no_body, unwrap_heading_containers
+    from .content_processing import add_body_if_no_body, unwrap_heading_containers
 
     soup = add_body_if_no_body(soup)
     unwrap_heading_containers(soup)

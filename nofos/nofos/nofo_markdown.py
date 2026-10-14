@@ -10,7 +10,7 @@ import re
 from bs4 import BeautifulSoup
 from markdownify import MarkdownConverter
 
-from .import_transforms import APPLICATION_CHECKLIST_CHILD_CLASS
+from .content_constants import APPLICATION_CHECKLIST_CHILD_CLASS
 from .templatetags.utils import POINTS_COLUMN_CLASS, get_points_column_indexes
 
 # this is copied from __init__.py in markdownify
