@@ -216,6 +216,28 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "Choose one PDF", status_code=400)
 
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
+    def test_reliability_alert_matches_estimate_confidence(self):
+        for level, alert_type in (
+            ("high", "info"),
+            ("moderate", "info"),
+            ("low", "warning"),
+        ):
+            with self.subTest(reliability=level):
+                report = {**REPORT, "profile": "tagged", "reliability": level}
+                with patch(
+                    "bloom_nofos.views.analyze_uploaded_pdf", return_value=report
+                ):
+                    response = self.client.post(self.url, {"pdf": sample_pdf()})
+                self.assertContains(
+                    response,
+                    f'class="usa-alert usa-alert--{alert_type} readability-reliability"',
+                )
+                self.assertContains(
+                    response, f"Reliability of these estimates: {level.capitalize()}"
+                )
+                self.assertContains(response, "Review the source PDF")
+
+    @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
     @patch("bloom_nofos.views.analyze_uploaded_pdf", return_value=REPORT)
     def test_report_is_immediate_printable_and_escaped(self, analyze):
         response = self.client.post(

@@ -40,7 +40,7 @@
               {% endif %}{% endif %}{% endif %}
             </p>
           {% endif %}
-          <div class="usa-alert usa-alert--warning readability-reliability" role="note" id="readability-reliability">
+          <div class="usa-alert usa-alert--{% if report.reliability == 'high' or report.reliability == 'moderate' %}info{% else %}warning{% endif %} readability-reliability" role="note" id="readability-reliability">
             <div class="usa-alert__body">
               <h3 class="usa-alert__heading">Reliability of these estimates: {{ report.reliability|capfirst }}</h3>
               <p class="usa-alert__text">{% if report.profile == 'generic' %}PDF tags were unavailable, so the text order was inferred from page layout. Treat every value as a low-reliability estimate.{% else %}Usable PDF tags helped recover text order, but extraction can still omit or rearrange content. Review the source PDF when interpreting these estimates.{% endif %}</p>
