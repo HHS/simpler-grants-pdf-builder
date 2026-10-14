@@ -35,6 +35,6 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 ## Announcement Services integration
 
 - [Current manual S3 pilot workflow and AS responses (#950)](https://github.com/HHS/simpler-grants-pdf-builder/issues/950) — Source of truth for proposed Word delivery, manual designer retrieval/import, confirmed capabilities and unresolved operating decisions. Capability confirmation does not establish implementation or approval.
-- [Historical automated PDF retrieval proposal](PDF_ARTIFACT_RETRIEVAL_PROPOSAL.md) — Earlier discussion of a separate future PDF return capability under #951/#957; not the current pilot workflow or an approved contract.
+- [Future automated PDF delivery (#951)](https://github.com/HHS/simpler-grants-pdf-builder/issues/951) — Separate future capability; the delivery approach and contract remain to be decided under [#957](https://github.com/HHS/simpler-grants-pdf-builder/issues/957). PDF retrieval and return remain manual in the current pilot.
 
 The earlier `ANNOUNCEMENT_SERVICES_DATA_FLOW.md` and `ANNOUNCEMENT_SERVICES_WORKFLOW.md` files are absent from `main`. Use #950 for the current pilot rather than those older diagrams.
