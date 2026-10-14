@@ -17,6 +17,7 @@ from users.models import BloomUser
 
 from nofos.models import PdfReadabilityAttempt
 from nofos.pdf_readability import PdfReadabilityError
+from nofos.tests_nofos.draft_pdf_fixtures import draft_pdf
 
 
 @override_config(
@@ -105,6 +106,9 @@ class AuthenticatedPilotTests(TestCase):
         self.assertContains(response, f'href="{self.url}"')
         self.assertContains(response, "Print / Save as PDF")
         self.assertContains(response, "Copy metrics")
+        self.assertContains(response, 'id="readability-draft-scope"')
+        self.assertContains(response, "Keep instructions that applicants need.")
+        self.assertContains(response, "Compare drafts with the same content scope.")
         row = PdfReadabilityAttempt.objects.get()
         self.assertEqual((row.source, row.outcome), ("authenticated", "success"))
         self.assertNotIn("SECRET", str(row.__dict__))
@@ -115,6 +119,31 @@ class AuthenticatedPilotTests(TestCase):
             ).status_code,
             403,
         )
+
+    def test_draft_requirements_explain_scope_without_requiring_design(self):
+        self.login()
+        response = self.client.get(self.url)
+        self.assertContains(response, "it does not need to be designed for publication")
+        self.assertContains(response, "Blank templates without identifying details")
+        self.assertEqual(self.client.get(self.public_url).status_code, 503)
+
+    def test_real_draft_upload_returns_reference_metrics_with_public_disabled(self):
+        self.login()
+        response = self.client.post(
+            self.url,
+            {
+                "pdf": SimpleUploadedFile(
+                    "synthetic-draft.pdf", draft_pdf(), content_type="application/pdf"
+                )
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["report"]["scope"]["sentence_word_count"], 17)
+        self.assertEqual(
+            response.context["report"]["scope"]["complete_sentence_count"], 3
+        )
+        self.assertContains(response, "Keep instructions that applicants need.")
+        self.assertEqual(self.client.get(self.public_url).status_code, 503)
 
     def test_csrf_failure_has_no_analysis_or_outcome(self):
         self.login()

@@ -38,7 +38,7 @@ _ERRORS = {
         400,
     ),
     "format_unsupported": (
-        "This PDF does not appear to be an HHS notice of funding opportunity. Check that its first two pages include basic NOFO details such as an opportunity number, Assistance Listing number, or Grants.gov reference.",
+        "We could not confirm this PDF is an HHS notice of funding opportunity. Check that its first five pages include basic NOFO details such as an HHS agency name, opportunity number, Assistance Listing number, or Grants.gov reference. Blank templates without these details may not be recognized.",
         400,
     ),
     "format_indeterminate": (

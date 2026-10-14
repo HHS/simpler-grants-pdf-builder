@@ -68,11 +68,16 @@ not install ingress rate limiting or authorize production enablement.
 
 The launch approach is a deliberately loose NOFO check, not approved-template
 recognition. Before analysis, the bounded worker inspects descriptive PDF
-metadata and extractable text from the first two pages for four distinct
-signals: an HHS agency or division in metadata, a labeled opportunity number, a
+metadata and extractable text from the first five pages for four distinct
+signals: an HHS agency or division in metadata or opening-page text, a labeled opportunity number, a
 labeled Assistance Listing number, and a Grants.gov reference. Any two signals
 allow analysis. Repeating one signal in multiple fields does not increase the
 count, and filename alone never counts.
+
+The bounded five-page window accommodates cover and contents pages in ordinary
+Word print exports. Agency metadata and agency page text are alternative sources
+of one signal, never two votes. This does not admit blank templates without two
+different identification signal types. See drafting-stage evidence in #1059.
 
 The field shapes are grounded in the [Simpler.Grants.gov Opportunities v1
 OpenAPI examples](https://api.staging.simpler.grants.gov/docs#/Opportunity%20v1/post_v1_opportunities_search):
@@ -171,9 +176,12 @@ Reuse the pinned `hhs-nofo-metrics` package. PDF results are extraction-based
 estimates, not identical to Builder's semantic-HTML metrics or a compliance
 determination. Untagged PDFs need particularly clear reliability caveats.
 
-The dependency is pinned to 0.5.4, including the tagged-PDF parity fixes for
+The dependency is pinned to 0.5.5, including the tagged-PDF parity fixes for
 producer-declared cover/contents scope, cross-page paragraphs and lists, inline
-word ordering, and numeric list markers. Profiles and formulas are unchanged;
+word ordering, numeric list markers, and direct table-cell continuity across
+pages. Tagged adapter 0.1.7 preserves distinct cells and does not join cells
+containing nested semantic blocks; their identities are not exposed by the
+current resolver. Profiles and formulas are unchanged;
 extracted content and resulting PDF estimates can change. In Builder's stored
 readability snapshots, package identity distinguishes previous scores from new
 calculations. The PDF pilot does not store report history; each report identifies

@@ -47,6 +47,8 @@ function setup({ form = true, error = false, report = false, valid = true,
       'readability-version': node('0.5.3'),
       'readability-scope-pages': node('2 of 2 pages processed.'),
       'readability-scope-method': node('Text was reconstructed from page layout.'),
+      'readability-draft-scope': node('Writer instructions and placeholders may be included. Keep instructions that applicants need.'),
+      'readability-draft-readiness': node('Compare drafts with the same content scope.'),
       'readability-coverage': node('Text recovered from 2 pages.'),
       'readability-word-scope': node('Word count includes all text recovered from the PDF: 23 words.'),
       'readability-reliability': node('Reliability of these estimates: Low'),
@@ -147,6 +149,8 @@ test('copy includes provenance, scope, every metric and note, and disclaimer', a
   assert.match(state.copiedText, /Analyzed: September 23, 2026/);
   assert.match(state.copiedText, /Measurement version: 0\.5\.3/);
   assert.match(state.copiedText, /Word count includes all text recovered/);
+  assert.match(state.copiedText, /Writer instructions and placeholders may be included/);
+  assert.match(state.copiedText, /Compare drafts with the same content scope/);
   assert.match(state.copiedText, /Flesch-Kincaid Grade Level 8\.4/);
   assert.match(state.copiedText, /A layout limitation\.[\s\S]*Excluded fragments\./);
   assert.match(state.copiedText, /Estimates, not a clearance determination/);
