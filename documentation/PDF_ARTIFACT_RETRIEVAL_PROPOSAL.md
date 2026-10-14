@@ -1,6 +1,10 @@
-# Approved NOFO PDF retrieval: proposal for Announcement Services
+# Historical automated NOFO PDF retrieval proposal for Announcement Services
 
-**Status:** Draft for discussion. This is not an approved contract.
+> **Historical proposal — not the current pilot workflow.** The current proposed AS-to-Builder Word handoff is the manual S3 pilot in [issue #950](https://github.com/HHS/simpler-grants-pdf-builder/issues/950), updated with AS’s October 13, 2026 answers. PDF retrieval and return stay manual in that phase.
+>
+> This document preserves an earlier automated PDF-pull proposal for the separate future capability tracked in [#951](https://github.com/HHS/simpler-grants-pdf-builder/issues/951) and [#957](https://github.com/HHS/simpler-grants-pdf-builder/issues/957). Its API/streaming direction, comp-ID assumptions, questions, diagram and status table are historical and must be revalidated before reuse; they are not an approved current contract or implementation status. The old PNG snapshot has been retired; Git history preserves it.
+
+**Status:** Historical draft, retained for reference. This is not an approved contract.
 **Tracks:** Epic #951, pilot #962, contract spike #957
 
 ## Purpose
