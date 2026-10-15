@@ -102,6 +102,10 @@ class AuthenticatedPilotTests(TestCase):
         with patch("bloom_nofos.views.analyze_uploaded_pdf", return_value=REPORT):
             response = self.client.post(self.url, {"pdf": self.upload()})
         self.assertContains(response, "Readability report")
+        self.assertContains(
+            response, "try uploading the original Word document instead"
+        )
+        self.assertContains(response, "Save as PDF")
         self.assertContains(response, f'href="{self.url}"')
         self.assertContains(response, "Print / Save as PDF")
         self.assertContains(response, "Copy metrics")
@@ -131,6 +135,13 @@ class AuthenticatedPilotTests(TestCase):
         self.assertContains(response, "Reliability not assessed")
         self.assertContains(response, "Reliability has not been assessed")
         self.assertContains(response, "What this report includes")
+        self.assertContains(
+            response, "make sure important text is in the main document body"
+        )
+        self.assertContains(
+            response, "Remove template instructions and unused draft options"
+        )
+        self.assertNotContains(response, "Review the measurement scope")
         self.assertContains(response, "usa-alert--info readability-reliability")
         self.assertNotContains(response, "Low reliability")
         self.assertNotContains(response, "Reliability of these estimates: Low")

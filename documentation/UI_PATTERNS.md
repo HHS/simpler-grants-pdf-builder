@@ -249,8 +249,21 @@ reliability notice uses a warning rather than a red error alert.
 
 Keep the reliability level in the heading and the explanation in the body so
 users can understand the notice without relying on color or the icon. Preserve
-the source-PDF review guidance and the existing `role="note"`; changing the
+the source-specific explanation and the existing `role="note"`; changing the
 visual variant does not make this notice an urgent announcement.
+
+Each source explanation stays in one paragraph:
+
+- **Word:** “This report measures text recovered from your Word document. The tool may miss or change text in text boxes, headers, and footers. It cannot read text in images. For a more complete analysis, make sure important text is in the main document body. Remove template instructions and unused draft options from the copy you upload so they aren’t counted as part of your NOFO.”
+- **PDF with usable tags:** “PDF structure tags helped the tool read the text in order, but some text may still be missed or read out of order, especially in columns and tables. These scores describe the text the tool recovered and may not reflect the entire PDF.”
+- **PDF without usable tags (authenticated tool):** “The tool could not reliably determine the order of text in this PDF, so the scores may be less reliable. For your next upload, try uploading the original Word document instead. If you need to use a PDF, save it from Word using ‘Save as PDF’ rather than ‘Print to PDF.’”
+
+The public PDF-only route omits the Word-upload suggestion and instead says:
+“For your next upload, save the original document from Word using ‘Save as PDF’
+rather than ‘Print to PDF.’” These suggestions do not guarantee accurate scores.
+Missing reliability retains its separate “Reliability has not been assessed for
+these estimates” sentence. The shared-formula explanation remains in the upper
+“How to read these results” alert.
 
 The verified implementation is
 [`pdf_readability.html`](../nofos/bloom_nofos/templates/pdf_readability.html),

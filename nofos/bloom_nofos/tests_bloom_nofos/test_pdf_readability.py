@@ -250,7 +250,17 @@ class PdfReadabilityPageTests(TestCase):
                 self.assertContains(
                     response, f"Reliability of these estimates: {level.capitalize()}"
                 )
-                self.assertContains(response, "Review the source PDF")
+                self.assertContains(response, "especially in columns and tables")
+                self.assertContains(response, "may not reflect the entire PDF")
+
+    @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
+    def test_public_pdf_recovery_advice_matches_supported_uploads(self):
+        with patch("bloom_nofos.views.analyze_uploaded_pdf", return_value=REPORT):
+            response = self.client.post(self.url, {"pdf": sample_pdf()})
+        self.assertContains(response, "The tool could not reliably determine the order")
+        self.assertContains(response, "Save as PDF")
+        self.assertContains(response, "Print to PDF")
+        self.assertNotContains(response, "try uploading the original Word document")
 
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
     @patch("bloom_nofos.views.analyze_uploaded_pdf", return_value=REPORT)
@@ -271,7 +281,7 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "Not available")
         self.assertNotContains(response, "Unavailable · Low reliability")
         self.assertContains(response, "Unavailable")
-        self.assertContains(response, "low-reliability estimate")
+        self.assertContains(response, "the scores may be less reliable")
         self.assertContains(response, "Copy metrics")
         self.assertContains(
             response,
