@@ -57,6 +57,13 @@ that reliability has not been assessed. Missing evidence is not converted into
 low (or high) confidence, nor inherited from a different metric. Supplied PDF
 ratings and the generic PDF adapter's explicit low-confidence policy remain.
 
+The complete current alert-copy catalog, report headings, metric labels, rating
+selection rule and authenticated/public variants are documented in
+[UI patterns — Readability estimate reliability alerts](UI_PATTERNS.md#readability-estimate-reliability-alerts).
+That catalog also distinguishes an unavailable metric from unassessed reliability.
+Source explanations stay in one paragraph; only the authenticated tool suggests
+uploading Word instead of a PDF. Historical screenshots may predate copy changes.
+
 Both formats share the existing 15 MiB upload limit, 15-second deadline, global
 analysis slot, filtered subprocess environment and Linux resource limits. Word
 uses the same temporary-directory cleanup and content-free outcome recording.
