@@ -5,10 +5,16 @@ from . import views
 from .pdf_readability_metrics import PdfReadabilityMetricsView
 from .readability_history_views import NofoReadabilityHistoryView
 from .readability_overview import BuilderReadabilityScoresView
+from .section_readability_views import SectionReadabilityView
 
 app_name = "nofos"
 
 urlpatterns = [
+    path(
+        "<uuid:pk>/section-readability",
+        SectionReadabilityView.as_view(),
+        name="section_readability",
+    ),
     path(
         "readability/",
         authenticated_pdf_readability,

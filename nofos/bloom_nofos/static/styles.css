@@ -101,6 +101,12 @@ blockquote {
   background-color: var(--color--usa-error-bg-darker);
 }
 
+/* USWDS button display rules otherwise override the native hidden attribute. */
+#section-readability button[hidden],
+[data-section-recheck][hidden] {
+  display: none;
+}
+
 details > summary {
   width: fit-content;
 }
