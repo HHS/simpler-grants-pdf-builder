@@ -1330,7 +1330,7 @@ class NofoReadabilityScore(models.Model):
 class NofoReadabilityCheckpoint(models.Model):
     """An explicit review checkpoint referencing an unchanged calculation."""
 
-    score = models.OneToOneField(
+    score = models.ForeignKey(
         NofoReadabilityScore, on_delete=models.CASCADE, related_name="checkpoint"
     )
     saved_at = models.DateTimeField(auto_now_add=True)
@@ -1359,13 +1359,18 @@ class NofoReadabilityCheckpoint(models.Model):
         default=TRIGGER_MANUAL,
         help_text=(
             "What created this checkpoint. Imports, re-imports and finished PDF "
-            "downloads save one automatically when the NOFO has changed, so "
+            "downloads each save once per NOFO version and trigger, so "
             "every NOFO has a starting point and a record of what was produced."
         ),
     )
 
     class Meta:
         ordering = ["-saved_at", "-pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["score", "trigger"], name="unique_readability_score_trigger"
+            )
+        ]
 
 
 class PdfReadabilityAttempt(models.Model):

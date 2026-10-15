@@ -10,6 +10,7 @@ from users.models import BloomUser
 from nofos.models import Nofo, NofoReadabilityCheckpoint
 from nofos.readability import (
     ReadabilityMetricsAnalysisError,
+    save_automatic_checkpoint,
     save_readability_checkpoint,
 )
 from nofos.tests_nofos.test_readability_metrics import build_payload
@@ -93,13 +94,50 @@ class ReadabilityDownloadCheckpointTests(TestCase):
             all(c.trigger == "download" for c in self.checkpoints()),
         )
 
-    def test_download_after_a_manual_save_keeps_the_manual_checkpoint(self):
-        save_readability_checkpoint(self.nofo, self.user)
+    def test_download_after_a_manual_save_keeps_both_checkpoints(self):
+        _, manual, _ = save_readability_checkpoint(self.nofo, self.user)
 
         self.download()
 
-        checkpoint = self.checkpoints().get()
-        self.assertEqual(checkpoint.trigger, NofoReadabilityCheckpoint.TRIGGER_MANUAL)
+        self.assertEqual(self.checkpoints().count(), 2)
+        manual.refresh_from_db()
+        self.assertEqual(manual.trigger, NofoReadabilityCheckpoint.TRIGGER_MANUAL)
+        self.assertEqual(self.checkpoints().first().trigger, "download")
+        self.analyze.assert_called_once()
+
+    def test_immediate_post_import_download_adds_checkpoint_without_recalculation(self):
+        from django.test import RequestFactory
+
+        request = RequestFactory().post("/")
+        request.user = self.user
+        imported = save_automatic_checkpoint(request, self.nofo, "import")
+        self.assertIsNotNone(imported)
+        self.download()
+        self.download()
+
+        self.assertEqual(self.checkpoints().count(), 2)
+        downloaded = self.checkpoints().get(trigger="download")
+        self.assertEqual(downloaded.score_id, imported.score_id)
+        self.analyze.assert_called_once()
+        fragment = self.client.get(
+            reverse("nofos:nofo_readability_history", kwargs={"pk": self.nofo.pk})
+            + "?fragment=panel"
+        )
+        self.assertContains(fragment, "on PDF download")
+        self.assertContains(fragment, "on import")
+
+    def test_failed_download_preserves_import_checkpoint(self):
+        save_readability_checkpoint(self.nofo, self.user, trigger="import")
+        self.doc_api.return_value.create_doc.side_effect = docraptor.rest.ApiException(
+            status=422, reason="Unprocessable Entity"
+        )
+        with self.assertLogs("django.request", level="ERROR"):
+            response = self.download()
+        self.assertEqual(response.status_code, 400)
+        self.assertNotIn("X-Readability-Checkpoint", response)
+        self.assertEqual(
+            list(self.checkpoints().values_list("trigger", flat=True)), ["import"]
+        )
 
     def test_failed_pdf_generation_saves_nothing(self):
         self.doc_api.return_value.create_doc.side_effect = docraptor.rest.ApiException(
@@ -161,7 +199,7 @@ class ReadabilityDownloadCheckpointTests(TestCase):
         self.assertContains(history, "Automatic, on PDF download")
         self.assertContains(overview, "Automatic, on PDF download")
 
-    def test_saving_after_a_download_reports_the_automatic_checkpoint(self):
+    def test_saving_after_a_download_adds_a_manual_checkpoint(self):
         self.download()
 
         response = self.client.post(
@@ -169,11 +207,9 @@ class ReadabilityDownloadCheckpointTests(TestCase):
         )
 
         payload = response.json()
-        self.assertTrue(payload["already_saved"])
-        self.assertEqual(payload["checkpoint"]["trigger"], "download")
-        self.assertEqual(
-            payload["checkpoint"]["trigger_event"], "the PDF was downloaded"
-        )
+        self.assertFalse(payload["already_saved"])
+        self.assertEqual(payload["checkpoint"]["trigger"], "manual")
+        self.assertEqual(self.checkpoints().count(), 2)
 
     def test_read_only_panel_fragment_refreshes_all_saved_state(self):
         url = (
@@ -205,8 +241,9 @@ class ReadabilityDownloadCheckpointTests(TestCase):
         )
         response = self.client.get(url)
         self.assertContains(response, "Last saved")
-        self.assertNotContains(response, "automatically on PDF download")
-        self.assertEqual(self.checkpoints().count(), 1)
+        self.assertContains(response, "automatically on PDF download")
+        self.assertContains(response, "Saved by downloader@example.com.")
+        self.assertEqual(self.checkpoints().count(), 2)
 
     def test_panel_fragment_requires_nofo_access(self):
         other = BloomUser.objects.create_user(
