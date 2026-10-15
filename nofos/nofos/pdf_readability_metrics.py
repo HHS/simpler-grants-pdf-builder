@@ -22,9 +22,14 @@ from .pdf_readability import PDF_READABILITY_OUTCOMES
 logger = logging.getLogger("django.request.pdf_readability_metrics")
 
 OUTCOME_LABELS = {
+    "unsupported_file": "Unsupported file type",
+    "invalid_word": "Invalid Word document",
+    "word_no_text": "No extractable Word text",
+    "word_expanded_limit": "Word expanded-content limit",
+    "word_format_unsupported": "Word document not recognized as an HHS NOFO",
     "success": "Report returned",
     "invalid_pdf": "Invalid PDF",
-    "too_large": "PDF exceeds the size limit",
+    "too_large": "Document exceeds the size limit",
     "too_many_pages": "PDF exceeds the page limit",
     "encrypted": "Password-protected PDF",
     "no_text": "No extractable text",

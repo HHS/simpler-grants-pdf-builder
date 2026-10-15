@@ -145,3 +145,27 @@ def recognize_nofo(
     if not page_text:
         return Recognition("indeterminate", "first_pages_text_unavailable", signals)
     return Recognition("unsupported", "insufficient_nofo_signals", signals)
+
+
+def recognize_word_nofo(text: str) -> Recognition:
+    """Reuse loose signals, allowing HHS NOFO templates without filled IDs.
+
+    The compound agency/title context adds one signal, not two. A distinct
+    existing signal (such as Grants.gov) is still required. PDF policy is unchanged.
+    """
+    text = _normalize(text)
+    decision = recognize_nofo({}, text)
+    if decision.status == "supported":
+        return decision
+    agency_context = _HHS_AGENCY_RE.search(text) or re.search(
+        r"\bHHS-wide\b", text, re.IGNORECASE
+    )
+    if agency_context and re.search(
+        r"\b(?:notice\s+of\s+funding\s+opportunity|nofo\s+(?:master\s+)?template)\b",
+        text,
+        re.IGNORECASE,
+    ):
+        signals = (*decision.signal_ids, "hhs_nofo_template_context")
+        if len(signals) >= DEFAULT_POLICY.minimum_signals:
+            return Recognition("supported", "minimum_signals_met", signals)
+    return decision
