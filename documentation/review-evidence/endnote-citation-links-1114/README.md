@@ -20,6 +20,12 @@ original, unsupplied source document contained.
 
 ## Validation
 
+- Final local Django run: 2,569 tests passed, with three existing skips.
+- Focused endnote/citation suite: 24 tests passed. A separate reviewer reran
+  these 24 tests and found no remaining actionable findings after the
+  hard-boundary, hidden-comment and mixed-flow citation regressions were fixed.
+- All 56 JavaScript tests passed. Black, isort, commit hooks and
+  `git diff --check` passed; `makemigrations --check --dry-run` found no changes.
 - Citation regressions cover the issue's URL/DOI examples, trailing punctuation,
   access-date parentheses, balanced DOI parentheses, query strings, fragments,
   escaped ampersands, formatting split across inline runs, comments, excluded
