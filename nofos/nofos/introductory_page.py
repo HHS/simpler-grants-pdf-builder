@@ -82,16 +82,30 @@ def prepare_editable_introduction(soup, policy="generated"):
                 "Move introductory prose beneath the Before You Get Started heading and keep other content in its main section before reimporting. Builder cannot safely attach the content before that heading. Your saved content has not changed.",
                 code="introductory_content_unsafe",
             )
-        # An intervening peer/higher heading would make the body boundary unsafe.
-        safe = (
-            has_body
-            and not prior_headings
-            and not any(
-                t.name in {"h1", "h2", "h3", "h4", "h5", "h6"}
-                and int(t.name[1]) <= int(intro.name[1])
-                for t in between
+        # Recognized sources must not fall back to generated-text cleanup when
+        # an introductory child accidentally uses a main-section heading level.
+        unsafe_headings = [
+            t
+            for t in between
+            if t.name in {"h1", "h2", "h3", "h4", "h5", "h6"}
+            and int(t.name[1]) <= int(intro.name[1])
+        ]
+        if (fy27 or policy == "required") and unsafe_headings:
+            heading = unsafe_headings[0]
+            intro_level = int(intro.name[1])
+            raise ContentProcessingError(
+                f'“{heading.get_text(" ", strip=True)}” uses Heading {heading.name[1]}, '
+                f'which is the same or a higher level than “{intro.get_text(" ", strip=True)}” '
+                f'(Heading {intro_level}), but appears before “{step.get_text(" ", strip=True)}”. '
+                "All headings within the introduction must be lower-level headings "
+                "(with a larger heading number) than its main heading. "
+                f'In Word, select “{heading.get_text(" ", strip=True)}” and apply '
+                f"Heading {intro_level + 1} if it is a direct subsection, or a lower "
+                "level if it belongs within another subsection. Save the document, "
+                "then import it again. No content was saved or replaced.",
+                code="introductory_content_unsafe",
             )
-        )
+        safe = has_body and not prior_headings and not unsafe_headings
         selected = safe and (policy == "required" or fy27)
     if not selected:
         if policy == "required":
@@ -104,7 +118,7 @@ def prepare_editable_introduction(soup, policy="generated"):
     # Its actual child headings keep their relative levels through normal parsing.
     target_level = int(step.name[1])
     if target_level not in (1, 2):
-        if policy == "required":
+        if policy == "required" or fy27:
             raise ContentProcessingError(
                 "Use Heading 1 or Heading 2 for Step 1 before reimporting. Your saved content has not changed.",
                 code="introductory_content_unsafe",

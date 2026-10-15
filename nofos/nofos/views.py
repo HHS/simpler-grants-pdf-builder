@@ -731,6 +731,12 @@ def parse_error_details(error, error_code, uploaded_file=None):
             )
         return details
 
+    if error_code == "IMPORT-INTRODUCTION-STRUCTURE":
+        return [
+            {"label": "What we found", "value": message}
+            for message in getattr(error, "messages", [])[:5]
+        ]
+
     if error_code == "IMPORT-FILE-TYPE":
         details = []
         filename = getattr(uploaded_file, "name", "")

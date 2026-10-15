@@ -52,7 +52,23 @@ they do not automatically retry an upload.
 
 **HTTP status:** 422
 
-An editable-introduction record could not map the replacement document's introduction safely. Nothing is overwritten or archived. Keep one Before You Begin or Before You Get Started heading and its content before Step 1, use Heading 1 or Heading 2 for the main steps, and lower levels for child headings. Save and reimport. Missing/repeated headings, empty content and unsafe mixed levels are blocked rather than replaced with generated text.
+**When it fires:** An editable-introduction record cannot safely map its replacement introduction, or a recognized new FY27 source has unsafe introductory heading levels or unmappable prelude content. These sources stop before source cleanup, saving, overwrite or archival.
+
+**What the user sees**
+
+> **Check the introductory section before importing**
+>
+> Builder could not safely map this document's introductory text to editable content. No content was saved or replaced. Any existing NOFO is unchanged.
+
+The **What we found** detail names the offending heading, its detected heading level, the introductory heading and Step 1. For example, “Get registered” at Heading 1 beneath a Heading 1 introduction is rejected instead of silently replaced with generated content.
+
+1. Keep one Before You Begin or Before You Get Started heading before Step 1, with its introductory text beneath it.
+2. In Word, open Home > Styles. Use the same main heading level for the introduction and Step 1 (Heading 1 or Heading 2).
+3. Keep every heading between them at a lower level (a larger heading number). For example, use Heading 2 for Get registered beneath a Heading 1 introduction, and Heading 3 for headings within Get registered.
+4. Move introductory prose beneath its heading and put other content in the appropriate main section.
+5. Save the document, then import it again.
+
+**What support should say:** Review the named headings and their Word Styles, not just their visual size. Missing/repeated headings and empty or unsafe replacements are blocked for editable-introduction records. Recognized new FY27 sources with unsafe child headings are also blocked; unrecognized new sources retain their existing fallback.
 
 ### `IMPORT-NO-FILE`
 

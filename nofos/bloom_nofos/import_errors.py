@@ -42,7 +42,8 @@ IMPORT_ERROR_CATALOG = {
         "status": 422,
         "recovery_steps": (
             "Keep one Before You Begin or Before You Get Started heading before Step 1, with its introductory text beneath it.",
-            "Use Heading 1 or Heading 2 for the main steps and lower heading levels for introductory subsections.",
+            "In Word, open Home > Styles. Use the same main heading level for the introduction and Step 1 (Heading 1 or Heading 2).",
+            "Keep every heading between the introductory heading and Step 1 at a lower level (a larger heading number). For example, use Heading 2 for Get registered beneath a Heading 1 introduction, and Heading 3 for headings within Get registered.",
             "Move introductory prose beneath its heading and put other content in the appropriate main section.",
             "Save the document, then import it again.",
         ),

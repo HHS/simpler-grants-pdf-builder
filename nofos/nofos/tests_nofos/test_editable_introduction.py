@@ -105,6 +105,32 @@ class EditableIntroductionProcessingTests(SimpleTestCase):
                 self.assertNotIn("Metadata author", str(result.sections))
                 self.assertIn("Retain appendix", str(result.sections[-1]))
 
+    def test_recognized_unsafe_introductory_headings_block_before_cleanup(self):
+        for level in (1, 2):
+            for child_level in range(1, level + 1):
+                for policy in ("detect", "required"):
+                    with self.subTest(
+                        level=level, child_level=child_level, policy=policy
+                    ):
+                        html = source_html(level=level).replace(
+                            f'<h{level + 1} id="authored-child">Get registered</h{level + 1}>',
+                            f'<h{child_level} id="authored-child">Get registered</h{child_level}>',
+                        )
+                        with self.assertRaises(ContentProcessingError) as caught:
+                            self.process(html, policy=policy)
+                        self.assertEqual(
+                            caught.exception.code, "introductory_content_unsafe"
+                        )
+                        self.assertIn("Get registered", str(caught.exception))
+                        self.assertIn(f"Heading {child_level}", str(caught.exception))
+                        self.assertIn("In Word", str(caught.exception))
+                        self.assertIn("import it again", str(caught.exception))
+        # Correctly nested sources still retain their authored introduction.
+        for level in (1, 2):
+            result = self.process(source_html(level=level))
+            self.assertTrue(imported_introduction(result.soup))
+            self.assertIn("Authored introductory opening", str(result.sections))
+
     def test_heading_or_hierarchy_alone_never_selects_editable_mode(self):
         cases = [
             source_html().replace("<h3>Metadata</h3>", "<p>Metadata</p>"),
@@ -229,6 +255,46 @@ class EditableIntroductionWorkflowTests(TestCase):
         self.assertIn(
             "Distinctive source", nofo.sections.first().subsections.first().body
         )
+
+    def test_word_heading_error_names_problem_and_preserves_existing_record(self):
+        output = BytesIO()
+        with ZipFile(BytesIO(fy27_docx())) as source, ZipFile(
+            output, "w", ZIP_DEFLATED
+        ) as target:
+            for item in source.infolist():
+                value = source.read(item.filename)
+                if item.filename == "word/document.xml":
+                    value = value.replace(
+                        b"<w:p><w:r><w:t>To register:</w:t></w:r></w:p>",
+                        b'<w:p><w:pPr><w:pStyle w:val="Heading2"/></w:pPr><w:r><w:t>Get registered</w:t></w:r></w:p>',
+                    )
+                target.writestr(item, value)
+        nofo = self.create_document()
+        original = list(nofo.sections.values_list("id", "name"))
+        count = Nofo.objects.count()
+        for url in (
+            reverse("nofos:nofo_import"),
+            reverse("nofos:nofo_import_overwrite", args=[nofo.pk]),
+        ):
+            with self.subTest(url=url):
+                response = self.upload(url, output.getvalue())
+                self.assertEqual(response.status_code, 422)
+                for text in (
+                    "IMPORT-INTRODUCTION-STRUCTURE",
+                    "What we found",
+                    "Get registered",
+                    "Heading 2",
+                    "Heading 3",
+                    "In Word",
+                    "Home &gt; Styles",
+                    "Save the document, then import it again.",
+                ):
+                    self.assertContains(response, text, status_code=422)
+                self.assertEqual(Nofo.objects.count(), count)
+                self.assertEqual(
+                    list(nofo.sections.values_list("id", "name")), original
+                )
+                self.assertFalse(Nofo.objects.filter(successor=nofo).exists())
 
     def test_html_upload_retains_generated_workflow(self):
         self.client.post(
