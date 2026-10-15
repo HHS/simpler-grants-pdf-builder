@@ -93,12 +93,23 @@ class ReadabilityCheckpointTests(TestCase):
         self.assertEqual(repeated.nofo_status_at_save, "review")
         self.assertEqual(NofoReadabilityCheckpoint.objects.count(), 1)
 
-    def test_unique_score_constraint_is_database_enforced(self):
+    def test_unique_score_and_trigger_constraint_is_database_enforced(self):
         _, checkpoint, _ = self.save()
         with self.assertRaises(IntegrityError), transaction.atomic():
             NofoReadabilityCheckpoint.objects.create(
                 score=checkpoint.score, nofo_status_at_save="draft"
             )
+
+    def test_distinct_triggers_share_one_calculation_without_replacing_provenance(self):
+        _, imported, _ = save_readability_checkpoint(self.nofo, self.user, "import")
+        _, manual, created = self.save()
+        _, downloaded, _ = save_readability_checkpoint(self.nofo, self.user, "download")
+        self.assertTrue(created)
+        self.assertEqual(
+            {imported.score_id, manual.score_id, downloaded.score_id}, {manual.score_id}
+        )
+        self.assertEqual(NofoReadabilityCheckpoint.objects.count(), 3)
+        self.analyze.assert_called_once()
 
     def test_save_response_uses_previous_id_when_timestamps_tie(self):
         _, first, _ = self.save()
