@@ -65,6 +65,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-050 | conversion | Footnotes/Endnotes | Unambiguous `[N]` reference/citation pairs → forward/return links | `nofo.py`, `endnotes.py` |
 | IMPORT-051 | conversion | Footnotes/Endnotes | Manually-linked endnote lists/links → preserved as raw HTML | `nofo_markdown.py` |
 | IMPORT-053 | repair | Footnotes/Endnotes | Duplicated Word custom note mark beside native link → duplicate removed | `nofo.py`, `endnotes.py` |
+| IMPORT-064 | conversion | Footnotes/Endnotes | Explicit URL/www/DOI citation text → links inside recognized note targets only | `content_processing.py`, `endnotes.py` |
 | IMPORT-018 | repair | Lists | Adjacent same-class lists merged; differing-class lists nested | `nofo.py` |
 | IMPORT-019 | repair | Lists | Redundant `<li>`/`<ul>` wrapper levels unwrapped | `nofo.py` |
 | IMPORT-020 | conversion | Lists | `<ol start="N≠1">` or list-in-table-cell → kept as raw HTML in Markdown | `nofo_markdown.py` |
@@ -264,7 +265,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Action:** Keep the entire list as raw (prettified) HTML rather than converting to Markdown list syntax, and add `tabindex="-1"` to every `<li>`, so ids and structure survive.
 - **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_ol`
 - **Status:** active
-- **Note:** covers native Word/Google notes specifically. See IMPORT-051 for the equivalent rule covering manually bracket-linked notes.
+- **Note:** covers native Word/Google notes specifically. See IMPORT-051 for the equivalent rule covering manually bracket-linked notes. IMPORT-064 creates links in recognized citation text before this existing HTML-preservation step; list preservation itself is unchanged.
 
 ### IMPORT-017 — Footnote/endnote reference preserved as raw HTML
 - **Type:** conversion
@@ -295,7 +296,14 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Action:** (a) the whole list is kept as raw HTML instead of Markdown list syntax; (b) the existing `<sup>` wrapper is reused instead of wrapping it again.
 - **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_ol/convert_ul/convert_a`
 - **Status:** active
-- **Note:** extends IMPORT-016/IMPORT-017 (native notes) to also cover manually bracket-linked ones.
+- **Note:** extends IMPORT-016/IMPORT-017 (native notes) to also cover manually bracket-linked ones. IMPORT-064 adds external destination anchors before storage without changing note pairing or raw-list preservation.
+
+### IMPORT-064 — Explicit external destinations in citation text
+- **Type:** conversion
+- **Trigger:** An explicit HTTP/HTTPS URL, `www.` address or `doi:10.` identifier in the text of a native Word footnote/endnote target (`footnote-N`/`endnote-N`) or a successfully paired manual citation (`endnote-manual-N`).
+- **Action:** Wrap only the address in a link, retaining its visible wording and inline formatting across adjacent Word runs. Preserve existing anchors, note IDs, numbering, return links, accessibility attributes and surrounding citation text. Scheme-less `www.` destinations use HTTPS; DOI identifiers use `https://doi.org/`. Preserve query strings, fragments, escaped ampersands and balanced DOI parentheses; leave trailing citation punctuation and unmatched closing delimiters outside the link. Existing anchors, attributes, comments, code, preformatted content, scripts and styles are excluded; hard breaks/images and separate blocks (including divs, blockquotes, sections and headings) never join addresses. Links inside these containers remain within their own block. Citation prose without an explicit address remains unchanged. Repeated processing is idempotent. A duplicated DOI resolver is a separate malformed-source case and is not repaired, whether already linked or plain text.
+- **Source:** `endnotes.py::linkify_endnote_citations`, using the existing `_wrap_range` note-marker helper; called by `content_processing.py::process_nofo_html` after bracketed pairing and before Markdown storage.
+- **Status:** active on explicit new import/re-import through the shared Builder, Composer and Compare processing path. No saved-record migration, view-time linking, global Markdown URL extension, network destination lookup or original Word-file modification. Unrecognized/ambiguous note structures are not guessed at.
 
 ### IMPORT-053 — Duplicate Word custom note mark removal
 - **Type:** repair

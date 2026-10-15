@@ -18,6 +18,7 @@ from .content_text import clean_string
 from .endnotes import (
     convert_bracketed_endnotes,
     is_endnotes_heading,
+    linkify_endnote_citations,
     remove_duplicate_native_note_custom_marks,
 )
 from .nofo_markdown import MISSING_ALT_TEXT_ATTR, PRESERVE_BOOKMARK_TARGET_ATTR, md
@@ -163,6 +164,7 @@ def process_nofo_html(soup, top_heading_level, *, debug_capture=None):
     preserve_bookmark_targets(soup)
     remove_duplicate_native_note_custom_marks(soup)  # IMPORT-053
     convert_bracketed_endnotes(soup)  # IMPORT-050 in documentation/IMPORT_RULES.md
+    linkify_endnote_citations(soup)  # IMPORT-064
 
     soup = add_em_to_de_minimis(soup)
 
