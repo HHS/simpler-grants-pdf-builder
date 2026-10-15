@@ -1,5 +1,11 @@
 # Introductory pages in Word imports
 
+For qualifying new FY27 Word imports, [editable introductory ownership](EDITABLE_INTRODUCTION.md)
+retains the source body instead. Existing generated records keep the behavior
+described below, including their saved wording family on re-import. Family and
+content ownership are separate fields; this document's source-consumption
+description applies to generated ownership only.
+
 Builder supports two source headings: **Before You Begin** and **Before You Get
 Started**. Retain this section in your upload. Builder uses its real heading and
 bookmark destinations to choose a maintained introductory page and preserve

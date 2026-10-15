@@ -211,8 +211,8 @@
       {% for section in nofo.sections.all|dictsort:"order" %}
         {% if section.is_introduction %}
           <li class="toc--section-name toc--before-you-begin toc--imported-introduction">
-            <div class="toc--section-name--img">{% include "includes/icon_macro.html" with section_name="before you begin" icon_style=nofo.icon_style only %}</div>
-            <a href="#section--before-you-begin">{{ nofo.introductory_page_title }}</a>
+            <div class="toc--section-name--img">{% if "thin" in nofo.icon_style %}{% include "includes/icons/thin/0-before.svg" %}{% else %}{% include "includes/icons/0-before.svg" %}{% endif %}</div>
+            <div class="toc--section-name--wrapper"><a href="#section--before-you-begin">{{ nofo.introductory_page_title }}</a></div>
           </li>
         {% elif section.has_section_page %}
           <li class="toc--section-name">
@@ -258,7 +258,7 @@
     {% if section.is_introduction %}
       {% include "nofos/includes/imported_introduction.html" with section=section nofo=nofo only %}
     {% else %}
-    <section id="section--{{ section.html_id }}" class="section section--{{ section.step_number }} {% if section.step_number > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}{% if not section.has_section_page %} section--no-section-page{% endif %}">
+    <section id="section--{{ section.html_id }}" class="section section--{% if nofo.has_imported_introduction %}{{ section.step_number }}{% else %}{{ forloop.counter }}{% endif %} {% if nofo.has_imported_introduction and section.step_number > 7 or not nofo.has_imported_introduction and forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}{% if not section.has_section_page %} section--no-section-page{% endif %}">
       <!-- SECTION TITLE PAGE -->
       {% if section.has_section_page %}
         <div class="title-page section--title-page">

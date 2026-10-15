@@ -1410,7 +1410,8 @@ section.before-you-begin--imported {
   width: 45px;
   height: 45px;
 }
-.toc--imported-introduction {
-  font-size: 12pt;
+.toc .toc--imported-introduction a {
+  font-size: 11pt;
   font-weight: normal;
+  color: var(--color--black);
 }

@@ -284,10 +284,10 @@ class IntroductoryImportTests(TestCase):
             if response.url.endswith("confirm-overwrite") or "confirm" in response.url:
                 response = self.client.post(response.url)
             nofo.refresh_from_db()
-            self.assertEqual(nofo.introductory_page_family, "get_started")
+            self.assertEqual(nofo.introductory_page_family, "legacy")
             self.assertEqual(nofo.before_you_begin, variant)
             copied = duplicate_nofo(nofo)
-            self.assertEqual(copied.introductory_page_family, "get_started")
+            self.assertEqual(copied.introductory_page_family, "legacy")
             self.assertEqual(copied.before_you_begin, variant)
 
     def test_disabled_reimport_keeps_link_for_later_reenable(self):

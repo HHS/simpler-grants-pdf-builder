@@ -347,6 +347,7 @@ class SubsectionEditForm(forms.ModelForm):
 
         if (
             self.instance.pk
+            and self.instance.section_id
             and self.instance.section.is_introduction
             and not self.instance.tag
         ):

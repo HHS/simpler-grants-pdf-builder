@@ -23,8 +23,14 @@ def prepare_editable_introduction(soup, policy="generated"):
     block, matching the cleared FY27 master. Reimports need a uniquely bounded
     introduction, not a second fiscal-year inference.
     """
-    from .content_processing import ContentProcessingError, metadata_block_fields
+    from .content_processing import (
+        ContentProcessingError,
+        _looks_like_metadata_line,
+        _metadata_block,
+        metadata_block_fields,
+    )
 
+    soup.body.attrs.pop(CONTENT_MODE_ATTRIBUTE, None)
     if policy == "generated":
         return soup
     headings = soup.body.find_all(["h1", "h2", "h3", "h4", "h5", "h6"], recursive=False)
@@ -35,9 +41,18 @@ def prepare_editable_introduction(soup, policy="generated"):
     ) < headings.index(steps[0])
     if selected:
         intro, step = intros[0], steps[0]
+        prior_headings = [
+            h
+            for h in headings[: headings.index(intro)]
+            if metadata_block_fields(h) is None
+        ]
         between = list(intro.find_next_siblings())
         between = between[: between.index(step)]
-        has_body = any(t.get_text(strip=True) or t.find("img") for t in between)
+        has_body = any(
+            (t.get_text(strip=True) or t.find("img"))
+            and t.name not in {"h1", "h2", "h3", "h4", "h5", "h6"}
+            for t in between
+        )
         basic = next(
             (
                 h
@@ -53,11 +68,29 @@ def prepare_editable_introduction(soup, policy="generated"):
             and introductory_heading_name(basic) == "basic information"
             and any(headings.index(h) > headings.index(step) for h in metadata)
         )
+        consumed_metadata_ids = {
+            id(element) for h in headings for element in _metadata_block(h)[1]
+        }
+        unsafe_prelude = any(
+            id(tag) not in consumed_metadata_ids
+            and not _looks_like_metadata_line(tag)
+            and (tag.get_text(strip=True) or tag.find("img"))
+            for tag in intro.find_previous_siblings()
+        )
+        if (fy27 or policy == "required") and (unsafe_prelude or prior_headings):
+            raise ContentProcessingError(
+                "Move introductory prose beneath the Before You Get Started heading and keep other content in its main section before reimporting. Builder cannot safely attach the content before that heading. Your saved content has not changed.",
+                code="introductory_content_unsafe",
+            )
         # An intervening peer/higher heading would make the body boundary unsafe.
-        safe = has_body and not any(
-            t.name in {"h1", "h2", "h3", "h4", "h5", "h6"}
-            and int(t.name[1]) <= int(intro.name[1])
-            for t in between
+        safe = (
+            has_body
+            and not prior_headings
+            and not any(
+                t.name in {"h1", "h2", "h3", "h4", "h5", "h6"}
+                and int(t.name[1]) <= int(intro.name[1])
+                for t in between
+            )
         )
         selected = safe and (policy == "required" or fy27)
     if not selected:

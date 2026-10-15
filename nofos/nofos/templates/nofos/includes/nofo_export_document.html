@@ -25,11 +25,11 @@
   {% endif %}
   <!-- Render each section with all its subsections -->
   {% for section in nofo.sections.all|dictsort:"order" %}
-    <section id="{% if section.is_introduction %}{{ section.html_id }}{% else %}section--{{ section.html_id }}{% endif %}" class="section section--{{ section.step_number }} {% if section.step_number > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
+    <section id="{% if section.is_introduction %}{{ section.html_id }}{% else %}section--{{ section.html_id }}{% endif %}" class="section section--{% if nofo.has_imported_introduction %}{{ section.step_number }}{% else %}{{ forloop.counter }}{% endif %} {% if nofo.has_imported_introduction and section.step_number > 7 or not nofo.has_imported_introduction and forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
       {% if not section.is_introduction %}
       <h2 id="{{ section.html_id|truncate_heading_ids_for_docx }}" >{{ section.name }}</h2>
       {% else %}<h2 id="section--before-you-begin--heading">Before you get started</h2>{% endif %}
-      {% if section.is_first_main_section %}
+      {% if nofo.has_imported_introduction and section.is_first_main_section or not nofo.has_imported_introduction and forloop.first %}
         <div>
           <h3>Basic information</h3>
           <div class="styled-subsection-body">
@@ -53,7 +53,7 @@
       <div class="section--content">
         {% for subsection in section.subsections.all|dictsort:"order" %}
           {% with subname=subsection.name|default_if_none:""|lower %}
-            {% if section.is_first_main_section and forloop.first and subname == 'basic information' %}
+            {% if nofo.has_imported_introduction and section.is_first_main_section and forloop.first and subname == 'basic information' or not nofo.has_imported_introduction and forloop.parentloop.first and forloop.first and subname == 'basic information' %}
               {# Ignore "Basic information" subsection #}
             {% else %}
               {# skip "hidden" subsections #}

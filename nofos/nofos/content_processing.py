@@ -2067,7 +2067,7 @@ def get_sections_and_subsections_from_soup(
     if imported_introduction(soup):
         for index, section in enumerate(parsed):
             section["order"] = index
-            if index == 0:
+            if section.get("html_id") == INTRO_ANCHOR:
                 section.update(
                     name="Before you get started",
                     role="introduction",
@@ -2094,6 +2094,9 @@ def process_document_content(
     """
     cleaned_content = replace_links(replace_chars(html))
     soup = BeautifulSoup(cleaned_content, "html.parser")
+    # Private processing state is server-derived, never an input format signal.
+    if soup.body:
+        soup.body.attrs.pop("data-nofo-introductory-content-mode", None)
     if builder_import:
         from .introductory_page import (
             capture_introductory_page,

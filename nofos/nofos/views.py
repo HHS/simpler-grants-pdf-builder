@@ -222,6 +222,7 @@ def duplicate_nofo(original_nofo, is_successor=False, duplicated_by=None):
         new_sections = [
             Section(
                 **model_to_dict(original_section, exclude=["id", "nofo"]),
+                role=original_section.role,
                 nofo=new_nofo,
             )
             for original_section in original_sections
@@ -859,7 +860,8 @@ class BaseNofoImportView(View):
                     else (
                         "detect"
                         if isinstance(self, NofosImportNewView)
-                        and getattr(uploaded_file, "name", "").lower().endswith(".docx")
+                        and getattr(uploaded_file, "content_type", "")
+                        == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                         else "generated"
                     )
                 ),
@@ -2540,7 +2542,11 @@ def _order_trailing_sections(nofo):
     Called while the parent NOFO row is locked. Temporary, unused order values
     avoid colliding with the unique (nofo, order) constraint during reordering.
     """
-    sections = list(nofo.sections.select_for_update().order_by("order", "pk"))
+    sections = list(
+        nofo.sections.exclude(role="introduction")
+        .select_for_update()
+        .order_by("order", "pk")
+    )
     tail_ids = ("endnotes", "appendix", "modifications")
 
     def tail_id(section):
