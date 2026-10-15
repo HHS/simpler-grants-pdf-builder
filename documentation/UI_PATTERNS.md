@@ -231,9 +231,14 @@ guarantee accuracy or establish compliance, accessibility, or clearance.
 | High | `usa-alert--info` (blue) | Informational context for interpreting estimates |
 | Moderate | `usa-alert--info` (blue) | Informational context for interpreting estimates |
 | Low | `usa-alert--warning` (yellow) | Caution about estimates that need careful interpretation |
+| Not assessed | `usa-alert--info` (blue) | Extraction scope without an invented confidence rating |
 
-The supported levels are high, moderate, and low; there is no “extremely low”
-level. Missing or unrecognized levels retain warning styling as a fallback.
+The supported assessed levels are high, moderate, and low; there is no
+“extremely low” level. Missing or unrecognized engine ratings are unassessed,
+not low. The report uses “What this report includes” with scope guidance and
+an explicit statement that reliability has not been assessed. Metric cards say
+“Reliability not assessed” instead of inheriting another metric's rating.
+Generic PDF extraction retains its explicit low-confidence policy.
 The presentation does not change how reliability is calculated.
 
 [USWDS alert guidance](https://designsystem.digital.gov/components/alert/#accessibility-guidance)

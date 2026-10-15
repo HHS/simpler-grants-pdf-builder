@@ -22,7 +22,10 @@
         <div class="usa-alert usa-alert--info margin-y-3" role="note">
           <div class="usa-alert__body">
             <h2 class="usa-alert__heading">How to read these results</h2>
-            <p class="usa-alert__text" id="readability-disclaimer">These are estimates, not a compliance, accessibility, or clearance determination. NOFO Builder measures its own drafts from structured HTML; this report measures text {% if source_word %}converted from Word to HTML{% else %}extracted from a PDF{% endif %}. Scores can differ even for the same document.</p>
+            <div class="usa-alert__text" id="readability-disclaimer">
+              <p>These metrics can help you identify opportunities to improve your document’s readability. They are not a compliance, accessibility, or clearance determination.</p>
+              <p>The tool uses shared metric formulas for Word documents, PDFs, and Builder drafts. Scores can differ because each format can preserve different text, sentence boundaries, and paragraph structure. When tracking revisions, use the same format and analysis method for a more consistent comparison.</p>
+            </div>
           </div>
         </div>
 
@@ -42,10 +45,11 @@
               {% endif %}{% endif %}{% endif %}
             </p>
           {% endif %}
-          <div class="usa-alert usa-alert--{% if report.reliability == 'high' or report.reliability == 'moderate' %}info{% else %}warning{% endif %} readability-reliability" role="note" id="readability-reliability">
+          <div class="usa-alert usa-alert--{% if report.reliability == 'low' %}warning{% else %}info{% endif %} readability-reliability" role="note" id="readability-reliability">
             <div class="usa-alert__body">
-              <h3 class="usa-alert__heading">Reliability of these estimates: {{ report.reliability|capfirst }}</h3>
-              <p class="usa-alert__text">{% if source_word %}Word conversion can omit or change content, including text boxes, headers, footers and images. Review the source Word document when interpreting these estimates. Word, PDF and Builder draft scores can differ.{% elif report.profile == 'generic' %}PDF tags were unavailable, so the text order was inferred from page layout. Treat every value as a low-reliability estimate.{% else %}Usable PDF tags helped recover text order, but extraction can still omit or rearrange content. Review the source PDF when interpreting these estimates.{% endif %}</p>
+              <h3 class="usa-alert__heading">{% if report.reliability %}Reliability of these estimates: {{ report.reliability|capfirst }}{% else %}What this report includes{% endif %}</h3>
+              <p class="usa-alert__text">{% if source_word %}This report measures text recovered from your Word document. Conversion can omit or change content, including text boxes, headers, footers, and images. Template instructions and draft options may be included. Review the measurement scope when interpreting your results.{% elif report.profile == 'generic' %}PDF tags were unavailable, so the text order was inferred from page layout. Treat every value as a low-reliability estimate.{% else %}Usable PDF tags helped recover text order, but extraction can still omit or rearrange content. Review the source PDF when interpreting these estimates.{% endif %}</p>
+              {% if not report.reliability %}<p class="usa-alert__text">Reliability has not been assessed for these estimates.</p>{% endif %}
             </div>
           </div>
         </section>
@@ -58,7 +62,7 @@
                 <h3 class="font-heading-md margin-y-0">{{ metric.label }}</h3>
                 <p class="readability-metric-value margin-y-1">{{ metric.value }}</p>
                 <p class="margin-y-0">{{ metric.explanation }}</p>
-                <p class="text-base margin-bottom-0">{{ metric.status|capfirst }}{% if metric.status != 'Unavailable' %} · {{ metric.reliability|capfirst }} reliability{% endif %}</p>
+                <p class="text-base margin-bottom-0">{{ metric.status|capfirst }}{% if metric.status != 'Unavailable' %} · {% if metric.reliability == 'unknown' %}Reliability not assessed{% else %}{{ metric.reliability|capfirst }} reliability{% endif %}{% endif %}</p>
               </div>
             {% endfor %}
           </div>
@@ -84,11 +88,11 @@
       </article>
     {% else %}
       <h1 class="font-heading-xl">Check a document’s readability</h1>
-      <p class="usa-intro">Upload an HHS notice of funding opportunity to get readability estimates.</p>
+      <p class="usa-intro">Upload an HHS notice of funding opportunity{% if word_uploads_allowed %} as a PDF or Word (.docx) document{% else %} as a PDF{% endif %} to get readability estimates.</p>
 
       <form method="post" enctype="multipart/form-data" class="usa-form readability-form" id="pdf-readability-form">
         {% csrf_token %}
-        {% include "includes/file_input.html" with id="pdf" label="Choose a PDF or Word document" hint=upload_hint accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" error=error only %}
+        {% include "includes/file_input.html" with id="pdf" label=file_label hint=upload_hint accept=file_accept error=error only %}
         <p class="margin-top-2" id="readability-privacy-notice">Only upload documents you’re authorized to share. Your document is processed temporarily on HHS-operated systems; no report history is kept.</p>
         <details class="readability-additional-info margin-top-2">
           <summary><span>How we handle your document</span></summary>
@@ -109,7 +113,7 @@
           <div id="readability-pdf-requirements" class="usa-prose">
           <p>Use a text-based HHS NOFO PDF. Keep the opportunity number, Assistance Listing number, and Grants.gov reference on the first two pages when possible.</p>
           <p>Scanned or image-only pages need OCR before analysis. Untagged PDFs can receive a report, but their estimates have lower reliability.</p>
-          <p>For Word, use an unlocked .docx file with NOFO details near the beginning. Legacy .doc and macro-enabled files are not supported. Word conversion can omit headers, footers, text boxes and images; template instructions and draft options may be counted.</p>
+          {% if word_uploads_allowed %}<p>For Word, use an unlocked .docx file with NOFO details near the beginning. HHS NOFO templates can use placeholder identifiers if they identify the agency, identify themselves as a NOFO template or notice of funding opportunity, and reference Grants.gov. Legacy .doc and macro-enabled files are not supported. Word conversion can omit headers, footers, text boxes and images; template instructions and draft options may be counted.</p>{% endif %}
         </div>
         </details>
       <p class="margin-top-3"><strong>Need help?</strong> Contact your agency’s grants policy office first, or submit a request through the <a class="usa-link usa-link--external" href="https://forms.office.com/r/KH4icQuZ0S" target="_blank" rel="nofollow noopener noreferrer">NOFO Builder Feedback Form<span class="usa-sr-only"> (opens in a new tab)</span></a>.</p>

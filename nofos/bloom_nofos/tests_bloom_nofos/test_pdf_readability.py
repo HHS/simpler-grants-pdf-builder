@@ -60,25 +60,18 @@ REPORT = {
 
 class PdfReadabilityPageTests(TestCase):
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
-    def test_real_word_upload_has_word_scope_and_no_saved_nofo(self):
-        from nofos.models import Nofo
+    def test_public_route_remains_pdf_only_even_when_enabled(self):
         from nofos.tests_nofos.test_word_readability import synthetic_docx
 
-        before = Nofo.objects.count()
-        response = self.client.post(
-            reverse("pdf_readability"),
-            {"pdf": SimpleUploadedFile("synthetic.docx", synthetic_docx())},
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Word readability pilot")
-        self.assertContains(response, "Word documents do not have a fixed page count")
-        self.assertContains(response, "converted from Word to HTML")
-        self.assertContains(response, "Print / Save as PDF")
-        self.assertContains(response, "Copy metrics")
-        self.assertNotContains(response, "Usable PDF tags")
-        self.assertNotContains(response, "words recovered from the PDF")
-        self.assertNotContains(response, "HRSA-26-106")
-        self.assertEqual(Nofo.objects.count(), before)
+        with patch("bloom_nofos.views.analyze_uploaded_pdf") as analyze:
+            response = self.client.post(
+                reverse("pdf_readability"),
+                {"pdf": SimpleUploadedFile("synthetic.docx", synthetic_docx())},
+            )
+        analyze.assert_not_called()
+        self.assertContains(response, "Choose one PDF file", status_code=400)
+        self.assertNotContains(response, "Readability measures", status_code=400)
+        self.assertNotContains(response, 'accept=".pdf,.docx', status_code=400)
         self.assertIn("no-store", response["Cache-Control"])
 
     def setUp(self):
@@ -137,7 +130,7 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, 'for="pdf"')
         self.assertContains(response, "usa-file-input__input")
         self.assertContains(response, 'name="csrfmiddlewaretoken"')
-        self.assertContains(response, "One PDF or Word (.docx) file, up to 15 MB")
+        self.assertContains(response, "One PDF file, up to 15 MB")
         self.assertContains(response, "Upload an HHS notice of funding opportunity")
         self.assertNotContains(response, "Upload one draft NOFO PDF")
         self.assertContains(

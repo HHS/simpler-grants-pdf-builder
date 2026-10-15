@@ -115,7 +115,7 @@ def _safe_result(result, profile_kind: str, page_count: int) -> dict:
     pages_analyzed = (
         pages_extracted if isinstance(pages_extracted, int) else pages_with_text
     )
-    reliability = min(levels, key=reliability_rank.get) if levels else "low"
+    reliability = min(levels, key=reliability_rank.get) if levels else None
     if profile_kind == "generic":
         reliability = "low"
     warnings = []
@@ -123,7 +123,7 @@ def _safe_result(result, profile_kind: str, page_count: int) -> dict:
         warnings.append(
             "This PDF has no usable text tags. Results are low-reliability estimates based on page layout."
         )
-    if pages_with_text < page_count:
+    if profile_kind != "word" and pages_with_text < page_count:
         warnings.append(
             "Some pages have no extractable text, so the results may not cover the full PDF."
         )
@@ -138,7 +138,7 @@ def _safe_result(result, profile_kind: str, page_count: int) -> dict:
         warnings.append(
             "Some sentence fragments were excluded from sentence-based measures."
         )
-    if "adapter_warning" in warning_codes:
+    if "adapter_warning" in warning_codes and profile_kind != "word":
         warnings.append("Some PDF content may not have been recovered reliably.")
     report = {
         "profile": profile_kind,

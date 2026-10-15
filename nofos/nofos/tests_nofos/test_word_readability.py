@@ -101,12 +101,68 @@ class WordReadabilityTests(SimpleTestCase):
         report = analyze_uploaded_pdf(upload)
         self.assertTrue(upload.closed)
         self.assertEqual(report["profile"], "word")
+        self.assertIsNone(report["reliability"])
+        for metric in report["metrics"].values():
+            self.assertIsNone(metric["reliability"])
         self.assertGreater(report["metrics"]["word_count"]["value"], 10)
         self.assertNotIn("pages_total", report)
         self.assertNotIn("pages_analyzed", report)
         self.assertNotIn("HRSA-26-106", str(report))
         self.assertNotIn("Applicants should", str(report))
         self.assertIn("Template instructions", str(report["warnings"]))
+
+    def test_templates_need_compound_hhs_nofo_context_and_distinct_signal(self):
+        from nofos.pdf_format_recognition import recognize_nofo, recognize_word_nofo
+
+        text = (
+            "HHS Notice of Funding Opportunity. Opportunity number: [number]. "
+            "Assistance listing: [listing]. Apply at Grants.gov. "
+            "Applicants should submit a clear plan."
+        )
+        self.path.write_bytes(synthetic_docx(text))
+        self.assertGreater(analyze_word(self.path)["metrics"]["word_count"]["value"], 0)
+        self.assertEqual(recognize_nofo({}, text).status, "unsupported")
+        self.assertEqual(
+            recognize_word_nofo(
+                "HHS-wide NOFO Master Template. See Grants.gov."
+            ).status,
+            "supported",
+        )
+        for missing in ("HHS", "Notice of Funding Opportunity", "Grants.gov"):
+            candidate = text.replace(missing, "")
+            self.assertEqual(recognize_word_nofo(candidate).status, "unsupported")
+        for candidate in (
+            "A personal letter. Grants.gov Grants.gov.",
+            "HHS mentions Grants.gov in a technology report.",
+            "Notice of funding opportunity from a private company. Grants.gov.",
+        ):
+            self.assertEqual(recognize_word_nofo(candidate).status, "unsupported")
+
+    def test_reliability_projection_preserves_supplied_ratings_and_missing_evidence(
+        self,
+    ):
+        from types import SimpleNamespace
+
+        import hhs_nofo_metrics as metrics
+
+        from nofos.pdf_readability_worker import _safe_result
+
+        result = metrics.analyze(
+            metrics.SourceBundle.from_html(
+                b"<p>The agency supports local programs.</p>"
+            ),
+            profile="hhs-nofo-fy27-html@0.4.0",
+        ).to_dict()
+        result["coverage"].update(pages_extracted=1, pages_with_text=1)
+        wrapped = SimpleNamespace(to_dict=lambda: result)
+        self.assertIsNone(_safe_result(wrapped, "tagged", 1)["reliability"])
+        self.assertEqual(_safe_result(wrapped, "generic", 1)["reliability"], "low")
+        for level in ("high", "moderate", "low"):
+            result["metrics"]["word_count"]["reliability"] = {"level": level}
+            report = _safe_result(wrapped, "tagged", 1)
+            self.assertEqual(report["reliability"], level)
+            self.assertEqual(report["metrics"]["word_count"]["reliability"], level)
+            self.assertIsNone(report["metrics"]["words_per_sentence"]["reliability"])
 
     def test_wrong_type_corrupt_macro_empty_and_non_nofo_are_safe(self):
         cases = (

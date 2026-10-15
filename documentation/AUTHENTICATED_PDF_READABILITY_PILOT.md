@@ -38,6 +38,8 @@ handler is installed before the nested CSRF check reads the body.
 ## Supported documents and processing
 
 The same authorized form also accepts Word `.docx` documents under #1111.
+Word support is restricted to this route. Public `/readability/` remains PDF-only
+and keeps its independent access switch; #1111 does not broaden access.
 Permissions, participant groups, feature switches and content-free recording
 settings keep their existing names and behavior. Word handling, archive bounds,
 measurement scope and known conversion limits are documented in

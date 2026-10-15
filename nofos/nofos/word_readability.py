@@ -10,7 +10,7 @@ import mammoth
 from bs4 import BeautifulSoup
 
 from .import_transforms import _word_xml, transform_word_document
-from .pdf_format_recognition import recognize_nofo
+from .pdf_format_recognition import recognize_word_nofo
 
 MAX_EXPANDED_BYTES = 45 * 1024 * 1024
 MAX_ZIP_ENTRIES = 2000
@@ -90,7 +90,7 @@ def word_html(path: Path) -> tuple[str, bool]:
             raise ValueError("word_no_text")
         # DOCX has no stable page boundaries. Reuse the same loose recognition
         # signals over a bounded leading text window, not a fictional page count.
-        decision = recognize_nofo({}, text[:50000])
+        decision = recognize_word_nofo(text[:50000])
         if decision.status != "supported":
             raise ValueError("word_format_unsupported")
         return html, bool(converted.messages)

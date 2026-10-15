@@ -1,7 +1,6 @@
 # PDF readability pilot
 
-This pilot provides an unlinked `/readability/` route: upload one PDF or Word
-`.docx` document, receive an
+This pilot provides an unlinked `/readability/` route: upload one PDF, receive an
 immediate readability report, and use the browser's **Print / save as PDF** dialog
 to keep a copy. It does not create a NOFO or saved report history. An unlinked URL
 is still public; direct distribution is not access control.
@@ -16,8 +15,9 @@ history. Browser **Print / save as PDF** saves a local copy, not server-side his
 
 ## Word uploads (#1111)
 
-The same form and authorized `/nofos/readability/` route also accept unlocked
-`.docx` files. Existing flag and permission names retain `PDF` for compatibility;
+Only the authorized `/nofos/readability/` route also accepts unlocked `.docx`
+files. The existing public `/readability/` route remains PDF-only, even when its
+independent flag is enabled. Existing flag and permission names retain `PDF` for compatibility;
 their values and access checks are unchanged. This addition does not enable a
 route or authorize a new deployment/document classification. Legacy `.doc`,
 macro-enabled documents and other file types are not supported.
@@ -33,10 +33,14 @@ External file access and embedded style maps are disabled, and images are not
 loaded. The existing pure Word table transform is reused; the saved-NOFO import
 workflow, its custom style map and instruction-box cleanup are not invoked.
 
-Word recognition reuses the PDF pilot's loose signal policy over the first
-50,000 characters of converted text. It does not claim a stable Word page count
-or exact template recognition. Word does not use the PDF metadata agency signal,
-so two of the remaining distinct text signals are needed. The existing HTML
+Word recognition reuses the PDF pilot's loose signals over the first
+50,000 characters of converted text. For unfilled templates, one additional
+compound signal requires both an HHS agency name (including the explicit
+“HHS-wide” alias) and “Notice of funding opportunity” or “NOFO [master] template.”
+A distinct existing signal such as Grants.gov is still required. A filename,
+agency name alone or repeated signal is insufficient. PDF recognition is
+unchanged. This is modest abuse deterrence, not exact template validation.
+It does not claim a stable Word page count. The existing HTML
 profile `hhs-nofo-fy27-html@0.4.0` measures UTF-8 converted body HTML with the
 pinned metrics package; no formula or package dependency changes. No intermediate
 PDF, saved NOFO or report-history record is created.
@@ -48,6 +52,10 @@ according to the existing HTML profile. Word, PDF and Builder draft scores can
 differ because they measure different recovered content. Public output contains
 only the existing safe metric projection, fixed warnings and scope counts, never
 converted document text. Conversion messages are reduced to a fixed warning.
+When the engine supplies no reliability rating, reports and metric cards say
+that reliability has not been assessed. Missing evidence is not converted into
+low (or high) confidence, nor inherited from a different metric. Supplied PDF
+ratings and the generic PDF adapter's explicit low-confidence policy remain.
 
 Both formats share the existing 15 MiB upload limit, 15-second deadline, global
 analysis slot, filtered subprocess environment and Linux resource limits. Word
