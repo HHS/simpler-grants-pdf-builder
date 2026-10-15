@@ -48,6 +48,12 @@ they do not automatically retry an upload.
 
 ## The codes
 
+### `IMPORT-INTRODUCTION-STRUCTURE`
+
+**HTTP status:** 422
+
+An editable-introduction record could not map the replacement document's introduction safely. Nothing is overwritten or archived. Keep one Before You Begin or Before You Get Started heading and its content before Step 1, use Heading 1 or Heading 2 for the main steps, and lower levels for child headings. Save and reimport. Missing/repeated headings, empty content and unsafe mixed levels are blocked rather than replaced with generated text.
+
 ### `IMPORT-NO-FILE`
 
 **HTTP status:** 400

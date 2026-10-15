@@ -8,6 +8,93 @@ HEADING_NAMES = {
     "before you begin": "legacy",
     "before you get started": "get_started",
 }
+CONTENT_MODE_ATTRIBUTE = "data-nofo-introductory-content-mode"
+
+
+def imported_introduction(soup):
+    return bool(soup.body and soup.body.get(CONTENT_MODE_ATTRIBUTE) == "imported")
+
+
+def prepare_editable_introduction(soup, policy="generated"):
+    """Opt in only a new, recognized Word structure, or safely reimport a saved mode.
+
+    Names identify a wording family, not a template version. The new-record gate
+    also requires Step 1 / Basic information and a trailing recognized Metadata
+    block, matching the cleared FY27 master. Reimports need a uniquely bounded
+    introduction, not a second fiscal-year inference.
+    """
+    from .content_processing import ContentProcessingError, metadata_block_fields
+
+    if policy == "generated":
+        return soup
+    headings = soup.body.find_all(["h1", "h2", "h3", "h4", "h5", "h6"], recursive=False)
+    intros = [h for h in headings if introductory_heading_name(h) in HEADING_NAMES]
+    steps = [h for h in headings if introductory_heading_name(h).startswith("step 1:")]
+    selected = len(intros) == len(steps) == 1 and headings.index(
+        intros[0]
+    ) < headings.index(steps[0])
+    if selected:
+        intro, step = intros[0], steps[0]
+        between = list(intro.find_next_siblings())
+        between = between[: between.index(step)]
+        has_body = any(t.get_text(strip=True) or t.find("img") for t in between)
+        basic = next(
+            (
+                h
+                for h in step.find_next_siblings()
+                if h.name in {"h1", "h2", "h3", "h4", "h5", "h6"}
+            ),
+            None,
+        )
+        metadata = [h for h in headings if metadata_block_fields(h) is not None]
+        fy27 = (
+            introductory_heading_name(intro) == "before you get started"
+            and basic is not None
+            and introductory_heading_name(basic) == "basic information"
+            and any(headings.index(h) > headings.index(step) for h in metadata)
+        )
+        # An intervening peer/higher heading would make the body boundary unsafe.
+        safe = has_body and not any(
+            t.name in {"h1", "h2", "h3", "h4", "h5", "h6"}
+            and int(t.name[1]) <= int(intro.name[1])
+            for t in between
+        )
+        selected = safe and (policy == "required" or fy27)
+    if not selected:
+        if policy == "required":
+            raise ContentProcessingError(
+                "This NOFO keeps its introductory text as editable content. The new document must contain one Before You Begin or Before You Get Started heading, its content, and Step 1. Restore that structure before reimporting. Your saved content has not changed.",
+                code="introductory_content_unsafe",
+            )
+        return soup
+    # Normalize only the retained introduction to the main-section hierarchy.
+    # Its actual child headings keep their relative levels through normal parsing.
+    target_level = int(step.name[1])
+    if target_level not in (1, 2):
+        if policy == "required":
+            raise ContentProcessingError(
+                "Use Heading 1 or Heading 2 for Step 1 before reimporting. Your saved content has not changed.",
+                code="introductory_content_unsafe",
+            )
+        return soup
+    delta = target_level - int(intro.name[1])
+    for tag in [intro] + [
+        h
+        for node in between
+        for h in ([node] + node.find_all(["h1", "h2", "h3", "h4", "h5", "h6"]))
+        if h.name in {"h1", "h2", "h3", "h4", "h5", "h6"}
+    ]:
+        level = int(tag.name[1]) + delta
+        if not 1 <= level <= 6:
+            raise ContentProcessingError(
+                "The introductory headings cannot be mapped safely. Use consecutive heading levels before reimporting. Your saved content has not changed.",
+                code="introductory_content_unsafe",
+            )
+        tag.name = f"h{level}"
+    intro.string = "Before you get started"
+    intro["id"] = INTRO_ANCHOR
+    soup.body[CONTENT_MODE_ATTRIBUTE] = "imported"
+    return soup
 
 
 def introductory_heading_name(tag):

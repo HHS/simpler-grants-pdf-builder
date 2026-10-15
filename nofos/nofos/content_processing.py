@@ -1951,6 +1951,10 @@ def decompose_before_you_begin_section(soup):
 
     Returns the list of extracted tags (the heading plus its section content).
     """
+    from .introductory_page import imported_introduction
+
+    if imported_introduction(soup):
+        return []
     removed = []
 
     headings = [
@@ -2055,9 +2059,22 @@ def get_sections_and_subsections_from_soup(
         raise ContentProcessingError(
             "That file does not contain a NOFO.", code="no_sections"
         )
-    return get_subsections_from_sections(
+    parsed = get_subsections_from_sections(
         sections, top_heading_level, consume_scoped_tagline=consume_scoped_tagline
     )
+    from .introductory_page import INTRO_ANCHOR, imported_introduction
+
+    if imported_introduction(soup):
+        for index, section in enumerate(parsed):
+            section["order"] = index
+            if index == 0:
+                section.update(
+                    name="Before you get started",
+                    role="introduction",
+                    html_id=INTRO_ANCHOR,
+                    has_section_page=False,
+                )
+    return parsed
 
 
 def process_document_content(
@@ -2066,6 +2083,7 @@ def process_document_content(
     section_parser=None,
     builder_import=False,
     extract_scoped_tagline=False,
+    editable_intro="generated",
     debug_capture=None,
 ):
     """Normalize HTML and parse sections without a request, upload or ORM record.
@@ -2077,9 +2095,13 @@ def process_document_content(
     cleaned_content = replace_links(replace_chars(html))
     soup = BeautifulSoup(cleaned_content, "html.parser")
     if builder_import:
-        from .introductory_page import capture_introductory_page
+        from .introductory_page import (
+            capture_introductory_page,
+            prepare_editable_introduction,
+        )
 
         soup = capture_introductory_page(soup)
+        soup = prepare_editable_introduction(soup, editable_intro)
     # Preserve the pre-pass before selecting the main section heading level.
     decompose_before_you_begin_section(soup)
     top_heading_level = resolve_section_heading_level(

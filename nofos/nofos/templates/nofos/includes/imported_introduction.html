@@ -1,0 +1,18 @@
+{% load martortags introductory_page_links add_classes_to_tables replace_unicode_with_icon add_footnote_ids add_classes_to_paragraphs add_captions_to_tables add_classes_to_lists convert_paragraphs_to_hrs %}
+<section id="section--before-you-begin" class="before-you-begin before-you-begin--imported section--no-section-page">
+  <div class="section--before-you-begin--icon">
+    {% if "thin" in nofo.icon_style %}{% include "includes/icons/thin/0-before.svg" %}{% else %}{% include "includes/icons/0-before.svg" %}{% endif %}
+  </div>
+  <h2 id="section--before-you-begin--heading">Before you get started</h2>
+  <div class="section--content{% if section.html_class %} {{ section.html_class }}{% endif %}">
+    {% for subsection in section.subsections.all|dictsort:"order" %}
+      {% if subsection.callout_box %}
+        {% include "includes/callout_box.html" with subsection=subsection nofo=nofo break_colons=False only %}
+      {% else %}
+        {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}{% include "includes/heading.html" with tag=tag content=content id=id class=class only %}{% endwith %}
+        {{ subsection.body|safe_markdown|introductory_page_links:nofo|add_classes_to_tables|replace_unicode_with_icon|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
+      {% endif %}
+    {% endfor %}
+    {% if section.needs_navigation_help %}{% include "nofos/includes/introduction_navigation_help.html" with nofo=nofo only %}{% endif %}
+  </div>
+</section>

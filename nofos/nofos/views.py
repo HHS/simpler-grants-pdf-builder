@@ -662,6 +662,7 @@ SHARED_PARSE_VALIDATION_ERROR_CODES = {
 # carry their own COMPOSER-* / COMPARE-* codes, so naming a document problem
 # for them is separate work.
 BUILDER_PARSE_VALIDATION_ERROR_CODES = {
+    "introductory_content_unsafe": "IMPORT-INTRODUCTION-STRUCTURE",
     "no_file": "IMPORT-NO-FILE",
     "unsupported_file_type": "IMPORT-FILE-TYPE",
     "no_sections": "IMPORT-NO-SECTIONS",
@@ -671,6 +672,7 @@ BUILDER_PARSE_VALIDATION_ERROR_CODES = {
 # log line for the metrics trail, but they are not defects, so they don't page
 # anyone at error level. IMPORT-DOCX-CONVERSION stays at error level, as before.
 WARNING_LEVEL_IMPORT_ERROR_CODES = {
+    "IMPORT-INTRODUCTION-STRUCTURE",
     "IMPORT-AMBIGUOUS-HEADINGS",
     "IMPORT-NO-FILE",
     "IMPORT-FILE-TYPE",
@@ -848,6 +850,19 @@ class BaseNofoImportView(View):
                     self, (NofosImportNewView, NofosImportOverwriteView)
                 ),
                 extract_scoped_tagline=self.extract_scoped_tagline,
+                editable_intro=(
+                    "required"
+                    if self.is_reimport
+                    and getattr(
+                        getattr(self, "nofo", None), "has_imported_introduction", False
+                    )
+                    else (
+                        "detect"
+                        if isinstance(self, NofosImportNewView)
+                        and getattr(uploaded_file, "name", "").lower().endswith(".docx")
+                        else "generated"
+                    )
+                ),
             )
             soup = content.soup
             sections = content.sections
@@ -1820,6 +1835,14 @@ class NofoEditSubagency2View(BaseNofoEditView):
 class NofoEditBeforeYouBeginPageView(BaseNofoEditView):
     form_class = NofoBeforeYouBeginForm
     template_name = "nofos/nofo_edit_byb.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        nofo = get_object_or_404(Nofo, pk=kwargs.get("pk"))
+        if nofo.has_imported_introduction:
+            raise PermissionDenied(
+                "This NOFO uses editable introductory content. Edit its subsections instead of selecting a template."
+            )
+        return super().dispatch(request, *args, **kwargs)
 
 
 class NofoEditThemeOptionsView(BaseNofoEditView):

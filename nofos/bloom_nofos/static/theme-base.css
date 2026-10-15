@@ -1396,3 +1396,21 @@ section.before-you-begin.before-you-begin--get-started {
   break-before: page;
   page-break-before: always;
 }
+
+/* Imported introductory prose uses ordinary section typography. Only its
+   fixed heading and theme-aware icon receive the introductory treatment. */
+section.before-you-begin--imported {
+  padding-top: 0;
+}
+.before-you-begin--imported > h2 {
+  font-size: 28pt;
+  margin: 10px 0;
+}
+.before-you-begin--imported .section--before-you-begin--icon svg {
+  width: 45px;
+  height: 45px;
+}
+.toc--imported-introduction {
+  font-size: 12pt;
+  font-weight: normal;
+}

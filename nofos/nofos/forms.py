@@ -345,6 +345,16 @@ class SubsectionEditForm(forms.ModelForm):
         if tag and not name:
             self.add_error("name", "Subsection name can’t be empty.")
 
+        if (
+            self.instance.pk
+            and self.instance.section.is_introduction
+            and not self.instance.tag
+        ):
+            if name or tag or cleaned_data.get("callout_box"):
+                raise forms.ValidationError(
+                    "The introductory heading is fixed. Leave this body's title and heading level blank, and edit its content below."
+                )
+
         return cleaned_data
 
 
