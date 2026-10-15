@@ -1399,8 +1399,13 @@ section.before-you-begin.before-you-begin--get-started {
 
 /* Imported introductory prose uses ordinary section typography. Only its
    fixed heading and theme-aware icon receive the introductory treatment. */
-section.before-you-begin--imported {
+section.before-you-begin.before-you-begin--imported {
   padding-top: 0;
+}
+@media screen {
+  .before-you-begin--imported > .section--content {
+    padding: 0;
+  }
 }
 .before-you-begin--imported > h2 {
   font-size: 28pt;

@@ -84,8 +84,8 @@ accessibility conformance.
 
 - Portrait HRSA/solid icon: eight pages, imported body on page 3.
 - Landscape CDC/thin icon: eight pages, imported body on page 3.
-- Long portrait source: twelve pages, intro spanning pages 3-7 without forced
-  shrinking. Step 1 follows on page 8. Introductory footer remains consistent.
+- Long portrait source: eleven pages, intro spanning pages 3-6 without forced
+  shrinking. Step 1 follows on page 7. Introductory footer remains consistent.
 
 PDF pages and navigation annotations are inspected separately from HTML. The
 vendor's test watermarks are expected. Short main sections intentionally leave
@@ -93,7 +93,7 @@ substantial whitespace on section-divider pages.
 
 Parsed actual PDF annotations confirm both Step 2 links land on introductory
 page 3 in short portrait/landscape outputs; in the long output the parent lands
-on page 3 and the authored child heading on page 7. Every introductory page's
+on page 3 and the authored child heading on page 6. Every introductory page's
 extracted footer retains “Before you get started.” Reviewed changed-region
 rasters include compact TOC, both short introductory pages and the multi-page
 continuation; this is not full-document visual clearance or an accessibility
