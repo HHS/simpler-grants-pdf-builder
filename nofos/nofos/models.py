@@ -2,6 +2,7 @@ import uuid
 
 import cssutils
 from bloom_nofos.middleware import get_current_user
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator
@@ -11,6 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateformat import format
 from martor.models import MartorField
+from martor.utils import markdownify
 
 from .utils import add_html_id_to_subsection
 
@@ -726,9 +728,32 @@ class Section(BaseSection):
     def needs_navigation_help(self):
         if not self.is_introduction:
             return False
-        text = " ".join(
-            subsection.body for subsection in self.subsections.all()
-        ).casefold()
+        # Match what readers see, not Markdown delimiters or link destinations.
+        visible = []
+        for subsection in self.subsections.all():
+            html = BeautifulSoup(markdownify(subsection.body), "html.parser")
+            # Separate blocks/line breaks without splitting formatted words.
+            for tag in html.find_all(
+                [
+                    "p",
+                    "div",
+                    "li",
+                    "br",
+                    "td",
+                    "th",
+                    "blockquote",
+                    "h1",
+                    "h2",
+                    "h3",
+                    "h4",
+                    "h5",
+                    "h6",
+                ]
+            ):
+                tag.insert_before(" ")
+                tag.insert_after(" ")
+            visible.append(html.get_text())
+        text = " ".join(" ".join(visible).split()).casefold()
         return not (
             "adobe reader" in text
             and any(

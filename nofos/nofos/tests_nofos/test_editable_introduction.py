@@ -548,6 +548,38 @@ class EditableIntroductionWorkflowTests(TestCase):
                 self.assertNotIn("If you believe you are a good candidate", html)
                 self.assertEqual(html.count("Opdiv: HRSA"), 1)
 
+    def test_formatted_authored_guidance_does_not_add_a_duplicate_callout(self):
+        nofo = self.create_document()
+        intro = nofo.sections.first()
+        body = intro.subsections.first()
+        variants = (
+            "In Adobe **Reader**, press Alt + Left Arrow on your keyboard.",
+            "In *Adobe* Reader, press Alt + Left Arrow on your keyboard.",
+            "In [Adobe Reader](https://example.org/reader), press Alt + Left Arrow.",
+            "In Adobe <strong>Reader</strong>, press Alt + Left Arrow.",
+            "In Adobe Rea<strong>der</strong>, press Alt + Left Arrow.",
+            "In Adobe\u00a0  Reader, press Alt + Left\nArrow on your keyboard.",
+            "<p>In Adobe<br>Reader, press Alt + Left Arrow.</p>",
+        )
+        for text in variants:
+            with self.subTest(text=text):
+                body.body = text
+                body.save()
+                self.assertFalse(intro.needs_navigation_help)
+                page = self.client.get(reverse("nofos:nofo_view", args=[nofo.pk]))
+                self.assertNotContains(page, "callout-box--keyboard")
+                body.refresh_from_db()
+                self.assertEqual(body.body, text)
+        # URL/title attributes are not visible guidance and must not suppress it.
+        body.body = '[Instructions](https://example.org/ "Adobe Reader keyboard")'
+        body.save()
+        self.assertTrue(intro.needs_navigation_help)
+        self.assertContains(
+            self.client.get(reverse("nofos:nofo_view", args=[nofo.pk])),
+            "callout-box--keyboard",
+            count=1,
+        )
+
     def test_metadata_edits_do_not_rewrite_source_body(self):
         nofo = self.create_document()
         before = list(nofo.sections.first().subsections.values_list("body", flat=True))

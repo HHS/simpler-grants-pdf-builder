@@ -76,7 +76,7 @@ reordering. The shared BaseSection ordering fallback is not changed.
 
 The optional callout is suppressed if authored introductory content includes
 Adobe Reader and either keyboard, left arrow or left-arrow wording. This is a
-bounded duplicate-guidance heuristic; authored prose is never deleted. The
+bounded duplicate-guidance heuristic applied to rendered visible text, with whitespace normalized. Emphasis and link labels count as text; link destinations and HTML attributes do not. Authored prose is never deleted. The
 generated wording explicitly refers to viewing the PDF in Adobe Reader, so it
 does not promise those shortcuts in the HTML browser. It is outside editable
 subsections and follows the source content. Imported notes, tables, bookmarks
