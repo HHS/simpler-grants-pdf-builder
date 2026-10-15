@@ -59,6 +59,28 @@ REPORT = {
 
 
 class PdfReadabilityPageTests(TestCase):
+    @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
+    def test_real_word_upload_has_word_scope_and_no_saved_nofo(self):
+        from nofos.models import Nofo
+        from nofos.tests_nofos.test_word_readability import synthetic_docx
+
+        before = Nofo.objects.count()
+        response = self.client.post(
+            reverse("pdf_readability"),
+            {"pdf": SimpleUploadedFile("synthetic.docx", synthetic_docx())},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Word readability pilot")
+        self.assertContains(response, "Word documents do not have a fixed page count")
+        self.assertContains(response, "converted from Word to HTML")
+        self.assertContains(response, "Print / Save as PDF")
+        self.assertContains(response, "Copy metrics")
+        self.assertNotContains(response, "Usable PDF tags")
+        self.assertNotContains(response, "words recovered from the PDF")
+        self.assertNotContains(response, "HRSA-26-106")
+        self.assertEqual(Nofo.objects.count(), before)
+        self.assertIn("no-store", response["Cache-Control"])
+
     def setUp(self):
         self.url = reverse("pdf_readability")
 
@@ -115,7 +137,7 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, 'for="pdf"')
         self.assertContains(response, "usa-file-input__input")
         self.assertContains(response, 'name="csrfmiddlewaretoken"')
-        self.assertContains(response, "One PDF, up to 15 MB")
+        self.assertContains(response, "One PDF or Word (.docx) file, up to 15 MB")
         self.assertContains(response, "Upload an HHS notice of funding opportunity")
         self.assertNotContains(response, "Upload one draft NOFO PDF")
         self.assertContains(
@@ -136,14 +158,14 @@ class PdfReadabilityPageTests(TestCase):
         response = self.client.get(self.url)
         content = response.content.decode()
         self.assertContains(response, 'id="readability-privacy-notice"')
-        self.assertContains(response, "How we handle your PDF")
+        self.assertContains(response, "How we handle your document")
         self.assertContains(response, "optical character recognition (OCR)")
         self.assertContains(
-            response, "<summary><span>PDF requirements</span></summary>", html=True
+            response, "<summary><span>Document requirements</span></summary>", html=True
         )
         self.assertContains(
             response,
-            "<summary><span>How we handle your PDF</span></summary>",
+            "<summary><span>How we handle your document</span></summary>",
             html=True,
         )
         self.assertLess(
@@ -155,12 +177,12 @@ class PdfReadabilityPageTests(TestCase):
         )
         self.assertContains(
             response,
-            "Your PDF is processed temporarily on HHS-operated systems; "
+            "Your document is processed temporarily on HHS-operated systems; "
             "no report history is kept.",
         )
         self.assertContains(
             response,
-            "Your PDF isn’t sent to any outside service or added to NOFO Builder.",
+            "Your document isn’t sent to any outside service or added to NOFO Builder.",
         )
         self.assertContains(
             response,
@@ -260,7 +282,7 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "Copy metrics")
         self.assertContains(
             response,
-            '<a class="usa-link text-bold" href="/readability/">Analyze another PDF</a>',
+            '<a class="usa-link text-bold" href="/readability/">Analyze another document</a>',
             html=True,
         )
         self.assertNotContains(

@@ -7,7 +7,7 @@ const { runInNewContext } = require('node:vm');
 const source = readFileSync(join(__dirname,
   '../../nofos/bloom_nofos/static/js/pdf_readability.js'), 'utf8');
 
-function setup({ form = true, error = false, report = false, valid = true,
+function setup({ form = true, error = false, report = false, word = false, valid = true,
   clipboard = true, clipboardRejects = false, notesOpen = true, fileSelected = true } = {}) {
   const listeners = {};
   const submitButton = { disabled: false };
@@ -42,6 +42,7 @@ function setup({ form = true, error = false, report = false, valid = true,
     elements['readability-copy-status'] = copyStatus;
     elements['readability-copy-fallback'] = fallback;
     Object.assign(elements, {
+      'readability-report-source': node(word ? 'Word readability pilot' : 'PDF readability pilot'),
       'readability-file': node('draft <Q>.pdf'),
       'readability-date': node('September 23, 2026'),
       'readability-version': node('0.5.3'),
@@ -83,7 +84,7 @@ test('valid submission announces progress and prevents a duplicate upload', () =
   const state = setup();
   state.listeners['form:submit']();
   assert.equal(state.submitButton.disabled, true);
-  assert.equal(state.status.textContent, 'Analyzing your PDF…');
+  assert.equal(state.status.textContent, 'Analyzing your document…');
   assert.equal(state.horseClasses.has('is-running'), true);
 });
 
@@ -151,6 +152,12 @@ test('copy includes provenance, scope, every metric and note, and disclaimer', a
   assert.match(state.copiedText, /A layout limitation\.[\s\S]*Excluded fragments\./);
   assert.match(state.copiedText, /Estimates, not a clearance determination/);
   assert.equal(state.copyStatus.textContent, 'Metrics copied to clipboard.');
+});
+
+test('copy identifies Word reports without a PDF source label', async () => {
+  const state = setup({ form: false, report: true, word: true });
+  await state.listeners['copy:click']();
+  assert.match(state.copiedText, /^HHS NOFO Builder: Word readability pilot report/);
 });
 
 for (const mode of ['unavailable', 'denied']) {

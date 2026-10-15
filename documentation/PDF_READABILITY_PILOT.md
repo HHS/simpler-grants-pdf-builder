@@ -1,6 +1,7 @@
 # PDF readability pilot
 
-This pilot provides an unlinked `/readability/` route: upload one PDF, receive an
+This pilot provides an unlinked `/readability/` route: upload one PDF or Word
+`.docx` document, receive an
 immediate readability report, and use the browser's **Print / save as PDF** dialog
 to keep a copy. It does not create a NOFO or saved report history. An unlinked URL
 is still public; direct distribution is not access control.
@@ -12,6 +13,48 @@ outside this pilot and its release epic (#968), must not be exposed through
 `/readability/`, and do not satisfy the pilot's release acceptance criteria.
 Content-free pilot usage monitoring does not store metric results or report
 history. Browser **Print / save as PDF** saves a local copy, not server-side history.
+
+## Word uploads (#1111)
+
+The same form and authorized `/nofos/readability/` route also accept unlocked
+`.docx` files. Existing flag and permission names retain `PDF` for compatibility;
+their values and access checks are unchanged. This addition does not enable a
+route or authorize a new deployment/document classification. Legacy `.doc`,
+macro-enabled documents and other file types are not supported.
+
+The existing isolated worker validates the ZIP container before using the
+already installed Mammoth converter. It permits at most 2,000 entries and
+45 MiB total expanded data, rejects duplicate/encrypted entries, macros and
+DTD/entity declarations in every part regardless of extension, and requires the
+root officeDocument relationship to select the validated canonical
+`word/document.xml` part with the normal DOCX main content type. Unusual packages
+with a noncanonical main-part path are deliberately rejected in this first slice.
+External file access and embedded style maps are disabled, and images are not
+loaded. The existing pure Word table transform is reused; the saved-NOFO import
+workflow, its custom style map and instruction-box cleanup are not invoked.
+
+Word recognition reuses the PDF pilot's loose signal policy over the first
+50,000 characters of converted text. It does not claim a stable Word page count
+or exact template recognition. Word does not use the PDF metadata agency signal,
+so two of the remaining distinct text signals are needed. The existing HTML
+profile `hhs-nofo-fy27-html@0.4.0` measures UTF-8 converted body HTML with the
+pinned metrics package; no formula or package dependency changes. No intermediate
+PDF, saved NOFO or report-history record is created.
+
+Reports identify the Word source and explain that conversion may omit headers,
+footers, text boxes and images. Template instructions and draft options that
+convert to text are included. Paragraphs, lists, tables and notes are measured
+according to the existing HTML profile. Word, PDF and Builder draft scores can
+differ because they measure different recovered content. Public output contains
+only the existing safe metric projection, fixed warnings and scope counts, never
+converted document text. Conversion messages are reduced to a fixed warning.
+
+Both formats share the existing 15 MiB upload limit, 15-second deadline, global
+analysis slot, filtered subprocess environment and Linux resource limits. Word
+uses the same temporary-directory cleanup and content-free outcome recording.
+There is no page limit for Word, because there is no reliable pagination here;
+expanded-size, entry, time and memory bounds apply instead. Existing deployment
+safeguards below still apply and are not replaced by ZIP validation.
 
 ## Default-off release
 

@@ -65,6 +65,10 @@ def _metric_rows(report):
     metrics = report.get("metrics") or {}
     rows = []
     for metric_id, label, explanation in PDF_METRIC_PRESENTATION:
+        if metric_id == "word_count" and report.get("profile") == "word":
+            explanation = (
+                "Estimated number of words recovered from the Word conversion."
+            )
         metric = metrics.get(metric_id) or {}
         value = metric.get("value")
         if (
@@ -186,7 +190,7 @@ def _pdf_readability_form(request):
         ),
         "max_upload_mb": max_upload_mb,
         "upload_hint": (
-            f"One PDF, up to {max_upload_mb} MB. "
+            f"One PDF or Word (.docx) file, up to {max_upload_mb} MB. "
             "Scanned PDFs need optical character recognition (OCR) "
             "to make their text selectable before uploading."
         ),
@@ -198,12 +202,12 @@ def _pdf_readability_form(request):
         if getattr(request, "pdf_upload_too_large", False):
             request.pdf_readability_outcome = "too_large"
             context["error"] = (
-                f"This PDF is too large. Choose a file under {context['max_upload_mb']} MB."
+                f"This file is too large. Choose a file under {context['max_upload_mb']} MB."
             )
             status = 413
         elif len(uploads) != 1 or len(request.FILES) != 1:
             request.pdf_readability_outcome = "invalid_pdf"
-            context["error"] = "Choose one PDF file to analyze."
+            context["error"] = "Choose one PDF or Word (.docx) file to analyze."
             status = 400
         else:
             upload = uploads[0]
@@ -232,6 +236,7 @@ def _pdf_readability_form(request):
                         "metric_rows": _metric_rows(report),
                         "filename": _safe_upload_name(upload.name),
                         "analysis_date": timezone.localdate(),
+                        "source_word": report.get("profile") == "word",
                     }
                 )
     response = render(request, "pdf_readability.html", context, status=status)

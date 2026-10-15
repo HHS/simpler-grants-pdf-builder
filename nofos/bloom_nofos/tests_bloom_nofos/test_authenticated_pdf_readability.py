@@ -78,7 +78,7 @@ class AuthenticatedPilotTests(TestCase):
         self.login()
         self.assertEqual(self.client.get(self.public_url).status_code, 503)
         response = self.client.get(self.url)
-        self.assertContains(response, "How we handle your PDF")
+        self.assertContains(response, "How we handle your document")
         self.assertContains(response, "do not include your identity")
         self.assertEqual(response["Cache-Control"], "no-store")
         self.assertIn("noindex", response["X-Robots-Tag"])
@@ -115,6 +115,19 @@ class AuthenticatedPilotTests(TestCase):
             ).status_code,
             403,
         )
+
+    def test_real_word_upload_records_only_content_free_outcome(self):
+        from nofos.tests_nofos.test_word_readability import synthetic_docx
+
+        self.login()
+        response = self.client.post(
+            self.url, {"pdf": SimpleUploadedFile("SECRET-WORD.docx", synthetic_docx())}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Word readability pilot")
+        row = PdfReadabilityAttempt.objects.get()
+        self.assertEqual((row.source, row.outcome), ("authenticated", "success"))
+        self.assertNotIn("SECRET", str(row.__dict__))
 
     def test_csrf_failure_has_no_analysis_or_outcome(self):
         self.login()

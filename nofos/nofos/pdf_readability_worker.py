@@ -108,7 +108,9 @@ def _safe_result(result, profile_kind: str, page_count: int) -> dict:
 
     pages_extracted = coverage.get("pages_extracted")
     pages_with_text = coverage.get("pages_with_text")
-    if not isinstance(pages_with_text, int) or pages_with_text < 1:
+    if profile_kind != "word" and (
+        not isinstance(pages_with_text, int) or pages_with_text < 1
+    ):
         raise ValueError("no_text")
     pages_analyzed = (
         pages_extracted if isinstance(pages_extracted, int) else pages_with_text
@@ -138,7 +140,7 @@ def _safe_result(result, profile_kind: str, page_count: int) -> dict:
         )
     if "adapter_warning" in warning_codes:
         warnings.append("Some PDF content may not have been recovered reliably.")
-    return {
+    report = {
         "profile": profile_kind,
         "reliability": reliability,
         "pages_analyzed": pages_analyzed,
@@ -149,6 +151,18 @@ def _safe_result(result, profile_kind: str, page_count: int) -> dict:
         "scope": scope,
         "metrics": metrics,
     }
+    if profile_kind == "word":
+        report.pop("pages_analyzed")
+        report.pop("pages_total")
+        report["coverage"] = (
+            "Word body text converted to HTML; page counts are not available."
+        )
+        report["warnings"].append(
+            "Word conversion may omit headers, footers, text boxes, images and other content. "
+            "Template instructions and draft options that convert to text are included. "
+            "Review the Word source when interpreting these estimates."
+        )
+    return report
 
 
 def analyze(
@@ -214,6 +228,29 @@ def _analyze_metrics(source, support: str, page_count: int) -> dict:
     return _safe_result(result, profile_kind, page_count)
 
 
+def analyze_word(path: Path) -> dict:
+    """Measure converted Word text with the existing HTML profile and engine."""
+    import hhs_nofo_metrics as metrics
+
+    from nofos.word_readability import word_html
+
+    html, conversion_warning = word_html(path)
+    try:
+        result = metrics.analyze(
+            metrics.SourceBundle.from_html(html.encode("utf-8")),
+            profile="hhs-nofo-fy27-html@0.4.0",
+            production_path="word_readability_pilot",
+        )
+    except metrics.NofoMetricsError:
+        raise ValueError("invalid_word") from None
+    report = _safe_result(result, "word", 0)
+    if conversion_warning:
+        report["warnings"].append(
+            "The Word converter reported unsupported content or formatting. Some text may be missing."
+        )
+    return report
+
+
 def main() -> int:
     try:
         if sys.platform.startswith("linux"):
@@ -223,7 +260,12 @@ def main() -> int:
             resource.setrlimit(resource.RLIMIT_AS, (1536 * 1024 * 1024,) * 2)
             resource.setrlimit(resource.RLIMIT_FSIZE, (2 * 1024 * 1024,) * 2)
             resource.setrlimit(resource.RLIMIT_NOFILE, (64, 64))
-        report = analyze(Path(sys.argv[1]), int(sys.argv[2]))
+        path = Path(sys.argv[1])
+        report = (
+            analyze_word(path)
+            if path.suffix == ".docx"
+            else analyze(path, int(sys.argv[2]))
+        )
         envelope = {"ok": True, "report": report}
     except ValueError as exc:
         code = str(exc)
@@ -240,6 +282,10 @@ def main() -> int:
                     "format_unavailable",
                     "format_unsupported",
                     "format_indeterminate",
+                    "invalid_word",
+                    "word_no_text",
+                    "word_expanded_limit",
+                    "word_format_unsupported",
                 }
                 else "invalid_pdf"
             ),
