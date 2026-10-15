@@ -199,6 +199,14 @@ import checkpoints. It adds `NofoReadabilityCheckpoint.trigger` with a default o
 Migration `0149_readability_checkpoint_download_trigger` adds the `download`
 choice; it changes no data.
 
+Migration `0152_readability_checkpoint_per_trigger` allows separate checkpoints
+for each trigger while preserving existing IDs, times, savers and results. Apply
+it before serving this code. The old reverse query name `checkpoint` remains
+available for overview counts. Rolling this schema back after multiple triggers
+reference one calculation requires an explicit data-preservation plan; the old
+one-to-one constraint cannot represent those checkpoints. Do not delete history
+to force a rollback.
+
 ## Saved review checkpoints
 
 Calculating metrics remains exploratory. Select **Save these results** to keep
@@ -209,7 +217,8 @@ returns a retry message instead of keeping results for stale content.
 
 `NofoReadabilityCheckpoint` references the unchanged `NofoReadabilityScore` row
 and records the saver, save time, and status at save. Calculation time and save
-time are separate. Repeating a save for the same calculation returns the first
+time are separate. Manual saves, imports, re-imports and PDF downloads each keep
+their own checkpoint for the same calculation. Repeating the same action returns its first
 checkpoint without changing its time, user, or status. Existing calculations
 are not backfilled into saved history. Partial results may be saved;
 unavailable metrics show **Unavailable**, never zero.
@@ -227,10 +236,12 @@ ran, **Preview PDF** was used, or the NOFO was edited.
 - **What is saved:** the same server-side calculation and checkpoint that
   **Save these results** creates, with `trigger` set to `import`, `reimport` or
   `download`. The user who imported or downloaded is recorded as the saver.
-- **Only when the NOFO has changed:** a checkpoint belongs to one NOFO version,
-  and each version has at most one. Downloading an unchanged NOFO again, or
-  downloading a version someone already saved, keeps the existing checkpoint
-  (including its saver, time and trigger) and adds nothing.
+- **Once per version and action:** a checkpoint belongs to one NOFO version and
+  trigger. A PDF download after import or a manual save adds a separate download
+  checkpoint without calculating the unchanged content again. Repeating that
+  same action on the unchanged version keeps its existing checkpoint (including
+  its saver, time and trigger) and adds nothing. These checkpoints describe
+  workflow milestones, not every download attempt.
 - **When:** after the import has been written, or after the PDF has been
   generated. A re-import's checkpoint is taken outside the re-import
   transaction, so a slow or failed calculation never holds the NOFO's rows or
@@ -322,7 +333,7 @@ automatically on import, re-import or PDF download, qualify a NOFO for
 | --- | --- | --- |
 | Import a new NOFO | Calculates and saves an automatic `import` checkpoint when metrics are enabled. A failed calculation saves nothing and does not fail the import. | The NOFO is listed once its import checkpoint exists. |
 | Re-import a NOFO | Calculates and saves an automatic `reimport` checkpoint on the same NOFO, compared with its previous saved checkpoint. | The row shows the re-import checkpoint as the latest save. |
-| Select **Download PDF** | Saves an automatic `download` checkpoint after the PDF is generated, unless this NOFO version already has a checkpoint. **Preview PDF** never saves. | The row shows the download checkpoint as the latest save when one was added. |
+| Select **Download PDF** | Saves an automatic `download` checkpoint after the PDF is generated, unless this NOFO version already has a download checkpoint. Import and manual checkpoints remain separate. **Preview PDF** never saves. | The row shows the download checkpoint as the latest save when one was added. |
 | Archive a NOFO | Retained on the same NOFO. Archiving is a soft delete. | The NOFO remains eligible for listing. |
 | Delete a NOFO through the application/ORM | Deleted with the NOFO: deletion cascades from NOFO to calculation snapshots to saved checkpoints. | Its row disappears on the next page request; counts and pagination are recalculated. |
 | Delete the user who calculated or saved results | Retained; the corresponding user reference becomes null. Saved history displays **Deleted user** for a deleted saver. | The NOFO remains eligible for listing. |

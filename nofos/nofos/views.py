@@ -2473,7 +2473,8 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
 
             # Download PDF (a finished, non-watermarked attachment) also keeps a
             # readability snapshot. Preview PDF does not. Only a successful
-            # download saves, and an unchanged NOFO reuses its snapshot.
+            # download saves. An unchanged NOFO reuses its calculation, while
+            # retaining separate import, manual and PDF-download checkpoints.
             if mode == "attachment" and not is_test_pdf:
                 checkpoint = save_automatic_checkpoint(
                     request, nofo, NofoReadabilityCheckpoint.TRIGGER_DOWNLOAD
