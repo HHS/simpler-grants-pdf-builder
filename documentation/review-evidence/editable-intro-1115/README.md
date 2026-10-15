@@ -115,3 +115,39 @@ audit.
 
 These are explicit verification limits for maintainers, not a request to invent
 another approval owner or broaden access to complete a local development task.
+
+
+## Legacy Word source with no introductory section (before/after)
+
+Verified locally using the PR branch plus review fixes. A synthetic legacy DOCX
+contains first-page metadata, Step 1 / Basic information and Step 2, with neither
+Before You Begin nor Before You Get Started as a source heading. It was uploaded
+through Django's real import endpoint using its test client and an isolated
+in-memory database. No ownership or BYB selection was manually assigned.
+
+The import selected `generated` ownership and `full` automatically, created no
+imported-introduction section, and rendered exactly one legacy **Before you begin**
+page with SAM.gov / Grants.gov registration and the application deadline. The
+settings endpoint remained accessible with **Full BYB page** selected. This is the
+fallback default; NIH-group and legacy HRSA-theme imports retain their existing
+separate defaults. `test_legacy_word_without_intro_defaults_to_full_generated_byb`
+locks down this scenario.
+
+**Before:** Browser screenshot of the DOCX's Mammoth-converted source, not a
+Microsoft Word screenshot. The explanatory heading/banner identifies this view.
+
+![Legacy source without introductory heading](legacy-before-source.png)
+
+**After:** Browser screenshot of the actual HTML response from the imported
+record, served locally with the repository's styles/assets. No generated body
+text was inserted by the evidence script.
+
+![Generated legacy Before you begin page](legacy-after-full-byb.png)
+
+**Default/settings:** Actual template-settings response for the same record.
+
+![Full BYB page selected automatically](legacy-full-byb-setting.png)
+
+These screenshots verify local Word conversion/import, HTML rendering and
+settings compatibility; they do not claim a new vendor PDF/DOCX or deployed test.
+Only synthetic content is shown.

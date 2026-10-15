@@ -296,6 +296,47 @@ class EditableIntroductionWorkflowTests(TestCase):
                 )
                 self.assertFalse(Nofo.objects.filter(successor=nofo).exists())
 
+    def test_legacy_word_without_intro_defaults_to_full_generated_byb(self):
+        from xml.etree import ElementTree
+
+        output = BytesIO()
+        with ZipFile(
+            BytesIO(introductory_docx(number="CDC-LEGACY-001"))
+        ) as source, ZipFile(output, "w", ZIP_DEFLATED) as target:
+            for item in source.infolist():
+                value = source.read(item.filename)
+                if item.filename == "word/document.xml":
+                    root = ElementTree.fromstring(value)
+                    body = root.find(
+                        "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}body"
+                    )
+                    # Remove the source intro heading and its three prose paragraphs.
+                    # Keep legacy first-page metadata, Step 1 and Step 2.
+                    for paragraph in list(body)[:4]:
+                        body.remove(paragraph)
+                    value = ElementTree.tostring(root).replace(b"HRSA", b"CDC")
+                target.writestr(item, value)
+        response = self.upload(reverse("nofos:nofo_import"), output.getvalue())
+        self.assertEqual(response.status_code, 302)
+        nofo = Nofo.objects.latest("created")
+        self.assertFalse(nofo.has_imported_introduction)
+        self.assertEqual(nofo.before_you_begin, "full")
+        self.assertFalse(nofo.sections.filter(role="introduction").exists())
+        page = self.client.get(reverse("nofos:nofo_view", args=[nofo.pk]))
+        soup = BeautifulSoup(page.content, "html.parser")
+        self.assertEqual(len(soup.find_all(id=INTRO_ANCHOR)), 1)
+        intro = soup.find(id=INTRO_ANCHOR)
+        self.assertEqual(intro.h2.get_text(), "Before you begin")
+        self.assertIn("SAM.gov registration", intro.get_text())
+        self.assertIn("Grants.gov registration", intro.get_text())
+        self.assertNotIn("before-you-begin--imported", intro.get("class", []))
+        settings = self.client.get(reverse("nofos:nofo_edit_byb", args=[nofo.pk]))
+        self.assertEqual(settings.status_code, 200)
+        selected = BeautifulSoup(settings.content, "html.parser").select_one(
+            "option[selected]"
+        )
+        self.assertEqual(selected.get_text(), "Full BYB page")
+
     def test_html_upload_retains_generated_workflow(self):
         self.client.post(
             reverse("nofos:nofo_import"),
