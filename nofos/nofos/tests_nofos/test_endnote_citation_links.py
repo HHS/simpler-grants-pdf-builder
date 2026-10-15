@@ -160,6 +160,35 @@ javascript:alert(1) file:///etc/passwd user@www.example.org</p></li>"""
         linkify_endnote_citations(soup)
         self.assertEqual(soup.find("a")["href"], "https://example.org/path")
 
+    def test_block_containers_do_not_extend_or_join_citation_addresses(self):
+        for tag in ("div", "blockquote", "section", "figure", "h3", "dl"):
+            with self.subTest(tag=tag):
+                soup = BeautifulSoup(
+                    '<li id="endnote-1">https://example.org/before'
+                    f"<{tag}>https://example.org/inside</{tag}>"
+                    "https://example.org/after</li>",
+                    "html.parser",
+                )
+                before = soup.get_text()
+                linkify_endnote_citations(soup)
+                self.assertEqual(soup.get_text(), before)
+                self.assertEqual(
+                    [a["href"] for a in soup.select("a")],
+                    [
+                        f"https://example.org/{part}"
+                        for part in ("before", "inside", "after")
+                    ],
+                )
+                self.assertTrue(soup.find(tag).find("a"))
+                self.assertFalse(soup.select("a a"))
+                saved = str(soup)
+                linkify_endnote_citations(soup)
+                self.assertEqual(str(soup), saved)
+
+        soup = self.linkify("https://example.org/study<div>Accessed May 6</div>")
+        self.assertTrue(soup.find("a", href="https://example.org/study"))
+        self.assertEqual(soup.div.get_text(), "Accessed May 6")
+
     def test_mixed_direct_and_paragraph_citation_text_is_linked_once(self):
         soup = BeautifulSoup(
             '<li id="endnote-1">Available https://example.org/direct<p>Additional https://example.org/paragraph</p> After https://example.org/last.</li>',

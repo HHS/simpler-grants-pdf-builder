@@ -21,6 +21,42 @@ BLOCK_NAMES = ["p", "li", "td", "th"]
 NATIVE_REFERENCE_ID = re.compile(r"^(?:footnote|endnote)-ref-(?!manual-)")
 NATIVE_TARGET_HREF = re.compile(r"^#(?:footnote|endnote)-(?!manual-)")
 NATIVE_TARGET_ID = re.compile(r"^(?:footnote|endnote)-(?!ref-|manual-)")
+# Citation text may include HTML blocks beyond the note-marker scan's blocks.
+CITATION_BLOCK_NAMES = BLOCK_NAMES + [
+    "address",
+    "article",
+    "aside",
+    "blockquote",
+    "dd",
+    "details",
+    "div",
+    "dl",
+    "dt",
+    "fieldset",
+    "figcaption",
+    "figure",
+    "footer",
+    "form",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "header",
+    "hgroup",
+    "main",
+    "nav",
+    "ol",
+    "section",
+    "summary",
+    "table",
+    "tbody",
+    "tfoot",
+    "thead",
+    "tr",
+    "ul",
+]
 CITATION_TARGET_ID = re.compile(
     r"^(?:footnote|endnote)-(?:manual-)?[1-9][0-9]*(?:-[0-9]+)?$"
 )
@@ -80,13 +116,13 @@ def linkify_endnote_citations(soup):
     for citation in soup.find_all(id=CITATION_TARGET_ID):
         if citation.name not in BLOCK_NAMES or citation.find_parent(["pre", "code"]):
             continue
-        blocks = [citation] + citation.find_all(BLOCK_NAMES)
+        blocks = [citation] + citation.find_all(CITATION_BLOCK_NAMES)
         for block in blocks:
             masked = "".join(
                 (
                     " " * len(node)
                     if isinstance(node, Comment)
-                    or node.find_parent(BLOCK_NAMES) is not block
+                    or node.find_parent(CITATION_BLOCK_NAMES) is not block
                     or node.find_parent(
                         ["a", "code", "pre", "script", "style", "textarea"]
                     )
@@ -99,7 +135,7 @@ def linkify_endnote_citations(soup):
             for node in block.descendants:
                 if isinstance(node, NavigableString):
                     position += len(node)
-                elif node.name in {*BLOCK_NAMES, "br", "hr", "img", "wbr"}:
+                elif node.name in {*CITATION_BLOCK_NAMES, "br", "hr", "img", "wbr"}:
                     boundaries.append(position)
             boundaries.append(len(masked))
             matches = [
