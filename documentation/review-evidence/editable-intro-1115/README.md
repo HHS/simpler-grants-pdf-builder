@@ -49,6 +49,30 @@ Final suite counts, browser captures and independent review results are recorded
 in the PR after verification completes. Do not read this list as proof that all
 T01-T27 environments or actual provider outputs have been tested.
 
+Independent final review at `71ba00a6` ran 146 focused tests with two existing
+skips and found no remaining actionable code issues. The review caught source
+prefix misclassification/loss and Endnotes reordering of the fixed parent; both
+were fixed and independently rechecked. Actual Mammoth Word fixtures with a
+preface paragraph or heading return 422 before creating any record. Final full
+integration and CI results are linked in the PR.
+
+## Local browser loop
+
+The browser imported the synthetic DOCX through the real upload form, opened
+the introductory body editor, saved revised prose and confirmed it in the NOFO
+editor. Its title is blank/disabled, heading-level selector absent, and template
+selection absent from the NOFO editor. Direct GET/POST settings and title/level
+tampering are checked separately by endpoint/form tests. Screenshots contain
+only synthetic content and a local test account.
+
+Computed editor H1 uses Merriweather Web at weight 700; CDP platform-font
+inspection confirmed the actual custom font was `Merriweather-Bold` rather
+than merely a requested CSS family. This matches the established subsection
+editor pattern. Source Sans Pro remains the surrounding body face.
+
+![Headingless body editor](headingless-editor.jpg)
+![Imported preview with ordinary subsection content](imported-preview.jpg)
+
 ## Actual synthetic PDF checks
 
 Three outputs were generated through the actual DocRaptor test API using its
@@ -66,6 +90,19 @@ accessibility conformance.
 PDF pages and navigation annotations are inspected separately from HTML. The
 vendor's test watermarks are expected. Short main sections intentionally leave
 substantial whitespace on section-divider pages.
+
+Parsed actual PDF annotations confirm both Step 2 links land on introductory
+page 3 in short portrait/landscape outputs; in the long output the parent lands
+on page 3 and the authored child heading on page 7. Every introductory page's
+extracted footer retains “Before you get started.” Reviewed changed-region
+rasters include compact TOC, both short introductory pages and the multi-page
+continuation; this is not full-document visual clearance or an accessibility
+audit.
+
+![Compact parent-only TOC with introductory icon](compact-toc.png)
+![Portrait imported body and generated help](portrait-introduction.png)
+![Landscape and thin-icon variant](landscape-introduction.png)
+![Long introductory continuation with fixed footer](long-introduction-page-4.png)
 
 ## Remaining verification limits (AC16/T26)
 

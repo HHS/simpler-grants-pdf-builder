@@ -54,8 +54,21 @@ def fy27_docx(name="Before You Get Started"):
             value = old.read(item.filename)
             if item.filename == "word/document.xml":
                 value = value.replace(
+                    b"Distinctive source text MUST NOT publish.",
+                    b"Distinctive source text is editable after import.",
+                )
+                for text in (
+                    "Opportunity Number: HRSA-27-001",
+                    "Opdiv: HRSA",
+                    "Opportunity Name: Synthetic introductory page review",
+                    "Application Deadline: October 30, 2027",
+                ):
+                    value = value.replace(
+                        f"<w:p><w:r><w:t>{text}</w:t></w:r></w:p>".encode(), b""
+                    )
+                value = value.replace(
                     b"</w:body>",
-                    b'<w:p><w:pPr><w:pStyle w:val="Heading3"/></w:pPr><w:r><w:t>Metadata</w:t></w:r></w:p><w:p><w:r><w:t>OpDiv: HRSA</w:t></w:r></w:p><w:p><w:r><w:t>Metadata author: HHS</w:t></w:r></w:p></w:body>',
+                    b'<w:p><w:pPr><w:pStyle w:val="Heading3"/></w:pPr><w:r><w:t>Metadata</w:t></w:r></w:p><w:p><w:r><w:t>OpDiv: HRSA</w:t></w:r></w:p><w:p><w:r><w:t>Opportunity number: HRSA-27-001</w:t></w:r></w:p><w:p><w:r><w:t>Opportunity name: Synthetic editable introduction</w:t></w:r></w:p><w:p><w:r><w:t>Application deadline: October 30, 2027</w:t></w:r></w:p><w:p><w:r><w:t>Metadata author: HHS</w:t></w:r></w:p></w:body>',
                 )
             archive.writestr(item, value)
     return output.getvalue()
@@ -396,6 +409,7 @@ class EditableIntroductionWorkflowTests(TestCase):
         response = self.client.get(url)
         soup = BeautifulSoup(response.content, "html.parser")
         self.assertTrue(soup.find("input", id="name").has_attr("disabled"))
+        self.assertTrue(soup.find("input", id="callout_box").has_attr("disabled"))
         self.assertIsNone(soup.find("select", attrs={"name": "tag"}))
         values = {
             "name": "",

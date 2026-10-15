@@ -42,8 +42,8 @@ registration variant. Existing records have an empty discriminator and keep
 their legacy presentation and historical Word-export behavior. No content-based
 backfill runs. A recognized legacy upload stores `legacy`; a recognized new
 upload stores `get_started`. An absent or ambiguous heading stores the empty
-legacy fallback. Authorized re-import selects the incoming family but preserves
-the saved variant; confirmation serializes the captured family with processed
+legacy fallback. Authorized re-import preserves the saved family and variant;
+confirmation serializes the captured source family with processed
 HTML, and failed imports roll back family and content together. Duplication and
 archive snapshots copy both saved values. Composer/Compare do not opt into this
 Builder family selection; guide Introduction behavior is unchanged.

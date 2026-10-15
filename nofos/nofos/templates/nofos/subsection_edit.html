@@ -165,7 +165,7 @@
       <!-- callout_box -->
       <div class="form-group margin-top-4 width-mobile">
         <div class="usa-checkbox">
-          <input class="usa-checkbox__input usa-checkbox__input--tile" id="callout_box" type="checkbox" name="callout_box" {% if form.callout_box.value %}checked{% endif %}>
+          <input class="usa-checkbox__input usa-checkbox__input--tile" id="callout_box" type="checkbox" name="callout_box" {% if form.callout_box.value %}checked{% endif %} {% if subsection.section.is_introduction and not subsection.tag %}disabled{% endif %}>
           <label class="usa-checkbox__label" for="callout_box">Is callout box?
             <span class="usa-checkbox__label-description">Callout boxes <span aria-hidden="true">(📦)</span> use an accent color to call attention to important content.</span>
           </label>
