@@ -36,6 +36,20 @@ DOCUMENT_STRUCTURE_RECOVERY_STEPS = (
 
 
 IMPORT_ERROR_CATALOG = {
+    "IMPORT-INTRODUCTION-STRUCTURE": {
+        "title": "Check the introductory section before importing",
+        "summary": "Builder could not safely map this document's introductory text to editable content. No content was saved or replaced. Any existing NOFO is unchanged.",
+        "status": 422,
+        "recovery_steps": (
+            "Keep one Before You Begin or Before You Get Started heading before Step 1, with its introductory text beneath it.",
+            "In Word, open Home > Styles. Use the same main heading level for the introduction and Step 1 (Heading 1 or Heading 2).",
+            "Keep every heading between the introductory heading and Step 1 at a lower level (a larger heading number). For example, use Heading 2 for Get registered beneath a Heading 1 introduction, and Heading 3 for headings within Get registered.",
+            "Move introductory prose beneath its heading and put other content in the appropriate main section.",
+            "Save the document, then import it again.",
+        ),
+        "when": "An editable-introduction record is reimported without a unique populated introduction, or a positively recognized new structure has unmappable prelude content or heading levels.",
+        "support": "The import stops before overwriting or archiving saved content. Check missing or repeated introductory headings, empty content, and mixed heading levels.",
+    },
     "IMPORT-NO-FILE": {
         "title": "Select a document to import",
         "summary": (

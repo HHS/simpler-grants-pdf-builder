@@ -1,5 +1,11 @@
 # Introductory pages in Word imports
 
+For qualifying new FY27 Word imports, [editable introductory ownership](EDITABLE_INTRODUCTION.md)
+retains the source body instead. Existing generated records keep the behavior
+described below, including their saved wording family on re-import. Family and
+content ownership are separate fields; this document's source-consumption
+description applies to generated ownership only.
+
 Builder supports two source headings: **Before You Begin** and **Before You Get
 Started**. Retain this section in your upload. Builder uses its real heading and
 bookmark destinations to choose a maintained introductory page and preserve
@@ -36,8 +42,8 @@ registration variant. Existing records have an empty discriminator and keep
 their legacy presentation and historical Word-export behavior. No content-based
 backfill runs. A recognized legacy upload stores `legacy`; a recognized new
 upload stores `get_started`. An absent or ambiguous heading stores the empty
-legacy fallback. Authorized re-import selects the incoming family but preserves
-the saved variant; confirmation serializes the captured family with processed
+legacy fallback. Authorized re-import preserves the saved family and variant;
+confirmation serializes the captured source family with processed
 HTML, and failed imports roll back family and content together. Duplication and
 archive snapshots copy both saved values. Composer/Compare do not opt into this
 Builder family selection; guide Introduction behavior is unchanged.

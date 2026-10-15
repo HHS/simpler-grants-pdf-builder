@@ -46,7 +46,12 @@ def get_sections_and_subsections_from_soup(
 
 
 def process_document_content(
-    html, *, section_parser=None, builder_import=False, extract_scoped_tagline=False
+    html,
+    *,
+    section_parser=None,
+    builder_import=False,
+    extract_scoped_tagline=False,
+    editable_intro="generated"
 ):
     return _application_call(
         content_processing.process_document_content,
@@ -54,5 +59,6 @@ def process_document_content(
         section_parser=section_parser,
         builder_import=builder_import,
         extract_scoped_tagline=extract_scoped_tagline,
+        editable_intro=editable_intro,
         debug_capture=capture_debug_soup if settings.DEBUG else None,
     )

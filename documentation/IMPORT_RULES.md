@@ -91,6 +91,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-037 | conversion | Emphasis | Literal text "de minimis" → wrapped in `<em>` | `nofo.py` |
 | IMPORT-038 | removal | Content Removal | Recognized introductory heading + bounded source body → consumed; Builder new/legacy names supported | `nofo.py` |
 | IMPORT-062 | extraction | Content Removal | Capture Builder introductory family and actual Word destinations before consumption | `introductory_page.py` |
+| IMPORT-065 | extraction | Introductory Content | Retain editable introduction for qualifying new Word imports; preserve generated records | `introductory_page.py`, `content_processing.py`, `views.py` |
 | IMPORT-063 | removal | Content Removal | Consume recognized Metadata source blocks in Builder's incoming content copy after capture | `nofo.py`, `views.py` |
 | IMPORT-039 | extraction | Content Removal | "Instructions for NOFO writers" tables → extracted, reattached to matching subsection | `nofo.py` |
 | IMPORT-058 | removal | DOCX Conversion | Verified pale-blue instruction text boxes removed before conversion; other fills preserved for review | `word_instruction_boxes.py` |
@@ -521,12 +522,30 @@ The example that prompted this document: detecting a footnote/endnote list and f
   Composer/Compare retain their legacy-only cleanup. See
   [introductory-page authoring](INTRODUCTORY_PAGE_IMPORT.md).
 
+  IMPORT-065 opts qualifying new Word records into editable ownership. Their
+  source introduction is retained through both cleanup passes rather than
+  consumed. Existing generated records, unrecognized new Word imports and new
+  HTML imports retain this removal rule.
+
 ### IMPORT-062 — Introductory family and destination capture
 - **Type:** extraction
 - **Trigger:** Builder import with a unique real H1–H6 introductory heading, case/whitespace-insensitive, matching either supported name.
 - **Action:** Save `legacy` or `get_started` independently of registration variant; remap unique heading/bookmark destinations to `section--before-you-begin` before consuming the source body. Preserve authored link text. Missing/ambiguous signals use the empty legacy discriminator, not a global upgrade. Conflicting headings/duplicate consumed destinations become plain linked text rather than guessed destinations. Canonical links are retained during import even when the saved variant is None; disabled-page links render as plain text without changing stored bodies, so re-enabling the page restores navigation after re-import. Re-import selects the incoming family while preserving the variant and existing rollback/status/permission policies; confirmation carries the family with processed soup. Existing records are not reclassified on view/export; duplication copies the family.
 - **Source:** `introductory_page.py::capture_introductory_page`, `views.py::BaseNofoImportView`, `nofo.py::suggest_all_nofo_fields`
 - **Status:** active (Builder only)
+
+  Under IMPORT-065, a saved generated record retains its existing family as
+  well as its registration variant on re-import. Source destinations are still
+  captured and remapped. Imported ownership always renders a usable canonical
+  destination, including when the retained legacy setting is None. New imports
+  continue selecting a family from source; copies retain saved family and mode.
+
+### IMPORT-065 — Editable introductory content
+- **Type:** extraction
+- **Trigger:** New Builder Word import with a unique Before You Get Started heading, a later Step 1 followed by Basic information, and a recognized trailing Metadata block. Heading hierarchy or introductory wording alone does not qualify. These signals match the locally inspected October 13 cleared master. HTML imports and Composer/Compare do not opt in. Private processing attributes from uploads are cleared before classification.
+- **Action:** Persist imported ownership independently of the wording family, retain source introduction through standard transformations, and save a fixed-role introduction before Step 1 at order zero. Real child headings remain editable; opening prose remains headingless. Existing records default to generated ownership, with no backfill, and retain their family, template selection and access on re-import. Imported records retain their mode on re-import; a unique legacy/new introductory name can be safely mapped, while missing/repeated/empty introductions or unmappable prefixes/heading levels block import before overwrite or archival. Recognized leading Metadata is extraction-only. Nonmetadata content before the introductory heading is rejected for a positively recognized new structure instead of discarded or renamed. Recognized new structures with peer/higher introductory child headings are rejected before generated-text cleanup; error details name the offending heading and levels and explain how to correct Word Styles and reimport. Duplication and successor copies preserve mode and section role.
+- **Source:** `introductory_page.py::prepare_editable_introduction`; `content_processing.py::process_document_content`, `get_sections_and_subsections_from_soup`; `views.py::BaseNofoImportView`, `duplicate_nofo`; `models.py::Nofo`, `Section`
+- **Status:** active (Builder Word only for first-time selection; authorized re-import of imported ownership can use Word or HTML). See [editable introduction behavior and verification policy](EDITABLE_INTRODUCTION.md).
 
 ### IMPORT-063 — Builder Metadata source consumption
 - **Type:** removal
@@ -623,6 +642,10 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
   still use hrsa. Other group/theme defaults are unchanged. Re-import preserves
   every saved variant; saved hrsa with the new family renders the new full
   registration body without resetting the value or adding HRSA-only wording.
+
+  Imported-content ownership (IMPORT-065) does not use or expose this generated
+  variant. The value remains saved for compatibility; it is not used as the
+  ownership discriminator and is not silently reset to None.
 
 ### IMPORT-045 — Cover image suggestion
 - **Type:** extraction

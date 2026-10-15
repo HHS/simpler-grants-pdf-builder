@@ -1,12 +1,14 @@
 {% load martortags add_footnote_ids add_captions_to_tables add_classes_to_lists add_classes_to_paragraphs convert_paragraphs_to_hrs truncate_anchor_links_for_docx policy_language_export %}
 <div id="download_target" class="nofo_view">
 {% load introductory_page_links %}
+  {% if not nofo.has_imported_introduction %}
   {% if for_readability_metrics or nofo.introductory_page_family %}
     {% if nofo.number == 'hrsa-application-guide' %}
       {% include "includes/byb_page_guide.html" %}
     {% elif nofo.before_you_begin != 'none' %}
       {% include "includes/byb_page.html" with nofo=nofo step_2_section=step_2_section for_readability_metrics=True only %}
     {% endif %}
+  {% endif %}
   {% endif %}
   {% if strip_policy_language %}
     <p>&nbsp;</p> <!-- remove this if grabzit fixes their issue -->
@@ -23,9 +25,11 @@
   {% endif %}
   <!-- Render each section with all its subsections -->
   {% for section in nofo.sections.all|dictsort:"order" %}
-    <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
+    <section id="{% if section.is_introduction %}{{ section.html_id }}{% else %}section--{{ section.html_id }}{% endif %}" class="section section--{% if nofo.has_imported_introduction %}{{ section.step_number }}{% else %}{{ forloop.counter }}{% endif %} {% if nofo.has_imported_introduction and section.step_number > 7 or not nofo.has_imported_introduction and forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}">
+      {% if not section.is_introduction %}
       <h2 id="{{ section.html_id|truncate_heading_ids_for_docx }}" >{{ section.name }}</h2>
-      {% if forloop.counter == 1 %}
+      {% else %}<h2 id="section--before-you-begin--heading">Before you get started</h2>{% endif %}
+      {% if nofo.has_imported_introduction and section.is_first_main_section or not nofo.has_imported_introduction and forloop.first %}
         <div>
           <h3>Basic information</h3>
           <div class="styled-subsection-body">
@@ -49,7 +53,7 @@
       <div class="section--content">
         {% for subsection in section.subsections.all|dictsort:"order" %}
           {% with subname=subsection.name|default_if_none:""|lower %}
-            {% if forloop.parentloop.first and forloop.first and subname == 'basic information' %}
+            {% if nofo.has_imported_introduction and section.is_first_main_section and forloop.first and subname == 'basic information' or not nofo.has_imported_introduction and forloop.parentloop.first and forloop.first and subname == 'basic information' %}
               {# Ignore "Basic information" subsection #}
             {% else %}
               {# skip "hidden" subsections #}

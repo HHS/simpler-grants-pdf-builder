@@ -28,7 +28,8 @@ def add_classes_to_toc(nofo):
                     count += 1
 
     # before you begin page is not a section so not counted above
-    count += 1
+    if not nofo.has_imported_introduction:
+        count += 1
 
     toc_class = "toc--normal" if count <= 23 else "toc--small"
 

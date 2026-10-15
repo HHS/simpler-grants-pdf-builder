@@ -268,7 +268,11 @@ def add_headings_to_document(
 
     # add ids to all section headings
     for section in document.sections.all():
-        section_id = "{}".format(slugify(section.name))
+        section_id = (
+            "section--before-you-begin"
+            if getattr(section, "is_introduction", False)
+            else "{}".format(slugify(section.name))
+        )
 
         if section.html_id and len(section.html_id):
             new_ids.append({"old_id": section.html_id, "new_id": section_id})
@@ -449,6 +453,7 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
             has_section_page=section.get("has_section_page"),
             html_class=section.get("html_class", ""),
             **{object_name: document},
+            **({"role": section.get("role", "")} if SectionModel is Section else {}),
         )
         try:
             section_obj.full_clean()
@@ -1502,6 +1507,7 @@ def find_broken_links(nofo):
             for link in all_links:
                 if (
                     nofo.before_you_begin == "none"
+                    and not nofo.has_imported_introduction
                     and nofo.number != "hrsa-application-guide"
                     and link.get("href") == "#section--before-you-begin"
                 ):
@@ -1829,13 +1835,18 @@ def suggest_all_nofo_fields(
 ):
     from .introductory_page import introductory_family_from_soup
 
-    nofo.introductory_page_family = introductory_family_from_soup(soup)
     # Import views know whether this is a new record, even when a legacy record
     # still has a blank/default opportunity number.
     if first_time_import is None:
         first_time_import = (
             not nofo.number or nofo.number == DEFAULT_NOFO_OPPORTUNITY_NUMBER
         )
+    if first_time_import:
+        nofo.introductory_page_family = introductory_family_from_soup(soup)
+        from .introductory_page import imported_introduction
+
+        if imported_introduction(soup):
+            nofo.introductory_content_mode = "imported"
 
     nofo_number = suggest_nofo_opportunity_number(soup)  # guess the NOFO number
     nofo.number = nofo_number
@@ -1894,7 +1905,11 @@ def _get_all_id_attrs_for_nofo(nofo):
     """
     # Initialize a set to collect all unique ids
     all_ids = set()
-    if nofo.before_you_begin != "none" or nofo.number == "hrsa-application-guide":
+    if (
+        nofo.has_imported_introduction
+        or nofo.before_you_begin != "none"
+        or nofo.number == "hrsa-application-guide"
+    ):
         from .introductory_page import INTRO_ANCHOR
 
         all_ids.add(INTRO_ANCHOR)

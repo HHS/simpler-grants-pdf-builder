@@ -13,7 +13,11 @@ def introductory_page_links(html, nofo):
 
     Rendering only: the stored body and legacy records are never rewritten.
     """
-    if nofo.before_you_begin != "none" or nofo.number == "hrsa-application-guide":
+    if (
+        nofo.has_imported_introduction
+        or nofo.before_you_begin != "none"
+        or nofo.number == "hrsa-application-guide"
+    ):
         return html
     soup = BeautifulSoup(html, "html.parser")
     for link in soup.find_all("a", href=f"#{INTRO_ANCHOR}"):

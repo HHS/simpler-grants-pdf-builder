@@ -222,6 +222,7 @@ def duplicate_nofo(original_nofo, is_successor=False, duplicated_by=None):
         new_sections = [
             Section(
                 **model_to_dict(original_section, exclude=["id", "nofo"]),
+                role=original_section.role,
                 nofo=new_nofo,
             )
             for original_section in original_sections
@@ -662,6 +663,7 @@ SHARED_PARSE_VALIDATION_ERROR_CODES = {
 # carry their own COMPOSER-* / COMPARE-* codes, so naming a document problem
 # for them is separate work.
 BUILDER_PARSE_VALIDATION_ERROR_CODES = {
+    "introductory_content_unsafe": "IMPORT-INTRODUCTION-STRUCTURE",
     "no_file": "IMPORT-NO-FILE",
     "unsupported_file_type": "IMPORT-FILE-TYPE",
     "no_sections": "IMPORT-NO-SECTIONS",
@@ -671,6 +673,7 @@ BUILDER_PARSE_VALIDATION_ERROR_CODES = {
 # log line for the metrics trail, but they are not defects, so they don't page
 # anyone at error level. IMPORT-DOCX-CONVERSION stays at error level, as before.
 WARNING_LEVEL_IMPORT_ERROR_CODES = {
+    "IMPORT-INTRODUCTION-STRUCTURE",
     "IMPORT-AMBIGUOUS-HEADINGS",
     "IMPORT-NO-FILE",
     "IMPORT-FILE-TYPE",
@@ -727,6 +730,12 @@ def parse_error_details(error, error_code, uploaded_file=None):
                 }
             )
         return details
+
+    if error_code == "IMPORT-INTRODUCTION-STRUCTURE":
+        return [
+            {"label": "What we found", "value": message}
+            for message in getattr(error, "messages", [])[:5]
+        ]
 
     if error_code == "IMPORT-FILE-TYPE":
         details = []
@@ -848,6 +857,20 @@ class BaseNofoImportView(View):
                     self, (NofosImportNewView, NofosImportOverwriteView)
                 ),
                 extract_scoped_tagline=self.extract_scoped_tagline,
+                editable_intro=(
+                    "required"
+                    if self.is_reimport
+                    and getattr(
+                        getattr(self, "nofo", None), "has_imported_introduction", False
+                    )
+                    else (
+                        "detect"
+                        if isinstance(self, NofosImportNewView)
+                        and getattr(uploaded_file, "content_type", "")
+                        == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        else "generated"
+                    )
+                ),
             )
             soup = content.soup
             sections = content.sections
@@ -1821,6 +1844,14 @@ class NofoEditBeforeYouBeginPageView(BaseNofoEditView):
     form_class = NofoBeforeYouBeginForm
     template_name = "nofos/nofo_edit_byb.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        nofo = get_object_or_404(Nofo, pk=kwargs.get("pk"))
+        if nofo.has_imported_introduction:
+            raise PermissionDenied(
+                "This NOFO uses editable introductory content. Edit its subsections instead of selecting a template."
+            )
+        return super().dispatch(request, *args, **kwargs)
+
 
 class NofoEditThemeOptionsView(BaseNofoEditView):
     form_class = NofoThemeOptionsForm
@@ -2517,7 +2548,11 @@ def _order_trailing_sections(nofo):
     Called while the parent NOFO row is locked. Temporary, unused order values
     avoid colliding with the unique (nofo, order) constraint during reordering.
     """
-    sections = list(nofo.sections.select_for_update().order_by("order", "pk"))
+    sections = list(
+        nofo.sections.exclude(role="introduction")
+        .select_for_update()
+        .order_by("order", "pk")
+    )
     tail_ids = ("endnotes", "appendix", "modifications")
 
     def tail_id(section):
