@@ -11,8 +11,9 @@ author-facing authoring convention this module detects.
 import re
 from collections import defaultdict
 from copy import copy
+from urllib.parse import urlsplit
 
-from bs4 import NavigableString
+from bs4 import Comment, NavigableString
 
 MARKER = re.compile(r"\[([1-9][0-9]{0,8})\]")
 HEADING = re.compile(r"^(?:endnotes?|footnotes?)\s*:?$", re.I)
@@ -20,6 +21,99 @@ BLOCK_NAMES = ["p", "li", "td", "th"]
 NATIVE_REFERENCE_ID = re.compile(r"^(?:footnote|endnote)-ref-(?!manual-)")
 NATIVE_TARGET_HREF = re.compile(r"^#(?:footnote|endnote)-(?!manual-)")
 NATIVE_TARGET_ID = re.compile(r"^(?:footnote|endnote)-(?!ref-|manual-)")
+CITATION_TARGET_ID = re.compile(
+    r"^(?:footnote|endnote)-(?:manual-)?[1-9][0-9]*(?:-[0-9]+)?$"
+)
+CITATION_ADDRESS = re.compile(
+    r"(?<![\w@/])(?:https?://|www\.|doi:\s*10\.[0-9]{4,9}/)[^\s<>\"'“”‘’]+",
+    re.I,
+)
+
+
+def _citation_destination(label):
+    """Trim citation delimiters without dropping balanced DOI parentheses."""
+    while label:
+        if label[-1] in ".,;:!?":
+            label = label[:-1]
+        elif label[-1] in ")]}":
+            closer = label[-1]
+            opener = {")": "(", "]": "[", "}": "{"}[closer]
+            if label.count(closer) <= label.count(opener):
+                break
+            label = label[:-1]
+        else:
+            break
+    if label.lower().startswith("doi:"):
+        destination = "https://doi.org/" + label[4:].lstrip()
+    elif label.lower().startswith("www."):
+        destination = "https://" + label
+    else:
+        destination = label
+    try:
+        parsed = urlsplit(destination)
+        if (
+            parsed.scheme.lower() not in {"http", "https"}
+            or not parsed.hostname
+            or "." not in parsed.hostname
+            or parsed.username is not None
+            or parsed.password is not None
+        ):
+            return None
+    except ValueError:
+        return None
+    # A duplicated resolver is a separate source defect, not a missing link.
+    if parsed.hostname.lower() in {"doi.org", "dx.doi.org"} and not re.fullmatch(
+        r"/10\.[0-9]{4,9}/[^\s]+", parsed.path, re.I
+    ):
+        return None
+    return label, destination
+
+
+def linkify_endnote_citations(soup):
+    """Link explicit destinations only inside recognized imported citations.
+
+    Reuse the note-marker range wrapper to retain formatting across Word runs.
+    Mask existing anchors, excluded content and block boundaries while matching;
+    their text/attributes are never interpreted or rewritten. Import-only caller
+    placement keeps existing saved records unchanged on view and export.
+    """
+    for citation in soup.find_all(id=CITATION_TARGET_ID):
+        if citation.name not in BLOCK_NAMES or citation.find_parent(["pre", "code"]):
+            continue
+        blocks = [citation] + citation.find_all(BLOCK_NAMES)
+        for block in blocks:
+            masked = "".join(
+                (
+                    " " * len(node)
+                    if isinstance(node, Comment)
+                    or node.find_parent(BLOCK_NAMES) is not block
+                    or node.find_parent(
+                        ["a", "code", "pre", "script", "style", "textarea"]
+                    )
+                    else str(node)
+                )
+                for node in block.find_all(string=True)
+            )
+            position = 0
+            boundaries = [0]
+            for node in block.descendants:
+                if isinstance(node, NavigableString):
+                    position += len(node)
+                elif node.name in {*BLOCK_NAMES, "br", "hr", "img", "wbr"}:
+                    boundaries.append(position)
+            boundaries.append(len(masked))
+            matches = [
+                (start + match.start(), match[0])
+                for start, end in zip(boundaries, boundaries[1:])
+                for match in CITATION_ADDRESS.finditer(masked[start:end])
+            ]
+            for start, text in reversed(matches):
+                result = _citation_destination(text)
+                if result is None:
+                    continue
+                label, destination = result
+                anchor = soup.new_tag("a", href=destination)
+                _wrap_range(soup, block, start, start + len(label), anchor)
 
 
 def _heading(tag):
@@ -386,7 +480,7 @@ def _wrap_range(soup, block, start, end, wrapper):
             a, b = position, position + len(node)
             position = b
             return [
-                NavigableString(str(node)[max(0, low - a) : max(0, min(b, high) - a)])
+                type(node)(str(node)[max(0, low - a) : max(0, min(b, high) - a)])
                 for low, high in ((0, start), (start, end), (end, b))
             ]
         if not node.contents:
