@@ -23,6 +23,14 @@ or any other metric, and that the actual DOCX worker returns the corrected value
 Existing structured-DOCX tests verify reuse of the corrected HTML profile.
 No shared environment was changed.
 
+Final consumer checks against the published wheel: 2,620 Django tests passed
+(three existing skips), 57 JavaScript tests passed, migration drift check passed,
+and Poetry lock validation passed. The package runtime is Python 3.14.2. The
+locked wheel hash matches the independently downloaded published asset. The
+historical-score regression retains the old 0.5.4 / HTML 0.4.0 row unchanged,
+calculates a new current 0.6.0 / HTML 0.5.0 result, and reuses only that current
+measurement on an unchanged repeated calculation.
+
 The dependency step advances Builder from 0.5.4, not 0.5.5. It therefore also
 includes the released tagged table-cell continuation correction and adapter
 0.1.7. PDF extraction and resulting nonpassive estimates may change. Claims that
