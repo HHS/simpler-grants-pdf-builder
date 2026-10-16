@@ -221,7 +221,7 @@ the catalog as those use cases are reviewed.
 
 ## Readability estimate reliability alerts
 
-The PDF readability report uses a USWDS alert to explain confidence in the
+The PDF/Word readability report uses a USWDS alert to explain confidence in the
 estimates derived from extracted text. Reliability describes confidence in
 those estimates, not how readable the document is. High reliability does not
 guarantee accuracy or establish compliance, accessibility, or clearance.
@@ -231,10 +231,42 @@ guarantee accuracy or establish compliance, accessibility, or clearance.
 | High | `usa-alert--info` (blue) | Informational context for interpreting estimates |
 | Moderate | `usa-alert--info` (blue) | Informational context for interpreting estimates |
 | Low | `usa-alert--warning` (yellow) | Caution about estimates that need careful interpretation |
+| Not assessed | `usa-alert--info` (blue) | Extraction scope without an invented confidence rating |
 
-The supported levels are high, moderate, and low; there is no “extremely low”
-level. Missing or unrecognized levels retain warning styling as a fallback.
+The supported assessed levels are high, moderate, and low; there is no
+“extremely low” level. Missing or unrecognized engine ratings are unassessed,
+not low. The report uses “What this report includes” with scope guidance and
+an explicit statement that reliability has not been assessed. Metric cards say
+“Reliability not assessed” instead of inheriting another metric's rating.
+Generic PDF extraction retains its explicit low-confidence policy.
 The presentation does not change how reliability is calculated.
+
+### Report headings, metric labels and rating selection
+
+| State | Report alert heading | Calculated metric card |
+| --- | --- | --- |
+| High | Reliability of these estimates: High | Estimated · High reliability |
+| Moderate | Reliability of these estimates: Moderate | Estimated · Moderate reliability |
+| Low | Reliability of these estimates: Low | Estimated · Low reliability |
+| Not assessed | What this report includes | Estimated · Reliability not assessed |
+| Metric unavailable | Does not by itself select the report heading | Unavailable (no reliability label) |
+
+Unavailable means no finite numeric metric result can be displayed. Not assessed
+means a result can be displayed but no recognized reliability rating was supplied.
+The source-specific extraction explanation appears independently of those states;
+a successful calculation can still have extraction limits or unassessed reliability.
+
+The metrics engine supplies individual ratings; Builder does not assign numeric
+confidence thresholds here. The overall report uses the lowest recognized supplied
+metric rating. Missing ratings are omitted from that selection, not treated as Low
+or High. Consequently, one High metric and otherwise unassessed metrics can yield
+High overall; it does not establish High reliability for every metric. If no rating
+is supplied, overall reliability is not assessed. Generic PDF extraction explicitly
+forces Low overall and on displayed metric cards. Other metric cards use their own
+ratings, without inheriting the report rating; the sentences-per-paragraph component
+uses its parent words-per-sentence rating. The label is Moderate, not Medium.
+
+### Source-specific alert copy
 
 [USWDS alert guidance](https://designsystem.digital.gov/components/alert/#accessibility-guidance)
 defines informational alerts as non-critical status information, warnings as
@@ -244,16 +276,47 @@ reliability notice uses a warning rather than a red error alert.
 
 Keep the reliability level in the heading and the explanation in the body so
 users can understand the notice without relying on color or the icon. Preserve
-the source-PDF review guidance and the existing `role="note"`; changing the
+the source-specific explanation and the existing `role="note"`; changing the
 visual variant does not make this notice an urgent announcement.
+
+Each source explanation stays in one paragraph:
+
+- **Word:** “This report measures text recovered from your Word document. The tool may miss or change text in text boxes, headers, and footers. It cannot read text in images. For a more complete analysis, make sure important text is in the main document body. Remove template instructions and unused draft options from the copy you upload so they aren’t counted as part of your NOFO.”
+- **PDF with usable tags:** “PDF structure tags helped the tool read the text in order, but some text may still be missed or read out of order, especially in columns and tables. These scores describe the text the tool recovered and may not reflect the entire PDF.”
+- **PDF without usable tags (authenticated tool):** “The tool could not reliably determine the order of text in this PDF, so the scores may be less reliable. For your next upload, try uploading the original Word document instead. If you need to use a PDF, save it from Word using ‘Save as PDF’ rather than ‘Print to PDF.’”
+
+**PDF without usable tags (public PDF-only route):** “The tool could not reliably determine the order of text in this PDF, so the scores may be less reliable. For your next upload, save the original document from Word using “Save as PDF” rather than “Print to PDF.””
+
+Word is supported only on authenticated `/nofos/readability/`; public
+`/readability/` accepts PDFs only. The public variant therefore does not recommend
+a Word upload. These suggestions do not guarantee accurate scores. The source
+explanation is one paragraph. When overall reliability is not assessed, the alert
+also includes the separate sentence: “Reliability has not been assessed for these
+estimates.” This sentence can accompany either Word or tagged-PDF source copy.
+
+The upper **How to read these results** alert is shared across source types:
+
+> These metrics can help you identify opportunities to improve your document’s readability. They are not a compliance, accessibility, or clearance determination.
+>
+> The tool uses shared metric formulas for Word documents, PDFs, and Builder drafts. Scores can differ because each format can preserve different text, sentence boundaries, and paragraph structure. When tracking revisions, use the same format and analysis method for a more consistent comparison.
+
+Keep this comparison explanation in that upper alert rather than repeating it in
+the source-specific reliability alert. Source explanations describe recovered
+text and preparation steps; they do not ask users to verify an extracted-text
+transcript, because the report does not provide one.
 
 The verified implementation is
 [`pdf_readability.html`](../nofos/bloom_nofos/templates/pdf_readability.html),
 with rendered-report coverage in
 [`test_pdf_readability.py`](../nofos/bloom_nofos/tests_bloom_nofos/test_pdf_readability.py).
 [Before-and-after screenshots](review-evidence/readability-reliability-alert/README.md)
-show all three levels. When changing this notice, verify the level, alert
-variant, and explanatory text together.
+show the three assessed levels at the time of that capture; they are historical
+layout evidence, not the current copy catalog. The Word-upload evidence in
+[PR #1112](review-evidence/word-readability-1111/README.md) includes the unassessed
+state; its existing screenshots predate the later plain-language copy update.
+The template is the executable source of truth; this section catalogs the current
+wording and variants. When changing this notice, verify the level, alert variant,
+source/route-specific text and metric labels together.
 
 This entry covers the readability reliability notice. Add other verified
 alert patterns here as they are reviewed; a site-wide alert audit is not

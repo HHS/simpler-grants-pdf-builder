@@ -197,7 +197,8 @@
     {% spaceless %}
     <ol class="usa-list usa-list--unstyled">
 
-      {% if nofo.number == 'hrsa-application-guide' %}
+      {% if nofo.has_imported_introduction %}
+      {% elif nofo.number == 'hrsa-application-guide' %}
         <li class="toc--section-name toc--no-icon toc--before-you-begin">
           <a href="#section--before-you-begin">Introduction</a>
         </li>
@@ -208,7 +209,12 @@
       {% endif %}
 
       {% for section in nofo.sections.all|dictsort:"order" %}
-        {% if section.has_section_page %}
+        {% if section.is_introduction %}
+          <li class="toc--section-name toc--before-you-begin toc--imported-introduction">
+            <div class="toc--section-name--img">{% if "thin" in nofo.icon_style %}{% include "includes/icons/thin/0-before.svg" %}{% else %}{% include "includes/icons/0-before.svg" %}{% endif %}</div>
+            <div class="toc--section-name--wrapper"><a href="#section--before-you-begin">{{ nofo.introductory_page_title }}</a></div>
+          </li>
+        {% elif section.has_section_page %}
           <li class="toc--section-name">
             <div class="toc--section-name--img">
               {% include "includes/icon_macro.html" with section_name=section.name|lower icon_style=nofo.icon_style only %}
@@ -240,7 +246,8 @@
   </section>
 
   <!-- BEFORE YOU BEGIN PAGE -->
-  {% if nofo.number == 'hrsa-application-guide' %}
+  {% if nofo.has_imported_introduction %}
+  {% elif nofo.number == 'hrsa-application-guide' %}
     {% include "includes/byb_page_guide.html" %}
   {% elif nofo.before_you_begin != 'none' %}
     {% include "includes/byb_page.html" with nofo=nofo step_2_section=step_2_section only %}
@@ -248,7 +255,10 @@
 
   <!-- NOFO CONTENT -->
   {% for section in nofo.sections.all|dictsort:"order" %}
-    <section id="section--{{ section.html_id }}" class="section section--{{ forloop.counter }} {% if forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}{% if not section.has_section_page %} section--no-section-page{% endif %}">
+    {% if section.is_introduction %}
+      {% include "nofos/includes/imported_introduction.html" with section=section nofo=nofo only %}
+    {% else %}
+    <section id="section--{{ section.html_id }}" class="section section--{% if nofo.has_imported_introduction %}{{ section.step_number }}{% else %}{{ forloop.counter }}{% endif %} {% if nofo.has_imported_introduction and section.step_number > 7 or not nofo.has_imported_introduction and forloop.counter > 7 %}section--appendix {% endif %}section--{{ section.html_id }}{% if section.html_class %} {{ section.html_class }}{% endif %}{% if not section.has_section_page %} section--no-section-page{% endif %}">
       <!-- SECTION TITLE PAGE -->
       {% if section.has_section_page %}
         <div class="title-page section--title-page">
@@ -318,7 +328,7 @@
           {% include "includes/heading.html" with tag="h2" content=section.name id=section.html_id only %}
         {% endif %}
         <!-- for the very first subsection, add the nofo agency, subagency, and tagline -->
-        {% if section.order == 1 %}
+        {% if section.is_first_main_section %}
           <div class="section--content--basic-information">
             {% with first_subsection=nofo.get_first_subsection %}
               {% with tag=first_subsection.tag content=first_subsection.name id=first_subsection.html_id %}
@@ -336,7 +346,7 @@
         {% endif %}
 
         <!-- if in portrait mode, add callout boxes in right margin -->
-        {% if section.order == 1 %}
+        {% if section.is_first_main_section %}
           {% spaceless %}
             {% if nofo_theme_orientation == 'portrait' %}
               {% with callouts=section|get_floating_callout_boxes_from_section %}
@@ -356,7 +366,7 @@
         {% for subsection in section.subsections.all|dictsort:"order" %}
           {% if subsection.callout_box %}
             {% if nofo_theme_orientation == 'portrait' %}
-              {% if not section.order == 1 or not subsection|is_floating_callout_box %}
+              {% if not section.is_first_main_section or not subsection|is_floating_callout_box %}
                 {% include "includes/callout_box.html" with subsection=subsection nofo=nofo break_colons=False only %}
               {% endif %}
             {% else %}
@@ -378,5 +388,6 @@
         {% endfor %}
       </div>
     </section>
+    {% endif %}
   {% endfor %}
 {% endblock %}

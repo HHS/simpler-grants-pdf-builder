@@ -13,6 +13,64 @@ outside this pilot and its release epic (#968), must not be exposed through
 Content-free pilot usage monitoring does not store metric results or report
 history. Browser **Print / save as PDF** saves a local copy, not server-side history.
 
+## Word uploads (#1111)
+
+Only the authorized `/nofos/readability/` route also accepts unlocked `.docx`
+files. The existing public `/readability/` route remains PDF-only, even when its
+independent flag is enabled. Existing flag and permission names retain `PDF` for compatibility;
+their values and access checks are unchanged. This addition does not enable a
+route or authorize a new deployment/document classification. Legacy `.doc`,
+macro-enabled documents and other file types are not supported.
+
+The existing isolated worker validates the ZIP container before using the
+already installed Mammoth converter. It permits at most 2,000 entries and
+45 MiB total expanded data, rejects duplicate/encrypted entries, macros and
+DTD/entity declarations in every part regardless of extension, and requires the
+root officeDocument relationship to select the validated canonical
+`word/document.xml` part with the normal DOCX main content type. Unusual packages
+with a noncanonical main-part path are deliberately rejected in this first slice.
+External file access and embedded style maps are disabled, and images are not
+loaded. The existing pure Word table transform is reused; the saved-NOFO import
+workflow, its custom style map and instruction-box cleanup are not invoked.
+
+Word recognition reuses the PDF pilot's loose signals over the first
+50,000 characters of converted text. For unfilled templates, one additional
+compound signal requires both an HHS agency name (including the explicit
+“HHS-wide” alias) and “Notice of funding opportunity” or “NOFO [master] template.”
+A distinct existing signal such as Grants.gov is still required. A filename,
+agency name alone or repeated signal is insufficient. PDF recognition is
+unchanged. This is modest abuse deterrence, not exact template validation.
+It does not claim a stable Word page count. The existing HTML
+profile `hhs-nofo-fy27-html@0.4.0` measures UTF-8 converted body HTML with the
+pinned metrics package; no formula or package dependency changes. No intermediate
+PDF, saved NOFO or report-history record is created.
+
+Reports identify the Word source and explain that conversion may omit headers,
+footers, text boxes and images. Template instructions and draft options that
+convert to text are included. Paragraphs, lists, tables and notes are measured
+according to the existing HTML profile. Word, PDF and Builder draft scores can
+differ because they measure different recovered content. Public output contains
+only the existing safe metric projection, fixed warnings and scope counts, never
+converted document text. Conversion messages are reduced to a fixed warning.
+When the engine supplies no reliability rating, reports and metric cards say
+that reliability has not been assessed. Missing evidence is not converted into
+low (or high) confidence, nor inherited from a different metric. Supplied PDF
+ratings and the generic PDF adapter's explicit low-confidence policy remain.
+
+The complete current alert-copy catalog, report headings, metric labels, rating
+selection rule and authenticated/public variants are documented in
+[UI patterns — Readability estimate reliability alerts](UI_PATTERNS.md#readability-estimate-reliability-alerts).
+That catalog also distinguishes an unavailable metric from unassessed reliability.
+Source explanations stay in one paragraph; only the authenticated tool suggests
+uploading Word instead of a PDF. Historical screenshots may predate copy changes.
+
+Both formats share the existing 15 MiB upload limit, 15-second deadline, global
+analysis slot, filtered subprocess environment and Linux resource limits. Word
+uses the same temporary-directory cleanup and content-free outcome recording.
+There is no page limit for Word, because there is no reliable pagination here;
+expanded-size, entry, time and memory bounds apply instead. Existing deployment
+safeguards below still apply and are not replaced by ZIP validation.
+
 ## Default-off release
 
 ### Content-free outcome monitoring (draft approval gate, #985)

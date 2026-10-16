@@ -437,7 +437,7 @@ class MetadataWordImportTests(TestCase):
         )
         self.assertEqual(
             (nofo.theme, nofo.before_you_begin, nofo.introductory_page_family),
-            ("portrait-cdc-blue", "sole_source", "legacy"),
+            ("portrait-cdc-blue", "sole_source", ""),
         )
         self.assertFalse(
             Subsection.objects.filter(section__nofo=nofo, name="Metadata").exists()

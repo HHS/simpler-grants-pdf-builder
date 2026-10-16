@@ -6,7 +6,8 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 `review-evidence/`.
 
 - [BUILDER_METRICS.md](BUILDER_METRICS.md) — The usage & quality metrics dashboard at `/nofos/metrics`: what it reports and who can see it
-- [AUTHENTICATED_PDF_READABILITY_PILOT.md](AUTHENTICATED_PDF_READABILITY_PILOT.md) - Restricted PDF upload pilot, access provisioning, source-aware reporting and activation checks
+- [AUTHENTICATED_PDF_READABILITY_PILOT.md](AUTHENTICATED_PDF_READABILITY_PILOT.md) - Restricted PDF/Word upload pilot, access provisioning, source-aware reporting and activation checks
+- [Word readability uploads](PDF_READABILITY_PILOT.md#word-uploads-1111) - Reused conversion and measurement paths, archive limits and scope caveats
 - [CHANGELOG_BANNER.md](CHANGELOG_BANNER.md) — The site-wide "Latest release" banner driven by `CHANGELOG.md`: when it shows, how long, and the admin off switch
 - [CONTRIBUTION_WORKFLOW.md](CONTRIBUTION_WORKFLOW.md) — Diagram of the contribution workflow for people and AI agents (issue → branch → PR → CI → squash merge → changelog), with what to read at each step
 - [DESIGN_STANDARDS.md](DESIGN_STANDARDS.md) — Selected NOFO design and accessibility standards (headings, images, visual consistency, line breaks, lists, links, tables) reproduced from the HHS Office of Grants standards, with a checklist to use before publishing
@@ -18,6 +19,7 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 - [TAGLINE_IMPORT.md](TAGLINE_IMPORT.md) — Legacy and Basic information tagline sources, blank precedence, editing, and re-import behavior
 - [WORD_METADATA_IMPORT.md](WORD_METADATA_IMPORT.md) — Legacy labels and trailing Metadata blocks, precedence, defaults and saved-record behavior
 - [INTRODUCTORY_PAGE_IMPORT.md](INTRODUCTORY_PAGE_IMPORT.md) — Supported Word introductory headings, destinations, maintained registration families and legacy preservation
+- [EDITABLE_INTRODUCTION.md](EDITABLE_INTRODUCTION.md) — Imported introductory ownership, compatibility, editing and output policy
 - [endnote-import.md](endnote-import.md) — How Word imports preserve native notes and link manually authored bracketed references
 - [DOCUMENT_PROCESSING.md](DOCUMENT_PROCESSING.md) — Shared content-processing boundary, application responsibilities and remaining portability limits
 - [NOFO_BUILDER_FAQ.md](NOFO_BUILDER_FAQ.md) — Answers to common questions about designing a NOFO in NOFO Builder: importing, Markdown, tables, page layout, endnotes, appendices, metadata, and status; links to the editor tasks for step-by-step instructions
@@ -31,3 +33,10 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 - [review-evidence/](review-evidence/) — Before/after screenshots and capture notes supporting individual PRs, filed by issue number
 
 **`IMPORT_RULES.md` vs `IMPORT_ERROR_CODES.md`:** the first catalogs `IMPORT-NNN` *rules* — content the importer transforms automatically. The second catalogs the `IMPORT-NAME` *error codes* a user sees when an import is blocked outright. A rule can be the reason a code fires; they are separate registries.
+
+## Announcement Services integration
+
+- [Current manual S3 pilot workflow and AS responses (#950)](https://github.com/HHS/simpler-grants-pdf-builder/issues/950) — Source of truth for proposed Word delivery, manual designer retrieval/import, confirmed capabilities and unresolved operating decisions. Capability confirmation does not establish implementation or approval.
+- [Future automated PDF delivery (#951)](https://github.com/HHS/simpler-grants-pdf-builder/issues/951) — Separate future capability; the delivery approach and contract remain to be decided under [#957](https://github.com/HHS/simpler-grants-pdf-builder/issues/957). PDF retrieval and return remain manual in the current pilot.
+
+The earlier `ANNOUNCEMENT_SERVICES_DATA_FLOW.md` and `ANNOUNCEMENT_SERVICES_WORKFLOW.md` files are absent from `main`. Use #950 for the current pilot rather than those older diagrams.
