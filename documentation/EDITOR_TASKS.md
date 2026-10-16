@@ -50,7 +50,7 @@ When you use a task in a suggestion, report, or comment:
 | Subsection | One heading and the content below it, up to the next heading. This is the main unit you edit. | Heading 3–7 and the content under it |
 | Heading level | Set on each subsection: Heading 3 to Heading 7. | The size and nesting of the heading |
 | Callout box | A subsection styled with an accent color to draw attention. | Shaded or colored box |
-| Subsection content | Written in **Markdown** in a text editor. Simple tables are Markdown; tables with merged cells are stored as HTML. | Body text, lists, tables |
+| Subsection content | Written in **Markdown** in a text editor. Simple tables and lists are Markdown; merged-cell tables and lists requiring source marker semantics are stored as HTML. See [Word list editing](WORD_LIST_IMPORT.md). | Body text, lists, tables |
 | Page break | A per-subsection setting that starts it on a new page. | New page before the heading |
 
 ### Before you start: NOFO status

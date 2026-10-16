@@ -948,9 +948,21 @@ def join_nested_lists(soup):
         return None
 
     def _join_lists(lst, previous_lst):
+        # IMPORT-066: reconstructed native Word trees already encode identity,
+        # level, type and restart boundaries. Legacy class repair must not merge
+        # separate numbering instances or reinterpret those parent relationships.
+        if lst.has_attr("data-nofo-source-list") or previous_lst.has_attr(
+            "data-nofo-source-list"
+        ):
+            return
+        if (lst.has_attr("type") or previous_lst.has_attr("type")) and (
+            lst.get("type") != previous_lst.get("type")
+            or lst.get("start", "1") != previous_lst.get("start", "1")
+        ):
+            return
         if _get_list_classname(lst) == _get_list_classname(previous_lst):
             # if classes match, join these lists
-            previous_lst.extend(lst.find_all("li"))
+            previous_lst.extend(lst.find_all("li", recursive=False))
             lst.decompose()
             return
 
@@ -1090,6 +1102,9 @@ def repair_acf_required_alignment_lists(soup):
 
         for start, source_list in zip((1, 2, 4), lists):
             source_list.name = "ol"
+            # IMPORT-052 deliberately overrides source markers only for its
+            # exact agency/content pattern; generic source preservation runs first.
+            source_list.attrs.pop("type", None)
             if start == 1:
                 source_list.attrs.pop("start", None)
             else:
@@ -1910,10 +1925,16 @@ def unwrap_nested_lists(soup):
         return False
 
     for li in soup.find_all("li"):
+        if li.find_parent(attrs={"data-nofo-source-list": True}):
+            continue
         if _has_only_nested_ul(li):
             li.unwrap()
 
     for ul in soup.select("ul > ul"):
+        if ul.has_attr("data-nofo-source-list") or ul.find_parent(
+            attrs={"data-nofo-source-list": True}
+        ):
+            continue
         ul.unwrap()
 
 
