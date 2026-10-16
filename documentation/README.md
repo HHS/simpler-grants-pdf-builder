@@ -29,6 +29,7 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 - [TABLES.md](TABLES.md) — Automatic table styling: size classes, captions, points columns, import-time width classes, and how users override them
 - [UPDATING_PYTHON_DEPENDENCIES.md](UPDATING_PYTHON_DEPENDENCIES.md) — How to update Python dependencies
 - [WORD_IMPORT_DRIFT.md](WORD_IMPORT_DRIFT.md) — Code-review findings on likely differences between Word author intent and imported NOFO structure
+- [WORD_LIST_IMPORT.md](WORD_LIST_IMPORT.md) — Supported native list markers, mixed HTML trees and editing limitations
 - [adr/](adr/README.md) — Architecture Decision Records (ADRs), written from [template.md](template.md)
 - [review-evidence/](review-evidence/) — Before/after screenshots and capture notes supporting individual PRs, filed by issue number
 

@@ -12,6 +12,7 @@ This document catalogs every automatic content rule the NOFO Builder applies whe
 - `nofos/nofos/nofo.py` — Word conversion, metadata defaults, persistence and workflow; compatibility entry points forward content processing to the shared core
 - `nofos/nofos/utils.py` — `style_map_manager`, the Mammoth DOCX→HTML style-name map
 - `nofos/nofos/import_transforms.py` — pre-Mammoth DOCX document transform (`transform_word_document`)
+- `nofos/nofos/word_lists.py` — conversion-copy native Word numbering capture and semantic list reconstruction
 - `nofos/nofos/nofo_markdown.py` — `NofoMarkdownConverter`, the HTML→Markdown conversion rules
 - `nofos/nofos/policy_language.py` — policy-language status detection (feature-flagged)
 - `nofos/nofos/pdf_metadata.py` — PDF metadata placeholder normalization
@@ -42,6 +43,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | ID | Type | Category | Summary | Source |
 |----|------|----------|---------|--------|
 | IMPORT-001 | conversion | DOCX Conversion | Checkbox-row indent detection → "Application Checklist Child" style | `import_transforms.py` |
+| IMPORT-066 | conversion | DOCX Conversion | Native Word numbering → source-typed semantic list trees before Markdown storage | `word_lists.py`, `nofo.py` |
 | IMPORT-060 | removal | DOCX Conversion | Builder Word import omits only the original body's first Title-styled paragraph | `import_transforms.py`, `nofo.py`, `views.py` |
 | IMPORT-002 | conversion | DOCX Conversion | Word heading *character* styles → real `h2`-`h6` | `utils.py` |
 | IMPORT-003 | conversion | DOCX Conversion | Word `heading 7`/`heading 8` paragraph styles → synthetic H7/H8 divs | `utils.py` |
@@ -126,6 +128,13 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 - **Action:** Silently omit that one paragraph from an in-memory conversion copy before Mammoth emits HTML. Do not scan past a blank paragraph, table, drawing-containing paragraph or any other content element. Preserve later Title paragraphs and all surrounding content, metadata, headings, tables, links and package parts. A leading empty Title paragraph qualifies; a paragraph containing a drawing, picture or embedded object is kept conservatively. Never infer record metadata from the omitted text. HTML uploads, existing saved records, view/export behavior, re-import permissions/status checks and rollback remain unchanged. Composer, Compare and direct conversion callers retain their existing behavior unless explicitly opted in.
 - **Source:** `import_transforms.py::omit_leading_word_title`; opt-in in `nofo.py::parse_uploaded_file_as_html_string` and Builder's tracked import views in `views.py`
 - **Status:** active
+
+### IMPORT-066 — Native Word list semantics
+- **Type:** conversion
+- **Trigger:** An uploaded Word body/table paragraph resolves to supported native numbering: decimal, lower/upper letter, lower/upper Roman or bullet. Resolve paragraph/style-based numbering, based-on inheritance, unique paragraph-style associations, abstract definitions, numbering instances, level overrides, start overrides and linked numbering styles. Explicit disabled numbering remains disabled. Headings and native checkbox paragraphs in table first columns retain their existing conversion/IMPORT-001 path.
+- **Action:** Capture native identity, level, effective marker and ordinal in a per-upload sidecar; mark only conversion-copy paragraphs with temporary styles so Mammoth still converts their rich content. Reconstruct semantic `ol`/`ul` → `li` trees with explicit ordered types and non-one starts. Normalize nonzero initial source levels without empty parent items. Keep numbering continuation after unrelated prose as separate lists with explicit starts; attach only bounded, explicitly indented continuation paragraphs between items of the same numbering instance. Table/container boundaries are not crossed. Source reconstruction precedes legacy repair and IMPORT-052's deliberate ACF normalization. IMPORT-020 preserves complete trees when Markdown would lose semantics; standalone simple lists retain IMPORT-021. Temporary source attributes/styles never become visible markers or stored metadata.
+- **Source:** `word_lists.py::prepare_word_lists`, `WordListPlan.restore_html`; integrated by `nofo.py::parse_uploaded_file_as_html_string`
+- **Status:** active for explicit Word conversion through shared Builder, Composer and Compare consumers. Source uploads, note ZIP parts and existing saved records are not rewritten. Unsupported/custom compound marker formats and ambiguous numbering associations retain Mammoth's prior path with a nonblocking, content-free list-review advisory; no guessing from typed numbers or inline prose. Builder shows **Check list numbering** after successful new/re-import, with comparison, subsection-edit/save and PDF-review steps. No blocking import-error code is introduced. See [Word list import and editing](WORD_LIST_IMPORT.md).
 
 ### IMPORT-002 — Heading character styles → real headings
 - **Type:** conversion
@@ -320,21 +329,21 @@ The example that prompted this document: detecting a footnote/endnote list and f
 ### IMPORT-018 — Adjacent list merging/nesting
 - **Type:** repair
 - **Trigger:** Two adjacent `<ul>`/`<ol>` siblings. If they share the same Mammoth-generated list class, they're siblings that should be one list; if classes differ, the second is meant to be nested under the first.
-- **Action:** Same class → merge into a single list. Different class → nest the second list inside the last `<li>` of the first (recursing into any already-nested list there).
+- **Action:** Same class → merge direct child items into a single list without extracting nested descendants. Different class → nest the second list inside the last `<li>` of the first (recursing into any already-nested list there). Do not reinterpret source-reconstructed Word trees (IMPORT-066), or merge lists across explicit marker/start boundaries.
 - **Source:** `content_processing.py::join_nested_lists`
 - **Status:** active
 
 ### IMPORT-019 — Redundant list-wrapper unwrapping
 - **Type:** repair
 - **Trigger:** An `<li>` whose only content is a nested `<ul>` (no direct text); or a `<ul>` directly nested inside another `<ul>` with no intervening `<li>`.
-- **Action:** Unwrap the redundant wrapper level.
+- **Action:** Unwrap the redundant wrapper level in legacy content. Source-reconstructed Word trees (IMPORT-066) already have normalized levels and retain their meaningful item boundaries.
 - **Source:** `content_processing.py::unwrap_nested_lists`
 - **Status:** active
 
 ### IMPORT-020 — Numbered-list-start / table-cell lists kept as raw HTML
 - **Type:** conversion
-- **Trigger:** During Markdown conversion, an `<ol start="N">` where N ≠ 1, or any list nested inside a `<td>`/`<th>`.
-- **Action:** Rendered as raw HTML instead of Markdown, since Markdown can't express a custom start number and table-cell lists are ambiguous in Markdown.
+- **Trigger:** During Markdown conversion, an `<ol start="N">` where N ≠ 1, a letter/Roman marker, an explicit decimal descendant, paragraph-bearing list items, a reversed/item-value list, or any list nested inside a `<td>`/`<th>`.
+- **Action:** Keep the complete containing list tree as semantic HTML when marker/start semantics require it, including ordered and unordered descendants. Surround raw blocks with blank lines so adjacent Markdown stays separate. Preserve `type`/`start`; remove conversion-only source markers before storage. Table-cell and native/manual endnote preservation remain in force. Simple standalone decimal/bullet lists still use IMPORT-021.
 - **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_ol/convert_ul`
 - **Status:** active
 
@@ -348,7 +357,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 ### IMPORT-052 — ACF required-alignment list groups → continuing numbered lists
 - **Type:** repair
 - **Trigger:** Imported metadata identifies an ACF NOFO by opportunity number or OpDiv; an "Agency priorities" subsection is inside Step 1; its opening content is either a bold paragraph or an immediately nested heading whose exact text is "Required alignment with ACF Vision, Mission, Values, Priorities, and Guiding Principles"; its first prose paragraph begins with the canonical required-alignment language; and three unordered or ordered lists contain the six expected bold principle labels in order (groups of 1, 2, and 3 items).
-- **Action:** Normalize only those three `<ul>`/`<ol>` containers as ordered lists starting at 1, 2, and 4. The first list becomes normal Markdown numbering; the latter two retain `<ol start="2">` / `<ol start="4">` through IMPORT-020. All source wording, links, emphasis, headings, and intervening paragraphs remain unchanged. If any agency, hierarchy, title, opening-text, list-count, or label check fails, leave the subsection untouched.
+- **Action:** Normalize only those three `<ul>`/`<ol>` containers as ordered lists starting at 1, 2, and 4, removing explicit source marker types so this existing deliberate repair takes precedence over IMPORT-066. The first list becomes normal Markdown numbering; the latter two retain `<ol start="2">` / `<ol start="4">` through IMPORT-020. All source wording, links, emphasis, headings, and intervening paragraphs remain unchanged. If any agency, hierarchy, title, opening-text, list-count, or label check fails, leave the subsection untouched.
 - **Source:** `content_processing.py::repair_acf_required_alignment_lists` (using `is_acf_nofo_metadata`)
 - **Status:** active
 

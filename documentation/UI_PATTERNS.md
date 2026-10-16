@@ -390,6 +390,24 @@ confirm uncertain content remains available for review, and verify that known
 instruction removal and content-callout preservation still work. Do not claim
 production verification from local tests or screenshots.
 
+## Word list numbering review warning
+
+Unsupported native numbering formats or ambiguous style/numbering associations
+use a nonblocking yellow USWDS warning after import, not a blocking import error.
+Reuse `word_import_review.html` with the `word-list-review` Django message tag.
+The heading is **Check list numbering**, with `usa-alert__heading text-bold`;
+body text explains that some numbering could not be preserved automatically.
+New imports direct users to save the name and open the NOFO from **All NOFOs**;
+reimports start in the current NOFO. Both direct users to compare source lists,
+use the subsection's **Edit** action, select **Save subsection**, and check the PDF.
+Do not show instruction-box cleanup guidance for a numbering warning.
+
+The [local verification evidence](review-evidence/native-word-lists-1121/README.md)
+includes the actual new-import warning. Its computed heading uses Source Sans
+Pro Web at weight 700, matching the existing USWDS alert pattern. Automated
+tests verify unsupported import remains successful and guidance is shown.
+No new blocking error code or persistent warning field is introduced.
+
 ## Subsection save conflicts
 
 Use this recovery pattern when saving an out-of-date subsection form would

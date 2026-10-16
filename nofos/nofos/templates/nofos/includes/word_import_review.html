@@ -18,4 +18,22 @@
       </div>
     </div>
   {% endif %}
+  {% if "word-list-review" in message.tags %}
+    <div class="usa-alert usa-alert--warning margin-y-3" role="alert">
+      <div class="usa-alert__body">
+        <h2 class="usa-alert__heading text-bold">Check list numbering</h2>
+        <p class="usa-alert__text">{{ message }}</p>
+        <p class="usa-alert__text margin-top-1">
+          {% if is_reimport %}
+            In this NOFO, compare
+          {% else %}
+            After saving the NOFO name, open your NOFO from <strong>All NOFOs</strong>. Compare
+          {% endif %}
+          list markers and nesting with your Word document. Open the affected subsection's
+          <strong>Edit</strong> action, correct the list, then select <strong>Save subsection</strong>.
+          Check the PDF before sharing it.
+        </p>
+      </div>
+    </div>
+  {% endif %}
 {% endfor %}
