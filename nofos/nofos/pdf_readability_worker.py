@@ -238,7 +238,7 @@ def analyze_word(path: Path) -> dict:
     try:
         result = metrics.analyze(
             metrics.SourceBundle.from_html(html.encode("utf-8")),
-            profile="hhs-nofo-fy27-html@0.4.0",
+            profile="hhs-nofo-fy27-html@0.5.0",
             production_path="word_readability_pilot",
         )
     except metrics.NofoMetricsError:
