@@ -51,3 +51,31 @@ target is changed by profile adoption. No Builder deployment is implied.
 The v0.4 method fixes unambiguous be contractions and the `need`/`indeed` errors.
 Ambiguous pronoun `'s` remains a documented limitation because it can mean `is`
 or `has`. This is not a claim of Word parity or of calibration of the 8% target.
+
+## Independent consumer review and browser loop
+
+A separate reviewer checked implementation `efce21b5` and documentation follow-up
+`bd6b1768`, then passed 177 independently selected Django tests against the
+published wheel in isolated SQLite. Coverage included actual DOCX/PDF workers,
+versioned results, history/checkpoints/import/download and both upload routes.
+No actionable finding remained. The lock diff contains only the intended package
+URL/version/hash and project content hash, not unrelated dependency changes.
+
+Actual local in-app browser verification used a normal login with a synthetic
+account and the published installed wheel, not a stubbed analysis response:
+
+- Word upload returned measurement version 0.6.0, 37 words, seven complete
+  sentences and 42.9% passive (three of seven). This recognition fixture includes
+  extra metadata sentences, so it is not a five-sentence parity control.
+- Untagged synthetic PDF upload returned version 0.6.0, 31 words, five complete
+  sentences and 60.0% passive. Generic-extraction low-reliability guidance remained.
+- Opening the seeded NOFO editor's existing metrics panel calculated 60% passive
+  over the same five core sentences. The deliberately minimal fixture has ordinary
+  heading/metadata warnings; those are not defects introduced by this change.
+- The tagged-PDF corrected profile is covered by automated worker tests, not
+  claimed as a separate browser upload here. No shared or production settings,
+  documents, provider calls or public enablement were used.
+
+![Word upload result](word-report.jpg)
+![Generic PDF upload result](pdf-report.jpg)
+![Editor metrics result](editor-result.jpg)
