@@ -146,7 +146,7 @@ class NofoMarkdownConverter(MarkdownConverter):
             return str(el)
 
         for parent in el.parents:
-            if parent.name == "td":
+            if parent.name in ("td", "th"):
                 self._remove_classes_recursive(el)
                 return str(el).replace("*", "&ast;")
 
@@ -165,7 +165,7 @@ class NofoMarkdownConverter(MarkdownConverter):
         if el.find(id=re.compile(r"^endnote-manual-")):
             return "\n\n" + str(el) + "\n\n"
         for parent in el.parents:
-            if parent.name == "td":
+            if parent.name in ("td", "th"):
                 self._remove_classes_recursive(el)
                 return str(el).replace("*", "&ast;")
 

@@ -69,6 +69,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-018 | repair | Lists | Adjacent same-class lists merged; differing-class lists nested | `nofo.py` |
 | IMPORT-019 | repair | Lists | Redundant `<li>`/`<ul>` wrapper levels unwrapped | `nofo.py` |
 | IMPORT-020 | conversion | Lists | `<ol start="N≠1">` or list-in-table-cell → kept as raw HTML in Markdown | `nofo_markdown.py` |
+| IMPORT-066 | repair | Tables | Consecutive first-column single-item ordered lists → explicit continuing starts | `content_processing.py` |
 | IMPORT-021 | conversion | Lists | Custom fixed-indent bullet/number rendering in Markdown | `nofo_markdown.py` |
 | IMPORT-052 | repair | Lists | Canonical ACF required-alignment list groups → continuing numbered lists | `nofo.py` |
 | IMPORT-022 | repair *(see note)* | Tables | First table row's `<td>`s → `<th>`s (assumed header row) | `nofo.py` |
@@ -336,6 +337,13 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Trigger:** During Markdown conversion, an `<ol start="N">` where N ≠ 1, or any list nested inside a `<td>`/`<th>`.
 - **Action:** Rendered as raw HTML instead of Markdown, since Markdown can't express a custom start number and table-cell lists are ambiguous in Markdown.
 - **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_ol/convert_ul`
+- **Status:** active
+
+### IMPORT-066 — Continue numbered items across table rows
+- **Type:** repair
+- **Trigger:** Two or more consecutive rows of a table each have at least two cells and a first `<td>` containing only one decimal `<ol>` with one nonempty, unnested `<li>`. Tables with merged cells are excluded.
+- **Action:** Add missing `start` attributes, counting from 1 within each run. Preserve explicit numeric starts as authoritative restart anchors, then continue from them. Header/nonmatching rows end the run; tables are independent. Other columns, multi-item/nested/reversed/non-decimal lists, `li[value]`, and malformed starts are unchanged. Applies to the shared Word/HTML import pipeline; existing Markdown preservation (IMPORT-020) retains the starts. HTML has no cross-cell list identity, so this narrow shape is interpreted as a sequence; authors needing independent lists can set each `start="1"` explicitly. This preserves the layout but leaves separate one-item lists for assistive technology; a separate number column is an author-controlled alternative.
+- **Source:** `content_processing.py::continue_table_row_numbering`, called by `process_nofo_html`
 - **Status:** active
 
 ### IMPORT-021 — Custom list rendering in Markdown

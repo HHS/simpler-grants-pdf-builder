@@ -154,6 +154,7 @@ def process_nofo_html(soup, top_heading_level, *, debug_capture=None):
     clean_heading_tags(soup)
     decompose_before_you_begin_section(soup)
     clean_table_cells(soup)
+    continue_table_row_numbering(soup)  # IMPORT-066
     unwrap_empty_elements(soup)
     decompose_empty_tags(soup)
     combine_consecutive_links(soup)
@@ -1267,6 +1268,65 @@ def decompose_empty_tags(soup):
     elements = soup.find_all(["li", "p"])
     for element in elements:
         _decompose_empty_elements(element)
+
+
+def continue_table_row_numbering(soup):
+    """Continue single-item decimal lists down consecutive first-column cells.
+
+    HTML has no cross-cell list identity. Treat only this narrow table shape as
+    a continuing sequence; explicit starts remain authoritative restart anchors.
+    """
+    for table in soup.find_all("table"):
+        # Merged cells make the logical first column ambiguous.
+        if any(
+            cell.get(attr, "1") != "1"
+            for cell in table.find_all(["td", "th"])
+            for attr in ("rowspan", "colspan")
+        ):
+            continue
+        run = []
+
+        def finish_run():
+            if len(run) < 2:
+                return
+            number = 1
+            for ordered_list in run:
+                if ordered_list.has_attr("start"):
+                    number = int(ordered_list["start"])
+                else:
+                    ordered_list["start"] = str(number)
+                number += 1
+
+        for row in table.find_all("tr"):
+            if row.find_parent("table") is not table:
+                continue
+            cells = row.find_all(["td", "th"], recursive=False)
+            candidate = None
+            if len(cells) > 1 and cells[0].name == "td":
+                children = [
+                    child
+                    for child in cells[0].contents
+                    if not isinstance(child, NavigableString) or child.strip()
+                ]
+                if len(children) == 1 and getattr(children[0], "name", None) == "ol":
+                    ordered_list = children[0]
+                    items = ordered_list.find_all("li", recursive=False)
+                    if (
+                        len(items) == 1
+                        and items[0].get_text(strip=True)
+                        and not ordered_list.find(["ol", "ul"])
+                        and not ordered_list.has_attr("reversed")
+                        and ordered_list.get("type", "1") == "1"
+                        and not items[0].has_attr("value")
+                        and re.fullmatch(r"[0-9]+", str(ordered_list.get("start", "1")))
+                    ):
+                        candidate = ordered_list
+            if candidate is None:
+                finish_run()
+                run = []
+            else:
+                run.append(candidate)
+        finish_run()
 
 
 def clean_table_cells(soup):
