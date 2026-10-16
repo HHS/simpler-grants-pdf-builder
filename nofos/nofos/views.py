@@ -839,15 +839,19 @@ class BaseNofoImportView(View):
         try:
             # 2. Parse string to HTML
             review_warnings = []
+            list_review_warnings = []
             file_content, warning_count = parse_uploaded_file_as_html_string(
                 uploaded_file,
                 omit_leading_title=self.track_import_metrics,
                 remove_instruction_boxes=self.remove_word_instruction_boxes,
                 review_warnings=review_warnings,
+                list_review_warnings=list_review_warnings,
                 preserve_empty_paragraphs=self.extract_scoped_tagline,
             )
             for warning in review_warnings:
                 messages.warning(request, warning, extra_tags="word-import-review")
+            for warning in list_review_warnings:
+                messages.warning(request, warning, extra_tags="word-list-review")
 
             # 3–4. Shared content processing, independent of the uploaded file.
             content = process_document_content(

@@ -7,7 +7,7 @@ NofoMarkdownConverter's conversion rules.
 
 import re
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString
 from markdownify import MarkdownConverter
 
 from .content_constants import APPLICATION_CHECKLIST_CHILD_CLASS
@@ -19,6 +19,7 @@ re_line_with_content = re.compile(r"^(.*)", flags=re.MULTILINE)
 
 PRESERVE_BOOKMARK_TARGET_ATTR = "data-nofo-preserve-bookmark-target"
 MISSING_ALT_TEXT_ATTR = "data-nofo-missing-alt-text"
+SOURCE_LIST_ATTR = "data-nofo-source-list"
 
 
 def get_width_class(th):
@@ -87,6 +88,56 @@ class NofoMarkdownConverter(MarkdownConverter):
             if el.has_attr("class"):
                 del el["class"]
 
+    def _list_requires_html(self, el):
+        """Keep a whole tree when Markdown would lose any source list semantics.
+
+        In particular, converting just the nested Roman list is insufficient:
+        Markdown markers around raw nested blocks do not preserve the tree.
+        A nested explicit decimal type also matters because legacy CSS otherwise
+        selects alpha/Roman markers by depth. Simple standalone decimals/bullets
+        retain the established four-space Markdown representation (IMPORT-021).
+        """
+        root = el
+        for parent in el.parents:
+            if parent.name in ("ol", "ul"):
+                root = parent
+        # Markdown merges adjacent lists of the same kind, even when the
+        # second ordered list explicitly restarts at 1. Preserve both trees;
+        # blank lines alone do not retain their independent boundaries.
+        for direction in ("previous_sibling", "next_sibling"):
+            sibling = getattr(root, direction)
+            while isinstance(sibling, NavigableString) and not sibling.strip():
+                sibling = getattr(sibling, direction)
+            if getattr(sibling, "name", None) == root.name:
+                return True
+        # Paragraph-bearing (loose) items need their block boundaries retained.
+        # The renderer can otherwise absorb the next marker into a continuation.
+        if root.find("p") is not None:
+            return True
+        for ordered in [root, *root.find_all("ol")]:
+            if ordered.name != "ol":
+                continue
+            marker = ordered.get("type")
+            if marker in ("a", "A", "i", "I"):
+                return True
+            if ordered is not root and marker == "1":
+                return True
+            if ordered.get("start", "1") != "1" or ordered.has_attr("reversed"):
+                return True
+        return bool(root.find("li", attrs={"value": True}))
+
+    def _raw_list(self, el):
+        self._remove_classes_recursive(el)
+        self._strip_source_list_attrs(el)
+        html = str(el)
+        if el.find_parent(["td", "th"]) is not None:
+            html = html.replace("*", "&ast;")
+        return "\n\n" + html + "\n\n"
+
+    def _strip_source_list_attrs(self, el):
+        for tag in [el, *el.find_all(True)]:
+            tag.attrs.pop(SOURCE_LIST_ATTR, None)
+
     def convert_a(self, el, text, parent_tags):
         # Referenced, empty bookmark targets need to remain raw HTML so their
         # IDs survive the HTML -> Markdown -> HTML round trip at the exact
@@ -137,16 +188,16 @@ class NofoMarkdownConverter(MarkdownConverter):
         return super().convert_img(el, text, parent_tags)
 
     def convert_ol(self, el, text, parent_tags):
+        self._strip_source_list_attrs(el)
         if el.find(id=re.compile(r"^endnote-manual-")):
             return "\n\n" + str(el) + "\n\n"
         # return as HMTL to preserve "start" attribute if anything other than "1"
         start = el.get("start", "1")
         if start and start != "1":
-            self._remove_classes_recursive(el)
-            return str(el)
+            return self._raw_list(el)
 
         for parent in el.parents:
-            if parent.name == "td":
+            if parent.name in ("td", "th"):
                 self._remove_classes_recursive(el)
                 return str(el).replace("*", "&ast;")
 
@@ -159,13 +210,18 @@ class NofoMarkdownConverter(MarkdownConverter):
             [li.attrs.update({"tabindex": "-1"}) for li in el.find_all("li")]
             return str(el.prettify())
 
+        if self._list_requires_html(el):
+            return self._raw_list(el)
         return super().convert_ol(el, text, parent_tags)
 
     def convert_ul(self, el, text, parent_tags):
+        self._strip_source_list_attrs(el)
         if el.find(id=re.compile(r"^endnote-manual-")):
             return "\n\n" + str(el) + "\n\n"
+        if self._list_requires_html(el):
+            return self._raw_list(el)
         for parent in el.parents:
-            if parent.name == "td":
+            if parent.name in ("td", "th"):
                 self._remove_classes_recursive(el)
                 return str(el).replace("*", "&ast;")
 

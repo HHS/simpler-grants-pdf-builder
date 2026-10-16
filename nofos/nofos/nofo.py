@@ -171,6 +171,7 @@ def parse_uploaded_file_as_html_string(
     omit_leading_title=False,
     remove_instruction_boxes=True,
     review_warnings=None,
+    list_review_warnings=None,
     preserve_empty_paragraphs=False,
 ):
     """
@@ -203,12 +204,20 @@ def parse_uploaded_file_as_html_string(
                 conversion_file, box_warnings = clean_instruction_boxes(conversion_file)
                 if review_warnings is not None:
                     review_warnings.extend(box_warnings)
+            # IMPORT-066: capture source numbering before Mammoth discards
+            # marker formats, numbering identity and start/restart information.
+            from .word_lists import prepare_word_lists
+
+            conversion_file, list_plan = prepare_word_lists(conversion_file)
+            if list_review_warnings is not None:
+                list_review_warnings.extend(list_plan.warnings)
             doc_to_html_result = mammoth.convert_to_html(
                 conversion_file,
                 style_map="\n".join(
                     [
                         style_map_manager.get_style_map(),
                         APPLICATION_CHECKLIST_CHILD_STYLE_MAP,
+                        list_plan.style_map,
                     ]
                 ),
                 transform_document=transform_word_document,
@@ -237,7 +246,7 @@ def parse_uploaded_file_as_html_string(
         if config.WORD_IMPORT_STRICT_MODE and warnings:
             raise StrictFormattingError(warnings)
 
-        return doc_to_html_result.value, len(warnings)
+        return list_plan.restore_html(doc_to_html_result.value), len(warnings)
 
     else:
         raise ValidationError(
