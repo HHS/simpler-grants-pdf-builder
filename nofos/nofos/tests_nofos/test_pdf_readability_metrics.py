@@ -238,6 +238,96 @@ class MetricsTests(TestCase):
         self.assertContains(page, "About these metrics")
         self.assertContains(page, "No data")
 
+    def test_file_neutral_copy_and_route_help(self):
+        self.login_viewer()
+        page = self.client.get(self.url)
+        self.assertContains(page, "<title>Readability pilot usage", html=False)
+        self.assertContains(page, "Readability pilot usage")
+        self.assertNotContains(page, "PDF readability pilot usage")
+        self.assertContains(
+            page, "Totals combine recorded PDF and Word upload attempts."
+        )
+        self.assertContains(
+            page,
+            "The authenticated tool supports PDF and Word (.docx) uploads; "
+            "the public tool supports PDF uploads only.",
+        )
+        self.assertContains(
+            page,
+            "File type is not recorded, so these metrics cannot separate PDF from Word usage.",
+        )
+        self.assertContains(page, "Filter by upload route, not file type.")
+        self.assertContains(page, 'aria-describedby="pilot-source-hint"')
+        self.assertContains(page, "No recorded attempts.")
+        main = self.client.get(reverse("nofos:builder_metrics"))
+        self.assertContains(
+            main, f'<a href="{self.url}">Readability pilot usage</a>', html=True
+        )
+        self.assertNotContains(main, "PDF readability pilot usage")
+
+    def test_mixed_outcomes_share_totals_and_filter_only_by_route(self):
+        self.login_viewer()
+        # Success has no format dimension. PDF and Word failures retain their
+        # own codes, but must not be used to guess the format of other attempts.
+        for source, outcome, status in (
+            ("public", "success", 200),
+            ("authenticated", "success", 200),
+            ("authenticated", "invalid_word", 400),
+            ("authenticated", "invalid_pdf", 400),
+            ("unknown", "success", 200),
+        ):
+            PdfReadabilityAttempt.objects.create(
+                source=source, outcome=outcome, http_status=status, duration_ms=10
+            )
+        for source, total, successes in (
+            ("all", 5, 3),
+            ("authenticated", 3, 1),
+            ("public", 1, 1),
+            ("unknown", 1, 1),
+        ):
+            with self.subTest(source=source):
+                data = self.client.get(
+                    self.url, {"source": source}, HTTP_ACCEPT="application/json"
+                ).json()
+                self.assertEqual(data["total_attempts"], total)
+                self.assertEqual(data["successes"], successes)
+                self.assertEqual(
+                    data["success_rate_pct"], round(100 * successes / total, 1)
+                )
+                self.assertEqual(data["unsuccessful"], total - successes)
+                self.assertEqual(sum(r["attempts"] for r in data["daily"]), total)
+                self.assertEqual(sum(r["attempts"] for r in data["weekly"]), total)
+                self.assertEqual(data["chart_daily"][-1]["attempts"], total)
+                self.assertEqual(len(data["recent_attempts"]), total)
+                if source != "all":
+                    self.assertTrue(
+                        all(r["source"] == source for r in data["recent_attempts"])
+                    )
+        page = self.client.get(self.url, {"source": "authenticated"})
+        self.assertContains(page, "Invalid Word document")
+        self.assertContains(page, "Invalid PDF")
+        self.assertContains(page, "Password-protected PDF")
+        self.assertContains(page, "Report returned")
+        self.assertContains(page, "Word document")
+        self.assertNotContains(page, "PDF readability attempts pages")
+
+    def test_file_neutral_pagination_preserves_route(self):
+        self.login_viewer()
+        PdfReadabilityAttempt.objects.bulk_create(
+            [
+                PdfReadabilityAttempt(
+                    source="authenticated",
+                    outcome="success",
+                    http_status=200,
+                    duration_ms=1,
+                )
+                for _ in range(51)
+            ]
+        )
+        page = self.client.get(self.url, {"source": "authenticated"})
+        self.assertContains(page, 'aria-label="Readability attempts pages"')
+        self.assertContains(page, 'href="?source=authenticated&amp;page=2"')
+
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
     def test_json_aggregates_pagination_and_denominator(self):
         self.login_viewer()
