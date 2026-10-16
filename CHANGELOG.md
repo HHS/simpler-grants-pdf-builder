@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.52.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.52.0...nofos-v3.52.1) (2026-10-16)
+
+
+### Bug Fixes
+
+* adopt corrected passive profiles across readability paths ([#1123](https://github.com/HHS/simpler-grants-pdf-builder/issues/1123)) ([7a5672a](https://github.com/HHS/simpler-grants-pdf-builder/commit/7a5672a645e453da4d5894f9edd7d982689a88aa))
+* preserve native Word list markers and hierarchy ([#1125](https://github.com/HHS/simpler-grants-pdf-builder/issues/1125)) ([223a633](https://github.com/HHS/simpler-grants-pdf-builder/commit/223a63399f6f38a5dc2e056efc250cb63179d3bb))
+
+
+### Miscellaneous Chores
+
+* bump boto3 from 1.43.98 to 1.43.105 in the python-minor-and-patch group ([#1102](https://github.com/HHS/simpler-grants-pdf-builder/issues/1102)) ([a350ba7](https://github.com/HHS/simpler-grants-pdf-builder/commit/a350ba729e6ac4adf4c04a816dddce98829b4d4a))
+
 ## [3.52.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.51.0...nofos-v3.52.0) (2026-10-15)
 
 
