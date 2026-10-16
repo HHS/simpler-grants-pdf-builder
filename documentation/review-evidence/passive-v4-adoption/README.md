@@ -23,13 +23,22 @@ or any other metric, and that the actual DOCX worker returns the corrected value
 Existing structured-DOCX tests verify reuse of the corrected HTML profile.
 No shared environment was changed.
 
-This is **not ready for deployment**. Builder's declared dependency and lockfile
-remain at the existing release. Before opening the adoption PR, publish the
-reviewed library wheel, then update the dependency pin and regenerate the
-lockfile against that actual artifact. Update the readability integration and
-pilot documentation in the same Builder PR. Record the resulting package/profile
-identity during dev verification. No pilot flag, access rule, upload validation,
-temporary-storage policy or metrics target is changed by profile adoption.
+The dependency step advances Builder from 0.5.4, not 0.5.5. It therefore also
+includes the released tagged table-cell continuation correction and adapter
+0.1.7. PDF extraction and resulting nonpassive estimates may change. Claims that
+only the passive score changes apply to a controlled identical extracted input,
+not to every PDF analyzed across the package upgrade.
+
+The library release is published at
+https://github.com/agilesix/hhs-nofo-metrics/releases/tag/v0.6.0 from reviewed
+main commit `b38496f5b90e88b0491d658a3151b04b299add53`, with all main CI checks
+passing. Builder's dependency and lockfile now select its published wheel with
+SHA-256 `7fc342f8bc0b7f78cf876ef41de847cf09404cdfe1045db10bd908df338ca81c`.
+Poetry 2.5.1 regenerated only the metric package entry and project content hash;
+no unrelated dependency versions changed. The actual published wheel is
+installed in the isolated Python 3.14 consumer test and local browser runtime.
+No pilot flag, access rule, upload validation, temporary-storage policy or metrics
+target is changed by profile adoption. No Builder deployment is implied.
 
 The v0.4 method fixes unambiguous be contractions and the `need`/`indeed` errors.
 Ambiguous pronoun `'s` remains a documented limitation because it can mean `is`

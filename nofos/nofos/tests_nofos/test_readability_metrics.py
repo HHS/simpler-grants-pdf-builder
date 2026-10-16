@@ -760,6 +760,36 @@ class NofoReadabilityScorePersistenceTests(TestCase):
         self.assertTrue(current.is_current)
 
     @patch("nofos.readability.analyze_nofo_readability")
+    def test_corrected_profile_recalculates_without_rewriting_054_history(
+        self, analyze, version
+    ):
+        historical_payload = build_payload()
+        previous = NofoReadabilityScore.objects.create(
+            nofo=self.nofo,
+            nofo_revision=self.nofo.updated,
+            profile_reference="hhs-nofo-fy27-html@0.4.0",
+            package_version="0.5.4",
+            input_contract_version=INPUT_CONTRACT_VERSION,
+            result=historical_payload,
+        )
+        analyze.return_value = build_payload()
+        version.return_value = "0.6.0"
+        self.assertFalse(previous.is_current)
+        self.client.post(self.metrics_url)
+        self.client.post(self.metrics_url)
+        self.assertEqual(analyze.call_count, 1)
+        previous.refresh_from_db()
+        self.assertEqual(previous.package_version, "0.5.4")
+        self.assertEqual(previous.profile_reference, "hhs-nofo-fy27-html@0.4.0")
+        self.assertEqual(previous.result, historical_payload)
+        self.assertEqual(NofoReadabilityScore.objects.count(), 2)
+        current = NofoReadabilityScore.objects.current_for(
+            self.nofo, PROFILE_REFERENCE, "0.6.0", INPUT_CONTRACT_VERSION
+        )
+        self.assertIsNotNone(current)
+        self.assertTrue(current.is_current)
+
+    @patch("nofos.readability.analyze_nofo_readability")
     def test_legacy_input_contract_is_history_not_a_current_cached_measurement(
         self, analyze, _version
     ):
