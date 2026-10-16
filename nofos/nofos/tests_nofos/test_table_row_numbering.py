@@ -1,4 +1,4 @@
-"""Regression coverage for IMPORT-066 and the Markdown/render boundary."""
+"""Regression coverage for IMPORT-067 and the Markdown/render boundary."""
 
 import unittest
 from io import BytesIO
@@ -142,6 +142,15 @@ class TableRowNumberingTests(unittest.TestCase):
                 before = str(soup)
                 continue_table_row_numbering(soup)
                 self.assertEqual(str(soup), before)
+
+    def test_source_word_lists_keep_authoritative_independent_starts(self):
+        soup = soup_for(
+            [row(item().replace("<ol>", '<ol data-nofo-source-list="true" type="1">'))]
+            * 2
+        )
+        before = str(soup)
+        continue_table_row_numbering(soup)
+        self.assertEqual(str(soup), before)
 
     def test_merged_cells_are_unchanged(self):
         for attr in ('rowspan="2"', 'colspan="2"'):

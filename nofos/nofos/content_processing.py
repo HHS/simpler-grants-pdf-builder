@@ -154,7 +154,7 @@ def process_nofo_html(soup, top_heading_level, *, debug_capture=None):
     clean_heading_tags(soup)
     decompose_before_you_begin_section(soup)
     clean_table_cells(soup)
-    continue_table_row_numbering(soup)  # IMPORT-066
+    continue_table_row_numbering(soup)  # IMPORT-067
     unwrap_empty_elements(soup)
     decompose_empty_tags(soup)
     combine_consecutive_links(soup)
@@ -1328,6 +1328,7 @@ def continue_table_row_numbering(soup):
                     items = ordered_list.find_all("li", recursive=False)
                     if (
                         len(items) == 1
+                        and not ordered_list.has_attr("data-nofo-source-list")
                         and items[0].get_text(strip=True)
                         and not ordered_list.find(["ol", "ul"])
                         and not ordered_list.has_attr("reversed")
