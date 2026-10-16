@@ -35,7 +35,18 @@ when disabled. Authorized POSTs require CSRF even while disabled. Authentication
 and permission checks precede multipart parsing and analysis. The existing size
 handler is installed before the nested CSRF check reads the body.
 
-## Supported PDFs and processing
+## Supported documents and processing
+
+The same authorized form also accepts Word `.docx` documents under #1111.
+Word support is restricted to this route. Public `/readability/` remains PDF-only
+and keeps its independent access switch; #1111 does not broaden access.
+Permissions, participant groups, feature switches and content-free recording
+settings keep their existing names and behavior. Word handling, archive bounds,
+measurement scope and known conversion limits are documented in
+[Word uploads](PDF_READABILITY_PILOT.md#word-uploads-1111). No external converter,
+saved NOFO or intermediate PDF is used. Legacy `.doc` and macro-enabled formats
+are rejected. Revalidate applicable deployed safeguards before introducing Word
+documents into an approved pilot; this source change is not operating approval.
 
 Use text-based HHS NOFO PDFs. Existing configurable recognition checks the first
 two pages for NOFO signals such as opportunity number, Assistance Listing number
@@ -43,7 +54,7 @@ and Grants.gov reference. These rules are not broadened. See
 [PDF_READABILITY_PILOT.md](PDF_READABILITY_PILOT.md) and
 [PDF_READABILITY_SAFEGUARDS.md](PDF_READABILITY_SAFEGUARDS.md).
 
-Limits remain one PDF, 15 MiB, 150 pages, a 15-second bounded analyzer worker and
+PDF limits remain one PDF, 15 MiB, 150 pages, a 15-second bounded analyzer worker and
 the existing shared analysis slot. Both routes use the same slot. Unsupported,
 uncertain, scanned/no-text, encrypted, malformed, oversized, busy, timeout and
 unavailable cases retain their useful messages. Unexpected analyzer failures
@@ -52,7 +63,7 @@ Reports retain scope and reliability explanations; PDF and source-native Builder
 measurements can differ. Authentication does not establish parser containment.
 
 The upload page shows the existing Word export progress-modal design after browser
-validation succeeds, with “Analyzing your PDF…” and the loading animation. It
+validation succeeds, with “Analyzing your document…” and the loading animation. It
 shows no estimated percentage. The loading modal has no dismissal button.
 The report response shows “Your report is ready” with an OK button and closes
 automatically after three seconds, matching Word export. Errors replace the

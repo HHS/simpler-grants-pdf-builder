@@ -58,13 +58,17 @@ def _safe_upload_name(name):
         for character in basename
         if not unicodedata.category(character).startswith("C")
     ).strip()
-    return cleaned[:180] or "your PDF"
+    return cleaned[:180] or "your document"
 
 
 def _metric_rows(report):
     metrics = report.get("metrics") or {}
     rows = []
     for metric_id, label, explanation in PDF_METRIC_PRESENTATION:
+        if metric_id == "word_count" and report.get("profile") == "word":
+            explanation = (
+                "Estimated number of words recovered from the Word conversion."
+            )
         metric = metrics.get(metric_id) or {}
         value = metric.get("value")
         if (
@@ -80,7 +84,11 @@ def _metric_rows(report):
             formatted = f"{value:,.1f}%"
         else:
             formatted = f"{value:,.1f}"
-        reliability = metric.get("reliability") or report.get("reliability")
+        # A metric without evidence must not inherit another metric's rating.
+        # Generic PDF extraction retains its explicit low-confidence policy.
+        reliability = metric.get("reliability")
+        if report.get("profile") == "generic":
+            reliability = "low"
         rows.append(
             {
                 "label": label,
@@ -146,7 +154,7 @@ def _pdf_readability_workflow(request, enabled, source):
             request.pdf_readability_outcome = "internal_error"
         logger.warning("PDF readability request failed unexpectedly.")
         response = HttpResponse(
-            "PDF analysis failed unexpectedly. Please try again later.",
+            "Document analysis failed unexpectedly. Please try again later.",
             status=500,
             content_type="text/plain",
         )
@@ -172,7 +180,18 @@ def _pdf_readability_form(request):
             request.pdf_readability_outcome = "disabled"
         return render(request, "pdf_readability_unavailable.html", status=503)
     max_upload_mb = MAX_UPLOAD_BYTES // (1024 * 1024)
+    word_uploads_allowed = request.pdf_readability_source == "authenticated"
+    file_types = "PDF or Word (.docx)" if word_uploads_allowed else "PDF"
     context = {
+        "word_uploads_allowed": word_uploads_allowed,
+        "file_label": (
+            "Choose a PDF or Word document" if word_uploads_allowed else "Choose a PDF"
+        ),
+        "file_accept": (
+            ".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            if word_uploads_allowed
+            else ".pdf,application/pdf"
+        ),
         "authenticated_pilot": request.pdf_readability_source == "authenticated",
         "pilot_url_name": (
             "nofos:authenticated_pdf_readability"
@@ -186,7 +205,7 @@ def _pdf_readability_form(request):
         ),
         "max_upload_mb": max_upload_mb,
         "upload_hint": (
-            f"One PDF, up to {max_upload_mb} MB. "
+            f"One {file_types} file, up to {max_upload_mb} MB. "
             "Scanned PDFs need optical character recognition (OCR) "
             "to make their text selectable before uploading."
         ),
@@ -198,11 +217,19 @@ def _pdf_readability_form(request):
         if getattr(request, "pdf_upload_too_large", False):
             request.pdf_readability_outcome = "too_large"
             context["error"] = (
-                f"This PDF is too large. Choose a file under {context['max_upload_mb']} MB."
+                f"This file is too large. Choose a file under {context['max_upload_mb']} MB."
             )
             status = 413
         elif len(uploads) != 1 or len(request.FILES) != 1:
             request.pdf_readability_outcome = "invalid_pdf"
+            context["error"] = f"Choose one {file_types} file to analyze."
+            status = 400
+        elif not word_uploads_allowed and not str(uploads[0].name).lower().endswith(
+            ".pdf"
+        ):
+            # Keep the pre-existing public route PDF-only, even if enabled.
+            uploads[0].close()
+            request.pdf_readability_outcome = "unsupported_file"
             context["error"] = "Choose one PDF file to analyze."
             status = 400
         else:
@@ -220,7 +247,7 @@ def _pdf_readability_form(request):
                 # identifiers, arbitrary exception messages or tracebacks.
                 request.pdf_readability_outcome = "internal_error"
                 context["error"] = (
-                    "PDF analysis failed unexpectedly. Please try again later."
+                    "Document analysis failed unexpectedly. Please try again later."
                 )
                 status = 500
                 logger.warning("PDF readability analysis failed unexpectedly.")
@@ -232,6 +259,7 @@ def _pdf_readability_form(request):
                         "metric_rows": _metric_rows(report),
                         "filename": _safe_upload_name(upload.name),
                         "analysis_date": timezone.localdate(),
+                        "source_word": report.get("profile") == "word",
                     }
                 )
     response = render(request, "pdf_readability.html", context, status=status)

@@ -129,8 +129,15 @@ styles, typed characters, or indentation. Builder repairs several known forms:
 - checklist hierarchy may be inferred from paragraph indentation; and
 - one canonical ACF bullet pattern becomes continuing numbering.
 
-Typed bullets, manually entered numbers, pasted list styles, and complex
-multilevel numbering remain likely sources of drift.
+Supported native decimal, bullet, letter and Roman numbering is now captured
+before Mammoth discards its format and start information. Complete mixed trees
+remain semantic HTML when Markdown cannot represent them. Simple lists retain
+the established Markdown representation. See [Word list import](WORD_LIST_IMPORT.md)
+for editing examples and limitations.
+
+Typed bullets, manually entered numbers, unsupported custom/compound markers
+and ambiguous continuation indentation remain likely sources of drift. Native
+authoring alone does not eliminate all list drift.
 
 **Potential upstream improvement:** Require native Word lists and approved
 template list styles, particularly for multilevel or continuing-number lists.

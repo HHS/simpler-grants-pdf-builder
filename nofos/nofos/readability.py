@@ -13,7 +13,7 @@ from django.template.loader import render_to_string
 
 METRICS_MODULE = "hhs_nofo_metrics"
 METRICS_DISTRIBUTION = "hhs-nofo-metrics"
-PROFILE_REFERENCE = "hhs-nofo-fy27-html@0.4.0"
+PROFILE_REFERENCE = "hhs-nofo-fy27-html@0.5.0"
 EXPORT_ROOT_ID = "download_target"
 PRODUCTION_PATH = "nofo_builder_export_html"
 # Bump when Builder changes what it renders for measurement, independently of
@@ -343,10 +343,10 @@ def save_readability_checkpoint(nofo, user, trigger="manual"):
             )
         checkpoint, created = NofoReadabilityCheckpoint.objects.get_or_create(
             score=score,
+            trigger=trigger,
             defaults={
                 "saved_by": user,
                 "nofo_status_at_save": current.status,
-                "trigger": trigger,
             },
         )
     return payload, checkpoint, created
@@ -357,8 +357,9 @@ def save_automatic_checkpoint(request, nofo, trigger):
 
     The user's action has already succeeded, so a metrics failure is logged and
     never surfaced as a failed import or download. An unchanged NOFO reuses its
-    existing checkpoint rather than saving another. Returns the checkpoint, or
-    None if nothing was saved.
+    calculation, but each trigger keeps its own checkpoint. Repeating the same
+    trigger reuses its checkpoint. Returns the checkpoint, or None if nothing
+    was saved.
     """
     from bloom_nofos.logs import log_exception
     from constance import config

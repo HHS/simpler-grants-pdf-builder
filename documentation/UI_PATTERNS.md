@@ -43,6 +43,40 @@ or replacing its global stylesheet with only the editor dependencies. That needs
 a separate change with visual and interaction checks for Martor tabs, toolbar,
 preview, fullscreen behavior, and the other Bootstrap-dependent screens.
 
+## Alert text and spacing
+
+Follow the [USWDS alert component](https://designsystem.digital.gov/components/alerts/)
+for alert headings and body text. Start the description directly below the
+heading, using the component's built-in spacing. Do not insert an empty paragraph,
+a `<br>`, or extra top margin to create a blank line before the description.
+
+Apply `usa-alert__heading` to the heading and `usa-alert__text` to **each body
+paragraph**, including additional paragraphs. This keeps the same compact spacing
+in one-paragraph and multi-paragraph alerts. Let text wrap naturally; do not add
+empty paragraphs or manual line breaks between body paragraphs.
+
+```html
+<div class="usa-alert usa-alert--info" role="note">
+  <div class="usa-alert__body">
+    <h2 class="usa-alert__heading">How to read these results</h2>
+    <p class="usa-alert__text">Explain what the results mean.</p>
+    <p class="usa-alert__text">Add any necessary context or next step.</p>
+  </div>
+</div>
+```
+
+Choose the heading level for the page's hierarchy and retain the alert's
+sans-serif heading style. If a wrapper is needed for a script or identifier,
+keep it neutral and put `usa-alert__text` on its paragraphs. Putting that class
+only on a wrapper leaves ordinary child paragraphs with default margins, which
+can introduce unintended blank-looking space.
+
+The [Word/PDF readability report](../nofos/bloom_nofos/templates/pdf_readability.html)
+uses this pattern for both its introductory and reliability alerts. When adding
+or changing alerts, compare their heading-to-body and paragraph spacing at wide
+and narrow widths, and check for page-specific typography overrides described
+above.
+
 ## File-upload errors
 
 Use the shared [`file_input.html`](../nofos/bloom_nofos/templates/includes/file_input.html)
@@ -221,7 +255,7 @@ the catalog as those use cases are reviewed.
 
 ## Readability estimate reliability alerts
 
-The PDF readability report uses a USWDS alert to explain confidence in the
+The PDF/Word readability report uses a USWDS alert to explain confidence in the
 estimates derived from extracted text. Reliability describes confidence in
 those estimates, not how readable the document is. High reliability does not
 guarantee accuracy or establish compliance, accessibility, or clearance.
@@ -231,10 +265,42 @@ guarantee accuracy or establish compliance, accessibility, or clearance.
 | High | `usa-alert--info` (blue) | Informational context for interpreting estimates |
 | Moderate | `usa-alert--info` (blue) | Informational context for interpreting estimates |
 | Low | `usa-alert--warning` (yellow) | Caution about estimates that need careful interpretation |
+| Not assessed | `usa-alert--info` (blue) | Extraction scope without an invented confidence rating |
 
-The supported levels are high, moderate, and low; there is no “extremely low”
-level. Missing or unrecognized levels retain warning styling as a fallback.
+The supported assessed levels are high, moderate, and low; there is no
+“extremely low” level. Missing or unrecognized engine ratings are unassessed,
+not low. The report uses “What this report includes” with scope guidance and
+an explicit statement that reliability has not been assessed. Metric cards say
+“Reliability not assessed” instead of inheriting another metric's rating.
+Generic PDF extraction retains its explicit low-confidence policy.
 The presentation does not change how reliability is calculated.
+
+### Report headings, metric labels and rating selection
+
+| State | Report alert heading | Calculated metric card |
+| --- | --- | --- |
+| High | Reliability of these estimates: High | Estimated · High reliability |
+| Moderate | Reliability of these estimates: Moderate | Estimated · Moderate reliability |
+| Low | Reliability of these estimates: Low | Estimated · Low reliability |
+| Not assessed | What this report includes | Estimated · Reliability not assessed |
+| Metric unavailable | Does not by itself select the report heading | Unavailable (no reliability label) |
+
+Unavailable means no finite numeric metric result can be displayed. Not assessed
+means a result can be displayed but no recognized reliability rating was supplied.
+The source-specific extraction explanation appears independently of those states;
+a successful calculation can still have extraction limits or unassessed reliability.
+
+The metrics engine supplies individual ratings; Builder does not assign numeric
+confidence thresholds here. The overall report uses the lowest recognized supplied
+metric rating. Missing ratings are omitted from that selection, not treated as Low
+or High. Consequently, one High metric and otherwise unassessed metrics can yield
+High overall; it does not establish High reliability for every metric. If no rating
+is supplied, overall reliability is not assessed. Generic PDF extraction explicitly
+forces Low overall and on displayed metric cards. Other metric cards use their own
+ratings, without inheriting the report rating; the sentences-per-paragraph component
+uses its parent words-per-sentence rating. The label is Moderate, not Medium.
+
+### Source-specific alert copy
 
 [USWDS alert guidance](https://designsystem.digital.gov/components/alert/#accessibility-guidance)
 defines informational alerts as non-critical status information, warnings as
@@ -244,20 +310,137 @@ reliability notice uses a warning rather than a red error alert.
 
 Keep the reliability level in the heading and the explanation in the body so
 users can understand the notice without relying on color or the icon. Preserve
-the source-PDF review guidance and the existing `role="note"`; changing the
+the source-specific explanation and the existing `role="note"`; changing the
 visual variant does not make this notice an urgent announcement.
+
+Each source explanation stays in one paragraph:
+
+- **Word:** “This report measures text recovered from your Word document. The tool may miss or change text in text boxes, headers, and footers. It cannot read text in images. For a more complete analysis, make sure important text is in the main document body. Remove template instructions and unused draft options from the copy you upload so they aren’t counted as part of your NOFO.”
+- **PDF with usable tags:** “PDF structure tags helped the tool read the text in order, but some text may still be missed or read out of order, especially in columns and tables. These scores describe the text the tool recovered and may not reflect the entire PDF.”
+- **PDF without usable tags (authenticated tool):** “The tool could not reliably determine the order of text in this PDF, so the scores may be less reliable. For your next upload, try uploading the original Word document instead. If you need to use a PDF, save it from Word using ‘Save as PDF’ rather than ‘Print to PDF.’”
+
+**PDF without usable tags (public PDF-only route):** “The tool could not reliably determine the order of text in this PDF, so the scores may be less reliable. For your next upload, save the original document from Word using “Save as PDF” rather than “Print to PDF.””
+
+Word is supported only on authenticated `/nofos/readability/`; public
+`/readability/` accepts PDFs only. The public variant therefore does not recommend
+a Word upload. These suggestions do not guarantee accurate scores. The source
+explanation is one paragraph. When overall reliability is not assessed, the alert
+also includes the separate sentence: “Reliability has not been assessed for these
+estimates.” This sentence can accompany either Word or tagged-PDF source copy.
+
+The upper **How to read these results** alert is shared across source types:
+
+> These metrics can help you identify opportunities to improve your document’s readability. They are not a compliance, accessibility, or clearance determination.
+>
+> The tool uses shared metric formulas for Word documents, PDFs, and Builder drafts. Scores can differ because each format can preserve different text, sentence boundaries, and paragraph structure. When tracking revisions, use the same format and analysis method for a more consistent comparison.
+
+Keep this comparison explanation in that upper alert rather than repeating it in
+the source-specific reliability alert. Source explanations describe recovered
+text and preparation steps; they do not ask users to verify an extracted-text
+transcript, because the report does not provide one.
 
 The verified implementation is
 [`pdf_readability.html`](../nofos/bloom_nofos/templates/pdf_readability.html),
 with rendered-report coverage in
 [`test_pdf_readability.py`](../nofos/bloom_nofos/tests_bloom_nofos/test_pdf_readability.py).
 [Before-and-after screenshots](review-evidence/readability-reliability-alert/README.md)
-show all three levels. When changing this notice, verify the level, alert
-variant, and explanatory text together.
+show the three assessed levels at the time of that capture; they are historical
+layout evidence, not the current copy catalog. The Word-upload evidence in
+[PR #1112](review-evidence/word-readability-1111/README.md) includes the unassessed
+state; its existing screenshots predate the later plain-language copy update.
+The template is the executable source of truth; this section catalogs the current
+wording and variants. When changing this notice, verify the level, alert variant,
+source/route-specific text and metric labels together.
 
 This entry covers the readability reliability notice. Add other verified
 alert patterns here as they are reviewed; a site-wide alert audit is not
 required to extend this catalog.
+
+## Leftover template instruction warning after Word import
+
+This is a fallback review warning for a successful Word import, not an import
+error. Builder retains text boxes it cannot confidently classify instead of
+risking removal of applicant-facing content. It does not block the import,
+require another upload, or have an import-error code. Keep
+[IMPORT_ERROR_CODES.md](IMPORT_ERROR_CODES.md) focused on blocking failures.
+
+### Trigger and placement
+
+The warning appears when Word preprocessing encounters an unknown or conflicting
+text-box fill, incompatible compatibility copies, or an unsupported container.
+Recognized pale-blue instruction boxes are removed without this warning; known
+white, unfilled, and transparent content boxes are kept without it. See
+[IMPORT-058](IMPORT_RULES.md#import-058--pale-blue-word-instruction-container-cleanup)
+for the exact detection and preservation rules. The warning itself does not
+change saved content or perform cleanup when a NOFO is opened or exported.
+
+- After a new import, show the warning on **Name your NOFO**. Saving the name
+  returns the user to **All NOFOs**, so do not say the editor is the next page.
+- After a successful re-import, show it on the NOFO edit page and give steps
+  starting in the current NOFO.
+
+Use the existing yellow USWDS warning alert with a visible heading and body.
+The shared template uses `usa-alert--warning`, `text-bold` on the heading, and
+`role="alert"`. This is a Django message displayed on the destination page,
+not a permanent warning stored on the NOFO record.
+
+### Approved wording and user action
+
+**Check for leftover template instructions**
+
+Your document was imported. Some boxes were kept because we couldn’t tell
+whether they contained template instructions or NOFO content.
+
+For a new import:
+
+After saving the NOFO name, open your NOFO from **All NOFOs**. Look for notes
+meant for template managers or NOFO writers, such as “Instructions for NOFO
+writers” or template option labels. Find the subsection containing those notes
+and select **Edit** in its row. In the content editor, remove only the template
+notes, then select **Save subsection**. Keep information applicants need, such
+as application deadlines, key facts, and instructions for applying.
+
+For a re-import, replace the first sentence and the start of the second with
+“In this NOFO, look for notes meant for template managers or NOFO writers”;
+the rest of the instructions are the same.
+
+Describe the content to review and the actual editor actions. Avoid converter
+terms such as “fill” or “preserved Word text boxes.” Do not instruct users to
+delete an entire subsection that also contains applicant-facing content or to
+remove all text containing “instructions.” The navigation and button labels
+follow [TASK-SUBSECTION-EDIT](EDITOR_TASKS.md#task-subsection-edit); editing the
+content ends with **Save subsection**.
+
+### Implementation and verification
+
+- Shared alert: [`word_import_review.html`](../nofos/nofos/templates/nofos/includes/word_import_review.html).
+- Trigger/message: [`word_instruction_boxes.py`](../nofos/nofos/word_instruction_boxes.py), passed through the import views.
+- Placement: [`nofo_import_title.html`](../nofos/nofos/templates/nofos/nofo_import_title.html) and [`nofo_edit.html`](../nofos/nofos/templates/nofos/nofo_edit.html).
+- Workflow coverage: [`test_word_instruction_boxes.py`](../nofos/nofos/tests_nofos/test_word_instruction_boxes.py).
+- Local evidence and pending production checks: [issue #1089 evidence](review-evidence/1089/README.md). Earlier screenshots show the previous wording.
+
+When changing this warning, check new-import and re-import navigation separately,
+confirm uncertain content remains available for review, and verify that known
+instruction removal and content-callout preservation still work. Do not claim
+production verification from local tests or screenshots.
+
+## Word list numbering review warning
+
+Unsupported native numbering formats or ambiguous style/numbering associations
+use a nonblocking yellow USWDS warning after import, not a blocking import error.
+Reuse `word_import_review.html` with the `word-list-review` Django message tag.
+The heading is **Check list numbering**, with `usa-alert__heading text-bold`;
+body text explains that some numbering could not be preserved automatically.
+New imports direct users to save the name and open the NOFO from **All NOFOs**;
+reimports start in the current NOFO. Both direct users to compare source lists,
+use the subsection's **Edit** action, select **Save subsection**, and check the PDF.
+Do not show instruction-box cleanup guidance for a numbering warning.
+
+The [local verification evidence](review-evidence/native-word-lists-1121/README.md)
+includes the actual new-import warning. Its computed heading uses Source Sans
+Pro Web at weight 700, matching the existing USWDS alert pattern. Automated
+tests verify unsupported import remains successful and guidance is shown.
+No new blocking error code or persistent warning field is introduced.
 
 ## Subsection save conflicts
 

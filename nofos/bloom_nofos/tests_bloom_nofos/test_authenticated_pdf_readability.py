@@ -78,7 +78,7 @@ class AuthenticatedPilotTests(TestCase):
         self.login()
         self.assertEqual(self.client.get(self.public_url).status_code, 503)
         response = self.client.get(self.url)
-        self.assertContains(response, "How we handle your PDF")
+        self.assertContains(response, "How we handle your document")
         self.assertContains(response, "do not include your identity")
         self.assertEqual(response["Cache-Control"], "no-store")
         self.assertIn("noindex", response["X-Robots-Tag"])
@@ -102,6 +102,10 @@ class AuthenticatedPilotTests(TestCase):
         with patch("bloom_nofos.views.analyze_uploaded_pdf", return_value=REPORT):
             response = self.client.post(self.url, {"pdf": self.upload()})
         self.assertContains(response, "Readability report")
+        self.assertContains(
+            response, "try uploading the original Word document instead"
+        )
+        self.assertContains(response, "Save as PDF")
         self.assertContains(response, f'href="{self.url}"')
         self.assertContains(response, "Print / Save as PDF")
         self.assertContains(response, "Copy metrics")
@@ -115,6 +119,72 @@ class AuthenticatedPilotTests(TestCase):
             ).status_code,
             403,
         )
+
+    def test_real_word_upload_records_only_content_free_outcome(self):
+        from nofos.models import Nofo
+        from nofos.tests_nofos.test_word_readability import synthetic_docx
+
+        self.login()
+        before = Nofo.objects.count()
+        response = self.client.post(
+            self.url, {"pdf": SimpleUploadedFile("SECRET-WORD.docx", synthetic_docx())}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Word readability pilot")
+        self.assertContains(response, "Word documents do not have a fixed page count")
+        self.assertContains(response, "Reliability not assessed")
+        self.assertContains(response, "Reliability has not been assessed")
+        self.assertContains(response, "What this report includes")
+        self.assertContains(
+            response, "make sure important text is in the main document body"
+        )
+        self.assertContains(
+            response, "Remove template instructions and unused draft options"
+        )
+        self.assertNotContains(response, "Review the measurement scope")
+        self.assertContains(response, "usa-alert--info readability-reliability")
+        self.assertNotContains(response, "Low reliability")
+        self.assertNotContains(response, "Reliability of these estimates: Low")
+        self.assertNotContains(response, "Unknown reliability")
+        self.assertContains(response, "shared metric formulas")
+        self.assertContains(response, "use the same format and analysis method")
+        self.assertContains(response, "Print / Save as PDF")
+        self.assertContains(response, "Copy metrics")
+        self.assertNotContains(response, "Usable PDF tags")
+        self.assertNotContains(response, "words recovered from the PDF")
+        self.assertNotContains(response, "HRSA-26-106")
+        self.assertEqual(Nofo.objects.count(), before)
+        self.assertEqual(response.content.decode().count("Scores can differ"), 1)
+        row = PdfReadabilityAttempt.objects.get()
+        self.assertEqual((row.source, row.outcome), ("authenticated", "success"))
+        self.assertNotIn("SECRET", str(row.__dict__))
+
+    def test_both_formats_require_authentication_and_permission(self):
+        with patch("bloom_nofos.views.analyze_uploaded_pdf") as analyze:
+            for authenticated, expected in ((False, 302), (True, 403)):
+                if authenticated:
+                    self.client.force_login(self.user)
+                for suffix in ("pdf", "docx"):
+                    response = self.client.post(
+                        self.url,
+                        {"pdf": SimpleUploadedFile(f"input.{suffix}", b"private")},
+                    )
+                    self.assertEqual(response.status_code, expected)
+            analyze.assert_not_called()
+
+    def test_form_copy_matches_authenticated_supported_formats(self):
+        self.login()
+        response = self.client.get(self.url)
+        for text in (
+            "Check a document’s readability",
+            "Choose a PDF or Word document",
+            "One PDF or Word (.docx) file",
+            'accept=".pdf,.docx,',
+            "as a PDF or Word (.docx) document",
+            "Analyzing your document",
+            "Legacy .doc and macro-enabled files are not supported",
+        ):
+            self.assertContains(response, text)
 
     def test_csrf_failure_has_no_analysis_or_outcome(self):
         self.login()

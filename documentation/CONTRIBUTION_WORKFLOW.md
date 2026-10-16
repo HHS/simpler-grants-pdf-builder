@@ -53,7 +53,7 @@ flowchart TD
 | --- | --- |
 | Create the issue | [Bug report](../.github/ISSUE_TEMPLATE/bug_report.md) and [feature request](../.github/ISSUE_TEMPLATE/feature_request.md) templates (GitHub offers them when you click **New issue**) |
 | Branch off `main` | [`DEPLOYMENT.md` § 1. Create a feature branch](../DEPLOYMENT.md#1-create-a-feature-branch) and [§ Branch Protection Rules](../DEPLOYMENT.md#branch-protection-rules) |
-| Changing import behavior | [`IMPORT_RULES.md`](IMPORT_RULES.md) and [`DEPLOYMENT.md` § Updating Import Rules](../DEPLOYMENT.md#updating-import-rules) |
+| Changing import behavior | [`IMPORT_RULES.md`](IMPORT_RULES.md), [`DOCUMENT_PROCESSING.md`](DOCUMENT_PROCESSING.md) for the shared processing boundary, and [`DEPLOYMENT.md` § Updating Import Rules](../DEPLOYMENT.md#updating-import-rules) |
 | Changing user-facing import errors | [`IMPORT_ERROR_CODES.md`](IMPORT_ERROR_CODES.md), and the "Copy rules" at the top of [`nofos/bloom_nofos/import_errors.py`](../nofos/bloom_nofos/import_errors.py) |
 | Adding or changing UI | [`UI_PATTERNS.md`](UI_PATTERNS.md): check this growing catalog for a relevant pattern and reuse its shared component. It is not a complete inventory of the site's UI; extend it when introducing another verified pattern. |
 | Updating docs | [`documentation/README.md`](README.md): docs go in `documentation/`, never a top-level `docs/`; ADRs go in [`adr/`](adr/README.md); PR screenshots go in `review-evidence/` |

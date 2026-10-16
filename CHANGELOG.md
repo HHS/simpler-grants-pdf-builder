@@ -5,6 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.52.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.51.0...nofos-v3.52.0) (2026-10-15)
+
+
+### Features
+
+* import FY27 introductory content as editable sections ([#1118](https://github.com/HHS/simpler-grants-pdf-builder/issues/1118)) ([11c26b9](https://github.com/HHS/simpler-grants-pdf-builder/commit/11c26b961d6f46b16b1233929299e590a098c962))
+* support Word uploads in standalone readability reports ([#1112](https://github.com/HHS/simpler-grants-pdf-builder/issues/1112)) ([e0843f6](https://github.com/HHS/simpler-grants-pdf-builder/commit/e0843f6a38c69bf1e552c4122472f761d447473b))
+
+
+### Bug Fixes
+
+* link explicit URLs and DOI identifiers in imported endnote citations ([#1117](https://github.com/HHS/simpler-grants-pdf-builder/issues/1117)) ([0556e03](https://github.com/HHS/simpler-grants-pdf-builder/commit/0556e03fd3a0a12653322c7ab3d71bcbb2c98342))
+* preserve PDF download checkpoints after Word import ([#1116](https://github.com/HHS/simpler-grants-pdf-builder/issues/1116)) ([a40d30a](https://github.com/HHS/simpler-grants-pdf-builder/commit/a40d30a29790d8cf27b574651dd9aec9d28176f5))
+
+
+### Documentation
+
+* clarify current Announcement Services pilot workflow ([#1109](https://github.com/HHS/simpler-grants-pdf-builder/issues/1109)) ([49b7cf5](https://github.com/HHS/simpler-grants-pdf-builder/commit/49b7cf5f07b08becd8b22e9efbb694e5ba47f959))
+* remove retired PDF retrieval proposal ([#1110](https://github.com/HHS/simpler-grants-pdf-builder/issues/1110)) ([12b1518](https://github.com/HHS/simpler-grants-pdf-builder/commit/12b1518de3bcba216d9c515317a749079a557101))
+
+
+### Code Refactoring
+
+* isolate HTML processing from application runtime ([#1106](https://github.com/HHS/simpler-grants-pdf-builder/issues/1106)) ([cf6e923](https://github.com/HHS/simpler-grants-pdf-builder/commit/cf6e92312dc8e44f060162a4c18cb74a68e6d9ae))
+* separate document processing from import workflow ([#1063](https://github.com/HHS/simpler-grants-pdf-builder/issues/1063)) ([1e92725](https://github.com/HHS/simpler-grants-pdf-builder/commit/1e92725ba56c9f429a9e4981a81e827a22567126))
+
+## [3.51.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.50.4...nofos-v3.51.0) (2026-10-13)
+
+
+### Features
+
+* import fields from authoritative Metadata blocks ([#1099](https://github.com/HHS/simpler-grants-pdf-builder/issues/1099)) ([b454abd](https://github.com/HHS/simpler-grants-pdf-builder/commit/b454abd50bc921b60332aba7b8069b4eaf1e6b78))
+
+
+### Bug Fixes
+
+* consume recognized Metadata blocks during Builder import ([#1104](https://github.com/HHS/simpler-grants-pdf-builder/issues/1104)) ([38efa0d](https://github.com/HHS/simpler-grants-pdf-builder/commit/38efa0da7a6316df13cb0e75c25fd85083be01bf))
+* ignore a leading Word Title paragraph on import ([#1098](https://github.com/HHS/simpler-grants-pdf-builder/issues/1098)) ([4a48c19](https://github.com/HHS/simpler-grants-pdf-builder/commit/4a48c19388c048cdf0fa20397c6de4ea84cc09ad))
+* import scoped Basic information tagline into metadata ([#1095](https://github.com/HHS/simpler-grants-pdf-builder/issues/1095)) ([b1ebffb](https://github.com/HHS/simpler-grants-pdf-builder/commit/b1ebffb3019c0cd02ce601c4033572cfa8863fbf))
+* keep linked checkbox table text together ([#1103](https://github.com/HHS/simpler-grants-pdf-builder/issues/1103)) ([6a699a0](https://github.com/HHS/simpler-grants-pdf-builder/commit/6a699a03fd77061ad441978761289b23abd93bdc))
+* preserve callouts while removing Word instruction boxes ([#1090](https://github.com/HHS/simpler-grants-pdf-builder/issues/1090)) ([0b45b1a](https://github.com/HHS/simpler-grants-pdf-builder/commit/0b45b1a59a01e33b59b9d70a280eba46688394d5))
+* support new and legacy deadline sidebar callouts ([#1092](https://github.com/HHS/simpler-grants-pdf-builder/issues/1092)) ([860fede](https://github.com/HHS/simpler-grants-pdf-builder/commit/860fedea55403b803d4085c810a67247850ee6ae))
+
+
+### Documentation
+
+* remove the FAQ entry on indenting text with blockquotes ([#1086](https://github.com/HHS/simpler-grants-pdf-builder/issues/1086)) ([6fb08ac](https://github.com/HHS/simpler-grants-pdf-builder/commit/6fb08accdf9b9c71e9a0ba48b19a787eb5e70108))
+* state three HHS style guide points in the style guide ([#1088](https://github.com/HHS/simpler-grants-pdf-builder/issues/1088)) ([44c37ab](https://github.com/HHS/simpler-grants-pdf-builder/commit/44c37ab473baa49292b626cd9bbdd92c5489ff3d))
+
 ## [3.50.4](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.50.3...nofos-v3.50.4) (2026-10-11)
 
 
