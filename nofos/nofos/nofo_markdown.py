@@ -7,7 +7,7 @@ NofoMarkdownConverter's conversion rules.
 
 import re
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString
 from markdownify import MarkdownConverter
 
 from .content_constants import APPLICATION_CHECKLIST_CHILD_CLASS
@@ -101,6 +101,15 @@ class NofoMarkdownConverter(MarkdownConverter):
         for parent in el.parents:
             if parent.name in ("ol", "ul"):
                 root = parent
+        # Markdown merges adjacent lists of the same kind, even when the
+        # second ordered list explicitly restarts at 1. Preserve both trees;
+        # blank lines alone do not retain their independent boundaries.
+        for direction in ("previous_sibling", "next_sibling"):
+            sibling = getattr(root, direction)
+            while isinstance(sibling, NavigableString) and not sibling.strip():
+                sibling = getattr(sibling, direction)
+            if getattr(sibling, "name", None) == root.name:
+                return True
         # Paragraph-bearing (loose) items need their block boundaries retained.
         # The renderer can otherwise absorb the next marker into a continuation.
         if root.find("p") is not None:

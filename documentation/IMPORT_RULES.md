@@ -342,8 +342,8 @@ The example that prompted this document: detecting a footnote/endnote list and f
 
 ### IMPORT-020 — Numbered-list-start / table-cell lists kept as raw HTML
 - **Type:** conversion
-- **Trigger:** During Markdown conversion, an `<ol start="N">` where N ≠ 1, a letter/Roman marker, an explicit decimal descendant, paragraph-bearing list items, a reversed/item-value list, or any list nested inside a `<td>`/`<th>`.
-- **Action:** Keep the complete containing list tree as semantic HTML when marker/start semantics require it, including ordered and unordered descendants. Surround raw blocks with blank lines so adjacent Markdown stays separate. Preserve `type`/`start`; remove conversion-only source markers before storage. Table-cell and native/manual endnote preservation remain in force. Simple standalone decimal/bullet lists still use IMPORT-021.
+- **Trigger:** During Markdown conversion, an `<ol start="N">` where N ≠ 1, a letter/Roman marker, an explicit decimal descendant, paragraph-bearing list items, a reversed/item-value list, adjacent separate lists of the same kind (including decimal restarts at 1), or any list nested inside a `<td>`/`<th>`.
+- **Action:** Keep the complete containing list tree as semantic HTML when marker/start semantics require it, including ordered and unordered descendants. Surround raw blocks with blank lines so adjacent Markdown stays separate. Retain adjacent same-kind list boundaries as HTML because blank lines between Markdown lists would merge their items and lose restarts. Preserve `type`/`start`; remove conversion-only source markers before storage. Table-cell and native/manual endnote preservation remain in force. Simple standalone decimal/bullet lists still use IMPORT-021.
 - **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_ol/convert_ul`
 - **Status:** active
 

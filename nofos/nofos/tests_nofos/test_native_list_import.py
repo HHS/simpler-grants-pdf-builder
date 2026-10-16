@@ -127,6 +127,50 @@ class NativeListImportTests(TestCase):
             document.refresh_from_db()
             self.assertEqual(self.assert_saved_tree(document), original)
 
+    def test_adjacent_native_decimal_instances_restart_after_persistence(self):
+        source = native_list_source()
+        from io import BytesIO
+        from zipfile import ZipFile
+
+        revised = BytesIO()
+        with ZipFile(source) as original, ZipFile(revised, "w") as output:
+            for entry in original.infolist():
+                data = original.read(entry)
+                if entry.filename == "word/document.xml":
+                    text = data.decode()
+                    start = text.index(paragraph("First activity", level=1))
+                    end = text.index("</w:body>")
+                    text = (
+                        text[:start]
+                        + (
+                            paragraph("First group")
+                            + paragraph("Restarted group", num="2")
+                        )
+                        + text[end:]
+                    )
+                    data = text.encode()
+                elif entry.filename == "word/numbering.xml":
+                    data = (
+                        f'<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+                        f'<w:abstractNum w:abstractNumId="0">{level(0)}</w:abstractNum>'
+                        '<w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>'
+                        '<w:num w:numId="2"><w:abstractNumId w:val="0"/></w:num>'
+                        "</w:numbering>"
+                    ).encode()
+                output.writestr(entry, data)
+        response = self.upload(revised)
+        self.assertEqual(response.status_code, 302)
+        document = Nofo.objects.latest("created")
+        body = document.sections.get().subsections.get(name="Activities").body
+        rendered = BeautifulSoup(safe_markdown(body), "html.parser")
+        lists = rendered.find_all("ol", recursive=False)
+        self.assertEqual(len(lists), 2)
+        self.assertEqual(
+            [el.li.text for el in lists], ["First group", "Restarted group"]
+        )
+        self.assertTrue(all(el.get("start", "1") == "1" for el in lists))
+        self.assertNotIn("data-nofo-source-list", body)
+
     def test_actual_word_upload_retains_lists_in_shared_consumers(self):
         for route, model in (
             ("composer:composer_import", ContentGuide),

@@ -57,6 +57,20 @@ class NativeListRenderingTests(SimpleTestCase):
                 body, _ = self.render(html)
                 self.assertEqual(body.strip(), expected)
 
+    def test_adjacent_independent_lists_retain_boundaries_after_rendering(self):
+        for tag in ("ol", "ul"):
+            with self.subTest(tag=tag):
+                body, rendered = self.render(
+                    f"<{tag}><li>First group</li></{tag}>\n"
+                    f"<{tag}><li>New group</li></{tag}>"
+                )
+                lists = rendered.find_all(tag, recursive=False)
+                self.assertEqual(len(lists), 2)
+                self.assertEqual(
+                    [el.li.text for el in lists], ["First group", "New group"]
+                )
+                self.assertIn(f"<{tag}>", body)
+
     def test_simple_list_continuation_does_not_absorb_following_item(self):
         for tag in ("ol", "ul"):
             with self.subTest(tag=tag):
