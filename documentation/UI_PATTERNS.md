@@ -43,6 +43,40 @@ or replacing its global stylesheet with only the editor dependencies. That needs
 a separate change with visual and interaction checks for Martor tabs, toolbar,
 preview, fullscreen behavior, and the other Bootstrap-dependent screens.
 
+## Alert text and spacing
+
+Follow the [USWDS alert component](https://designsystem.digital.gov/components/alerts/)
+for alert headings and body text. Start the description directly below the
+heading, using the component's built-in spacing. Do not insert an empty paragraph,
+a `<br>`, or extra top margin to create a blank line before the description.
+
+Apply `usa-alert__heading` to the heading and `usa-alert__text` to **each body
+paragraph**, including additional paragraphs. This keeps the same compact spacing
+in one-paragraph and multi-paragraph alerts. Let text wrap naturally; do not add
+empty paragraphs or manual line breaks between body paragraphs.
+
+```html
+<div class="usa-alert usa-alert--info" role="note">
+  <div class="usa-alert__body">
+    <h2 class="usa-alert__heading">How to read these results</h2>
+    <p class="usa-alert__text">Explain what the results mean.</p>
+    <p class="usa-alert__text">Add any necessary context or next step.</p>
+  </div>
+</div>
+```
+
+Choose the heading level for the page's hierarchy and retain the alert's
+sans-serif heading style. If a wrapper is needed for a script or identifier,
+keep it neutral and put `usa-alert__text` on its paragraphs. Putting that class
+only on a wrapper leaves ordinary child paragraphs with default margins, which
+can introduce unintended blank-looking space.
+
+The [Word/PDF readability report](../nofos/bloom_nofos/templates/pdf_readability.html)
+uses this pattern for both its introductory and reliability alerts. When adding
+or changing alerts, compare their heading-to-body and paragraph spacing at wide
+and narrow widths, and check for page-specific typography overrides described
+above.
+
 ## File-upload errors
 
 Use the shared [`file_input.html`](../nofos/bloom_nofos/templates/includes/file_input.html)
