@@ -18,8 +18,14 @@
     });
 
     if (!resp.ok) {
-      const text = await resp.text().catch(() => "");
-      throw new Error(text || `Request failed (${resp.status})`);
+      const error = new Error(`Request failed (${resp.status})`);
+      if (resp.headers.get("Content-Type")?.includes("application/json")) {
+        const body = await resp.json().catch(() => null);
+        if (typeof body?.word_export_error === "string") {
+          error.userMessage = body.word_export_error.slice(0, 500);
+        }
+      }
+      throw error;
     }
 
     const blob = await resp.blob();

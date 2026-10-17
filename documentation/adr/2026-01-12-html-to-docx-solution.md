@@ -4,6 +4,9 @@
 - **Last Modified:** 2026-01-12
 - **Deciders:** Julia Hogan, Paul Craig
 
+September 2026: [Pandoc has been selected for a gated basic-export implementation](2026-09-10-local-word-export.md).
+This remains the historical production-provider decision until cutover is reviewed.
+
 ## Context and Problem Statement
 
 The goal of this ADR is to select a solution for converting HTML documents to DOCX format for the NOFO Composer. Users need to be able to export their NOFO documents as Word files that maintain formatting, styles, and accessibility features. The exported documents must also be re-importable into the system, creating a round-trip workflow.
