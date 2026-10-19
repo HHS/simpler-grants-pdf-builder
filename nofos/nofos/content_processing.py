@@ -17,6 +17,7 @@ from bs4 import BeautifulSoup, NavigableString, Tag
 from .content_text import clean_string
 from .endnotes import (
     convert_bracketed_endnotes,
+    inline_native_note_return_links,
     is_endnotes_heading,
     linkify_endnote_citations,
     remove_duplicate_native_note_custom_marks,
@@ -141,6 +142,7 @@ def process_nofo_html(soup, top_heading_level, *, debug_capture=None):
     if debug_capture is not None:
         debug_capture(soup)
 
+    inline_native_note_return_links(soup)  # IMPORT-068
     instructions_tables = decompose_instructions_tables(soup)
     merge_funding_details_label_value_paragraphs(soup)
     normalize_whitespace_img_alt_text(soup)
