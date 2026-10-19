@@ -210,9 +210,8 @@
 
       {% for section in nofo.sections.all|dictsort:"order" %}
         {% if section.is_introduction %}
-          <li class="toc--section-name toc--before-you-begin toc--imported-introduction">
-            <div class="toc--section-name--img">{% if "thin" in nofo.icon_style %}{% include "includes/icons/thin/0-before.svg" %}{% else %}{% include "includes/icons/0-before.svg" %}{% endif %}</div>
-            <div class="toc--section-name--wrapper"><a href="#section--before-you-begin">{{ nofo.introductory_page_title }}</a></div>
+          <li class="toc--section-name toc--no-icon toc--before-you-begin toc--imported-introduction">
+            <a href="#section--before-you-begin">{{ nofo.introductory_page_title }}</a>
           </li>
         {% elif section.has_section_page %}
           <li class="toc--section-name">
