@@ -45,7 +45,7 @@ def source_html(name="Before You Get Started", level=1, guidance=False):
 """
 
 
-def fy27_docx(name="Before You Get Started"):
+def fy27_docx(name="Before You Get Started", prefix=""):
     """Small Word fixture using the cleared master's three independent signals."""
     old = ZipFile(BytesIO(introductory_docx(name=name)))
     output = BytesIO()
@@ -53,6 +53,7 @@ def fy27_docx(name="Before You Get Started"):
         for item in old.infolist():
             value = old.read(item.filename)
             if item.filename == "word/document.xml":
+                value = value.replace(b"<w:body>", b"<w:body>" + prefix.encode(), 1)
                 value = value.replace(
                     b"Distinctive source text MUST NOT publish.",
                     b"Distinctive source text is editable after import.",
@@ -208,6 +209,33 @@ class EditableIntroductionProcessingTests(SimpleTestCase):
         self.assertEqual(result.sections[0]["role"], "introduction")
         self.assertNotIn("Metadata author", str(result.sections))
 
+    def test_prefix_details_identify_first_content_after_metadata_and_bound_excerpt(
+        self,
+    ):
+        text = "General instructions " + "guidance " * 40
+        prefix = (
+            "<h1>Metadata</h1><p>OpDiv: HRSA</p>"
+            f"<table><tr><td>{text}</td></tr></table>"
+            "<p>Later preface.</p>"
+        )
+        for policy in ("detect", "required"):
+            with self.subTest(policy=policy), self.assertRaises(
+                ContentProcessingError
+            ) as caught:
+                self.process(prefix + source_html(), policy=policy)
+            message = str(caught.exception)
+            self.assertEqual(caught.exception.code, "introductory_content_unsafe")
+            self.assertIn(text.strip()[:157] + "...", message)
+            self.assertNotIn(text.strip(), message)
+            self.assertNotIn("Later preface", message)
+            self.assertNotIn("OpDiv: HRSA", message)
+            self.assertIn("does not mean your heading styles are incorrect", message)
+
+    def test_image_only_prefix_has_readable_location(self):
+        with self.assertRaises(ContentProcessingError) as caught:
+            self.process('<p><img src="example.png" alt=""></p>' + source_html())
+        self.assertIn("The first item is an image", str(caught.exception))
+
 
 class EditableIntroductionWorkflowTests(TestCase):
     def setUp(self):
@@ -255,6 +283,56 @@ class EditableIntroductionWorkflowTests(TestCase):
         self.assertIn(
             "Distinctive source", nofo.sections.first().subsections.first().body
         )
+
+    def test_general_instruction_table_names_content_and_preserves_saved_nofo(self):
+        nofo = self.create_document()
+        original = list(nofo.sections.values_list("id", "name"))
+        original_body = list(
+            nofo.sections.first().subsections.values_list("id", "body")
+        )
+        count = Nofo.objects.count()
+        for fill in ("FFFFFF", "DCEAF7"):
+            prefix = (
+                '<w:tbl><w:tblPr><w:shd w:fill="' + fill + '"/></w:tblPr>'
+                "<w:tr><w:tc><w:p><w:r><w:t>General instructions</w:t></w:r></w:p>"
+                "<w:p><w:r><w:t>Overview</w:t></w:r></w:p>"
+                "<w:p><w:r><w:t>Follow the instructions in the NOFO Guidance."
+                "</w:t></w:r></w:p></w:tc></w:tr></w:tbl>"
+            )
+            for url in (
+                reverse("nofos:nofo_import"),
+                reverse("nofos:nofo_import_overwrite", args=[nofo.pk]),
+            ):
+                with self.subTest(fill=fill, url=url):
+                    response = self.upload(url, fy27_docx(prefix=prefix))
+                    for text in (
+                        "IMPORT-INTRODUCTION-STRUCTURE",
+                        "General instructions Overview Follow the instructions",
+                        "does not mean your heading styles are incorrect",
+                        "Changing a table&#x27;s background color",
+                        "No content was saved or replaced.",
+                    ):
+                        self.assertContains(response, text, status_code=422)
+                    self.assertEqual(Nofo.objects.count(), count)
+                    self.assertEqual(
+                        list(nofo.sections.values_list("id", "name")), original
+                    )
+                    self.assertEqual(
+                        list(
+                            nofo.sections.first().subsections.values_list("id", "body")
+                        ),
+                        original_body,
+                    )
+
+    def test_prefix_excerpt_is_escaped_on_error_page(self):
+        prefix = (
+            "<w:p><w:r><w:t>&lt;script&gt;alert(1)&lt;/script&gt;</w:t></w:r></w:p>"
+        )
+        response = self.upload(reverse("nofos:nofo_import"), fy27_docx(prefix=prefix))
+        self.assertContains(
+            response, "&lt;script&gt;alert(1)&lt;/script&gt;", status_code=422
+        )
+        self.assertNotContains(response, "<script>alert(1)</script>", status_code=422)
 
     def test_word_heading_error_names_problem_and_preserves_existing_record(self):
         output = BytesIO()

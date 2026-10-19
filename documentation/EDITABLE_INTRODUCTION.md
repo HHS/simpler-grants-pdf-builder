@@ -29,6 +29,36 @@ Whitespace/bookmarks and recognized Metadata before the introduction are safe;
 ordinary prose or other headings before it must be moved into the appropriate
 section by the author. No content is discarded to force a match.
 
+### Template guidance before the introduction
+
+Valid introductory and Step 1 heading levels do not make content before the
+introduction safe to import. For example, a General instructions table before
+Before You Get Started still triggers `IMPORT-INTRODUCTION-STRUCTURE`. The error
+identifies the first unassigned content with a short excerpt and explains that
+this check does not mean the heading styles are incorrect. Remove template-only
+guidance from the import copy; move content applicants need into its appropriate
+section. Save and import again.
+
+Word text boxes and tables have separate cleanup rules:
+
+- [IMPORT-058](IMPORT_RULES.md#import-058--pale-blue-word-instruction-container-cleanup)
+  removes supported Word text-box containers before Word-to-HTML conversion.
+  The fill must resolve to solid, fully opaque `DCEAF7` (RGB 220, 234, 247, with
+  one RGB level allowed for Word rounding). The container must have no adjacent
+  content bundled into the same drawing; modern/compatibility copies, when
+  present, must agree on fill, normalized text and links. Wording and heading
+  styles do not determine eligibility. Copying a known supported instruction
+  text box preserves the intended container and fill; test the resulting import.
+- [IMPORT-039](IMPORT_RULES.md#import-039--writer-instructions-table-extraction)
+  extracts single-cell tables with specific instruction labels later in HTML
+  processing, after introductory validation. Its labels do not include
+  General instructions. Table shading does not turn a table into a Word text
+  box or make it eligible for IMPORT-058.
+
+Changing a General instructions table's background to DCEAF7 therefore does not
+resolve this error. These diagnostics do not expand automatic removal or move
+cleanup earlier; unknown content remains protected by the existing check.
+
 ## Editing and record lifecycle
 
 Imported ownership stores one `Section.role=introduction`, constrained to one per
