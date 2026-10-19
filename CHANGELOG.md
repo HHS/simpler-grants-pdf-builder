@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.52.2](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.52.1...nofos-v3.52.2) (2026-10-19)
+
+
+### Bug Fixes
+
+* clarify introduction import errors for preceding template guidance ([#1129](https://github.com/HHS/simpler-grants-pdf-builder/issues/1129)) ([7498537](https://github.com/HHS/simpler-grants-pdf-builder/commit/7498537f1f355d68136cd8a7c70ecf0d8cfa8d08))
+* continue numbered items across imported table rows ([#1127](https://github.com/HHS/simpler-grants-pdf-builder/issues/1127)) ([289a164](https://github.com/HHS/simpler-grants-pdf-builder/commit/289a164c616bfb330a0916a874d196643d9989d1))
+* remove introductory bell icon from the table of contents ([#1131](https://github.com/HHS/simpler-grants-pdf-builder/issues/1131)) ([87edf74](https://github.com/HHS/simpler-grants-pdf-builder/commit/87edf74d304af13212aa6a7ad4fe83fcd45e7a08))
+* remove introductory heading description from the editor ([#1135](https://github.com/HHS/simpler-grants-pdf-builder/issues/1135)) ([3a1cd44](https://github.com/HHS/simpler-grants-pdf-builder/commit/3a1cd442fcc8f212d52b5b44067cf0a23c9f1dec))
+* select ACL theme from OpDiv on new imports ([#1133](https://github.com/HHS/simpler-grants-pdf-builder/issues/1133)) ([037e1e6](https://github.com/HHS/simpler-grants-pdf-builder/commit/037e1e67e649df56dadc81d39b24fe5baf2e5719))
+
 ## [3.52.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.52.0...nofos-v3.52.1) (2026-10-16)
 
 
