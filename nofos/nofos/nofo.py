@@ -1742,6 +1742,11 @@ def suggest_nofo_theme(nofo_number, opdiv=""):
     ):
         return "portrait-samhsa-white"
 
+    if "administration for community living" in opdiv_lower or re.search(
+        r"\bacl\b", opdiv_lower
+    ):
+        return "portrait-acl-white"
+
     if "cdc-" in nofo_number.lower():
         return "portrait-cdc-blue"
 

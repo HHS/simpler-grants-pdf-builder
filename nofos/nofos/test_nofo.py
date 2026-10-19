@@ -4701,6 +4701,39 @@ class HTMLSuggestThemeTests(TestCase):
         nofo_theme = "portrait-acl-white"
         self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
 
+    def test_suggest_acl_opdiv_without_acl_number_returns_acl_theme(self):
+        for opdiv in (
+            "Administration for Community Living (ACL)",
+            "Administration for Community Living",
+            "ACL",
+            "acl",
+        ):
+            for number in (
+                "",
+                "NOFO #999",
+                "{Insert opportunity number.}",
+                "HHS-2027-001",
+            ):
+                with self.subTest(opdiv=opdiv, number=number):
+                    self.assertEqual(
+                        suggest_nofo_theme(number, opdiv=opdiv), "portrait-acl-white"
+                    )
+
+    def test_suggest_acl_opdiv_takes_precedence_over_number(self):
+        for number in ("CDC-RFA-DP-25-001", "HHS-2027-ACF-001", "HRSA-27-001"):
+            with self.subTest(number=number):
+                self.assertEqual(
+                    suggest_nofo_theme(number, opdiv="ACL"), "portrait-acl-white"
+                )
+
+    def test_suggest_opdiv_containing_acl_substring_does_not_match(self):
+        for opdiv in ("Oracle Health", "ACLaffiliate"):
+            with self.subTest(opdiv=opdiv):
+                self.assertEqual(
+                    suggest_nofo_theme("CDC-RFA-DP-25-001", opdiv=opdiv),
+                    "portrait-cdc-blue",
+                )
+
     def test_suggest_nofo_number_ihs_returns_ihs_theme(self):
         nofo_number = "HHS-2024-IHS-INMED-0001"
         nofo_theme = "portrait-ihs-white"
