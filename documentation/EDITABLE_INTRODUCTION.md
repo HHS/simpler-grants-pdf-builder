@@ -76,11 +76,15 @@ reordering. The shared BaseSection ordering fallback is not changed.
 | Output | Imported body | Generated decorations |
 | --- | --- | --- |
 | HTML preview and PDF | Once, with ordinary section typography | Fixed heading, theme-aware introductory icon; optional PDF navigation-help callout |
-| Table of contents | Compact parent entry and BYB icon | Child introductory headings deliberately omitted from the TOC |
+| Table of contents | Compact parent entry without an icon, aligned with subsection text | Child introductory headings deliberately omitted from the TOC; the bell stays on the introductory page |
 | Numbered navigation | Ordinary numbered steps only | No introductory divider page or extra numbered step |
 | Full Word-export HTML | Once, with authored links and notes | Fixed heading only; no generated icon/help or legacy registration/deadline body |
 | Abbreviated/policy export | Once, with existing policy-language rules | Same decoration policy as full Word export |
 | Readability input | Once through the shared export document | No generated help or legacy introductory body |
+
+See the [Contents icon correction evidence](review-evidence/intro-toc-icon-1130/README.md)
+for before/after HTML and actual test-provider PDF screenshots. The introductory
+page keeps its bell while its Contents entry uses the existing plain-link layout.
 
 The optional callout is suppressed if authored introductory content includes
 Adobe Reader and either keyboard, left arrow or left-arrow wording. This is a

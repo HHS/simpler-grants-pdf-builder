@@ -556,7 +556,8 @@ class EditableIntroductionWorkflowTests(TestCase):
         self.assertNotIn("If you believe you are a good candidate", intro.text)
         self.assertIsNone(intro.find(class_="section--title-page"))
         toc = soup.find(class_="toc--imported-introduction")
-        self.assertIsNotNone(toc.find("svg"))
+        self.assertIsNone(toc.find("svg"))
+        self.assertIsNotNone(intro.find(class_="section--before-you-begin--icon").svg)
         self.assertIsNone(toc.find("ol"))
         step1 = soup.find(class_="section--1")
         self.assertIn("Basic information", step1.text)
@@ -565,6 +566,40 @@ class EditableIntroductionWorkflowTests(TestCase):
         ids = [tag["id"] for tag in soup.find_all(id=True)]
         self.assertEqual(len(ids), len(set(ids)))
         self.assertEqual(find_broken_links(nofo), [])
+
+    def test_introductory_toc_has_no_icon_but_page_and_numbered_steps_keep_icons(self):
+        nofo = self.create_document()
+        for theme in ("portrait-acl-white", "portrait-hrsa-blue", "landscape-cdc-blue"):
+            for icon_style, _ in Nofo.ICON_STYLE_CHOICES:
+                nofo.theme = theme
+                nofo.icon_style = icon_style
+                nofo.save()
+                for template in ("nofos/nofo_view.html", "nofos/nofo_pdf.html"):
+                    with self.subTest(
+                        theme=theme, icon_style=icon_style, template=template
+                    ):
+                        soup = BeautifulSoup(
+                            render_to_string(
+                                template,
+                                {"nofo": nofo, **get_nofo_document_context(nofo)},
+                            ),
+                            "html.parser",
+                        )
+                        toc = soup.select_one(
+                            "#section--toc .toc--imported-introduction"
+                        )
+                        self.assertIn("toc--no-icon", toc["class"])
+                        self.assertIsNone(toc.find(["svg", "img"]))
+                        self.assertIsNone(toc.find(class_="toc--section-name--img"))
+                        self.assertEqual(toc.a["href"], f"#{INTRO_ANCHOR}")
+                        self.assertIsNotNone(
+                            soup.select_one(
+                                f"#{INTRO_ANCHOR} .section--before-you-begin--icon svg"
+                            )
+                        )
+                        self.assertIsNotNone(
+                            soup.select_one("#section--toc .toc--section-name--img svg")
+                        )
 
     def test_guidance_suppression_preserves_authored_text_and_export_policy(self):
         for guidance in (False, True):
