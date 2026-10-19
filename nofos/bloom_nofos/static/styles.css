@@ -397,6 +397,16 @@ footer .usa-footer__primary-link:visited {
   max-width: 80ex;
 }
 
+/* Match PDF points-column sizing in the editor and section previews. */
+table th.col--points,
+table td.col--points {
+  width: 1%;
+}
+
+table td.col--points {
+  white-space: nowrap;
+}
+
 @media (min-width: 64em) {
   /* Make sure header is evenly spaced */
   .usa-logo {

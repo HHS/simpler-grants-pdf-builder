@@ -230,20 +230,17 @@ def get_points_column_indexes(table):
 
 def add_class_to_points_columns(table):
     """
-    Styles points columns that were marked on import. Used when rendering.
+    Styles marked and automatically detected points columns when rendering.
 
-    On import, a points column's header gets a "col--points" class in the
-    Markdown (eg, "| Point value {: .col--points } |"). Here, we copy that class
-    to the column's body cells, so the CSS can keep them on one line.
-
-    Users control this in the Markdown editor:
-    - remove "{: .col--points }" to turn it off
-    - add a width class (eg, "{: .w-25 }") to set a width instead; the width class wins
+    Reuse import's conservative header/body detection for existing and manually
+    authored tables too, without changing saved Markdown. An explicit width
+    class (eg, "{: .w-25 }") wins over automatic sizing and imported markers.
 
     If a body cell is edited to hold longer text, the class is dropped from the
     whole column so it goes back to normal wrapping (no overflow past the page edge).
 
-    Tables without the class (including every NOFO imported before this rule) are unchanged.
+    Unmarked columns must have a recognized points header and non-empty,
+    point-like body values. Spanned and uneven tables are left alone.
     """
 
     def _remove_points_class(cell):
@@ -258,10 +255,11 @@ def add_class_to_points_columns(table):
         return
 
     header_cells = rows[0].find_all(["th", "td"], recursive=False)
+    detected_indexes = get_points_column_indexes(table)
     points_headers = [
         (index, cell)
         for index, cell in enumerate(header_cells)
-        if POINTS_COLUMN_CLASS in cell.get("class", [])
+        if POINTS_COLUMN_CLASS in cell.get("class", []) or index in detected_indexes
     ]
     if not points_headers:
         return
@@ -282,7 +280,7 @@ def add_class_to_points_columns(table):
             _remove_points_class(header_cell)
             continue
 
-        for cell in non_empty_cells:
+        for cell in [header_cell, *non_empty_cells]:
             _add_class_if_not_exists_to_tags(cell, POINTS_COLUMN_CLASS, "th|td")
 
 

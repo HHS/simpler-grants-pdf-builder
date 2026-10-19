@@ -1155,7 +1155,7 @@ class GetPointsColumnIndexesTests(TestCase):
 
 
 class AddClassToPointsColumnsTests(TestCase):
-    """Render-time styling of columns that were marked on import."""
+    """Render-time styling of imported and unmarked scoring columns."""
 
     def _render(self, markdown):
         return BeautifulSoup(
@@ -1180,14 +1180,72 @@ class AddClassToPointsColumnsTests(TestCase):
         )
         self.assertIn("table--small", soup.find("table")["class"])
 
-    def test_unmarked_table_is_unchanged(self):
-        # existing NOFOs don't have the class, so nothing changes for them
+    def test_unmarked_table_is_detected_at_render_time(self):
         soup = self._render(
             "| **Reviewers will evaluate:** | **Point value** |\n"
             "| --- | --- |\n"
             "| Relevant experience. | 10 points |"
         )
-        self.assertEqual(soup.find_all(class_="col--points"), [])
+        self.assertEqual(
+            self._get_points_cell_texts(soup), ["Point value", "10 points"]
+        )
+
+    def test_reported_scoring_table_without_import_marker(self):
+        markdown = (
+            "| **Reviewers will evaluate how well the applicant provides:** | **Point value** |\n"
+            "| --- | --- |\n"
+            "| Relevant management, administrative, and technical experience and capacity to carry out the activities and achieve the project outcomes. | 10 points |\n"
+            "| A staffing plan that is sufficient to achieve the project outcomes and clearly defines staff roles. | 10 points |\n"
+            "| Collaborations that support the applicant’s capacity or add value to the project. | 10 points |\n"
+            "| An organizational chart that supports the program approach. | 5 points |"
+        )
+        soup = self._render(markdown)
+        self.assertEqual(
+            self._get_points_cell_texts(soup),
+            ["Point value", "10 points", "10 points", "10 points", "5 points"],
+        )
+        # Rendering is repeatable, and detection doesn't rewrite the source.
+        self.assertNotIn("col--points", markdown)
+        self.assertEqual(add_classes_to_tables(str(soup)), str(soup))
+
+    def test_unmarked_columns_use_conservative_detection(self):
+        for header, value in [
+            ("Points of contact", "10 points"),
+            ("Point value", "Up to 5 points, see the budget section"),
+            ("Point value", ""),
+        ]:
+            with self.subTest(header=header, value=value):
+                soup = self._render(
+                    f"| Criteria | {header} |\n| --- | --- |\n| Work plan | {value} |"
+                )
+                self.assertEqual(soup.find_all(class_="col--points"), [])
+
+    def test_unmarked_spanned_and_uneven_tables_are_unchanged(self):
+        for body in [
+            '<tr><td colspan="2">10 points</td></tr>',
+            '<tr><td rowspan="2">Plan</td><td>10 points</td></tr>',
+            "<tr><td>Plan</td></tr>",
+        ]:
+            with self.subTest(body=body):
+                soup = BeautifulSoup(
+                    add_classes_to_tables(
+                        "<table><tr><th>Criteria</th><th>Point value</th></tr>"
+                        f"{body}</table>"
+                    ),
+                    "html.parser",
+                )
+                self.assertEqual(soup.find_all(class_="col--points"), [])
+
+    def test_unmarked_multiple_points_columns(self):
+        soup = self._render(
+            "| Points | Criteria | Maximum points |\n"
+            "| --- | --- | --- |\n"
+            "| 5 points | Work plan | 10 points |"
+        )
+        self.assertEqual(
+            self._get_points_cell_texts(soup),
+            ["Points", "Maximum points", "5 points", "10 points"],
+        )
 
     def test_user_width_class_wins(self):
         soup = self._render(

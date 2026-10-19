@@ -35,14 +35,14 @@ These run in the `add_classes_to_tables` and `add_captions_to_tables` template f
 
 ### Points columns
 
-The column is marked once, on import (see [Points columns on import](#points-columns-on-import) below). At render time, `add_class_to_points_columns()` styles marked columns only. It copies `col--points` from the header to the column's non-empty body cells. The CSS then shrinks the column to fit its content (`width: 1%`) and keeps body cells on one line (`white-space: nowrap`), so "10 points" doesn't wrap onto two lines. The header can still wrap.
+The importer marks qualifying columns (see [Points columns on import](#points-columns-on-import) below). At render time, `add_class_to_points_columns()` also detects unmarked columns using the same conservative header and body checks, so older imports and tables pasted into the editor get the same sizing without re-importing or changing saved Markdown. It applies `col--points` to the header and non-empty body cells. The CSS then shrinks the column to fit its content (`width: 1%`) and keeps body cells on one line (`white-space: nowrap`), so "10 points" doesn't wrap onto two lines. The header can still wrap.
 
 The class is dropped from the column, so it wraps normally again, when:
 - the header also has a width class (`w-*`), so the user's width wins
 - a body cell no longer looks like a point value, for example after an edit to "Up to 5 points, see the budget section", so long text can't push the table past the page edge
 - the table has `colspan`/`rowspan` cells
 
-Tables without the marker are never changed. That includes every NOFO imported before this rule existed.
+Both the editor stylesheet and PDF theme apply these styles. Unmarked tables are styled only when the header matches and every non-empty value is point-like. All-empty points columns and uneven rows are skipped.
 
 ---
 
@@ -76,5 +76,5 @@ A points column gets `col--points` instead of these.
 ## How users can override these
 
 - **Set a column width:** add a width class to a header cell in the Markdown editor, for example `| Point value {: .w-25 } |`. Any class from `w-5` to `w-100` (in steps of 5, plus `w-33` and `w-66`) works.
-- **Points columns:** remove `{: .col--points }` to turn it off, or replace it with a width class such as `{: .w-25 }` to set a fixed width. If both are there, the width class wins. To turn it on for a NOFO imported before this rule, add `{: .col--points }` to the points column's header.
+- **Points columns:** use a width class such as `{: .w-25 }` to set a fixed width and allow normal wrapping. The width class wins even when `col--points` is present. Removing the points marker alone no longer turns automatic detection off. Older NOFOs with qualifying unmarked columns are sized automatically when displayed.
 - **Make every table in a section full width:** on the section page, check **Use full-width tables for this section**. This adds `section--tables-full-width` to the section, which makes `table--small`, `table--large` and `table--criterion` tables 100% wide. Points columns still shrink to fit inside a full-width table.
