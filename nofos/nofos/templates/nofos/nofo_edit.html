@@ -677,7 +677,6 @@ Edit “{{ nofo|nofo_name }}”
   <caption aria-label="{{ section.name|strip_br }}">
     <div>
       <h2 class="margin-bottom-0" id="{{ section.html_id }}">{{ section.name|safe_br }}</h2>
-      {% if section.is_introduction %}<p class="font-sans-sm">This heading is fixed. Edit the subsections below to update the introductory content. Dates and registration instructions in this content do not update automatically when NOFO metadata changes.</p>{% endif %}
       <span class="section--copy-button">
         <button
           type="button"

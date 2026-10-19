@@ -47,9 +47,17 @@ authors remove all introductory prose, they are responsible for supplying the
 applicant instructions they need; the fixed parent is not deleted or replaced.
 
 The template-selection control is absent for imported ownership. Direct GET/POST
-to the template-settings endpoint is forbidden. The editor explains that dates
-and registration instructions in imported text are editor-maintained. Updating
-metadata never rewrites that text.
+to the template-settings endpoint is forbidden. On the NOFO edit page, the
+introductory section uses the same heading, action controls and subsection table
+layout as other sections, without an additional explanatory paragraph.
+
+Imported text is not automatically synchronized with structured fields. The
+existing Application Deadline edit workflow searches all subsection bodies,
+including the imported introduction, for the current deadline text and offers
+checkboxes to replace it in selected subsections when saving. Matching is
+case-insensitive literal text, not date interpretation: differently formatted
+dates or relative instructions are not inferred. Saving a structured field alone
+does not rewrite introductory content.
 
 Re-import keeps ownership and wording family stable. For imported ownership, a
 unique populated Before You Begin or Before You Get Started introduction can be
