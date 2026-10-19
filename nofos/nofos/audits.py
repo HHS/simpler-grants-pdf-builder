@@ -1,11 +1,12 @@
 import json
 import re
+import uuid
 from collections import OrderedDict
 
-from django.db.models import Q
+from django.contrib.contenttypes.models import ContentType
 from easyaudit.models import CRUDEvent
 
-from .models import Subsection
+from .models import DocumentAuditEvent, Subsection
 
 
 def deduplicate_audit_events_by_day_and_object(events):
@@ -73,10 +74,19 @@ def format_audit_event(event, formatting_options=None):
 
     # Improve object description for subsection edits
     if event.content_type.model.endswith("subsection"):
+        event_details["object_exists"] = False
         try:
-            subsection = SubsectionModel.objects.get(id=event.object_id)
+            if "subsections" in formatting_options:
+                subsection = formatting_options["subsections"].get(event.object_id)
+                if subsection is None:
+                    raise SubsectionModel.DoesNotExist
+            else:
+                subsection = SubsectionModel.objects.select_related("section").get(
+                    id=event.object_id
+                )
             name = subsection.name or "#{}".format(subsection.order)
             event_details["object_description"] = f"{subsection.section.name} - {name}"
+            event_details["object_exists"] = True
         except SubsectionModel.DoesNotExist:
             pass
 
@@ -131,116 +141,71 @@ def get_audit_events_for_nofo(nofo, reverse=True):
     )
 
 
+def document_audit_entries(document, reverse=True):
+    """Indexed, payload-free scope shared by paginated and full-history consumers."""
+    content_type = ContentType.objects.get_for_model(document)
+    ordering = ("-datetime", "-event_id") if reverse else ("datetime", "event_id")
+    return DocumentAuditEvent.objects.filter(
+        document_content_type=content_type, document_id=document.pk, visible=True
+    ).order_by(*ordering)
+
+
+def _load_audit_events(event_ids):
+    events = CRUDEvent.objects.select_related("content_type", "user").in_bulk(event_ids)
+    return [events[event_id] for event_id in event_ids if event_id in events]
+
+
+def get_audit_events_page(document, offset=0, limit=25):
+    """Load only one page plus a lookahead, never the document's complete payloads."""
+    ids = list(
+        document_audit_entries(document).values_list("event_id", flat=True)[
+            offset : offset + limit + 1
+        ]
+    )
+    return _load_audit_events(ids)
+
+
 def get_audit_events_for_document(
     document, document_model, section_model, subsection_model, reverse=True
 ):
-    """
-    Return all audit events related to the given NOFO: the NOFO object,
-    its sections, and its subsections.
-    """
+    """Full history for explicit full-history consumers, without global JSON searches.
 
-    def _filter_events(events):
-        """
-        Remove events that should not be displayed to the user:
-            - where 'changed_fields' is null
-            - where only excluded fields were changed. These are excluded because they are
-                either not relevant to the user (e.g. updated, status) or can never be
-                changed after initial update (e.g. filename, conditional_questions).
-        """
-        EXCLUDED_FIELDS = set(
-            [
-                "updated",
-                "status",
-                "hidden",
-                "optional",
-                "conditional_questions",
-                "filename",
-            ]
+    Model-name arguments remain for compatibility. The actual document content type
+    scopes ownership, including the separate Composer and Writer document families.
+    Interactive history pages must use get_audit_events_page instead.
+    """
+    return _load_audit_events(
+        list(
+            document_audit_entries(document, reverse=reverse).values_list(
+                "event_id", flat=True
+            )
         )
-        filtered_events = []
-        for event in events:
-            # Include all CREATED/DELETE events
-            if event.event_type != CRUDEvent.UPDATE:
-                filtered_events.append(event)
-                continue
-
-            # Exclude UPDATE events with changed fields == 'null'
-            if event.changed_fields == "null" or not event.changed_fields:
-                continue
-
-            # Exclude UPDATE events that only changed excluded fields
-            changed = safe_get_changed_fields(event)
-            changed_keys = set(changed.keys())
-            if changed_keys and changed_keys.issubset(EXCLUDED_FIELDS):
-                continue
-
-            # Otherwise, include
-            filtered_events.append(event)
-
-        return filtered_events
-
-    # Get audit events for the NOFO
-    document_events = CRUDEvent.objects.filter(
-        object_id=document.id, content_type__model=document_model
     )
-    document_events = _filter_events(document_events)
 
-    # Get audit events for Sections
-    section_ids = list(document.sections.values_list("id", flat=True))
-    section_events = CRUDEvent.objects.filter(
-        object_id__in=[str(sid) for sid in section_ids],
-        content_type__model=section_model,
-    )
-    section_events = _filter_events(section_events)
 
-    # Get audit events for Subsections (even if they have been deleted)
-    subsection_filter = Q()
-    for section_id in section_ids:
-        subsection_filter |= Q(object_json_repr__contains=str(section_id))
-
-    subsection_events = CRUDEvent.objects.filter(
-        content_type__model=subsection_model
-    ).filter(subsection_filter)
-
-    subsection_events = _filter_events(subsection_events)
-
-    # Sort and combine all events. If key datetime is the same, order by event type
-    def sort_key(event):
-        """
-        Sort by datetime first (excluding seconds/ms), then prioritize nofo_import events.
-        When datetime is equal (same minute), nofo_import actions should come first.
-        """
-        # Truncate datetime to minute level (exclude microseconds)
-        dt_truncated = event.datetime.replace(second=0, microsecond=0)
-
-        # For events in the same minute, sort based on custom event priority:
-        # 1. nofo_import events (priority 0)
-        # 2. create events
-        # 3. update events
-        # 4. delete events
-        if event.event_type == CRUDEvent.DELETE:
-            event_priority = 3
-        elif event.event_type == CRUDEvent.UPDATE:
-            event_priority = 2
-        elif event.event_type == CRUDEvent.CREATE:
-            event_priority = 1
-
-        changed_fields = safe_get_changed_fields(event)
-        if (
-            changed_fields
-            and isinstance(changed_fields, dict)
-            and changed_fields.get("action") == "nofo_import"
-        ):
-            event_priority = 0
-
-        # Return tuple: (datetime_truncated, priority_flag)
-        # Lower priority_flag means higher priority, so comes first in sorting
-        return (dt_truncated, event_priority)
-
-    combined_events = (
-        list(document_events) + list(section_events) + list(subsection_events)
-    )
-    return sorted(combined_events, key=sort_key, reverse=reverse)
+def audit_event_formatting_options(events, options=None):
+    """Batch live subsection labels; deleted objects retain their audit description."""
+    options = dict(options or {})
+    subsection_model = options.get("SubsectionModel", Subsection)
+    ids = [
+        event.object_id
+        for event in events
+        if event.content_type.model == subsection_model._meta.model_name
+    ]
+    # Audit object IDs are strings. Invalid historical IDs must not break the page.
+    valid_ids = []
+    for object_id in ids:
+        try:
+            valid_ids.append(uuid.UUID(object_id))
+        except (ValueError, TypeError, AttributeError):
+            continue
+    options["subsections"] = {
+        str(subsection.pk): subsection
+        for subsection in subsection_model.objects.select_related("section").filter(
+            pk__in=valid_ids
+        )
+    }
+    return options
 
 
 def get_audit_event_by_id(event_id):
@@ -260,6 +225,7 @@ def safe_get_changed_fields(event):
     Returns an empty dict if parsing fails.
     """
     try:
-        return json.loads(event.changed_fields) if event.changed_fields else {}
+        changed = json.loads(event.changed_fields) if event.changed_fields else {}
+        return changed if isinstance(changed, dict) else {}
     except Exception:
         return {}

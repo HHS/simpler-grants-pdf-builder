@@ -226,6 +226,17 @@ The following are excluded from formatting: static files, migration files, SVGs,
 
 ---
 
+## Document history index rollout (#1142)
+
+Migrations 0154/0155 add and backfill lookup tables without changing original
+audit records. Measure the backfill on dev before production. After the rollout
+has completed and all old workers have stopped, run
+`poetry run python manage.py backfill_document_audit_index --chunk-size 100`
+from `nofos/` in that environment to catch writes made by old workers after the
+migration scan. Inspect unresolved ownership counts and validate first-page and
+Load More timing on the affected NOFO before sign-off. See
+[document history deployment and rollback](documentation/DOCUMENT_HISTORY.md#migration-and-deployment).
+
 ## Hotfixes
 
 If a fix needs to bypass the normal PR flow (e.g. a critical production bug), prefix the PR title with `fix: [Hotfix] ...` in lieu of an issue number — keep the `fix:` type prefix so the change still categorizes correctly in CHANGELOG.md, with `[Hotfix]` flagging why it skipped the normal flow. CI must still pass before merging.
