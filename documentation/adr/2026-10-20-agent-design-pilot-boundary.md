@@ -1,9 +1,11 @@
 # Human-initiated design pilot boundary
 
-Status: proposed; architecture selection and real-data operation are not approved.
+Status: accepted direction for the first local synthetic proof, following Ben's
+October 20, 2026 review. Runtime isolation is not yet proven. Real-data use,
+shared operation and production integration remain unapproved.
 Related: #902, #1145, #1146. Source inspected: main at `5fe16ad6`.
 
-## Recommendation
+## Accepted direction for the initial synthetic proof
 
 Start with one locally operated, isolated Builder instance using a fresh temporary
 database and artifact directory. Reuse Builder's import, themes, templates and
@@ -29,7 +31,7 @@ This is required isolation work, not behavior supplied by a fresh database.
 | Option | Reuse and cost | Main gap | Position |
 | --- | --- | --- | --- |
 | Document bundle, no Builder instance | Reuses the framework-independent HTML processor; least application setup | Word conversion, defaults, model-backed rendering and editable-result mapping still need adapters | Good later portability boundary; more reconstruction for this pilot |
-| Isolated Builder instance | Reuses current Word import, model-backed render context and controls | Needs candidate-only tools, restricted egress and trusted transfer of the reviewed result | Recommended for synthetic proof |
+| Isolated Builder instance | Reuses current Word import, model-backed render context and controls | Needs candidate-only tools, restricted egress and trusted transfer of the reviewed result | Selected direction for synthetic proof |
 | Restricted production draft | Existing review UI and no cross-instance transfer | Existing group access is not candidate-only isolation; drafts, logs and backups enter production before acceptance | Not recommended for the first pilot |
 
 No option removes the need for human review, version binding or operating rules.
@@ -43,17 +45,31 @@ flowchart LR
     C --> T[Candidate-only capability adapter]
     T <--> A[Agent with approved model configuration]
     T --> C
-    C --> R[Trusted HTML and PDF rendering]
-    R --> H[Authenticated human review of exact revision]
-    H --> E[Explicit acceptance and trusted transfer]
-    E --> P[One editable production NOFO]
-    H --> D[Explicit discard confirmation]
-    D --> X[Candidate-owned artifact cleanup]
+    C --> H[Authenticated Builder review page: current candidate and findings]
+    H -. Optional .-> HTML[View HTML for current revision]
+    H -. Optional .-> PDF[Preview PDF for current revision]
+    H -. Optional .-> DL[Download PDF for current revision]
+    HTML -.-> H
+    PDF -.-> H
+    DL -.-> H
+    H --> EDIT[Human edits or resolves questions; refresh affected checks and previews]
+    EDIT --> C
+    H --> E[Accept current design: authorized human, blockers resolved]
+    E --> K[Trusted production transfer and technical verification]
+    K --> P[One editable production NOFO and its edit link]
+    K --> F[If incomplete: visible pending result and retry recovery]
+    H --> D{Reject: confirm deletion?}
+    D -->|Cancel| H
+    D -->|Confirm| X[Delete unaccepted candidate and clean up owned artifacts]
 ```
 
 All boxes describe proposed responsibilities, not deployed services. The pilot
 starts when a human provides a file. AS/S3 delivery is separate under #950.
-No automatic PDF return or publication is introduced.
+No automatic PDF return or publication is introduced. #1145 owns this maintained
+workflow; #1148, #1149 and #1150 reference it for review, transfer and discard.
+Dashed preview/download paths are optional user actions, served through trusted
+sanitized rendering and controlled asset handling. None is a prerequisite for
+the direct acceptance path from the review page.
 
 ## Minimum capability boundary
 
@@ -102,32 +118,52 @@ server-side even if an agent supplies syntactically valid JSON.
 
 ## Review, acceptance and discard
 
-Each review package must identify source digest, imported-baseline digest,
-candidate revision, allowed design settings, owned-asset manifest and exact
-HTML/PDF digests. Bind it also to the Builder commit, templates/styles, relevant
-feature flags, render options and immutable asset bytes. A stable candidate
-revision alone does not freeze the generated document. Changing any of these
-inputs invalidates the affected readiness and PDF-review evidence.
-Review links need authentication and current document/group authorization; an
-unguessable URL is not sufficient.
+The Builder review page is the acceptance interface. It shows the current
+candidate, agent changes, evidence and human questions, and allows corrections,
+explicit acceptance or confirmed discard. Offer View HTML, Preview PDF and
+Download PDF; the user chooses any combination or may accept without opening a
+preview. Do not require a preview/download event or recorded PDF inspection to
+enable acceptance. Resolve blocking findings before acceptance. Review links
+need authentication and current document/group authorization; an unguessable
+URL is not sufficient. Local proof reviewer access must be documented before use;
+a shared review service is a separate operating decision.
 
-The agent has no acceptance token. A separate trusted operation rechecks the
-human's current group authority, revision, unresolved blockers and final PDF
-inspection. Transfer the reviewed content, settings and assets exactly; simply
+Each review package must identify source digest, imported-baseline digest,
+candidate revision, allowed design settings and owned-asset manifest. Record exact
+digests and inputs for previews that have been generated; mark others not generated
+rather than requiring a PDF to exist before acceptance. Bind the candidate also to
+the Builder commit, templates/styles, relevant feature flags, render options and
+immutable asset bytes. A stable candidate revision alone does not freeze the
+generated document. Changing these inputs invalidates affected evidence and stale
+acceptance requests, regardless of which optional views the human used.
+
+The agent has no acceptance token. A separate trusted Builder operation rechecks
+the human's current group authority, candidate revision and unresolved blockers.
+An explicit acceptance applies to the exact current candidate, independent of
+preview choice. Transfer its content, settings, assets and links exactly; simply
 reimporting the original Word can lose design changes and is not acceptance.
 Use a unique acceptance identity, atomic creation/linkage and retry reconciliation
 so a repeat request yields the same production result. Verify the saved result
-before declaring success. Do not promote the temporary SQLite database.
+before declaring success; return its normal editable Builder link or a clear
+incomplete/pending status. Do not promote the temporary SQLite database.
+
+This ADR defines the transfer boundary and outcome. #1149 owns the transfer
+format, field/asset/link mapping, validation, concurrency, partial-failure and
+retry implementation. Establish a feasible transfer path before scaling the
+isolated design workflow; it is not a ready-made capability of this proposal.
 
 Destination IDs and asset URLs may be remapped; record that mapping and compare
 all reviewed record fields, ordered content, design settings and asset bytes
 after the transfer. Check destination rendering against the reviewed package,
 including its actual flags/templates/styles. Do not require identical PDF bytes
 when harmless generated metadata changes, but do not treat a content digest as
-layout verification. If rendering inputs or output materially differ, require
-new human inspection of the destination PDF before recording design completion.
-An interrupted verification leaves a recoverable pending result, not another
-NOFO on retry or an automatically completed design.
+layout verification. Technical content/asset/link checks and rendering validation
+remain required implementation work; engineering HTML/PDF quality checks do not
+require the accepting user to open either format. If destination inputs or output
+materially differ from the accepted candidate, surface the difference and require
+a fresh human decision on the current version through the review page, retaining
+the same optional viewing choices. An interrupted verification leaves a recoverable
+pending result, not another NOFO on retry or an automatically completed design.
 
 Discard requires human confirmation and revision/state checks. Cancel leaves the
 candidate intact. Confirm removes only the unaccepted candidate and its owned
@@ -148,9 +184,11 @@ not prove that a model-equipped agent cannot escape a complete runtime.
 
 Before #1145 can close:
 
-1. Select this architecture or an alternative and confirm implementation home,
-   operator and reviewer access. Recommend keeping the initial adapter in Builder
-   to avoid synchronizing another full fork; independent packaging is not required.
+1. Record the accepted local isolated-Builder direction for the synthetic proof
+   and confirm implementation home, operator and reviewer access. Recommend keeping
+   the initial adapter in Builder to avoid synchronizing another full fork;
+   independent packaging is not required. Reopen architecture selection only
+   if new evidence warrants a material change.
 2. Implement the smallest synthetic candidate-only adapter proof. Include another
    candidate and test cross-candidate reads, unknown operations, stale revisions,
    document-borne instructions, path/URL escape, ambient credential discovery,
