@@ -1770,6 +1770,7 @@ class DesignPilotCandidate(models.Model):
     source_bytes = models.BinaryField()
     source_name = models.CharField(max_length=200)
     conversion_html = models.TextField()
+    metadata_trace_json = models.TextField(default="", editable=False)
     content_json = models.TextField()
     presentation_json = models.TextField()
     changes_json = models.TextField(default="[]")
