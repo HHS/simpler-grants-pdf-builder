@@ -802,6 +802,8 @@ If access is denied or the page is unavailable, contact the pilot operator.
 4. Read **Measurement scope**, reliability information and any **Calculation
    notes**. Word conversion may omit text boxes, headers, footers and image text;
    template instructions and unused draft options can be counted.
+   A Word report without a reliability rating explains the tool's limitation;
+   it does not mean a problem was detected in your upload.
 5. Select **Copy metrics** or **Print / Save as PDF** before leaving the report.
    Use **Analyze another document** for another upload.
 
