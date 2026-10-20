@@ -12,6 +12,11 @@ mutation regressions. The reviewer rechecked the fix and independently passed
 all 73 provenance, Metadata import, core/adapter, host and review tests, with no
 remaining blocking findings. No importer replay is used as independent evidence.
 
+The first CI run exposed a fixture-timing flaw in the duplicate-upload assertion:
+regenerating a DOCX can change ZIP timestamps and thus its source hash. The retry
+now resends the retained original bytes and verifies the same candidate, unchanged
+trace and a single saved candidate. Application deduplication is unchanged.
+
 Tests compare traced and untraced output and sections, preserve the original soup,
 cover duplicate/blank precedence and non-Metadata boundaries, run synthetic Word
 through conversion and saved fields, retain defaults and OpDiv rejection, and

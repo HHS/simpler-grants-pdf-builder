@@ -140,7 +140,19 @@ class HostedMetadataTraceTests(TestCase):
             data["conversion_sha256"], provenance.digest(run.conversion_html)
         )
         self.assertNotIn("Synthetic Agency", run.metadata_trace_json)
-        self.assertEqual(self.metadata_candidate(author="{Same as OpDiv.}").pk, run.pk)
+        # A retry resends identical bytes. Regenerating a DOCX can change ZIP
+        # timestamps, legitimately producing a different source identity.
+        retry = host.import_candidate(
+            self.user,
+            SimpleUploadedFile(
+                "invented-metadata.docx",
+                bytes(run.source_bytes),
+                content_type=host.WORD_TYPE,
+            ),
+        )
+        self.assertEqual(retry.pk, run.pk)
+        self.assertEqual(retry.metadata_trace_json, run.metadata_trace_json)
+        self.assertEqual(DesignPilotCandidate.objects.count(), 1)
         response = self.client.get(reverse("design_pilot:review", args=[run.pk]))
         self.assertContains(response, "Metadata provenance")
         self.assertContains(response, "Metadata destination: agency")
