@@ -67,6 +67,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-050 | conversion | Footnotes/Endnotes | Unambiguous `[N]` reference/citation pairs → forward/return links | `nofo.py`, `endnotes.py` |
 | IMPORT-051 | conversion | Footnotes/Endnotes | Manually-linked endnote lists/links → preserved as raw HTML | `nofo_markdown.py` |
 | IMPORT-053 | repair | Footnotes/Endnotes | Duplicated Word custom note mark beside native link → duplicate removed | `nofo.py`, `endnotes.py` |
+| IMPORT-068 | repair | Footnotes/Endnotes | Isolated final native-note return-link paragraph → inline backlink after citation | `content_processing.py`, `endnotes.py` |
 | IMPORT-064 | conversion | Footnotes/Endnotes | Explicit URL/www/DOI citation text → links inside recognized note targets only | `content_processing.py`, `endnotes.py` |
 | IMPORT-018 | repair | Lists | Adjacent same-class lists merged; differing-class lists nested | `nofo.py` |
 | IMPORT-019 | repair | Lists | Redundant `<li>`/`<ul>` wrapper levels unwrapped | `nofo.py` |
@@ -315,6 +316,14 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Action:** Wrap only the address in a link, retaining its visible wording and inline formatting across adjacent Word runs. Preserve existing anchors, note IDs, numbering, return links, accessibility attributes and surrounding citation text. Scheme-less `www.` destinations use HTTPS; DOI identifiers use `https://doi.org/`. Preserve query strings, fragments, escaped ampersands and balanced DOI parentheses; leave trailing citation punctuation and unmatched closing delimiters outside the link. Existing anchors, attributes, comments, code, preformatted content, scripts and styles are excluded; hard breaks/images and separate blocks (including divs, blockquotes, sections and headings) never join addresses. Links inside these containers remain within their own block. Citation prose without an explicit address remains unchanged. Repeated processing is idempotent. A duplicated DOI resolver is a separate malformed-source case and is not repaired, whether already linked or plain text.
 - **Source:** `endnotes.py::linkify_endnote_citations`, using the existing `_wrap_range` note-marker helper; called by `content_processing.py::process_nofo_html` after bracketed pairing and before Markdown storage.
 - **Status:** active on explicit new import/re-import through the shared Builder, Composer and Compare processing path. No saved-record migration, view-time linking, global Markdown URL extension, network destination lookup or original Word-file modification. Unrecognized/ambiguous note structures are not guessed at.
+
+### IMPORT-068 — Isolated native-note return link moved inline
+- **Type:** repair
+- **Trigger:** A native `<li id="endnote-N">` or `<li id="footnote-N">` with a numeric ID has a final attribute-free paragraph containing exactly one plain-text `↑` link, plus optional whitespace, whose destination is `#endnote-ref-N` or `#footnote-ref-N` respectively. Its immediately preceding child is a paragraph containing text. Notes inside `pre`/`code` are excluded.
+- **Action:** Before generic empty-element/link cleanup, move that existing link to the end of the preceding paragraph with a separating space and remove only the now-empty final paragraph. Preserve the link's attributes, all earlier paragraphs, and citation formatting. Leave already-inline links, manual notes, nonnumeric note IDs, mismatched destinations, and final paragraphs containing any additional text, elements, comments, or attributes unchanged. The operation is idempotent and runs only on incoming content through the shared import pipeline; it does not migrate saved records.
+- **Source:** `content_processing.py::process_nofo_html` via `endnotes.py::inline_native_note_return_links`
+- **Status:** active
+- **Evidence limit:** The reported arrow-only paragraph could not be reproduced by importing the supplied Word document with the current converter. This defensive repair targets the reported HTML shape; it does not establish that trailing empty Word paragraphs caused it.
 
 ### IMPORT-053 — Duplicate Word custom note mark removal
 - **Type:** repair

@@ -282,6 +282,34 @@ class NativeWordNoteImportTests(TestCase):
         assert_internal_endnote_links_are_reciprocal(self, stored)
         self.assertEqual(find_endnote_issues(nofo), [])
 
+    def test_trailing_blank_word_note_paragraphs_keep_backlinks_inline(self):
+        # Characterize the source pattern without claiming it reproduces the bug.
+        output = BytesIO()
+        with ZipFile(BytesIO(native_notes_docx())) as source, ZipFile(
+            output, "w", ZIP_DEFLATED
+        ) as target:
+            for entry in source.infolist():
+                data = source.read(entry.filename)
+                for kind in ("footnote", "endnote"):
+                    if entry.filename == f"word/{kind}s.xml":
+                        data = data.replace(
+                            f"</w:{kind}>".encode(),
+                            f"<w:p/><w:p/><w:p/></w:{kind}>".encode(),
+                        )
+                target.writestr(entry, data)
+        upload = SimpleUploadedFile(
+            "trailing-blanks.docx", output.getvalue(), content_type=DOCX_CONTENT_TYPE
+        )
+        html, _ = parse_uploaded_file_as_html_string(upload)
+        nofo = import_html_to_nofo(html, title="Trailing blank note paragraphs")
+        stored = render_stored_document(nofo)
+        for kind in ("footnote", "endnote"):
+            note = stored.find(id=f"{kind}-1")
+            paragraphs = note.find_all("p", recursive=False)
+            self.assertEqual(len(paragraphs), 1)
+            self.assertIs(note.find("a", href=f"#{kind}-ref-1").parent, paragraphs[0])
+        assert_internal_endnote_links_are_reciprocal(self, stored)
+
     def test_manual_word_markers_reach_stored_html_and_the_real_nofo_view(self):
         upload = SimpleUploadedFile(
             "manual-notes.docx", manual_notes_docx(), content_type=DOCX_CONTENT_TYPE

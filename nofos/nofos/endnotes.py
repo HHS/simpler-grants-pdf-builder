@@ -152,6 +152,59 @@ def linkify_endnote_citations(soup):
                 _wrap_range(soup, block, start, start + len(label), anchor)
 
 
+def inline_native_note_return_links(soup):
+    """Move an isolated native-note backlink into the preceding citation paragraph.
+
+    Match only numeric Mammoth note IDs and a final, attribute-free paragraph
+    containing one plain-text up-arrow link to that same note's reference.
+    Inspect the original shape before generic cleanup can erase extra content.
+    """
+    moved = 0
+    for note in soup.find_all("li", id=re.compile(r"^(?:endnote|footnote)-[0-9]+$")):
+        if note.find_parent(["pre", "code"]):
+            continue
+
+        def meaningful_children(tag):
+            return [
+                child
+                for child in tag.contents
+                if not isinstance(child, NavigableString)
+                or isinstance(child, Comment)
+                or child.strip()
+            ]
+
+        children = meaningful_children(note)
+        if len(children) < 2:
+            continue
+        previous, final = children[-2:]
+        if (
+            previous.name != "p"
+            or final.name != "p"
+            or final.attrs
+            or not previous.get_text(strip=True)
+        ):
+            continue
+        contents = meaningful_children(final)
+        if len(contents) != 1 or contents[0].name != "a":
+            continue
+        link = contents[0]
+        kind, number = note["id"].split("-", 1)
+        if (
+            link.get("href") != f"#{kind}-ref-{number}"
+            or link.get_text(strip=True) != "↑"
+            or any(
+                not isinstance(child, NavigableString) or isinstance(child, Comment)
+                for child in link.contents
+            )
+        ):
+            continue
+        previous.append(NavigableString(" "))
+        previous.append(link.extract())
+        final.decompose()
+        moved += 1
+    return moved
+
+
 def _heading(tag):
     return bool(re.fullmatch(r"h[1-7]", tag.name or "") or tag.get("role") == "heading")
 
