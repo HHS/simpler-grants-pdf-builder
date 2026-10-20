@@ -78,8 +78,9 @@ upload. All remained in Draft.
 
 Presentation automation candidates: source-matching theme, text-only cover when
 there is no cover image, and the existing section-width control. The table-width
-choice is provisional until a final PDF is inspected; the saved flag alone does
-not prove improved print layout. The native checkbox label worked; a Playwright
+flag is verified in local HTML/control state only; it does not prove improved
+PDF layout. PDF-specific effects remain unverified locally and are not a local
+acceptance gate. The native checkbox label worked; a Playwright
 `setChecked` attempt did not change it. This is automation interaction evidence,
 not an established Builder defect.
 
@@ -116,7 +117,7 @@ state only. Its dependency-version documentation nit and the separately checked
 heading-warning attribution were corrected. This is an internal review, not a
 human approval or completion of the remaining baseline checks.
 
-## Human and final-PDF baseline still to collect
+## Remaining human baseline and separate PDF engineering checks
 
 For routine, tables and judgment, record the source digest, application revision,
 operator, active and elapsed time, every manual intervention and any rework.
@@ -124,12 +125,28 @@ Classify each intervention as presentation automation, importer defect or human
 decision. Use existing theme, cover, page-break and table-width controls before
 considering custom CSS. Do not invent agency branding for the judgment case.
 
-Inspect the final Builder-generated PDF page by page, including table continuation,
-navigation, headers, footers and links. Record renderer configuration and artifact
-digest. A source Word render or HTML preview cannot substitute for this check.
-Do not use production export credentials in a non-production environment.
+The local pilot is **HTML-only**. Preview PDF and Download PDF remain disabled
+on localhost; enabling local DocRaptor, adding credentials/test-key integration,
+a renderer, a broker or a tunnel is outside scope. No local PDF, PDF inspection
+or preview/download event is required for user acceptance, trusted transfer or
+cleanup. The user can view HTML or accept the current candidate without opening
+a preview, subject to authorization, resolved blockers and technical fidelity
+checks. Final PDF pagination is not verified locally.
+
+Separately, perform PDF engineering checks with approved synthetic fixtures in
+an **existing configured environment**. Inspect the actual Builder-generated PDF
+page by page, including table continuation, navigation, headers, footers and links.
+Record the environment, application revision, renderer configuration and artifact
+digest. A source Word render or HTML preview is not equivalent PDF evidence.
+These checks do not require local DocRaptor work or an individual user's PDF
+inspection before design acceptance. Do not automatically upload local candidates
+to dev, process real drafts, change shared settings or use production export
+credentials in a non-production environment to collect this evidence.
 
 This change does **not** complete the manual timing baseline, agent-versus-human
 comparison, unsupported/oversized input coverage, stale-render checks, full
-fidelity checks or final Builder PDF review. It does not close #1146 or authorize
-the architecture proposed in #1154.
+fidelity checks or separate configured-environment PDF engineering validation.
+It does not close #1146 or establish an agent/runtime security boundary. Follow
+the HTML-only clarification in [#1159](https://github.com/HHS/simpler-grants-pdf-builder/pull/1159)
+and the operating/access decisions under #1145; the initial architecture direction
+was recorded in #1154.
