@@ -5,11 +5,12 @@ editors, support staff, and agents can use this reference to understand how
 to complete tasks through the interface. Stable task IDs also let other
 guides and tools link to the relevant instructions.
 
-**Source-reviewed against:** upstream `main` at `9d468df2` (October 9, 2026).
-Local browser checks used checkout `036d6684`; relevant subsection and section
-control templates were cross-checked against upstream before preparing this guide.
+**Source-reviewed against:** upstream `main` at `5fe16ad6` (October 20, 2026),
+after reviewing PRs closed October 6–20, 2026. Instructions describe merged
+source; availability in a deployed environment depends on its version and settings.
+The additions in this refresh are source-reviewed only.
 
-**UI validation:** October 9, 2026, local instance with synthetic content.
+**UI validation:** October 9, 2026, local instance at `036d6684` with synthetic content.
 Verified subsection opening, renaming, saving and return navigation; callout and
 page-break setting persistence; subsection creation; delete confirmation labels
 (without submitting deletion); section-wide table-width persistence; metadata
@@ -22,8 +23,8 @@ PDF generation requires the configured external PDF service and is not verified 
   the ID, not the heading text. IDs don't change when the wording does.
 - Button and link labels are written exactly as they appear on screen, in
   **bold**.
-- Every task starts from the **NOFO edit page**: the page you see after
-  opening a NOFO from **All NOFOs**.
+- Tasks start from the **NOFO edit page**: the page you see after opening a
+  NOFO from **All NOFOs**, unless a task names another starting point.
 - Steps describe the current UI only. If a label on screen doesn't match this
   page, trust the screen and report the mismatch.
 
@@ -47,8 +48,8 @@ When you use a task in a suggestion, report, or comment:
 | Term | What it means in NOFO Builder | How it looks in the PDF |
 | --- | --- | --- |
 | Section | A top-level part of the NOFO (for example, "Step 1: Review the Opportunity"). Shown as a table on the NOFO edit page. | Usually starts on its own cover page, and is a Heading 2 |
-| Subsection | One heading and the content below it, up to the next heading. This is the main unit you edit. | Heading 3–7 and the content under it |
-| Heading level | Set on each subsection: Heading 3 to Heading 7. | The size and nesting of the heading |
+| Subsection | A heading and its content, or a headingless body. This is the main unit you edit. | Usually Heading 3–7 and the content under it; lead introductory prose has no heading |
+| Heading level | Set on headed subsections; the selector offers Heading 2 to Heading 7. | The size and nesting of the heading; follow the design guidance's H1–H6 limit |
 | Callout box | A subsection styled with an accent color to draw attention. | Shaded or colored box |
 | Subsection content | Written in **Markdown** in a text editor. Simple tables and lists are Markdown; merged-cell tables and lists requiring source marker semantics are stored as HTML. See [Word list editing](WORD_LIST_IMPORT.md). | Body text, lists, tables |
 | Page break | A per-subsection setting that starts it on a new page. | New page before the heading |
@@ -77,6 +78,93 @@ is needed, contact the SimplerNOFOs team.
 
 ---
 
+## Importing and reviewing Word documents
+
+<a id="task-import-word"></a>
+
+### TASK-IMPORT-WORD — Import a new Word NOFO
+
+**Starting point:** **All NOFOs**, rather than an existing NOFO edit page.
+
+**Steps**
+
+1. Select **Import NOFO**.
+2. Under **Select NOFO file**, choose the Word `.docx`, then select **Import**.
+3. On the naming page, review the suggested name and select **Save NOFO name**.
+4. If prompted for an opportunity number, enter the correct value and select
+   **Save opportunity number**. The interim-number option is temporary; replace
+   it before publishing.
+5. Open the NOFO from **All NOFOs**. Review **Basic information**, **NOFO metadata**,
+   **NOFO theme options**, and any import warnings before checking the PDF.
+
+**Notes**
+
+- A recognized Word **Metadata** block supplies structured fields and is removed
+  from the imported content. When several recognized blocks exist, the last is
+  authoritative; fields are not combined with earlier blocks or legacy labels.
+  Replace template placeholders before import. See [Word metadata import](WORD_METADATA_IMPORT.md).
+- Builder can omit a leading Word **Title** paragraph during import. The NOFO
+  title suggestion comes from metadata, not that omitted paragraph; check it
+  before saving the name.
+- For an existing NOFO, reimport replaces sections and subsections and can lose
+  manual edits. It is not a way to apply import repairs to saved edits in place.
+  Reimport preserves saved theme, cover and introductory ownership choices.
+
+<a id="task-import-recover"></a>
+
+### TASK-IMPORT-RECOVER — Resolve a blocked Word import
+
+**Starting point:** the import error page.
+
+**Steps**
+
+1. Read the error details and **What to do next**. Keep the error code if you
+   need support.
+2. For a long-heading error, use **Search Word for:** to find each affected
+   passage. Check its Word style: use body text for prose, or shorten a real
+   heading while preserving its meaning. Use the character limit shown on the
+   error page. If a heading and paragraph were joined with Shift+Enter, replace
+   that line break with a paragraph break and apply **Normal** to the prose only.
+3. For an introductory-structure error, start with the identified content or
+   heading. Remove template-only guidance from the import copy, or move
+   applicant-facing content into the appropriate section. Change heading levels
+   only when the details identify a heading-level problem.
+4. Save the corrected Word file. Select **Try the import again**, choose the
+   corrected file, and submit it again.
+5. If the problem is unclear, use the **NOFO Builder Feedback Form** or email
+   link under **Need help resolving this error?** Include the error code and
+   what you were trying to do.
+
+**Notes**
+
+- Recoloring a General instructions table pale blue does not make it a supported
+  Word instruction text box and does not resolve an introductory-structure error.
+- For `IMPORT-INTRODUCTION-STRUCTURE`, no content is saved or replaced; an
+  existing NOFO remains unchanged. See [import error codes](IMPORT_ERROR_CODES.md)
+  for the recovery that applies to other errors.
+
+<a id="task-template-instructions-review"></a>
+
+### TASK-TEMPLATE-INSTRUCTIONS-REVIEW — Remove leftover template guidance
+
+Use this when **Check for leftover template instructions** appears after import
+or reimport, or when you find writer-only notes in the content.
+
+**Steps**
+
+1. For a new import, finish saving the NOFO name and open it from **All NOFOs**.
+2. Find the subsection containing writer instructions or unused template options
+   and select **Edit** ([TASK-SUBSECTION-EDIT](#task-subsection-edit)).
+3. Remove only template guidance and unused options. Keep application deadlines,
+   key facts and instructions applicants need. If an option requires a policy
+   decision, resolve it with your grants policy office.
+4. Select **Save subsection**, then **Preview PDF** to check the result.
+
+Automatic cleanup does not remove every instruction container. The warning is
+an invitation to review, not evidence that all highlighted content is disposable.
+
+---
+
 ## Subsections
 
 <a id="task-subsection-edit"></a>
@@ -92,6 +180,28 @@ All subsection-level tasks start here.
 2. In that subsection's row, select **Edit**.
 
 You are now on the page titled **Subsection: `<subsection name>`**.
+
+<a id="task-subsection-resolve-conflict"></a>
+
+### TASK-SUBSECTION-RESOLVE-CONFLICT — Recover a save blocked by newer changes
+
+Use this when saving shows **This subsection changed since you opened it.** or
+**The editor was updated while this page was open.** Your submission has not
+been saved; the page preserves it alongside the latest saved version.
+
+**Steps**
+
+1. Compare **Your unsaved version** with **Latest saved version**, including the
+   heading, content, callout and page-break settings.
+2. Select **Review and combine changes**. This opens the editor with the latest
+   saved version and retains your unsaved version for reference; it does not save.
+3. In **Version to save**, bring over the changes you want to keep, preserving
+   newer work that should remain.
+4. Select **Save combined version**. If someone saved again during your review,
+   compare and combine the versions again.
+
+To abandon your unsaved work, select **Discard my changes and return** instead.
+Do not refresh away the preserved work or assume that opening the review saved it.
 
 <a id="task-subsection-delete"></a>
 
@@ -190,8 +300,9 @@ document is organized.
 
 - The current UI offers Heading 7, but the supplied design/style guidance
   limits structural headings to H1–H6. Do not recommend H7 as an accessibility fix.
-- Subsections can be set to Heading 3 through Heading 7. Section names are
-  Heading 2 and can't be changed here.
+- The selector offers Heading 2 through Heading 7 for headed subsections.
+  Ordinary section names are Heading 2 and can't be changed here. Opening
+  introductory prose is headingless and has no heading-level selector.
 - Headings inside the content editor (lines starting with `#`) are separate
   from the **Heading level** setting. Check those too.
 
@@ -208,7 +319,75 @@ document is organized.
 **Notes**
 
 - Use callout boxes sparingly. When too much is highlighted, nothing stands
-  out.
+  out. The checkbox is disabled for headingless introductory prose.
+- Both **Application Due Date** and **Application deadline** can identify
+  imported deadline sidebar callouts. Check the saved content and PDF rather
+  than changing the heading just to make it match a different template.
+
+---
+
+## Introductory content
+
+<a id="task-introduction-edit"></a>
+
+### TASK-INTRODUCTION-EDIT — Edit imported Before you get started content
+
+**Before you start:** this task applies when **Before you get started** appears
+as a section table with subsection **Edit** links. Qualifying new FY27 Word
+imports retain their introductory text this way. Older and unrecognized records
+can still use a generated introduction; reimport does not convert those records
+into editable introductions.
+
+**Steps**
+
+1. On the NOFO edit page, find the **Before you get started** section table.
+2. Select **Edit** in the row containing the prose or child heading to change.
+3. Edit the content. Opening prose has a blank, disabled name and no heading-level
+   selector; edit its body rather than trying to add the parent heading there.
+4. Select **Save subsection**, then **Preview PDF** to check the introduction
+   and its links.
+
+**Notes**
+
+- The parent heading and position are fixed. Genuine child headings can be
+  edited normally; lead headingless prose cannot be turned into a callout.
+- Imported introductory records do not offer the generated **BYB page setting**
+  control. A generated record's template control, where available to your
+  account, does not edit imported prose.
+- Changing structured fields alone does not update authored introductory text.
+  For deadline replacements, use [TASK-DEADLINE-UPDATE](#task-deadline-update).
+- Keep one populated introduction when reimporting an editable-introduction NOFO.
+  Missing, repeated, empty or unsafe introductory structure blocks the replacement.
+  See [editable introductory content](EDITABLE_INTRODUCTION.md).
+
+---
+
+## Lists
+
+<a id="task-list-review"></a>
+
+### TASK-LIST-REVIEW — Check imported numbering and nesting
+
+Use this after import, especially when **Check list numbering** appears.
+The warning does not block import; it means some source numbering could not be
+fully preserved.
+
+**Steps**
+
+1. Finish any new-import naming steps, then open the NOFO from **All NOFOs**.
+2. Compare list markers, nesting, continuation paragraphs and restarts with Word.
+   Include lists inside table cells.
+3. Open the affected subsection ([TASK-SUBSECTION-EDIT](#task-subsection-edit)).
+4. Correct the list in its existing Markdown or HTML representation. Preserve
+   nested lists inside their parent item and retain required `type` and `start`
+   attributes. Do not type a second number inside an automatically numbered item.
+5. Select **Save subsection**, then **Preview PDF**. Check any list crossing a
+   page boundary.
+
+Supported native Word lists retain letter, Roman or decimal markers and starts
+where needed. Unsupported custom numbering and typed marker-like text need
+review. Existing records are not converted just by opening or saving them.
+See [Word list import and editing](WORD_LIST_IMPORT.md).
 
 ---
 
@@ -416,6 +595,10 @@ You can make every table in a section use the full page width.
 - Builder supports native Word notes and unambiguous manually bracketed notes.
   Do not recommend adding or removing an Endnotes heading without identifying
   the source authoring workflow.
+- Explicit URLs and DOI identifiers in eligible imported citations are linked
+  automatically; incomplete references are not guessed. A native note's isolated
+  return arrow is moved inline only when it matches the narrow import rule.
+  Existing saved citations are not backfilled.
 - Automatic linking happens during import/reimport, not simply when saved
   content is viewed. Correct source-maintained issues in the source; reimport
   replaces sections and subsections and can change child IDs.
@@ -499,6 +682,13 @@ where the link goes.
 2. Choose the **Theme**, **Cover style**, or **Icon style**.
 3. Select **Save theme options**.
 
+**Notes**
+
+- New ACL imports can select **ACL (Default)** from the OpDiv even with a blank
+  or placeholder opportunity number. Previously imported records are not
+  backfilled: if an ACL NOFO still has **NIH (Light)**, explicitly choose
+  **ACL (Default)** here. Reimport preserves the saved theme.
+
 <a id="task-pdf-metadata"></a>
 
 ### TASK-PDF-METADATA — Fill in PDF metadata (author, subject, keywords)
@@ -525,6 +715,27 @@ Tagline subsection. See [tagline import and re-import behavior](TAGLINE_IMPORT.m
 2. Select **Edit** in that row.
 3. Make the change and save.
 
+<a id="task-deadline-update"></a>
+
+### TASK-DEADLINE-UPDATE — Update the deadline and matching subsection text
+
+**Steps**
+
+1. In **Basic information**, select **Edit** beside **Application deadline**.
+2. Enter the new deadline.
+3. Review the matching-subsection table, if one appears. Matching rows are
+   selected by default; clear any checkbox for text that should not change.
+   Imported introductory subsections are included when their text matches.
+4. Select **Save application deadline**; its label also indicates selected
+   replacements when present.
+5. Check the saved deadline and affected subsections, then **Preview PDF**.
+   Update differently formatted dates or relative instructions separately.
+
+Matching uses the current deadline's literal text, ignoring case. It does not
+interpret dates. Changing the structured field without selected replacements
+does not rewrite authored content. Generated introductory deadlines use the
+structured field instead.
+
 ---
 
 ## Checking your work
@@ -539,9 +750,67 @@ Tagline subsection. See [tagline import and re-import behavior](TAGLINE_IMPORT.m
 2. To download a copy, select **Download PDF**.
 
 When readability metrics are enabled, a successful **Download PDF** also saves
-a readability snapshot in Builder; an unchanged NOFO reuses its snapshot.
-**Preview PDF** does not save a readability snapshot. Both actions record a
-PDF-generation audit event and use the configured PDF service.
+a PDF-download readability checkpoint, separate from an import, reimport or
+manual checkpoint for the same unchanged content. Repeating the same action on
+an unchanged measurement does not add another checkpoint. **Preview PDF** and
+failed downloads do not save a readability checkpoint. Both successful preview
+and download actions record a PDF-generation audit event and use the configured
+PDF service. See [TASK-READABILITY-SAVE](#task-readability-save).
+
+<a id="task-readability-save"></a>
+
+### TASK-READABILITY-SAVE — Check readability and keep a snapshot
+
+**Before you start:** readability metrics must be enabled in your environment.
+If the panel is absent, this task is unavailable there.
+
+**Steps**
+
+1. On the NOFO edit page, expand **Readability metrics**. Opening it checks the
+   current NOFO; use **Calculate metrics** to request another calculation.
+2. Review the results, scope and any **Calculation notes** before interpreting
+   the scores.
+3. Select **Save these results** to keep a manual checkpoint. Saving checks the
+   current NOFO and recalculates if it has changed.
+4. Under **Saved snapshots**, expand a checkpoint to see its results. Select
+   **See all snapshots** for the full history when that link appears.
+
+Import, reimport, manual saving and successful PDF download each save their own
+checkpoint once per unchanged measurement. Calculation alone does not save a
+manual checkpoint. Historical results remain available after measurement-version
+changes; compare version/profile information before treating a score difference
+as a content change. Automatic saves are best effort: an import or download can
+succeed even if metrics could not be saved. See [readability metrics](READABILITY_METRICS.md).
+
+<a id="task-readability-upload"></a>
+
+### TASK-READABILITY-UPLOAD — Check Word or PDF readability without creating a NOFO
+
+**Starting point:** the direct `/nofos/readability/` URL on your Builder environment.
+There is no navigation link. This restricted pilot requires an active account,
+pilot permission and an enabled feature; signing in alone does not grant access.
+If access is denied or the page is unavailable, contact the pilot operator.
+
+**Steps**
+
+1. Open `/nofos/readability/` and review **Document requirements** and
+   **How we handle your document**. Use only documents authorized for this pilot.
+2. Choose one supported text-based HHS NOFO PDF or unlocked Word `.docx`, then
+   select **Analyze document**. Legacy `.doc` and macro-enabled formats are not
+   supported.
+3. Wait for analysis. If an error appears, follow its guidance and submit again.
+4. Read **Measurement scope**, reliability information and any **Calculation
+   notes**. Word conversion may omit text boxes, headers, footers and image text;
+   template instructions and unused draft options can be counted.
+5. Select **Copy metrics** or **Print / Save as PDF** before leaving the report.
+   Use **Analyze another document** for another upload.
+
+This upload does not create a NOFO or save report history. Remove template
+instructions and unused options from the copy you upload when they should not
+count. Word, PDF and saved-Builder scores can differ; use the same format and
+analysis method when tracking revisions. The separate public `/readability/`
+route remains PDF-only and has its own availability controls.
+See [authenticated readability pilot](AUTHENTICATED_PDF_READABILITY_PILOT.md).
 
 ---
 
@@ -558,7 +827,13 @@ matching task in the same pull request.
 | --- | --- |
 | NOFO edit page, section tables, warning tabs | `nofos/nofos/templates/nofos/nofo_edit.html` |
 | **NOFO actions** menu | `get_nofo_action_links()` in `nofos/nofos/nofo.py` |
-| Subsection edit page, **Other actions** | `nofos/nofos/templates/nofos/subsection_edit.html` |
+| Subsection edit page, conflict recovery, **Other actions** | `nofos/nofos/templates/nofos/subsection_edit.html`; `NofoSubsectionEditView` in `nofos/nofos/views.py` |
+| Word import, name/number confirmation, review warnings | `nofos/nofos/templates/nofos/nofo_import*.html`; `nofos/nofos/templates/nofos/includes/word_import_review.html` |
+| Blocking import errors and retry/support labels | `nofos/bloom_nofos/templates/import_error.html`; `nofos/bloom_nofos/import_errors.py` |
+| Editable introductory content and restrictions | `nofos/nofos/templates/nofos/nofo_edit.html`; `SubsectionEditForm` in `nofos/nofos/forms.py`; `documentation/EDITABLE_INTRODUCTION.md` |
+| Deadline matching/replacement | `nofos/nofos/templates/nofos/nofo_edit_application_deadline.html`; `NofoEditApplicationDeadlineView` in `nofos/nofos/views.py` |
+| Readability panel and saved checkpoints | `nofos/nofos/templates/nofos/includes/readability_metrics_panel.html`; `nofos/nofos/templates/nofos/includes/readability_saved_snapshots.html`; `documentation/READABILITY_METRICS.md` |
+| Standalone Word/PDF upload and report | `nofos/bloom_nofos/templates/pdf_readability.html`; `documentation/AUTHENTICATED_PDF_READABILITY_PILOT.md` |
 | Delete confirmation | `nofos/nofos/templates/nofos/subsection_confirm_delete.html` |
 | **Configure section** page | `nofos/nofos/templates/nofos/section_detail.html` |
 | **Preview PDF** / **Download PDF** | `nofos/bloom_nofos/templates/includes/print_button.html` |
