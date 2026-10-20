@@ -5,6 +5,9 @@ October 20, 2026 review. Runtime isolation is not yet proven. Real-data use,
 shared operation and production integration remain unapproved. The October 20
 environment clarification in #1145/#1147 limits local review to HTML; it
 supersedes the earlier optional-local-PDF wording reviewed in #1154.
+DocRaptor remains disabled in all lower environments. This scope adjustment is
+not a blocker for the accepted proposal or permission to enable a dev/test PDF
+path.
 Related: #902, #1145, #1146. Source inspected: main at `5fe16ad6`.
 
 ## Accepted direction for the initial synthetic proof
@@ -107,8 +110,9 @@ server-side even if an agent supplies syntactically valid JSON.
   evidence of provider configuration or approval.
 - `pdf_service.generate_nofo_pdf` submits complete HTML to DocRaptor and its
   trusted base URL can lead to asset retrieval. The local pilot must not call
-  it. Reuse it only in configured environments after transfer or for separately
-  approved synthetic engineering checks. Do not copy production credentials,
+  it. DocRaptor remains disabled in all lower environments; reuse the service
+  only through a permitted normal PDF path after transfer. No lower-environment
+  PDF enablement or engineering-check exception is introduced. Do not copy production credentials,
   automatically upload candidates to dev or substitute a local renderer/browser
   print for Builder PDF validation. Local HTML does not verify PDF pagination.
 - Use a controlled asset manifest, not arbitrary uploaded HTML resource URLs.

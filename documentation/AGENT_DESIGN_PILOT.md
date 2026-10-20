@@ -8,8 +8,11 @@ choices and the accepted synthetic-proof direction are in the [ADR](adr/2026-10-
 
 Use the existing import pipeline, design system and HTML rendering. Local PDF
 preview/download are disabled with an explanation; no local PDF service,
-renderer, broker or tunnel is part of this pilot. Configured-environment PDF
-checks remain separate engineering validation. Automate only
+renderer, broker or tunnel is part of this pilot. DocRaptor remains disabled in
+all lower environments, not only localhost. This is a scope adjustment, not a
+blocker or a request to enable a lower-environment PDF path. Any separate PDF
+validation must respect existing environment restrictions and is not a local
+pilot prerequisite. Automate only
 presentation controls initially. Do not reproduce deterministic import repairs
 in a prompt, invent missing content or silently repair unsupported structures.
 Do not create another comprehensive standards registry: the sources below retain
@@ -101,9 +104,10 @@ Two comparisons are required:
 Digests bind exact artifacts; they do not explain differences or prove content
 fidelity. PDF text extraction is supplementary and may be unreliable for tables
 and columns. Deterministic content/asset comparisons remain required. Engineering
-validation must check local HTML and separately configured-environment PDF
-rendering, including rendered-page inspection in engineering baseline/release
-evidence. It must not introduce a local PDF-service prerequisite. That quality-validation
+validation checks local HTML here. PDF rendering and rendered-page inspection
+remain separate quality work through a permitted normal PDF path; DocRaptor
+must not be enabled in lower environments for these checks. That work is not
+a local pilot prerequisite. That quality-validation
 work is separate from each user's choice of acceptance vehicle. The comparison/report
 contract is specified here, not implemented.
 
