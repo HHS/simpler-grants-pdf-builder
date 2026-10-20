@@ -16,6 +16,14 @@ proposal to provision a second shared platform. The adapter and trusted
 acceptance path do not exist yet. Running the existing app alone does not
 enforce the proposed agent boundary.
 
+The synthetic launch profile must fail closed: load only explicit test settings,
+not the checkout's normal `.env` files or ambient provider/AWS credentials. Do
+not expose credential files, workload roles or metadata-service access to the
+agent or candidate process. Deny network by default and enable only the chosen
+model/render broker when needed. Existing S3 read/upload/delete and external-link
+checking paths must be disabled or replaced with local owned-asset resolution.
+This is required isolation work, not behavior supplied by a fresh database.
+
 ## Alternatives
 
 | Option | Reuse and cost | Main gap | Position |
@@ -80,6 +88,10 @@ server-side even if an agent supplies syntactically valid JSON.
 - Use a controlled asset manifest, not arbitrary uploaded HTML resource URLs.
   Validate image, CSS and link handling before renderer egress is enabled.
   Browser review content must also be sanitized and must not execute scripts.
+  Existing `get_cover_image` can try S3 before a local/external fallback, and
+  settings normally load `.env` files. The synthetic proof must exercise these
+  paths with egress and credential discovery blocked, not assume local assets
+  or synthetic content prevent outbound requests.
 - The application adapter writes a body snapshot when DEBUG is enabled. The
   pure content core does not do so by default. Disable content debug capture for
   a real-data pilot; account for exception logs, model traces, browser caches,
@@ -92,7 +104,10 @@ server-side even if an agent supplies syntactically valid JSON.
 
 Each review package must identify source digest, imported-baseline digest,
 candidate revision, allowed design settings, owned-asset manifest and exact
-HTML/PDF digests. Any edit invalidates earlier readiness and PDF-review evidence.
+HTML/PDF digests. Bind it also to the Builder commit, templates/styles, relevant
+feature flags, render options and immutable asset bytes. A stable candidate
+revision alone does not freeze the generated document. Changing any of these
+inputs invalidates the affected readiness and PDF-review evidence.
 Review links need authentication and current document/group authorization; an
 unguessable URL is not sufficient.
 
@@ -103,6 +118,16 @@ reimporting the original Word can lose design changes and is not acceptance.
 Use a unique acceptance identity, atomic creation/linkage and retry reconciliation
 so a repeat request yields the same production result. Verify the saved result
 before declaring success. Do not promote the temporary SQLite database.
+
+Destination IDs and asset URLs may be remapped; record that mapping and compare
+all reviewed record fields, ordered content, design settings and asset bytes
+after the transfer. Check destination rendering against the reviewed package,
+including its actual flags/templates/styles. Do not require identical PDF bytes
+when harmless generated metadata changes, but do not treat a content digest as
+layout verification. If rendering inputs or output materially differ, require
+new human inspection of the destination PDF before recording design completion.
+An interrupted verification leaves a recoverable pending result, not another
+NOFO on retry or an automatically completed design.
 
 Discard requires human confirmation and revision/state checks. Cancel leaves the
 candidate intact. Confirm removes only the unaccepted candidate and its owned
@@ -128,7 +153,8 @@ Before #1145 can close:
    to avoid synchronizing another full fork; independent packaging is not required.
 2. Implement the smallest synthetic candidate-only adapter proof. Include another
    candidate and test cross-candidate reads, unknown operations, stale revisions,
-   document-borne instructions, path/URL escape and attempted acceptance. These
+   document-borne instructions, path/URL escape, ambient credential discovery,
+   S3/URL-check side effects and attempted acceptance. These
    must be rejected by code, not just instructions in a prompt.
 3. Record actual model/renderer configuration, handling approvals, functional
    operating/support owners, resource limits and cleanup behavior before real-data
@@ -150,3 +176,7 @@ image, token or renderer limit.
   [lifecycle](../WORD_HANDOFF_LIFECYCLE.md); neither is a ready-made ingress or
   promotion boundary.
 - [Pilot design rules and baseline plan](../AGENT_DESIGN_PILOT.md).
+- Assess `duplicate_nofo` and its tests for existing graph-copy and introductory
+  section-role behavior before building transfer logic. It is not a cross-instance
+  promotion API: shared asset references and its field changes need explicit
+  mapping/verification, not blind reuse.
