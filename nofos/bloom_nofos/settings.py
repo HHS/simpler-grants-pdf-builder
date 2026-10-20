@@ -581,8 +581,6 @@ DJANGO_EASY_AUDIT_WATCH_REQUEST_EVENTS = False
 # NofoReadabilityScore is already an append-only record of when metrics were
 # calculated, so auditing it would only duplicate rows it already holds.
 DJANGO_EASY_AUDIT_UNREGISTERED_CLASSES_EXTRA = [
-    "nofos.AuditObjectDocument",
-    "nofos.DocumentAuditEvent",
     # Audit events can attach request/user metadata: never audit anonymous outcomes.
     "nofos.PdfReadabilityAttempt",
     "nofos.NofoReadabilityScore",
