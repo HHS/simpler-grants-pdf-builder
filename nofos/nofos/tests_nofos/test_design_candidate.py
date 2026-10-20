@@ -170,6 +170,12 @@ class DesignCandidateTests(unittest.TestCase):
                 expected_revision=candidate.revision,
                 value="theme-b" if index % 2 == 0 else "theme-a",
             )
+        self.assertIs(
+            self.apply(
+                candidate, expected_revision=candidate.revision, value="theme-a"
+            ),
+            candidate,
+        )
         with self.assertRaises(DesignRequestError):
             self.apply(candidate, expected_revision=candidate.revision)
 

@@ -108,8 +108,6 @@ def apply_design_request(candidate, request, *, choices):
     reason = request["reason"]
     if not isinstance(reason, str) or not reason.strip() or len(reason) > 500:
         raise DesignRequestError("A bounded change rationale is required")
-    if candidate.sequence >= 100:
-        raise DesignRequestError("Candidate operation budget exhausted")
     presentation = json.loads(candidate.presentation_json)
     value = request["value"]
     if operation == "set_table_width":
@@ -131,6 +129,8 @@ def apply_design_request(candidate, request, *, choices):
         presentation[target] = value
     if before == value:
         return candidate
+    if candidate.sequence >= 100:
+        raise DesignRequestError("Candidate operation budget exhausted")
     changes = json.loads(candidate.changes_json)
     changes.append(
         {
