@@ -627,6 +627,38 @@ Access ends after 20 minutes or 100 admitted requests. The client can read this
 candidate and request theme/table-width changes only. It cannot accept, transfer,
 publish or discard a design. See the [interface protocol and limits](DESIGN_CANDIDATE_INTERFACE.md).
 
+<a id="task-design-pilot-findings"></a>
+
+### TASK-DESIGN-PILOT-FINDINGS: Review findings on a synthetic candidate
+
+**Starting point:** **Review synthetic candidate** in the isolated local pilot,
+signed in as the candidate owner. Invented information only. Acceptance, rejection
+and deletion are not available in this slice.
+
+**Steps**
+
+1. Read the **Ready for review** alert and its counts.
+   Import processing is complete, but this is not a production NOFO or acceptance.
+2. Read each finding's evidence and next step. **Review affected section**
+   opens the relevant read-only imported text. The retained Word conversion
+   output is also available below the sections.
+3. For a nonblocking **Word conversion** warning only, compare the relevant
+   source and enter **Why can this warning be acknowledged?** Then select
+   **Acknowledge warning**. Confirm the recorded person, time and reason.
+4. For blocking findings, follow their next step. Acknowledgment cannot clear
+   them. Correct missing information, wording or structure in the source and
+   import a fresh synthetic copy; never guess the intended value.
+5. Use the existing theme/table-width controls for presentation corrections.
+   Changes invalidate old review evidence. Optionally select **View current HTML
+   (opens a new tab)**; **PDF unavailable** is expected and not a blocker.
+6. Copy any reason you need to retain before submitting or leaving the form.
+   If **Request not saved** appears, select **Return to current candidate** and
+   review its latest checks before acknowledging again. Unsaved reasons are not
+   retained on the recovery page.
+
+See [review scope and limits](DESIGN_CANDIDATE_REVIEW.md). A clean diagnostic
+report is not complete source/content/asset verification or design acceptance.
+
 ## Maintaining this page
 
 Labels on this page come from these files. When you change one, update the
