@@ -1776,6 +1776,11 @@ class DesignPilotCandidate(models.Model):
     sequence = models.PositiveIntegerField(default=0)
     revision = models.CharField(max_length=64)
     warnings = models.JSONField(default=list)
+    tool_token_digest = models.CharField(
+        max_length=64, null=True, unique=True, editable=False
+    )
+    tool_expires_at = models.DateTimeField(null=True, editable=False)
+    tool_requests = models.PositiveIntegerField(default=0, editable=False)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
