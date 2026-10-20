@@ -1727,6 +1727,58 @@ class ExternalSourceHandoffResult(models.Model):
         raise ValidationError("Handoff results cannot be deleted through the ORM.")
 
 
+class AuditObjectDocument(models.Model):
+    """Durable document ownership, including objects removed by a reimport."""
+
+    content_type = models.ForeignKey(
+        "contenttypes.ContentType", on_delete=models.CASCADE, related_name="+"
+    )
+    object_id = models.UUIDField()
+    document_content_type = models.ForeignKey(
+        "contenttypes.ContentType", on_delete=models.CASCADE, related_name="+"
+    )
+    document_id = models.UUIDField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["content_type", "object_id"],
+                name="audit_object_document_unique",
+            )
+        ]
+
+
+class DocumentAuditEvent(models.Model):
+    """Small indexed projection; original audit content remains in CRUDEvent."""
+
+    event = models.OneToOneField(
+        "easyaudit.CRUDEvent",
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name="document_index",
+    )
+    document_content_type = models.ForeignKey(
+        "contenttypes.ContentType", on_delete=models.CASCADE, related_name="+"
+    )
+    document_id = models.UUIDField()
+    datetime = models.DateTimeField()
+    visible = models.BooleanField()
+
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=[
+                    "document_content_type",
+                    "document_id",
+                    "-datetime",
+                    "-event",
+                ],
+                condition=models.Q(visible=True),
+                name="document_audit_page_idx",
+            )
+        ]
+
+
 class ExternalSourceHandoffCurrent(models.Model):
     """The sole mutable current-result selector for a receipt."""
 
