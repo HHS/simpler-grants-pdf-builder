@@ -7,6 +7,7 @@ from django.db import transaction
 
 from . import design_pilot_host as host
 from .design_candidate import DesignRequestError
+from .design_fidelity import inspect as inspect_fidelity
 from .models import DesignPilotReviewDecision
 from .nofo import (
     find_broken_links,
@@ -17,7 +18,17 @@ from .nofo import (
 from .pdf_metadata import PDF_METADATA_FIELDS, is_missing_pdf_metadata_value
 
 
-def _finding(key, rule, status, severity, target, evidence, action, section=None):
+def _finding(
+    key,
+    rule,
+    status,
+    severity,
+    target,
+    evidence,
+    action,
+    section=None,
+    evidence_digest="",
+):
     data = dict(
         id=key,
         rule=rule,
@@ -28,6 +39,7 @@ def _finding(key, rule, status, severity, target, evidence, action, section=None
         action=action,
         section_id=str(section.pk) if section else "",
         human_required=severity in {"blocking", "warning"},
+        evidence_digest=evidence_digest,
     )
     data["digest"] = hashlib.sha256(
         json.dumps(data, sort_keys=True).encode()
@@ -37,7 +49,7 @@ def _finding(key, rule, status, severity, target, evidence, action, section=None
 
 def report(run):
     """Recheck current native HTML and reuse offline Builder diagnostics only."""
-    revision, _ = host.review_artifact(run)
+    revision, html = host.review_artifact(run)
     findings = [
         _finding(
             "baseline",
@@ -76,6 +88,23 @@ def report(run):
             "No local PDF is needed. This capability limit is not a blocker.",
         ),
     ]
+    for evidence in inspect_fidelity(run.conversion_html, html):
+        findings.append(
+            _finding(
+                f"fidelity-{evidence['id']}",
+                "DESIGN-001",
+                evidence["status"],
+                (
+                    "blocking"
+                    if evidence["status"] == "fail" or evidence["id"] == "inventory"
+                    else "info"
+                ),
+                evidence["target"],
+                evidence["evidence"],
+                evidence["action"],
+                evidence_digest=evidence.get("input_digest", ""),
+            )
+        )
     checks = [
         (
             "headings",
