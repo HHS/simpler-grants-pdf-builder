@@ -6,7 +6,10 @@ choices and the accepted synthetic-proof direction are in the [ADR](adr/2026-10-
 
 ## Keep the first slice small
 
-Use the existing import pipeline, design system and PDF service. Automate only
+Use the existing import pipeline, design system and HTML rendering. Local PDF
+preview/download are disabled with an explanation; no local PDF service,
+renderer, broker or tunnel is part of this pilot. Configured-environment PDF
+checks remain separate engineering validation. Automate only
 presentation controls initially. Do not reproduce deterministic import repairs
 in a prompt, invent missing content or silently repair unsupported structures.
 Do not create another comprehensive standards registry: the sources below retain
@@ -16,12 +19,12 @@ their current authority and limitations.
 | --- | --- | --- | --- |
 | DESIGN-001: establish imported baseline | Escalate unexplained differences | Account for source-to-import differences with applicable import rules; unexpected loss blocks acceptance | [IMPORT_RULES](IMPORT_RULES.md), [DOCUMENT_PROCESSING](DOCUMENT_PROCESSING.md) |
 | DESIGN-002: theme and cover | Presentation when supplied preference is unambiguous; otherwise confirm suggestion | Use declared theme/cover choices; never invent branding or a cover image. Record rendered-cover evidence for validation; user preview choice follows DESIGN-008 | [TASK-THEME](EDITOR_TASKS.md#task-theme) |
-| DESIGN-003: pagination | Presentation with rendered evidence | Set subsection breaks only in the first slice. Suggest in-body markers to a human; do not edit body text automatically. Record affected pages and regenerate | [FAQ page breaks](NOFO_BUILDER_FAQ.md#when-should-i-add-a-manual-page-break) |
+| DESIGN-003: pagination | Presentation setting; PDF result not assessed locally | Set subsection breaks only in the first slice. Suggest in-body markers to a human; do not edit body text automatically. Record affected settings and refreshed HTML; pagination needs separate configured-environment validation | [FAQ page breaks](NOFO_BUILDER_FAQ.md#when-should-i-add-a-manual-page-break) |
 | DESIGN-004: table width | Presentation | Existing section-level full-width control; review every table affected, not just the target table | [TASK-TABLE-FULL-WIDTH](EDITOR_TASKS.md#task-table-full-width), [TABLES](TABLES.md) |
 | DESIGN-005: custom CSS | Confirm suggestion in first slice | No automatic CSS writes. Require demonstrated defect, native-control attempts and complete rerender | [UI patterns](UI_PATTERNS.md), existing theme controls |
 | DESIGN-006: semantic structure | Escalate ambiguity | Flag heading jumps, ambiguous table headers, list damage and missing alt text. Do not rewrite headings, invent alt text or delete content autonomously | [DESIGN_STANDARDS](DESIGN_STANDARDS.md), [EDITOR_TASKS](EDITOR_TASKS.md) |
 | DESIGN-007: substance and policy | Forbidden autonomous change | Preserve all wording, dates, amounts, eligibility, links and policy even when policy tags are missing/disabled | #902; [IMPORT_RULES](IMPORT_RULES.md) only explains import-stage changes |
-| DESIGN-008: final review | Human decision | Explicit acceptance of the current candidate from the Builder review page; HTML viewing, PDF preview and PDF download are optional in any combination, with no mandatory inspection action; unresolved blockers prevent acceptance | [Review and acceptance contract](adr/2026-10-20-agent-design-pilot-boundary.md#review-acceptance-and-discard) |
+| DESIGN-008: final review | Human decision | Explicit acceptance of the current candidate from the Builder review page; HTML viewing is optional locally and PDF actions are disabled. Saved results retain normal optional PDF actions in their configured environment. No mandatory inspection action; unresolved blockers prevent acceptance | [Review and acceptance contract](adr/2026-10-20-agent-design-pilot-boundary.md#review-acceptance-and-discard) |
 
 There are no allowlisted autonomous content fixes in the first slice. The
 classification remains available for later, individually specified fixes with
@@ -62,10 +65,11 @@ part of the default isolated proof.
 
 Ready for review means the candidate, findings and review controls are available
 on the Builder review page, with an honest report of missing evidence and open
-questions. Offer View HTML, Preview PDF and Download PDF for the exact candidate
-revision. The user may choose any combination, or accept without opening a
-preview; no particular inspection, preview or download action is an acceptance
-gate. A PDF not requested/generated is not, by itself, a blocker. Report actual
+questions. Offer View HTML for the exact candidate revision locally; disable
+Preview PDF and Download PDF with an explanation. The user may accept without
+opening HTML; no inspection, preview or download action is an acceptance or
+transfer gate. Expected local PDF unavailability is a nonblocking unsupported
+capability, not a rendering failure. Report actual
 rendering errors and unsupported checks honestly under the finding policy.
 
 Acceptance requires current authorization, resolved blocking findings and an
@@ -97,8 +101,9 @@ Two comparisons are required:
 Digests bind exact artifacts; they do not explain differences or prove content
 fidelity. PDF text extraction is supplementary and may be unreliable for tables
 and columns. Deterministic content/asset comparisons remain required. Engineering
-validation must also check actual HTML/PDF rendering, including manual rendered-page
-inspection in the pilot baseline and release evidence; that quality-validation
+validation must check local HTML and separately configured-environment PDF
+rendering, including rendered-page inspection in engineering baseline/release
+evidence. It must not introduce a local PDF-service prerequisite. That quality-validation
 work is separate from each user's choice of acceptance vehicle. The comparison/report
 contract is specified here, not implemented.
 
@@ -106,7 +111,7 @@ contract is specified here, not implemented.
 
 | Fixture | Expected result |
 | --- | --- |
-| Clear theme preference, image-less image cover, simple scoring table | Propose legal cover/layout settings; preserve every word/value and intentional width marker; inspect PDF |
+| Clear theme preference, image-less image cover, simple scoring table | Propose legal cover/layout settings; preserve every word/value and intentional width marker; inspect local HTML and leave PDF pagination not assessed locally |
 | Header hierarchy before first main heading | Existing import failure, actionable recovery; no guessed restructuring |
 | Conflicting dates or unknown agency preference | Blocking human question; no invented date/theme |
 | Canonical policy paragraph with missing tags | Preserve exact wording; changing a protected sentence fails fidelity |
@@ -125,8 +130,8 @@ single-document trials are historical evidence, not a representative new baselin
 
 First baseline scope: a routine presentation case, a table-heavy case and a case
 requiring human judgment. Invented Word fixtures can support regression tests;
-they do not establish production accuracy. Source preparation, complete Word/PDF
-rendering and visual inspection are still work to do. No timing, cost savings or
+they do not establish production accuracy. Source preparation, local HTML review
+and separate configured-environment PDF validation remain distinct. No timing, cost savings or
 design quality measurement has been claimed from this documentation investigation.
 
 ## Next implementation contracts
@@ -134,7 +139,8 @@ design quality measurement has been claimed from this documentation investigatio
 #1145 owns the maintained Mermaid workflow in the ADR; implementation issues
 reference that diagram rather than create competing copies. #1147 implements
 candidate staging and declared tools; #1148 implements the Builder review page,
-findings, targeted corrections and optional preview/download actions; #1149 owns
+findings, targeted corrections and optional local HTML viewing with local PDF
+actions disabled; #1149 owns
 the trusted acceptance/production-transfer contract and its detailed implementation;
 #1150 owns confirmed discard; #1151 measures the complete loop. Reuse prior immutable-snapshot,
 expected-before and human-decision patterns after checking them against current
