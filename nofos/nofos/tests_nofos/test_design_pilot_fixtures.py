@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 
+from bs4 import BeautifulSoup
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
@@ -67,6 +68,42 @@ class DesignPilotFixtureTests(TestCase):
                 for text in case["preserve_text"]:
                     self.assertIn(text, bodies)
                 self.assertNotIn("Metadata author:", bodies)
+                if case["id"] == "tables":
+                    preview = self.client.get(
+                        reverse("nofos:nofo_view", args=[nofo.pk])
+                    )
+                    self.assertEqual(preview.status_code, 200)
+                    soup = BeautifulSoup(preview.content, "html.parser")
+                    table = soup.find("table")
+                    self.assertIsNotNone(table)
+                    rows = table.find_all("tr")
+                    self.assertEqual(len(rows), 11)
+                    for index, row in enumerate(rows[1:], start=1):
+                        self.assertEqual(
+                            [
+                                cell.get_text(" ", strip=True)
+                                for cell in row.find_all("td")
+                            ],
+                            [
+                                f"Material {index}",
+                                "Upload a separate file with the application.",
+                                str(index + 2),
+                            ],
+                        )
+                    self.assertIn(
+                        [
+                            "Prepare the narrative.",
+                            "Prepare the budget.",
+                            "Submit both files.",
+                        ],
+                        [
+                            [
+                                item.get_text(" ", strip=True)
+                                for item in ordered.find_all("li")
+                            ]
+                            for ordered in soup.find_all("ol")
+                        ],
+                    )
                 if case["id"] == "judgment":
                     # Import preserves conflicting source facts, not a decision.
                     self.assertEqual(nofo.application_deadline, "December 1, 2026")

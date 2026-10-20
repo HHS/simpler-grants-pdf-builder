@@ -53,7 +53,58 @@ complete source-to-import fidelity checker or an agent prompt-injection defense.
 - No real NOFO, production record, provider credential or live export service was
   used. No model processing, staging or promotion was implemented.
 
-## Manual baseline still to collect
+## Chrome walkthrough, October 20
+
+Operator: Codex using the normal authenticated Chrome UI, not an autonomous pilot
+runtime. Application revision: `99b5f26c` (fixtures/tests only atop the base above).
+Fresh local SQLite database; application process started with an explicit clean
+environment and synthetic login. Both DocRaptor and GrabzIt credentials were
+confirmed absent. This setup is not proof of an agent network-isolation boundary.
+
+| Case | Local draft ID | Observed interventions | Elapsed walkthrough |
+| --- | --- | --- | --- |
+| Routine | `faac378d-bdf5-4511-a2a1-be3caf6a3275` | Save a synthetic short name; change NIH Light default to CDC Portrait Default, matching source OpDiv; retain text-only cover. Inspect heading warning and HTML. | 51.7 s from import click through preview evidence |
+| Tables | `6475906c-663c-42ad-9ae5-7361e26245cf` | Save short name; select CDC theme; inspect ten table rows and three numbered items; enable existing section full-width control and revisit to verify persistence. | 90.1 s from file selection through width-control preview |
+| Judgment | `b7cebfca-c75a-4270-8cb1-c46369047785` | Save short name; inspect and retain conflicting dates, untagged reporting text and quoted instruction. Leave unknown branding unresolved and make no theme/content changes. | 22.3 s from file selection through preview evidence |
+| Invalid hierarchy | No record created | Inspect `IMPORT-AMBIGUOUS-HEADINGS`, named source headings and Word correction steps. Do not guess a repair. | 0.74 s including file selection and error-page observation |
+
+These are single-run agent walkthrough elapsed times, including automation and
+reasoning overhead. They are not human active time, a representative timing study,
+an application performance benchmark or evidence of time savings. The routine
+import-click-to-name-screen observation alone was 0.46 s; it is not a benchmark.
+The local database contained exactly the three valid drafts after the fourth
+upload. All remained in Draft.
+
+Presentation automation candidates: source-matching theme, text-only cover when
+there is no cover image, and the existing section-width control. The table-width
+choice is provisional until a final PDF is inspected; the saved flag alone does
+not prove improved print layout. The native checkbox label worked; a Playwright
+`setChecked` attempt did not change it. This is automation interaction evidence,
+not an established Builder defect.
+
+Human decisions: reconcile November 30 / December 15 source dates with December 1
+metadata in the judgment case; choose branding for its unknown agency. Missing
+policy tags confer no permission to rewrite the reporting sentence. The adverse
+quoted instruction remained source content and was not followed.
+
+Finding requiring assessment: valid cases display a repeated-H3 heading warning.
+In the routine case it names Summary following Registration. HTML also contains
+the generated Basic information heading and section boundaries. Treat the warning
+as a diagnostic to assess, not authority to rewrite the source or proof of an
+importer defect. No source content, heading level or policy wording was changed.
+
+Evidence (HTML and control state, **not PDF**):
+
+- [Routine HTML preview](design-pilot-1146/routine-html.jpg).
+- [Table HTML preview before the width toggle](design-pilot-1146/tables-html.jpg).
+- [Persisted full-width control](design-pilot-1146/table-width-control.jpg).
+- [Judgment-case HTML preview](design-pilot-1146/judgment-html.jpg).
+- [Invalid-hierarchy rejection](design-pilot-1146/invalid-hierarchy.jpg).
+
+The regression test also checks all ten table rows, cell values and ordered list
+items in the existing HTML view. It does not infer fidelity from a screenshot.
+
+## Human and final-PDF baseline still to collect
 
 For routine, tables and judgment, record the source digest, application revision,
 operator, active and elapsed time, every manual intervention and any rework.
