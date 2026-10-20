@@ -13,7 +13,7 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 - [DESIGN_STANDARDS.md](DESIGN_STANDARDS.md) — Selected NOFO design and accessibility standards (headings, images, visual consistency, line breaks, lists, links, tables) reproduced from the HHS Office of Grants standards, with a checklist to use before publishing
 - [DECISIONS.md](DECISIONS.md) — Product, architectural, and implementation decision log
 - [Agent design pilot investigation](AGENT_DESIGN_PILOT.md) - Proposed bounded rules, fidelity checks and manual baseline; not an implemented pilot
-- [Agent design pilot boundary ADR](adr/2026-10-20-agent-design-pilot-boundary.md) - Accepted local synthetic-proof direction and human acceptance boundary for #902/#1145
+- [Agent design pilot boundary ADR](adr/2026-10-20-agent-design-pilot-boundary.md) - Accepted HTML-only local synthetic-proof direction and human acceptance boundary for #902/#1145
 - [EDITOR_TASKS.md](EDITOR_TASKS.md) — Instructions for common NOFO Builder tasks, including prerequisites and support contacts
 - [GROUPS.md](GROUPS.md) — How user groups and permissions work
 - [DOCUMENT_HISTORY.md](DOCUMENT_HISTORY.md) - Indexed history pagination, deleted-item retention, backfill and rollout verification
