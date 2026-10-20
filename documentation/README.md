@@ -14,6 +14,7 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 - [DECISIONS.md](DECISIONS.md) — Product, architectural, and implementation decision log
 - [Agent design pilot investigation](AGENT_DESIGN_PILOT.md) - Proposed bounded rules, fidelity checks and manual baseline; not an implemented pilot
 - [Agent design pilot boundary ADR](adr/2026-10-20-agent-design-pilot-boundary.md) - Accepted local synthetic-proof direction and human acceptance boundary for #902/#1145
+- [Design candidate operation rules](DESIGN_CANDIDATE_OPERATIONS.md) - In-memory presentation-operation slice; trusted-host integration and runtime isolation still required
 - [EDITOR_TASKS.md](EDITOR_TASKS.md) — Instructions for common NOFO Builder tasks, including prerequisites and support contacts
 - [GROUPS.md](GROUPS.md) — How user groups and permissions work
 - [IMPORT_ERROR_CODES.md](IMPORT_ERROR_CODES.md) — What each blocking import error code (`IMPORT-NO-SECTIONS`, `IMPORT-OPDIV-BLANK`, …) means and what to tell someone who hits one
