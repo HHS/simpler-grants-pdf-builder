@@ -12,6 +12,8 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 - [CONTRIBUTION_WORKFLOW.md](CONTRIBUTION_WORKFLOW.md) — Diagram of the contribution workflow for people and AI agents (issue → branch → PR → CI → squash merge → changelog), with what to read at each step
 - [DESIGN_STANDARDS.md](DESIGN_STANDARDS.md) — Selected NOFO design and accessibility standards (headings, images, visual consistency, line breaks, lists, links, tables) reproduced from the HHS Office of Grants standards, with a checklist to use before publishing
 - [DECISIONS.md](DECISIONS.md) — Product, architectural, and implementation decision log
+- [Agent design pilot investigation](AGENT_DESIGN_PILOT.md) - Proposed bounded rules, fidelity checks and manual baseline; not an implemented pilot
+- [Agent design pilot boundary ADR](adr/2026-10-20-agent-design-pilot-boundary.md) - Proposed isolated runtime and human acceptance boundary for #902/#1145
 - [EDITOR_TASKS.md](EDITOR_TASKS.md) — Instructions for common NOFO Builder tasks, including prerequisites and support contacts
 - [GROUPS.md](GROUPS.md) — How user groups and permissions work
 - [IMPORT_ERROR_CODES.md](IMPORT_ERROR_CODES.md) — What each blocking import error code (`IMPORT-NO-SECTIONS`, `IMPORT-OPDIV-BLANK`, …) means and what to tell someone who hits one
