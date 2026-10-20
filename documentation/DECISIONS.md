@@ -396,21 +396,6 @@ work rather than restoring this code, which was never used in production.
 
 ---
 
-## 2026-10-19 — Apply points-column detection to existing and pasted tables
-
-**Context:** The import-only decision below left unmarked scoring tables wrapping
-"10 points". Existing NOFOs and tables pasted into the Markdown editor can lack
-`col--points` even though they meet the same detection rules. The editor also
-lacked the PDF theme's points-column CSS.
-
-**Decision:** Reuse conservative header/body detection at render time, preserving
-explicit `w-*` overrides and safeguards for long text and irregular tables. Apply
-the existing points-column CSS in the editor too. Saved Markdown is unchanged;
-no re-import or data migration is needed. This supersedes the import-only scope
-and marker-removal opt-out below: use an explicit width class to opt out.
-
----
-
 ## 2026-10-01 — Auto-size "Point value" columns in scoring tables
 
 **Context:** Merit review scoring tables usually end with a narrow **Point value**

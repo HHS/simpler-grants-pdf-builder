@@ -397,7 +397,7 @@ footer .usa-footer__primary-link:visited {
   max-width: 80ex;
 }
 
-/* Match PDF points-column sizing in the editor and section previews. */
+/* Use existing points markers in the saved-content editor preview. */
 table th.col--points,
 table td.col--points {
   width: 1%;
