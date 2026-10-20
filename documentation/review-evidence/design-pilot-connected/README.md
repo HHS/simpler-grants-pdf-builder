@@ -22,6 +22,10 @@ ordinary synthetic user, localhost Chrome, DEBUG off and no export credentials.
   instruction as content. No authority/readiness claim follows from that import.
 - Restarted the isolated process with the same scratch directory; synthetic
   account, candidates and saved design settings persisted.
+- Independent connected-host review at `6d3fb3c7` found no blockers for this
+  declared synthetic human-operated scope and independently passed all 73
+  focused tests. A separate docs-only recheck confirmed the new Editor Tasks
+  labels, prerequisites, recovery steps and links. All 57 JavaScript tests pass.
 
 ## Screenshots
 
@@ -33,7 +37,8 @@ ordinary synthetic user, localhost Chrome, DEBUG off and no export credentials.
 
 These are HTML/control screenshots, not PDF output or PDF pagination evidence.
 No real documents, production state, external model or agent credential was used.
-The Python socket guard is not OS containment. New connected-host code still
-needs independent review; earlier independent review of the pure kernel does not
-cover it. Candidate-only agent transport, human acceptance, transfer, complete
+The Python socket guard is not OS containment. Independent review does not
+establish runtime authority or validate actual simultaneous requests; the tests
+exercise failed compare-and-swap deterministically. Candidate-only agent
+transport, human acceptance, transfer, complete
 asset/link fidelity and cancellable bounded processing remain follow-up work.

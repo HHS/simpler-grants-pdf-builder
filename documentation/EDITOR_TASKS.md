@@ -22,8 +22,8 @@ PDF generation requires the configured external PDF service and is not verified 
   the ID, not the heading text. IDs don't change when the wording does.
 - Button and link labels are written exactly as they appear on screen, in
   **bold**.
-- Every task starts from the **NOFO edit page**: the page you see after
-  opening a NOFO from **All NOFOs**.
+- Tasks start from the **NOFO edit page**: the page you see after opening a
+  NOFO from **All NOFOs**, unless a task names another starting point.
 - Steps describe the current UI only. If a label on screen doesn't match this
   page, trust the screen and report the mismatch.
 
@@ -549,6 +549,60 @@ Preview and download require the configured PDF service. The controls are
 disabled when the app is accessed through localhost; the local walkthrough
 did not generate or verify PDFs.
 
+## Synthetic local design pilot
+
+These tasks apply only to the isolated synthetic profile, not a deployed Builder
+or an ordinary NOFO. They were checked in local Chrome on October 20, 2026.
+See [local host setup and limitations](DESIGN_PILOT_LOCAL_HOST.md).
+
+<a id="task-design-pilot-import"></a>
+
+### TASK-DESIGN-PILOT-IMPORT: Import an invented Word document
+
+**Starting point:** `/design-pilot/` on the separately configured localhost
+instance. The profile must be started with a private scratch database and no
+provider credentials. Sign in with its ordinary synthetic test account.
+This route is unavailable under normal settings. Do not upload real documents.
+
+**Steps**
+
+1. Under **Synthetic NOFO Word document**, choose one invented `.docx` file,
+   no larger than 1 MB.
+2. Select **This file contains invented information only.**
+3. Select **Import candidate**.
+4. If an error appears, follow its guidance, choose the corrected file and
+   submit again. A retry of the same source returns the existing candidate.
+5. On **Review synthetic candidate**, check the source name, conversion
+   warnings and saved design-change count.
+
+<a id="task-design-pilot-review"></a>
+
+### TASK-DESIGN-PILOT-REVIEW: Change presentation and optionally view HTML
+
+**Starting point:** **Review synthetic candidate** after the local import.
+
+**Steps**
+
+1. To change the theme, select **Theme**, enter **Reason for this change** and
+   select **Save theme**.
+2. To change table widths, choose **Standard** or **Full width** for the
+   relevant section, enter a reason and select that section's **Save table width**.
+   This applies to every table in that section, not one table.
+3. Confirm the saved setting and **Saved design changes** count. Saving an
+   unchanged setting does not add a change.
+4. Optionally select **View current HTML (opens a new tab)**. It uses Builder's
+   existing templates but does not verify PDF pagination. External links are
+   inactive in this preview; stored source content remains unchanged.
+5. If **Request not saved** appears, use **Return to current candidate**,
+   review its latest state and enter the intended change again. An old HTML
+   link must also be reopened from the current candidate.
+
+**PDF unavailable** is expected. Cover changes, acceptance, publication,
+production transfer and discard are not implemented in this slice. The human
+login is not an agent credential. Do not use ordinary editor tasks to bypass the
+local profile's restrictions. Stopping the server does not erase the scratch
+database or the source documents it contains.
+
 ## Maintaining this page
 
 Labels on this page come from these files. When you change one, update the
@@ -556,6 +610,7 @@ matching task in the same pull request.
 
 | UI area | Source |
 | --- | --- |
+| Synthetic local candidate upload, changes and HTML review | `nofos/nofos/templates/nofos/design_pilot_*.html`; `nofos/nofos/design_pilot_views.py`; [local profile guide](DESIGN_PILOT_LOCAL_HOST.md) |
 | NOFO edit page, section tables, warning tabs | `nofos/nofos/templates/nofos/nofo_edit.html` |
 | **NOFO actions** menu | `get_nofo_action_links()` in `nofos/nofos/nofo.py` |
 | Subsection edit page, **Other actions** | `nofos/nofos/templates/nofos/subsection_edit.html` |
