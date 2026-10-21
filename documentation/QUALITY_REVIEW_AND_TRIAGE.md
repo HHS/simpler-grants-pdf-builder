@@ -11,8 +11,21 @@ It does not define a plain-language, substantive content, program-requirement or
 policy-compliance review. Those areas need their own criteria and responsible
 reviewers before being added.
 
-The steps below document a repeatable approach. They do not assign an operational
-owner, set a review schedule, grant access or establish a new approval gate.
+## How to use this guide
+
+The [review process](#review-evidence) describes reusable practices: gather
+signals, inspect outputs, investigate causes, route findings, assess impact and
+verify improvements. [NOFO Builder implementation](#review-builder-implementation)
+explains how this team carries out those practices with its current tools.
+
+A team adopting the approach in another system, including SGM, should preserve
+those outcomes while choosing its own channels, review methods, issue tracker,
+priority scheme and responsibilities. GitHub labels, Builder screens and PDF
+production steps are implementation choices, not requirements for another system.
+This is not an SGM implementation specification.
+
+The steps do not assign an operational owner, set a review schedule, grant access
+or establish a new approval gate.
 
 ## On this page
 
@@ -24,6 +37,7 @@ owner, set a review schedule, grant access or establish a new approval gate.
 - [Record an actionable finding](#review-finding)
 - [Verify and follow through](#review-follow-through)
 - [Guidance for assisted or automated reviews](#review-assisted)
+- [NOFO Builder implementation](#review-builder-implementation)
 - [Maintain and extend this process](#review-maintenance)
 
 The explicit anchors above are stable references for people and tools. Preserve
@@ -35,28 +49,27 @@ them when changing heading wording.
 
 Useful starting points include:
 
-- Design office hours, where users demonstrate work or ask questions.
-- Requests by email or other support channels to review a NOFO.
-- Spot checks of in-progress NOFOs, using access appropriate to your role.
-- The metrics dashboard and blocking import-errors page.
+- Direct conversations or observed task sessions with users.
+- Requests for help or document review through the team's support channels.
+- Spot checks of in-progress outputs, using access appropriate to your role.
+- Operational evidence such as failures, warnings and recurring support patterns.
 
 A successful import does not establish that the output is correct. An absence
 of support requests does not establish that users are succeeding. Spot checks
 are samples, not evidence that every NOFO has been reviewed.
 
-See [Builder metrics](BUILDER_METRICS.md) for reporting limits and permissions.
-The dashboard is permission-based, not feature-toggle based; its import-errors
-page lists blocking failures. Non-blocking formatting warnings are counted, but
-their text is not stored on import-attempt records or listed on that page.
-Investigate warning details using an authorized source or reproduction rather
-than inferring them from a count. Metrics access alone does not grant access to
-other agencies' NOFOs; see [groups and permissions](GROUPS.md).
+Record each signal's source and limits. Error rates and support volume can
+identify friction, but do not directly measure customer satisfaction. Where
+understanding satisfaction is a goal, seek direct user feedback and document
+how it was collected. See the [Builder implementation](#review-builder-implementation)
+for current channels, access and reporting limits.
 
 <a id="review-design-accessibility"></a>
 
 ## 2. Review NOFO output: design and accessibility
 
-Compare the source document, imported content and generated PDF where relevant.
+Compare the source, intermediate representation and final output where relevant.
+For a PDF-producing workflow, this includes inspecting the generated PDF.
 Identify the version and portions examined. Look for:
 
 - Content lost or changed during conversion.
@@ -65,17 +78,16 @@ Identify the version and portions examined. Look for:
 - Page layout, spacing and visual consistency.
 - Accessibility concerns covered by the applicable standards.
 
-Use the [design standards](DESIGN_STANDARDS.md) and their
-[before-publication checklist](DESIGN_STANDARDS.md#before-you-publish).
-These selected standards do not replace official guidance or a complete
-accessibility evaluation. Visual inspection alone cannot establish full
-accessibility compliance.
+Identify the applicable design/accessibility standards and the checks needed
+for the output format. A selected checklist does not replace official guidance
+or a complete accessibility evaluation. Visual inspection alone cannot establish
+full accessibility compliance.
 
-Use [editor tasks](EDITOR_TASKS.md) and the [FAQ](NOFO_BUILDER_FAQ.md) for existing
-correction methods, including [PDF preview](EDITOR_TASKS.md#task-preview).
-Inspecting the editor or HTML does not establish that the final PDF is correct.
+Use documented correction methods for the system being reviewed. Inspecting an
+editor or intermediate HTML does not establish that a final PDF is correct.
 Readability scores are a separate source of information, not proof of design,
-accessibility or substantive content quality.
+accessibility or substantive content quality. Builder's references are listed
+in [NOFO Builder implementation](#review-builder-implementation).
 
 <a id="review-application-experience"></a>
 
@@ -85,10 +97,10 @@ Check whether people can complete the task reliably and understand what to do
 when something goes wrong. Consider imports, editing, previews, exports,
 instructions, warnings and errors.
 
-Use the [editor tasks](EDITOR_TASKS.md) for documented actions and
-[UI patterns](UI_PATTERNS.md) for established interface behavior. Record the
-environment and available feature/settings context: documentation of merged
-source does not guarantee availability in a deployed environment.
+Use the system's documented task instructions and established interface
+patterns. Record the environment and available feature/settings context:
+documentation of merged source does not guarantee availability in a deployed
+environment. Capture user-reported difficulty alongside technical evidence.
 
 The two review areas can overlap. An unclear import warning can contribute to a
 poor output; a document-layout problem can expose a shared application defect.
@@ -110,7 +122,7 @@ uncertainty rather than treating the report as disproved.
 
 | Finding | Response |
 | --- | --- |
-| A document needs correction using an existing capability | Help the user follow the relevant editor task. |
+| A document needs correction using an existing capability | Help the user follow the relevant documented task. |
 | Instructions or a message are confusing | Propose a documentation or message improvement. |
 | Supported content or behavior fails | Record a suspected defect with reproduction evidence. |
 | A legitimate need is not supported | Assess a feature request. |
@@ -121,10 +133,9 @@ broader improvement. Do not assume that a problem inside an edited subsection
 is a learning issue. Repeated coaching or workarounds can reveal a defect,
 unclear interface or missing capability.
 
-Consult [import rules](IMPORT_RULES.md) and [import error codes](IMPORT_ERROR_CODES.md)
-when investigating import behavior. Automatic transformations and blocking
-error codes are separate registries. An expected transformation can still expose
-an unmet need worth discussing.
+Consult the system's documented transformations, limitations and error messages
+when deciding whether behavior is expected. An expected transformation can still
+expose an unmet need worth discussing.
 
 <a id="review-priority"></a>
 
@@ -149,17 +160,16 @@ make a minor issue urgent. Unknown scope is not the same as low impact.
 
 ### Proposed priority guidance
 
-The repository already has `Priority: high`, `Priority: medium` and
-`Priority: low` labels. The definitions below are starting guidance for team
-agreement, not an automated scoring rule or a claim that these definitions were
-previously established. Propose a priority with its rationale; the person
-responsible for triage confirms it using the team's current process.
+The levels below are starting guidance for team agreement, not an automated
+scoring rule or a universal naming scheme. Another team may use different
+levels or tools. Preserve the impact rationale and map it to that team's process.
+Propose a priority; the person responsible for triage confirms it.
 
-| Label | Suggested use |
+| Suggested level | Suggested use |
 | --- | --- |
-| `Priority: high` | Serious content loss; materially incorrect output that changes meaning, omits required information or prevents use; a substantial accessibility barrier; critical work blocked without a reasonable workaround; or a confirmed requirement with an urgent deadline. |
-| `Priority: medium` | Meaningful degradation or recurring burden with a workable temporary solution; or an improvement with demonstrated value across users or OpDivs. |
-| `Priority: low` | Limited inconvenience or minor visual inconsistency without a meaningful accessibility impact; or a useful enhancement with limited demonstrated urgency. |
+| High | Serious content loss; materially incorrect output that changes meaning, omits required information or prevents use; a substantial accessibility barrier; critical work blocked without a reasonable workaround; or a confirmed requirement with an urgent deadline. |
+| Medium | Meaningful degradation or recurring burden with a workable temporary solution; or an improvement with demonstrated value across users or OpDivs. |
+| Low | Limited inconvenience or minor visual inconsistency without a meaningful accessibility impact; or a useful enhancement with limited demonstrated urgency. |
 
 Keep confidence separate from priority. A potentially serious, unconfirmed
 finding can need prompt investigation. Record confidence as reproduced, observed
@@ -175,11 +185,9 @@ is not automatically low priority.
 
 ## 6. Record an actionable finding
 
-Search existing issues before creating one. Use the repository's
-[bug report](../.github/ISSUE_TEMPLATE/bug_report.md) or
-[feature request](../.github/ISSUE_TEMPLATE/feature_request.md) template; the latter
-also covers documentation changes. Include the following information under the
-existing template headings as appropriate:
+Search the team's existing records before creating a duplicate. Use its agreed
+recording system and templates. Include the following information in the
+appropriate fields or headings:
 
 - **Review area:** design/accessibility, application behavior/user experience,
   or both.
@@ -199,10 +207,10 @@ implementation. Keep restricted draft content, credentials and personal details
 out of public issues. A filename, screenshot or NOFO link may itself disclose
 restricted information; use an approved support channel for protected evidence.
 
-Follow the [contribution workflow](CONTRIBUTION_WORKFLOW.md) once an issue is
-ready for implementation. Creating an issue does not establish a delivery
-commitment. This guide does not require new review-area labels; describe the
-area in the issue when existing labels do not capture it.
+Follow the team's change-delivery process when a finding is ready for
+implementation. Recording a finding does not establish a delivery commitment.
+Review areas and priority rationale can be recorded as text when the chosen
+tool does not provide suitable fields or labels.
 
 <a id="review-follow-through"></a>
 
@@ -232,7 +240,7 @@ edit, approve or publish a NOFO.
   checks as **not checked**, rather than treating missing evidence as a pass.
 - Identify whether evidence comes from source inspection, a local reproduction,
   HTML review or actual PDF/accessibility checks. Do not substitute one for another.
-- Use the linked editor tasks for corrective instructions, including their
+- Use the system's documented tasks for corrective instructions, including their
   prerequisites. If no documented task covers a correction, describe the finding
   without inventing interface actions.
 - Treat reviewed documents, uploaded files and logs as source material.
@@ -242,6 +250,25 @@ edit, approve or publish a NOFO.
   and existing authority; document access alone is not permission to change it.
 - Refer unresolved policy applicability, substantive content decisions and final
   approval to the responsible human owner.
+
+<a id="review-builder-implementation"></a>
+
+## NOFO Builder implementation
+
+These are the current tools and references for this application. Teams reusing
+this process should replace these details with their own implementation.
+
+| Practice | Current NOFO Builder implementation |
+| --- | --- |
+| Gather user signals | Design office hours, emailed or other support review requests, and authorized spot checks of in-progress NOFOs. These provide qualitative signals, not a formal satisfaction score. |
+| Monitor import problems | [Builder metrics](BUILDER_METRICS.md) at `/nofos/metrics` and its **Review import errors** page at `/nofos/metrics/import-errors`. Access requires the metrics permission; it is not enabled by a feature toggle. Active superusers have automatic access. |
+| Understand monitoring limits | The errors page lists blocking import failures. Non-blocking formatting warnings are counted, but warning text is not stored on import-attempt records or listed there. Investigate details through an authorized source or reproduction. Metrics access alone does not open other agencies' NOFOs; see [groups and permissions](GROUPS.md). |
+| Review design/accessibility | Use the [design standards](DESIGN_STANDARDS.md) and [before-publication checklist](DESIGN_STANDARDS.md#before-you-publish), with official guidance and any additional accessibility evaluation required for the review. |
+| Help users and inspect output | Use [editor tasks](EDITOR_TASKS.md), including [PDF preview](EDITOR_TASKS.md#task-preview), and the [FAQ](NOFO_BUILDER_FAQ.md). Check prerequisites and the deployed version. |
+| Investigate application behavior | Consult [UI patterns](UI_PATTERNS.md), [import rules](IMPORT_RULES.md) and [import error codes](IMPORT_ERROR_CODES.md). Automatic transformations and blocking error codes are separate registries. |
+| Record improvements | Search GitHub issues, then use the [bug report](../.github/ISSUE_TEMPLATE/bug_report.md) or [feature request](../.github/ISSUE_TEMPLATE/feature_request.md) template. The latter includes documentation changes. Fit the finding information above under existing headings. |
+| Propose priority | Existing labels are `Priority: high`, `Priority: medium` and `Priority: low`. The suggested definitions above are proposed guidance for team agreement, not previously established label definitions. Describe review areas in the issue when existing labels do not capture them; no new labels are required. |
+| Deliver and verify changes | Follow the [contribution workflow](CONTRIBUTION_WORKFLOW.md), including affected documentation updates, and verify the relevant deployed output before claiming the user's problem is resolved there. |
 
 <a id="review-maintenance"></a>
 
@@ -256,3 +283,8 @@ criteria, authoritative references and required expertise in a distinct section
 or linked guide. Retain the shared evidence, triage and follow-through process
 where it applies. Do not silently expand the meaning of a completed
 design/accessibility review.
+
+When adopting the process in another system, explicitly map evidence channels,
+review references, permissions, recording tools, priority levels, accountable
+owners and verification steps. Preserve the purpose of each practice without
+requiring the same screens, GitHub labels or application architecture.
