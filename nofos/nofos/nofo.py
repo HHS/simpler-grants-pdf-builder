@@ -109,6 +109,7 @@ from .endnotes import (
 )
 from .import_transforms import (
     APPLICATION_CHECKLIST_CHILD_STYLE_MAP,
+    normalize_strong1_runs,
     omit_leading_word_title,
     transform_word_document,
 )
@@ -209,6 +210,7 @@ def parse_uploaded_file_as_html_string(
             from .word_lists import prepare_word_lists
 
             conversion_file, list_plan = prepare_word_lists(conversion_file)
+            conversion_file = normalize_strong1_runs(conversion_file)
             if list_review_warnings is not None:
                 list_review_warnings.extend(list_plan.warnings)
             doc_to_html_result = mammoth.convert_to_html(

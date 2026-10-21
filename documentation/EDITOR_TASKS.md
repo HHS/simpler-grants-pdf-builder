@@ -110,6 +110,10 @@ is needed, contact the SimplerNOFOs team.
 - Builder can omit a leading Word **Title** paragraph during import. The NOFO
   title suggestion comes from metadata, not that omitted paragraph; check it
   before saving the name.
+- Word text using the **Strong1** character style imports as bold, retaining
+  explicit bold-off overrides and separately applied italics. Redundant bold
+  formatting imports as a single bold level. Review the result against Word;
+  existing saved content receives this handling only when reimported.
 - For an existing NOFO, reimport replaces sections and subsections and can lose
   manual edits. It is not a way to apply import repairs to saved edits in place.
   Reimport preserves saved theme, cover and introductory ownership choices.
