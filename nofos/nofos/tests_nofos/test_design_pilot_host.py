@@ -161,6 +161,7 @@ class ConnectedDesignPilotTests(TestCase):
         self.assertNotIn("portrait-nih-white", choices)
         response = self.client.get(reverse("design_pilot:review", args=[run.pk]))
         self.assertEqual(response.context["choices"]["theme"], choices)
+        self.assertContains(response, "Choose a permitted theme")
         before = (run.revision, run.presentation_json, run.content_json)
         with self.assertRaises(DesignRequestError):
             host.update_candidate(
