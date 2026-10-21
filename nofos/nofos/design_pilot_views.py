@@ -12,7 +12,6 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from . import design_pilot_host as host
 from .design_candidate import DesignRequestError
-from .design_candidate_choices import design_capabilities
 
 
 class LocalPilotBoundary:
@@ -103,7 +102,7 @@ def review(request, candidate_id):
         {
             "run": run,
             "revision": revision,
-            "choices": design_capabilities()["choices"],
+            "choices": host.candidate_capabilities(request.user, run)["choices"],
             "sections": run.nofo.sections.order_by("order", "pk"),
         },
     )

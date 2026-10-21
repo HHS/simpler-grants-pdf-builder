@@ -60,6 +60,15 @@ checks are not an OS sandbox or proof of containment for arbitrary agent code.**
 
 ## Review limitations and remaining work
 
+Theme choices are rebuilt on every read and write using the initiating person's
+current authenticated group and Builder's `NofoThemeOptionsForm`. The imported
+OpDiv does not grant theme permissions. The host validates the resulting theme
+with the existing document and its unchanged cover, retains a permitted current
+legacy theme only until changed away, and rejects forged selections server-side.
+Owner/group changes invalidate access; agent-supplied group fields grant nothing.
+This host still rejects every cover mutation. The pure catalog alone is not an
+authorization policy, and it is not exposed directly as the host's choices.
+
 The preview removes scripts, forms, embedded frames, inline style sheets and
 external navigation/resource URLs. Only local static resources, internal anchors
 and PNG/JPEG data images are retained; a restrictive CSP also applies. Stored

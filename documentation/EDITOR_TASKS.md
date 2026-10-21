@@ -860,7 +860,10 @@ This route is unavailable under normal settings. Do not upload real documents.
 **Steps**
 
 1. To change the theme, select **Theme**, enter **Reason for this change** and
-   select **Save theme**.
+   select **Save theme**. Choices follow your current group permissions and
+   the candidate's design restrictions, not the OpDiv named in the upload.
+   A permitted current legacy theme can be retained, but cannot be selected
+   again after changing away from it.
 2. To change table widths, choose **Standard** or **Full width** for the
    relevant section, enter a reason and select that section's **Save table width**.
    This applies to every table in that section, not one table.
