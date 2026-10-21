@@ -47,6 +47,56 @@ def _word_child(node, name):
     )
 
 
+def _is_supported_strong1_style(style):
+    """Recognize a direct, bold-only definition, not a name-based guess.
+
+    Inheritance and additional formatting stay on Mammoth's existing path,
+    including its unrecognized-style warning. Do not remove their style link.
+    """
+    name = _word_child(style, "name")
+    if (
+        style.getAttributeNS(WORD_NAMESPACE, "type") != "character"
+        or not style.getAttributeNS(WORD_NAMESPACE, "styleId")
+        or name is None
+        or name.getAttributeNS(WORD_NAMESPACE, "val") != "Strong1"
+    ):
+        return False
+    # These describe the style in Word's UI, not inherited/run formatting.
+    metadata = {
+        "name",
+        "aliases",
+        "uiPriority",
+        "semiHidden",
+        "unhideWhenUsed",
+        "qFormat",
+        "rsid",
+    }
+    children = [
+        child for child in style.childNodes if child.nodeType == child.ELEMENT_NODE
+    ]
+    if any(
+        child.namespaceURI != WORD_NAMESPACE
+        or child.localName not in metadata | {"rPr"}
+        for child in children
+    ):
+        return False
+    properties = [child for child in children if child.localName == "rPr"]
+    if len(properties) != 1:
+        return False
+    formatting = [
+        child
+        for child in properties[0].childNodes
+        if child.nodeType == child.ELEMENT_NODE
+    ]
+    return (
+        len(formatting) == 1
+        and formatting[0].namespaceURI == WORD_NAMESPACE
+        and formatting[0].localName == "b"
+        and formatting[0].getAttributeNS(WORD_NAMESPACE, "val")
+        in ("", "1", "true", "on")
+    )
+
+
 def normalize_strong1_runs(upload):
     """Materialize Strong1 bold on a conversion copy, preserving run overrides.
 
@@ -62,12 +112,7 @@ def normalize_strong1_runs(upload):
         styles = _word_xml(archive.read("word/styles.xml"))
         style_ids = set()
         for style in styles.getElementsByTagNameNS(WORD_NAMESPACE, "style"):
-            name = _word_child(style, "name")
-            if (
-                style.getAttributeNS(WORD_NAMESPACE, "type") == "character"
-                and name is not None
-                and name.getAttributeNS(WORD_NAMESPACE, "val") == "Strong1"
-            ):
+            if _is_supported_strong1_style(style):
                 style_ids.add(style.getAttributeNS(WORD_NAMESPACE, "styleId"))
         replacements = {}
         if style_ids:

@@ -47,6 +47,19 @@ announcement data are not committed. Table widths are outside this change.
 
 ## Automated coverage
 
+### Definition safeguards
+
+The compatibility rule now checks the actual style definition, not its name
+alone. Only directly defined bold-only Strong1 styles qualify; Word UI metadata
+is allowed. Inherited or linked definitions, disabled/missing bold and additional
+formatting are not rewritten. Their original package and style references remain
+unchanged, and Mammoth's existing unrecognized-style warning/strict-mode behavior
+remains in effect. This does not add support for those unfamiliar definitions.
+
+Regression tests cover these negative cases, enabled bold spellings, benign UI
+metadata, the existing warning count and retention of directly applied italics.
+The before/after screenshots above remain applicable to the supported definition.
+
 `nofos.tests_nofos.test_strong1_import` covers these cases, mixed `<b>`/`<strong>`
 nesting in body text and table headers, literal asterisk footnote markers,
 style name versus style ID, native-note runs, idempotence, original upload

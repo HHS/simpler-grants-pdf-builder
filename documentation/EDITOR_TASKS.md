@@ -111,7 +111,10 @@ is needed, contact the SimplerNOFOs team.
   title suggestion comes from metadata, not that omitted paragraph; check it
   before saving the name.
 - Word text using the **Strong1** character style imports as bold, retaining
-  explicit bold-off overrides and separately applied italics. Redundant bold
+  explicit bold-off overrides and separately applied italics. This applies only
+  to a directly defined bold-only style. Other Strong1 definitions retain the
+  existing conversion warning behavior; compare their formatting with Word.
+  Redundant bold
   formatting imports as a single bold level. Review the result against Word;
   existing saved content receives this handling only when reimported.
 - For an existing NOFO, reimport replaces sections and subsections and can lose

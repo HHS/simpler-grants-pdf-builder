@@ -21,7 +21,14 @@ W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
 
-def strong1_docx(properties="", *, style_name="Strong1", style_id="CustomBold"):
+def strong1_docx(
+    properties="",
+    *,
+    style_name="Strong1",
+    style_id="CustomBold",
+    style_properties="<w:b/>",
+    style_metadata="",
+):
     """Synthetic content in a real DOCX package; no user document is committed."""
     fixture = Path(__file__).parents[1] / "fixtures/docx/lists.docx"
     body = "".join(
@@ -48,7 +55,7 @@ def strong1_docx(properties="", *, style_name="Strong1", style_id="CustomBold"):
         '<w:style w:type="paragraph" w:styleId="Heading2">'
         '<w:name w:val="heading 2"/></w:style>'
         f'<w:style w:type="character" w:styleId="{style_id}">'
-        f'<w:name w:val="{style_name}"/><w:rPr><w:b/></w:rPr>'
+        f'<w:name w:val="{style_name}"/>{style_metadata}<w:rPr>{style_properties}</w:rPr>'
         "</w:style></w:styles>"
     )
     output = BytesIO()
@@ -133,6 +140,46 @@ class Strong1ConversionTests(TestCase):
     def test_normalization_is_idempotent(self):
         first = normalize_strong1_runs(strong1_docx())
         self.assertIs(normalize_strong1_runs(first), first)
+
+    def test_unsupported_definitions_keep_original_package_and_style_reference(self):
+        for properties, metadata in (
+            ("", ""),
+            ('<w:b w:val="0"/>', ""),
+            ('<w:b w:val="false"/>', ""),
+            ('<w:b w:val="off"/>', ""),
+            ("<w:b/><w:i/>", ""),
+            ('<w:b/><w:color w:val="FF0000"/>', ""),
+            ("<w:b/>", '<w:basedOn w:val="BaseStyle"/>'),
+            ("", '<w:basedOn w:val="BaseStyle"/>'),
+            ("<w:b/>", '<w:link w:val="OtherStyle"/>'),
+        ):
+            with self.subTest(properties=properties, metadata=metadata):
+                upload = strong1_docx(
+                    style_properties=properties, style_metadata=metadata
+                )
+                original = upload.read()
+                result = normalize_strong1_runs(upload)
+                self.assertIs(result, upload)
+                self.assertEqual(result.read(), original)
+
+    def test_unsupported_style_keeps_existing_conversion_warning_and_direct_formatting(
+        self,
+    ):
+        html, warnings = parse_uploaded_file_as_html_string(
+            strong1_docx("<w:i/>", style_properties="<w:b/><w:i/>")
+        )
+        self.assertGreater(warnings, 0)
+        result = rendered(html)
+        self.assertIsNone(result.find("strong"))
+        self.assertEqual(result.em.get_text(), "Applicant requirements")
+
+    def test_supported_style_allows_bold_on_values_and_word_ui_metadata(self):
+        for value in ("1", "true", "on"):
+            with self.subTest(value=value):
+                self.convert(
+                    style_properties=f'<w:b w:val="{value}"/>',
+                    style_metadata='<w:uiPriority w:val="22"/><w:qFormat/>',
+                )
 
     def test_native_note_runs_are_normalized_too(self):
         output = BytesIO()
