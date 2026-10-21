@@ -21,6 +21,7 @@ from .design_candidate import DesignCandidate, DesignRequestError, apply_design_
 from .design_candidate_choices import design_capabilities
 from .document_processing import process_document_content
 from .forms import NofoThemeOptionsForm
+from .metadata_provenance import check_trace, package_trace
 from .models import DesignPilotCandidate
 from .nofo import (
     add_headings_to_document,
@@ -241,12 +242,19 @@ def _render_inputs():
 
 def review_artifact(run):
     candidate = snapshot(run)
+    try:
+        check_trace(run)
+    except (ValueError, KeyError, TypeError, AttributeError):
+        raise DesignRequestError(
+            "Metadata trace failed its source/destination binding check"
+        ) from None
     html = _safe_document(run.nofo)
     revision = hashlib.sha256(
         (
             candidate.revision
             + _render_inputs()
             + hashlib.sha256(html.encode()).hexdigest()
+            + hashlib.sha256(run.metadata_trace_json.encode()).hexdigest()
         ).encode()
     ).hexdigest()
     return revision, html
@@ -294,8 +302,13 @@ def import_candidate(user, upload):
         list_review_warnings=warnings,
         preserve_empty_paragraphs=True,
     )
+    metadata_trace = []
     content = process_document_content(
-        html, builder_import=True, extract_scoped_tagline=True, editable_intro="detect"
+        html,
+        builder_import=True,
+        extract_scoped_tagline=True,
+        editable_intro="detect",
+        metadata_trace=metadata_trace,
     )
     try:
         with transaction.atomic():
@@ -324,6 +337,9 @@ def import_candidate(user, upload):
                 source_bytes=data,
                 source_name=Path(upload.name).name[:200],
                 conversion_html=html,
+                metadata_trace_json=package_trace(
+                    digest, html, content.soup, metadata_trace, nofo
+                ),
                 warnings=warnings
                 + (
                     ["Review Word conversion warnings against the source."]

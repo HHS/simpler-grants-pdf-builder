@@ -8,6 +8,7 @@ from django.db import transaction
 from . import design_pilot_host as host
 from .design_candidate import DesignRequestError
 from .design_fidelity import inspect as inspect_fidelity
+from .metadata_provenance import check_trace
 from .models import DesignPilotReviewDecision
 from .nofo import (
     find_broken_links,
@@ -103,6 +104,34 @@ def report(run):
                 evidence["evidence"],
                 evidence["action"],
                 evidence_digest=evidence.get("input_digest", ""),
+            )
+        )
+    provenance = check_trace(run)
+    findings.append(
+        _finding(
+            "metadata-trace",
+            "IMPORT-063",
+            "not_assessed",
+            "info",
+            "Metadata provenance",
+            (
+                f"Recognized Metadata blocks recorded: {len(provenance['trace'][0]['blocks'])}. Selected block (zero-based): {provenance['trace'][0]['selected_block']}. Flattened dead-target links: {len(provenance['trace'][0]['flattened_links'])}. Trace SHA-256: {hashlib.sha256(run.metadata_trace_json.encode()).hexdigest()}."
+                if provenance
+                else "This candidate predates Metadata provenance capture; no trace was reconstructed."
+            ),
+            "This records executed field consumption only, not independent Word extraction or complete source fidelity.",
+        )
+    )
+    for row in provenance["destinations"] if provenance else []:
+        findings.append(
+            _finding(
+                f"metadata-destination-{row['destination']}",
+                "IMPORT-041",
+                row["status"],
+                "blocking" if row["status"] == "fail" else "info",
+                f"Metadata destination: {row['destination']}",
+                f"Source key: {row['source_key']}. Processed-source block: {row['source_block']}; element: {row['source_element']}. Saved field bound to this candidate. Result: {row['status']}.",
+                "Defaults/missing sources remain not assessed. A matching field is not proof that all Word content was extracted.",
             )
         )
     checks = [
