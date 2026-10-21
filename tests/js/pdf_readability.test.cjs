@@ -50,9 +50,10 @@ function setup({ form = true, error = false, report = false, word = false, valid
       'readability-scope-method': node('Text was reconstructed from page layout.'),
       'readability-coverage': node('Text recovered from 2 pages.'),
       'readability-word-scope': node('Word count includes all text recovered from the PDF: 23 words.'),
-      'readability-reliability': node('Reliability of these estimates: Low'),
+      'readability-reliability': node(word ? 'This analysis does not check how completely the Word document was converted, so it does not assign a reliability rating.' : 'Reliability of these estimates: Low'),
       'readability-disclaimer': node('Estimates, not a clearance determination.'),
     });
+    if (word) elements['readability-word-guidance'] = node('Why “Estimated”? These measures describe text recovered from your Word document. Missing or changed text can affect the results.');
   }
   const metrics = [node('Word count 23 words Estimate · Low reliability'),
     node('Flesch-Kincaid Grade Level 8.4 Estimate · Low reliability')];
@@ -158,6 +159,8 @@ test('copy identifies Word reports without a PDF source label', async () => {
   const state = setup({ form: false, report: true, word: true });
   await state.listeners['copy:click']();
   assert.match(state.copiedText, /^HHS NOFO Builder: Word readability pilot report/);
+  assert.match(state.copiedText, /Why “Estimated”\? These measures describe text recovered from your Word document/);
+  assert.match(state.copiedText, /does not check how completely the Word document was converted/);
 });
 
 for (const mode of ['unavailable', 'denied']) {

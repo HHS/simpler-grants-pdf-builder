@@ -77,6 +77,7 @@
       text("readability-scope-method"),
       text("readability-coverage"),
       text("readability-word-scope"),
+      text("readability-word-guidance"),
       text("readability-reliability"),
       "",
       "Readability measures",
