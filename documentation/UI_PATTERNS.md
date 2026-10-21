@@ -257,7 +257,8 @@ the catalog as those use cases are reviewed.
 
 **Word exception (#1169):** when a Word report has no supplied rating, use ordinary
 paragraphs under **Measurement scope**, not a second informational alert. Put
-conversion/preparation guidance in `readability-word-guidance` and the single
+conversion/preparation guidance in `readability-word-guidance`, beginning with
+bold **Why “Estimated”?** so readers can find the label’s meaning, and the single
 explanation of absent conversion-completeness assessment in
 `readability-reliability`. Metric cards say **Estimated** without repeating
 “Reliability not assessed.” Actual converter warnings remain in **Calculation

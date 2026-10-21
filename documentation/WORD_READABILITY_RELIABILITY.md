@@ -35,7 +35,10 @@ Pinned package references:
 ## Presentation decision
 
 Ordinary Word uploads do not need a second blue alert for a general limitation.
-Put Word preparation/conversion guidance under **Measurement scope**, followed
+Put Word preparation/conversion guidance under **Measurement scope**, beginning
+with bold **Why “Estimated”?** to connect the metric label to recovered text and
+the effect of missing or changed text. Keep this explanation out of the metric
+section to avoid repetition. The guidance is followed
 by one plain explanation that conversion completeness is not checked and no
 rating is assigned. Explicitly distinguish that limitation from a detected
 problem. Keep metric cards marked **Estimated**, without repeating an absent

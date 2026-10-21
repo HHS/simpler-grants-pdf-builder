@@ -141,9 +141,9 @@ class AuthenticatedPilotTests(TestCase):
             count=1,
         )
         self.assertContains(response, "This does not mean a problem was detected")
-        self.assertContains(
-            response, "make sure important text is in the main document body"
-        )
+        self.assertContains(response, "<strong>Why “Estimated”?</strong>", html=False)
+        self.assertContains(response, "Missing or changed text can affect the results")
+        self.assertContains(response, "Keep important text in the main document body")
         self.assertContains(
             response, "Remove template instructions and unused draft options"
         )
