@@ -4,6 +4,9 @@ The metrics dashboard supports issue #865 and reports total users, monthly activ
 users, NOFOs created, time from import to first live PDF, blocking import errors,
 and warnings per successful import.
 
+For how to investigate findings, distinguish document help from product changes,
+and propose priorities, see [quality review and triage](QUALITY_REVIEW_AND_TRIAGE.md).
+
 ## Opening the dashboard
 
 Open `/nofos/metrics` on the environment's normal hostname.
