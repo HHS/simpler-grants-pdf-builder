@@ -2,6 +2,20 @@
 
 Issue: https://github.com/HHS/simpler-grants-pdf-builder/issues/1180
 
+## Source and future manual verification
+
+The reported `Strong1` character style was observed in a Word export from the
+**GrantSolutions Announcement Module**. The supplied export defines this exact
+style name as bold only. How the module creates or applies the style is not
+established, and other exports may use different styles.
+
+For future verification, obtain a fresh GrantSolutions Announcement Module Word
+export and confirm that it contains text using `Strong1`. Compare Word with
+Builder after both import and reimport: style-only text should be bold, explicit
+bold-off overrides should remain off, direct bold should not create duplicate
+markers, and separately applied italics should remain. Use the synthetic tests
+below for override combinations absent from the fresh export.
+
 ## Screenshots
 
 - [Before](before.png): upstream `5b7b5137199c4d5bda3dcf93cb24053754983cfa` behavior.
