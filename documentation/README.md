@@ -5,9 +5,11 @@ here—not in a top-level `docs/` directory—and link durable guides from this 
 decision records belong in `adr/`; PR-specific screenshots and validation notes belong in
 `review-evidence/`.
 
+- [QUALITY_REVIEW_AND_TRIAGE.md](QUALITY_REVIEW_AND_TRIAGE.md) — Design/accessibility and application-experience review, evidence gathering, triage, proposed priorities and assisted-review boundaries
 - [BUILDER_METRICS.md](BUILDER_METRICS.md) — The usage & quality metrics dashboard at `/nofos/metrics`: what it reports and who can see it
 - [AUTHENTICATED_PDF_READABILITY_PILOT.md](AUTHENTICATED_PDF_READABILITY_PILOT.md) - Restricted PDF/Word upload pilot, access provisioning, source-aware reporting and activation checks
 - [Word readability uploads](PDF_READABILITY_PILOT.md#word-uploads-1111) - Reused conversion and measurement paths, archive limits and scope caveats
+- [Word report scope and reliability](WORD_READABILITY_RELIABILITY.md) - Why Word has no reliability rating, general scope versus detected warnings, and report/copy/print presentation
 - [CHANGELOG_BANNER.md](CHANGELOG_BANNER.md) — The site-wide "Latest release" banner driven by `CHANGELOG.md`: when it shows, how long, and the admin off switch
 - [CONTRIBUTION_WORKFLOW.md](CONTRIBUTION_WORKFLOW.md) — Diagram of the contribution workflow for people and AI agents (issue → branch → PR → CI → squash merge → changelog), with what to read at each step
 - [DESIGN_STANDARDS.md](DESIGN_STANDARDS.md) — Selected NOFO design and accessibility standards (headings, images, visual consistency, line breaks, lists, links, tables) reproduced from the HHS Office of Grants standards, with a checklist to use before publishing

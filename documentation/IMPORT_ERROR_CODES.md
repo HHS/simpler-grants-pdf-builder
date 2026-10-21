@@ -9,6 +9,10 @@ which is the single source of truth - this page describes those entries, it
 doesn't define them. `nofos/nofos/tests_nofos/test_import_error_catalog.py`
 fails if a code exists in one place and not the other.
 
+For investigating recurring errors or unclear recovery instructions and deciding
+whether to propose a product change, see
+[quality review and triage](QUALITY_REVIEW_AND_TRIAGE.md#review-triage).
+
 ## Adding a new code
 
 1. Add an entry to `IMPORT_ERROR_CATALOG` with a title, a summary, recovery
