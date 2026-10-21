@@ -17,6 +17,10 @@ page-break setting persistence; subsection creation; delete confirmation labels
 saving; and Find & Replace search/results. Other tasks are source-reviewed only.
 PDF generation requires the configured external PDF service and is not verified by local screen checks.
 
+For support staff investigating a problem rather than performing a known edit,
+see [quality review and triage](QUALITY_REVIEW_AND_TRIAGE.md). It explains how to
+distinguish document corrections, learning needs and product improvements.
+
 ## How to use this page
 
 - Each task has a stable ID (for example, `TASK-SUBSECTION-DELETE`). Link to

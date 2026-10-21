@@ -9,6 +9,11 @@ This page is the overview. The rules themselves live in
 releases, hotfixes) and [`AGENTS.md`](../AGENTS.md) (agent-specific rules).
 If this page and those documents disagree, they win: fix this page.
 
+Before opening an issue, use [quality review and triage](QUALITY_REVIEW_AND_TRIAGE.md)
+to investigate design/accessibility or application-experience findings, choose a
+response and explain a proposed priority. It connects support observations to
+this contribution workflow.
+
 ## The workflow
 
 ```mermaid

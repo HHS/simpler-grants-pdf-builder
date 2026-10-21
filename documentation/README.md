@@ -5,6 +5,7 @@ here—not in a top-level `docs/` directory—and link durable guides from this 
 decision records belong in `adr/`; PR-specific screenshots and validation notes belong in
 `review-evidence/`.
 
+- [QUALITY_REVIEW_AND_TRIAGE.md](QUALITY_REVIEW_AND_TRIAGE.md) — Design/accessibility and application-experience review, evidence gathering, triage, proposed priorities and assisted-review boundaries
 - [BUILDER_METRICS.md](BUILDER_METRICS.md) — The usage & quality metrics dashboard at `/nofos/metrics`: what it reports and who can see it
 - [AUTHENTICATED_PDF_READABILITY_PILOT.md](AUTHENTICATED_PDF_READABILITY_PILOT.md) - Restricted PDF/Word upload pilot, access provisioning, source-aware reporting and activation checks
 - [Word readability uploads](PDF_READABILITY_PILOT.md#word-uploads-1111) - Reused conversion and measurement paths, archive limits and scope caveats
