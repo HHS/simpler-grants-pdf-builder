@@ -11,6 +11,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from . import design_pilot_host as host
+from . import design_pilot_review as candidate_review
 from . import design_pilot_tools as tools
 from .design_candidate import DesignRequestError
 
@@ -98,7 +99,7 @@ def index(request):
 def review(request, candidate_id):
     run = host.owned_candidate(request.user, candidate_id)
     try:
-        revision, _ = host.review_artifact(run)
+        report = candidate_review.report(run)
     except DesignRequestError as exc:
         return error(request, str(exc), 409)
     return render(
@@ -106,7 +107,11 @@ def review(request, candidate_id):
         "nofos/design_pilot_review.html",
         {
             "run": run,
-            "revision": revision,
+            "revision": report["revision"],
+            "report": report,
+            "review_sections": run.nofo.sections.order_by(
+                "order", "pk"
+            ).prefetch_related("subsections"),
             "choices": host.candidate_capabilities(request.user, run)["choices"],
             "sections": run.nofo.sections.order_by("order", "pk"),
             "tool_access_active": bool(run.tool_token_digest),
@@ -114,6 +119,28 @@ def review(request, candidate_id):
             "tool_requests": run.tool_requests,
         },
     )
+
+
+@pilot_view
+@require_POST
+def acknowledge(request, candidate_id):
+    if len(request.body) > 4096 or any(
+        len(values) != 1 for _, values in request.POST.lists()
+    ):
+        return error(request, "Use one current warning review form.")
+    command = request.POST.dict()
+    command.pop("csrfmiddlewaretoken", None)
+    try:
+        candidate_review.acknowledge(request.user, candidate_id, command)
+    except DesignRequestError as exc:
+        return error(request, str(exc), 409)
+    except OperationalError:
+        return error(
+            request,
+            "The local database is busy. Return to review before trying again.",
+            409,
+        )
+    return redirect("design_pilot:review", candidate_id=candidate_id)
 
 
 @pilot_view
