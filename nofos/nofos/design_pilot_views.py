@@ -14,7 +14,6 @@ from . import design_pilot_host as host
 from . import design_pilot_review as candidate_review
 from . import design_pilot_tools as tools
 from .design_candidate import DesignRequestError
-from .design_candidate_choices import design_capabilities
 
 
 class LocalPilotBoundary:
@@ -113,7 +112,7 @@ def review(request, candidate_id):
             "review_sections": run.nofo.sections.order_by(
                 "order", "pk"
             ).prefetch_related("subsections"),
-            "choices": design_capabilities()["choices"],
+            "choices": host.candidate_capabilities(request.user, run)["choices"],
             "sections": run.nofo.sections.order_by("order", "pk"),
             "tool_access_active": bool(run.tool_token_digest),
             "tool_expires_at": run.tool_expires_at,

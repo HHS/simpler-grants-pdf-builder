@@ -255,6 +255,18 @@ the catalog as those use cases are reviewed.
 
 ## Readability estimate reliability alerts
 
+**Word exception (#1169):** when a Word report has no supplied rating, use ordinary
+paragraphs under **Measurement scope**, not a second informational alert. Put
+conversion/preparation guidance in `readability-word-guidance`, beginning with
+bold **Why “Estimated”?** so readers can find the label’s meaning, and the single
+explanation of absent conversion-completeness assessment in
+`readability-reliability`. Metric cards say **Estimated** without repeating
+“Reliability not assessed.” Actual converter warnings remain in **Calculation
+notes**. Copy and print retain the same explanation. No supplied rating is
+discarded. See [the investigation and decision](WORD_READABILITY_RELIABILITY.md).
+The tables and absent-rating alert wording below apply to PDF reports; assessed
+Word results retain their supplied-rating notice.
+
 The PDF/Word readability report uses a USWDS alert to explain confidence in the
 estimates derived from extracted text. Reliability describes confidence in
 those estimates, not how readable the document is. High reliability does not
@@ -315,7 +327,7 @@ visual variant does not make this notice an urgent announcement.
 
 Each source explanation stays in one paragraph:
 
-- **Word:** “This report measures text recovered from your Word document. The tool may miss or change text in text boxes, headers, and footers. It cannot read text in images. For a more complete analysis, make sure important text is in the main document body. Remove template instructions and unused draft options from the copy you upload so they aren’t counted as part of your NOFO.”
+- **Word:** general preparation guidance is ordinary Measurement scope text, not an alert. It describes text boxes, headers, footers, images and unused template options without claiming any of those were detected. An unassessed report explains once: “This analysis does not check how completely the Word document was converted, so it does not assign a reliability rating. This does not mean a problem was detected in your upload. Any conversion warnings appear in Calculation notes.”
 - **PDF with usable tags:** “PDF structure tags helped the tool read the text in order, but some text may still be missed or read out of order, especially in columns and tables. These scores describe the text the tool recovered and may not reflect the entire PDF.”
 - **PDF without usable tags (authenticated tool):** “The tool could not reliably determine the order of text in this PDF, so the scores may be less reliable. For your next upload, try uploading the original Word document instead. If you need to use a PDF, save it from Word using ‘Save as PDF’ rather than ‘Print to PDF.’”
 
@@ -326,7 +338,8 @@ Word is supported only on authenticated `/nofos/readability/`; public
 a Word upload. These suggestions do not guarantee accurate scores. The source
 explanation is one paragraph. When overall reliability is not assessed, the alert
 also includes the separate sentence: “Reliability has not been assessed for these
-estimates.” This sentence can accompany either Word or tagged-PDF source copy.
+estimates.” This sentence can accompany tagged-PDF source copy. Unassessed Word
+reports use the plain scope explanation above instead.
 
 The upper **How to read these results** alert is shared across source types:
 

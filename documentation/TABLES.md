@@ -37,6 +37,11 @@ These run in the `add_classes_to_tables` and `add_captions_to_tables` template f
 
 The column is marked once, on import (see [Points columns on import](#points-columns-on-import) below). At render time, `add_class_to_points_columns()` styles marked columns only. It copies `col--points` from the header to the column's non-empty body cells. The CSS then shrinks the column to fit its content (`width: 1%`) and keeps body cells on one line (`white-space: nowrap`), so "10 points" doesn't wrap onto two lines. The header can still wrap.
 
+The saved-content preview on the NOFO edit page uses the same points-cell CSS
+as the PDF. Martor's live subsection Preview does not run this table-class
+filter, so its body cells do not receive the copied marker. Do not assume the
+live Preview fully matches the saved-content or PDF rendering.
+
 The class is dropped from the column, so it wraps normally again, when:
 - the header also has a width class (`w-*`), so the user's width wins
 - a body cell no longer looks like a point value, for example after an edit to "Up to 5 points, see the budget section", so long text can't push the table past the page edge
