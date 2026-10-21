@@ -882,6 +882,30 @@ login is not an agent credential. Do not use ordinary editor tasks to bypass the
 local profile's restrictions. Stopping the server does not erase the scratch
 database or the source documents it contains.
 
+<a id="task-design-pilot-access"></a>
+
+### TASK-DESIGN-PILOT-ACCESS: Manage access to one synthetic candidate
+
+**Starting point:** **Review synthetic candidate** on the isolated local pilot,
+signed in as that candidate's owner. Use invented information only. This action
+does not configure or start an agent runtime.
+
+**Steps**
+
+1. Under **Candidate-only agent access**, select **Create or replace agent access**.
+2. On **Candidate access created**, copy the key only into the approved local
+   client. Keep it out of screenshots, URLs, chats, issues and logs. Do not share
+   your Builder cookie or give the client broad host/database access.
+3. Select **Return to current candidate**. The key is not shown there again;
+   the page shows the latest expiry and request count instead.
+4. To stop access early, select **Revoke agent access** on that candidate.
+5. To replace a lost, expired or exhausted key, repeat step 1. This immediately
+   invalidates the previous key.
+
+Access ends after 20 minutes or 100 admitted requests. The client can read this
+candidate and request theme/table-width changes only. It cannot accept, transfer,
+publish or discard a design. See the [interface protocol and limits](DESIGN_CANDIDATE_INTERFACE.md).
+
 ## Maintaining this page
 
 Labels on this page come from these files. When you change one, update the

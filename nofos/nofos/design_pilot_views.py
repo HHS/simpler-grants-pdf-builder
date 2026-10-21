@@ -11,6 +11,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from . import design_pilot_host as host
+from . import design_pilot_tools as tools
 from .design_candidate import DesignRequestError
 
 
@@ -19,6 +20,10 @@ class LocalPilotBoundary:
         self.get_response = get_response
 
     def __call__(self, request):
+        if request.headers.get("Authorization") and not tools.TOOL_PATH.fullmatch(
+            request.path
+        ):
+            return HttpResponseNotFound()
         if request.META.get("REMOTE_ADDR") not in {"127.0.0.1", "::1"} or not (
             request.path.startswith(("/design-pilot/", "/static/"))
             or request.path in {"/users/login/", "/users/logout/"}
@@ -104,6 +109,9 @@ def review(request, candidate_id):
             "revision": revision,
             "choices": host.candidate_capabilities(request.user, run)["choices"],
             "sections": run.nofo.sections.order_by("order", "pk"),
+            "tool_access_active": bool(run.tool_token_digest),
+            "tool_expires_at": run.tool_expires_at,
+            "tool_requests": run.tool_requests,
         },
     )
 
@@ -153,3 +161,30 @@ def document(request, candidate_id):
     response["Cache-Control"] = "no-store"
     response["Referrer-Policy"] = "no-referrer"
     return response
+
+
+@pilot_view
+@require_POST
+def issue_access(request, candidate_id):
+    try:
+        token, expires = tools.issue_access(request.user, candidate_id)
+    except DesignRequestError as exc:
+        return error(request, str(exc), 409)
+    response = render(
+        request,
+        "nofos/design_pilot_access.html",
+        {
+            "token": token,
+            "expires": expires,
+            "candidate_id": candidate_id,
+        },
+    )
+    response["Cache-Control"] = "no-store"
+    return response
+
+
+@pilot_view
+@require_POST
+def revoke_access(request, candidate_id):
+    tools.revoke_access(request.user, candidate_id)
+    return redirect("design_pilot:review", candidate_id=candidate_id)

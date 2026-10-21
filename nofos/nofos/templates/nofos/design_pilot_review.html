@@ -16,6 +16,11 @@
 </form>
 <h2 class="font-heading-lg text-bold margin-top-4">Cover</h2>
 <p>This slice uses text covers only. Cover assets are not available.</p>
+<h2 class="font-heading-lg text-bold margin-top-4">Candidate-only agent access</h2>
+<p>An approved local client can read this candidate and request theme or table-width changes. Access expires after 20 minutes or 100 requests. It cannot accept, transfer, discard or publish a design.</p>
+{% if tool_access_active %}<p>Latest access expires: {{ tool_expires_at }}. Requests used: {{ tool_requests }}. The key is not shown again.</p>{% else %}<p>No current key has been issued, or access has been revoked.</p>{% endif %}
+<form method="post" action="{% url 'design_pilot:issue_access' run.pk %}">{% csrf_token %}<button class="usa-button" type="submit">Create or replace agent access</button></form>
+<form method="post" action="{% url 'design_pilot:revoke_access' run.pk %}" class="margin-top-2">{% csrf_token %}<button class="usa-button usa-button--outline" type="submit">Revoke agent access</button></form>
 <h2 class="font-heading-lg text-bold margin-top-4">Table widths</h2>
 {% for section in sections %}
 <form class="usa-form margin-bottom-4" method="post" action="{% url 'design_pilot:operation' run.pk %}">
