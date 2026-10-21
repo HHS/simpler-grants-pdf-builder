@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.52.3](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.52.2...nofos-v3.52.3) (2026-10-20)
+
+
+### Bug Fixes
+
+* bound document history queries and preserve deleted events ([#1143](https://github.com/HHS/simpler-grants-pdf-builder/issues/1143)) ([33552ed](https://github.com/HHS/simpler-grants-pdf-builder/commit/33552ed202e8f5e611e864d162cfa0dfcacff8b9))
+* keep isolated native-note return links inline on import ([#1141](https://github.com/HHS/simpler-grants-pdf-builder/issues/1141)) ([5fe16ad](https://github.com/HHS/simpler-grants-pdf-builder/commit/5fe16ad6493534c9329f7258425effc2b9005298))
+* keep marked scoring-table point values together in editor previews ([#1139](https://github.com/HHS/simpler-grants-pdf-builder/issues/1139)) ([753749f](https://github.com/HHS/simpler-grants-pdf-builder/commit/753749f66616e8bbad7227044d9745c5720a7d3b))
+
+
+### Documentation
+
+* Clarify HTML-only local agent design review ([#1159](https://github.com/HHS/simpler-grants-pdf-builder/issues/1159)) ([d3d5121](https://github.com/HHS/simpler-grants-pdf-builder/commit/d3d5121430788c45c07192212b0ddc7f04b148a0))
+* propose bounded agent design pilot and reuse plan ([#1154](https://github.com/HHS/simpler-grants-pdf-builder/issues/1154)) ([a77415c](https://github.com/HHS/simpler-grants-pdf-builder/commit/a77415cba0582eb93bf54da8395b0bd037ff3387))
+* Refresh editor tasks for recent import, review and readability changes ([#1153](https://github.com/HHS/simpler-grants-pdf-builder/issues/1153)) ([060e793](https://github.com/HHS/simpler-grants-pdf-builder/commit/060e793658b4c7f01ba88d30771eeeb1c0d04170))
+* Require Editor Tasks review in the contribution workflow ([#1156](https://github.com/HHS/simpler-grants-pdf-builder/issues/1156)) ([7feb3ab](https://github.com/HHS/simpler-grants-pdf-builder/commit/7feb3ab2c06c78c0c268efe17e06236f9222af8f))
+
+
+### Tests
+
+* add synthetic design pilot fixtures and walkthrough evidence ([#1157](https://github.com/HHS/simpler-grants-pdf-builder/issues/1157)) ([43b8c8c](https://github.com/HHS/simpler-grants-pdf-builder/commit/43b8c8c22a0656043d77ef4d0e620834caa0973a))
+
 ## [3.52.2](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.52.1...nofos-v3.52.2) (2026-10-19)
 
 

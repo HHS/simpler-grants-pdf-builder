@@ -94,6 +94,34 @@ class CandidateToolTests(TestCase):
         self.assertEqual(response["Cache-Control"], "no-store")
         self.assertEqual(response["X-Content-Type-Options"], "nosniff")
 
+    def test_capabilities_and_writes_follow_owner_not_cookies_or_source_opdiv(self):
+        self.other.group = "cdc"
+        self.other.save(update_fields=["group"])
+        self.run = host.import_candidate(self.other, self.upload())
+        self.token, _ = tools.issue_access(self.other, self.run.pk)
+        # A broader human session cannot expand this CDC-bound credential.
+        self.agent.force_login(self.user)
+        catalog = self.call("capabilities").json()
+        self.assertIn("portrait-cdc-blue", catalog["choices"]["theme"])
+        self.assertNotIn("portrait-hrsa-white", catalog["choices"]["theme"])
+        self.assertNotIn("cover", catalog["choices"])
+        command = self.command(self.run)
+        command.pop("section_id")
+        command.update(operation="set_theme", value="portrait-hrsa-white")
+        before = self.run.content_json
+        self.assertEqual(
+            self.call("operation", method="post", body=json.dumps(command)).status_code,
+            409,
+        )
+        command["value"] = "portrait-cdc-blue"
+        self.assertEqual(
+            self.call("operation", method="post", body=json.dumps(command)).status_code,
+            200,
+        )
+        self.run.refresh_from_db()
+        self.assertEqual(self.run.nofo.theme, "portrait-cdc-blue")
+        self.assertEqual(self.run.content_json, before)
+
     def test_cookie_alone_never_grants_tool_access(self):
         self.agent.force_login(self.user)
         self.assertEqual(

@@ -20,6 +20,7 @@ from users.models import BloomUser
 from .design_candidate import DesignCandidate, DesignRequestError, apply_design_request
 from .design_candidate_choices import design_capabilities
 from .document_processing import process_document_content
+from .forms import NofoThemeOptionsForm
 from .metadata_provenance import check_trace, package_trace
 from .models import DesignPilotCandidate
 from .nofo import (
@@ -67,6 +68,31 @@ def owned_candidate(user, candidate_id):
         )
     except DesignPilotCandidate.DoesNotExist:
         raise Http404 from None
+
+
+def candidate_capabilities(user, run):
+    """Rebuild choices from current membership and Builder's existing form policy."""
+    run = owned_candidate(user, run.pk)
+    owner = current_owner(user)
+    catalog = design_capabilities(candidate=snapshot(run))
+    allowed_themes = []
+    for theme in catalog["choices"]["theme"]:
+        # A bound form includes restrictions for both the stored document and
+        # resulting theme. Field validation does not mutate the model instance.
+        form = NofoThemeOptionsForm(
+            data={"theme": theme}, instance=run.nofo, user=owner
+        )
+        try:
+            form.fields["theme"].clean(theme)
+            form.fields["cover"].clean(run.nofo.cover)
+        except ValidationError:
+            continue
+        allowed_themes.append(theme)
+    catalog["choices"] = {
+        "theme": allowed_themes,
+        "cover": [run.nofo.cover],  # This host never permits cover mutations.
+    }
+    return catalog
 
 
 def _values(record, excluded=()):
@@ -364,7 +390,7 @@ def update_candidate(user, candidate_id, request):
         current = snapshot(run)
         command = {**request, "expected_revision": current.revision}
         updated = apply_design_request(
-            current, command, choices=design_capabilities()["choices"]
+            current, command, choices=candidate_capabilities(user, run)["choices"]
         )
         if updated is current:
             return run

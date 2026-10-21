@@ -16,7 +16,6 @@ from django.views.decorators.csrf import csrf_exempt
 
 from . import design_pilot_host as host
 from .design_candidate import DesignRequestError
-from .design_candidate_choices import design_capabilities
 from .models import DesignPilotCandidate
 
 LIFETIME = timedelta(minutes=20)
@@ -121,7 +120,7 @@ def _dispatch(request, run, action):
     if set(request.GET) - ({"revision"} if action == "html" else set()):
         return _error("Query fields are not supported here", 400)
     if action == "capabilities":
-        catalog = design_capabilities()
+        catalog = host.candidate_capabilities(run.owner, run)
         catalog["operations"] = ["read", "set_theme", "set_table_width", "html_review"]
         catalog["choices"].pop("cover")
         catalog["html_review"] = {"supported": True, "requires_current_revision": True}
