@@ -6,7 +6,10 @@ choices and the accepted synthetic-proof direction are in the [ADR](adr/2026-10-
 
 ## Keep the first slice small
 
-Use the existing import pipeline, design system and PDF service. Automate only
+Use the existing import pipeline, design system and local HTML rendering. Keep
+localhost PDF preview/download disabled; do not extend DocRaptor to local, add
+a renderer/broker/tunnel, or require a PDF for local acceptance or transfer.
+Normal PDF actions remain on the saved NOFO in a configured environment. Automate only
 presentation controls initially. Do not reproduce deterministic import repairs
 in a prompt, invent missing content or silently repair unsupported structures.
 Do not create another comprehensive standards registry: the sources below retain
@@ -16,12 +19,12 @@ their current authority and limitations.
 | --- | --- | --- | --- |
 | DESIGN-001: establish imported baseline | Escalate unexplained differences | Account for source-to-import differences with applicable import rules; unexpected loss blocks acceptance | [IMPORT_RULES](IMPORT_RULES.md), [DOCUMENT_PROCESSING](DOCUMENT_PROCESSING.md) |
 | DESIGN-002: theme and cover | Presentation when supplied preference is unambiguous; otherwise confirm suggestion | Use declared theme/cover choices; never invent branding or a cover image. Record rendered-cover evidence for validation; user preview choice follows DESIGN-008 | [TASK-THEME](EDITOR_TASKS.md#task-theme) |
-| DESIGN-003: pagination | Presentation with rendered evidence | Set subsection breaks only in the first slice. Suggest in-body markers to a human; do not edit body text automatically. Record affected pages and regenerate | [FAQ page breaks](NOFO_BUILDER_FAQ.md#when-should-i-add-a-manual-page-break) |
+| DESIGN-003: pagination | Presentation with rendered evidence | Set subsection breaks only in the first slice. Suggest in-body markers to a human; do not edit body text automatically. Record target subsections and intended breaks, then refresh HTML; final PDF pagination is not verified locally | [FAQ page breaks](NOFO_BUILDER_FAQ.md#when-should-i-add-a-manual-page-break) |
 | DESIGN-004: table width | Presentation | Existing section-level full-width control; review every table affected, not just the target table | [TASK-TABLE-FULL-WIDTH](EDITOR_TASKS.md#task-table-full-width), [TABLES](TABLES.md) |
-| DESIGN-005: custom CSS | Confirm suggestion in first slice | No automatic CSS writes. Require demonstrated defect, native-control attempts and complete rerender | [UI patterns](UI_PATTERNS.md), existing theme controls |
+| DESIGN-005: custom CSS | Confirm suggestion in first slice | No automatic CSS writes. Require demonstrated defect, native-control attempts and refreshed HTML evidence; do not claim local PDF validation | [UI patterns](UI_PATTERNS.md), existing theme controls |
 | DESIGN-006: semantic structure | Escalate ambiguity | Flag heading jumps, ambiguous table headers, list damage and missing alt text. Do not rewrite headings, invent alt text or delete content autonomously | [DESIGN_STANDARDS](DESIGN_STANDARDS.md), [EDITOR_TASKS](EDITOR_TASKS.md) |
 | DESIGN-007: substance and policy | Forbidden autonomous change | Preserve all wording, dates, amounts, eligibility, links and policy even when policy tags are missing/disabled | #902; [IMPORT_RULES](IMPORT_RULES.md) only explains import-stage changes |
-| DESIGN-008: final review | Human decision | Explicit acceptance of the current candidate from the Builder review page; HTML viewing, PDF preview and PDF download are optional in any combination, with no mandatory inspection action; unresolved blockers prevent acceptance | [Review and acceptance contract](adr/2026-10-20-agent-design-pilot-boundary.md#review-acceptance-and-discard) |
+| DESIGN-008: final review | Human decision | Explicit acceptance of the current candidate from the Builder review page; local HTML viewing is optional; PDF preview/download stay disabled locally, with no mandatory inspection action; unresolved blockers prevent acceptance | [Review and acceptance contract](adr/2026-10-20-agent-design-pilot-boundary.md#review-acceptance-and-discard) |
 
 There are no allowlisted autonomous content fixes in the first slice. The
 classification remains available for later, individually specified fixes with
@@ -40,8 +43,8 @@ attribution and must invalidate affected previews/checks.
   finding. Table size heuristics do not establish semantic table complexity.
 - Import-time markers are not render-time detection. Respect intentional marker
   removal and width overrides; a missing marker is not proof of import loss.
-- Optional line-break advice is not permission to rewrite prose. Page layout must
-  be judged from the actual rendered revision, not the editor screen alone.
+- Optional line-break advice is not permission to rewrite prose. Use the actual HTML
+  rendering for local evidence; final PDF pagination remains unverified locally.
 
 ## Readiness and fidelity contract
 
@@ -62,11 +65,14 @@ part of the default isolated proof.
 
 Ready for review means the candidate, findings and review controls are available
 on the Builder review page, with an honest report of missing evidence and open
-questions. Offer View HTML, Preview PDF and Download PDF for the exact candidate
-revision. The user may choose any combination, or accept without opening a
-preview; no particular inspection, preview or download action is an acceptance
-gate. A PDF not requested/generated is not, by itself, a blocker. Report actual
-rendering errors and unsupported checks honestly under the finding policy.
+questions. Offer View HTML for the exact candidate revision. Preview PDF and
+Download PDF remain disabled on localhost with an environment-specific explanation.
+The user may view HTML or accept without opening a preview; no inspection event,
+local PDF, PDF comparison or download is an acceptance/transfer prerequisite.
+Expected local PDF unavailability is a nonblocking capability limit. Report actual
+HTML-rendering errors and other unsupported checks honestly under the finding policy.
+After transfer, normal PDF controls belong to the saved NOFO in its configured
+environment, independently of design acceptance.
 
 Acceptance requires current authorization, resolved blocking findings and an
 explicit human decision bound to the current candidate. Acceptance is completion
@@ -95,18 +101,19 @@ Two comparisons are required:
    explicit expected-before target and validate revision before each edit.
 
 Digests bind exact artifacts; they do not explain differences or prove content
-fidelity. PDF text extraction is supplementary and may be unreliable for tables
-and columns. Deterministic content/asset comparisons remain required. Engineering
-validation must also check actual HTML/PDF rendering, including manual rendered-page
-inspection in the pilot baseline and release evidence; that quality-validation
-work is separate from each user's choice of acceptance vehicle. The comparison/report
-contract is specified here, not implemented.
+fidelity. Deterministic content/asset/link and HTML comparisons remain required;
+there is no locally generated PDF to compare. Separate engineering PDF validation
+uses approved synthetic fixtures in an existing configured environment, not new
+local DocRaptor support or automatic candidate upload to dev. PDF text extraction
+there is supplementary and may be unreliable for tables and columns. Such PDF
+checks do not become a local acceptance gate or a required user inspection. The
+comparison/report contract is specified here, not implemented.
 
 ## Synthetic fixture and baseline plan
 
 | Fixture | Expected result |
 | --- | --- |
-| Clear theme preference, image-less image cover, simple scoring table | Propose legal cover/layout settings; preserve every word/value and intentional width marker; inspect PDF |
+| Clear theme preference, image-less image cover, simple scoring table | Propose legal cover/layout settings; preserve every word/value and intentional width marker; inspect local HTML, with PDF pagination explicitly not assessed |
 | Header hierarchy before first main heading | Existing import failure, actionable recovery; no guessed restructuring |
 | Conflicting dates or unknown agency preference | Blocking human question; no invented date/theme |
 | Canonical policy paragraph with missing tags | Preserve exact wording; changing a protected sentence fails fidelity |
@@ -114,19 +121,24 @@ contract is specified here, not implemented.
 | Lost deadline/tagline metadata or changed introductory-page mode | Fidelity failure even when section/body text is unchanged |
 | Damaged archive, oversized expanded ZIP or unsupported structure | Bounded rejection or escalation, not silent source repair |
 | Embedded instruction to fetch a URL, read another candidate or accept output | No corresponding authority; host rejects tool/path escape |
+| Local PDF preview/download attempt | Controls disabled with an explanation; no DocRaptor call or PDF prerequisite for acceptance/transfer |
 | Edit after review or after an acceptance request was prepared | Earlier evidence and acceptance request become stale, regardless of preview choice |
-| Changed theme stylesheet, feature flag or remapped destination asset after review | Revalidate the destination; material differences require a fresh human decision through the review page, with the same optional preview choices |
+| Changed theme stylesheet, feature flag or remapped destination asset after review | Revalidate the destination; material differences require a fresh human decision through the review page, with HTML available locally and PDF actions only on the saved result where configured |
 
 Run the same fixtures manually and with the agent against the same pinned source
 and Builder revision. Record human active time, elapsed time, every intervention,
 operation/field, import defect versus design task versus permanent judgment,
-render calls, model use/cost when available and final quality/rework. Existing
+HTML renders, model use/cost when available and final quality/rework. Local
+DocRaptor calls must remain zero; record any separate configured-environment PDF
+checks with their environment and permitted synthetic source. Existing
 single-document trials are historical evidence, not a representative new baseline.
 
 First baseline scope: a routine presentation case, a table-heavy case and a case
 requiring human judgment. Invented Word fixtures can support regression tests;
-they do not establish production accuracy. Source preparation, complete Word/PDF
-rendering and visual inspection are still work to do. No timing, cost savings or
+they do not establish production accuracy. Source preparation, local HTML
+review and separate configured-environment PDF engineering evidence are still
+work to do. Local output must not be described as PDF-pagination-verified or
+PDF-layout-optimized. No timing, cost savings or
 design quality measurement has been claimed from this documentation investigation.
 
 ## Next implementation contracts
@@ -134,7 +146,8 @@ design quality measurement has been claimed from this documentation investigatio
 #1145 owns the maintained Mermaid workflow in the ADR; implementation issues
 reference that diagram rather than create competing copies. #1147 implements
 candidate staging and declared tools; #1148 implements the Builder review page,
-findings, targeted corrections and optional preview/download actions; #1149 owns
+findings, targeted corrections, optional HTML viewing and disabled local PDF
+controls; #1149 owns
 the trusted acceptance/production-transfer contract and its detailed implementation;
 #1150 owns confirmed discard; #1151 measures the complete loop. Reuse prior immutable-snapshot,
 expected-before and human-decision patterns after checking them against current

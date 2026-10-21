@@ -159,7 +159,30 @@ div[role="heading"] {
   width: 100px;
 }
 
-/* Cover page: small image */
+/* Cover page: standard image */
+
+/* Leave room for the standard image, including with longer titles. */
+.nofo--cover-page--medium .nofo--cover-page--title h1 {
+  font-size: 32pt;
+}
+
+.nofo--cover-page--medium
+  .nofo--cover-page--title
+  h1.nofo--cover-page--title--h1--smaller {
+  font-size: 26pt;
+}
+
+.nofo--cover-page--medium
+  .nofo--cover-page--title
+  h1.nofo--cover-page--title--h1--very-smol {
+  font-size: 22pt;
+}
+
+.nofo--cover-page--medium
+  .nofo--cover-page--title
+  h1.nofo--cover-page--title--h1--very-very-smol {
+  font-size: 21pt;
+}
 
 .nofo--cover-page--medium .nofo--cover-page--header--logo--subheading {
   margin-top: 5px;

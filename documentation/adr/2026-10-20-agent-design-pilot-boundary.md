@@ -8,8 +8,11 @@ Related: #902, #1145, #1146. Source inspected: main at `5fe16ad6`.
 ## Accepted direction for the initial synthetic proof
 
 Start with one locally operated, isolated Builder instance using a fresh temporary
-database and artifact directory. Reuse Builder's import, themes, templates and
-PDF service rather than build another document renderer. Keep the agent behind
+database and artifact directory, with HTML-only local design and review. Reuse
+Builder's import, themes, templates and HTML rendering. Keep local Preview PDF
+and Download PDF disabled; extending DocRaptor locally, adding a local renderer,
+render broker or tunnel is outside this pilot. After acceptance/transfer, the
+saved production NOFO uses the existing configured PDF path. Keep the agent behind
 a candidate-specific capability adapter. Do not give it the operator's browser
 session, shell, database credentials or production API credentials.
 
@@ -22,8 +25,9 @@ The synthetic launch profile must fail closed: load only explicit test settings,
 not the checkout's normal `.env` files or ambient provider/AWS credentials. Do
 not expose credential files, workload roles or metadata-service access to the
 agent or candidate process. Deny network by default and enable only the chosen
-model/render broker when needed. Existing S3 read/upload/delete and external-link
-checking paths must be disabled or replaced with local owned-asset resolution.
+approved model connection when needed. Disable local DocRaptor credentials/calls.
+Existing S3 read/upload/delete and external-link checking paths must be disabled
+or replaced with local owned-asset resolution.
 This is required isolation work, not behavior supplied by a fresh database.
 
 ## Alternatives
@@ -31,7 +35,7 @@ This is required isolation work, not behavior supplied by a fresh database.
 | Option | Reuse and cost | Main gap | Position |
 | --- | --- | --- | --- |
 | Document bundle, no Builder instance | Reuses the framework-independent HTML processor; least application setup | Word conversion, defaults, model-backed rendering and editable-result mapping still need adapters | Good later portability boundary; more reconstruction for this pilot |
-| Isolated Builder instance | Reuses current Word import, model-backed render context and controls | Needs candidate-only tools, restricted egress and trusted transfer of the reviewed result | Selected direction for synthetic proof |
+| Isolated Builder instance | Reuses current Word import, model-backed HTML context and controls; no local PDF requirement | Needs candidate-only tools, restricted egress and trusted transfer of the reviewed result | Selected direction for synthetic proof |
 | Restricted production draft | Existing review UI and no cross-instance transfer | Existing group access is not candidate-only isolation; drafts, logs and backups enter production before acceptance | Not recommended for the first pilot |
 
 No option removes the need for human review, version binding or operating rules.
@@ -47,16 +51,14 @@ flowchart LR
     T --> C
     C --> H[Authenticated Builder review page: current candidate and findings]
     H -. Optional .-> HTML[View HTML for current revision]
-    H -. Optional .-> PDF[Preview PDF for current revision]
-    H -. Optional .-> DL[Download PDF for current revision]
     HTML -.-> H
-    PDF -.-> H
-    DL -.-> H
     H --> EDIT[Human edits or resolves questions; refresh affected checks and previews]
     EDIT --> C
     H --> E[Accept current design: authorized human, blockers resolved]
     E --> K[Trusted production transfer and technical verification]
     K --> P[One editable production NOFO and its edit link]
+    P -. Optional where configured .-> PDF[Normal saved-NOFO PDF preview]
+    P -. Optional where configured .-> DL[Normal saved-NOFO PDF download]
     K --> F[If incomplete: visible pending result and retry recovery]
     H --> D{Reject: confirm deletion?}
     D -->|Cancel| H
@@ -67,18 +69,22 @@ All boxes describe proposed responsibilities, not deployed services. The pilot
 starts when a human provides a file. AS/S3 delivery is separate under #950.
 No automatic PDF return or publication is introduced. #1145 owns this maintained
 workflow; #1148, #1149 and #1150 reference it for review, transfer and discard.
-Dashed preview/download paths are optional user actions, served through trusted
-sanitized rendering and controlled asset handling. None is a prerequisite for
-the direct acceptance path from the review page.
+The local review page offers HTML only; its PDF controls stay disabled. Dashed
+paths are optional user actions: HTML before acceptance, and normal PDF actions
+on the saved production result where configured. None is a prerequisite for the
+direct local acceptance path. Do not automatically upload candidates to dev or
+expose the local instance to obtain PDFs. Use controlled assets and sanitized
+HTML; local HTML review does not verify final PDF pagination.
 
 ## Minimum capability boundary
 
 | Capability | Agent | Trusted host / human |
 | --- | --- | --- |
-| Read submitted candidate, findings and revision-bound previews | Yes, only current candidate | Resolves identity and checks access |
+| Read submitted candidate, findings and revision-bound HTML | Yes, only current candidate | Resolves identity and checks access |
 | Set theme/cover, subsection break or section table width | Only declared legal values and current revision | Validates operation and returns new revision |
 | Rewrite body, dates, amounts, eligibility or policy | No autonomous write | Explicit attributable human correction only |
 | Custom CSS, heading restructuring or uncertain branding | Suggest only in first slice | Human decides; rendered evidence required |
+| Generate/preview/download PDF locally | No; unsupported in this pilot | Keep controls disabled and explain environment limitation |
 | Fetch arbitrary links or external assets | No | Explicit controlled asset acquisition only |
 | Read/list unrelated NOFOs, raw SQL, arbitrary file paths or shell | No | Not exposed in agent tools |
 | Accept, promote, discard, change access or publish | No | Separate authenticated human operation |
@@ -97,13 +103,20 @@ server-side even if an agent supplies syntactically valid JSON.
   results. Verify the actual organization account/product, retention, logging
   and data permissions before real content is sent. Repository access is not
   evidence of provider configuration or approval.
-- `pdf_service.generate_nofo_pdf` submits the complete rendered HTML to
-  DocRaptor. Its trusted base URL can lead to asset retrieval. Local execution
-  is not local-only rendering. Use no production renderer credential for this
-  investigation. A mocked PDF is not a rendered-PDF quality result.
+- Both existing PDF actions use `pdf_service.generate_nofo_pdf`, which submits
+  complete rendered HTML to DocRaptor and can cause asset retrieval through its
+  base URL. Builder disables both PDF buttons and rejects its PDF route on
+  localhost. The local pilot retains that behavior and makes no DocRaptor call;
+  no production renderer credential or new local test-key integration is needed.
+  See [button controls](../../nofos/bloom_nofos/templates/includes/print_button.html)
+  and [PDF endpoint](../../nofos/nofos/views.py). Existing configured environments
+  may be used separately for approved synthetic PDF engineering checks. This
+  does not authorize uploading local candidates/real documents or changing
+  shared settings. Mocked or browser-printed PDFs are not equivalent evidence.
 - Use a controlled asset manifest, not arbitrary uploaded HTML resource URLs.
-  Validate image, CSS and link handling before renderer egress is enabled.
-  Browser review content must also be sanitized and must not execute scripts.
+  Validate local image, CSS and link handling for HTML review; no local PDF
+  egress is enabled. Separately validate asset handling for configured-environment
+  PDF engineering checks. Browser content must be sanitized and not execute scripts.
   Existing `get_cover_image` can try S3 before a local/external fallback, and
   settings normally load `.env` files. The synthetic proof must exercise these
   paths with egress and credential discovery blocked, not assume local assets
@@ -120,18 +133,22 @@ server-side even if an agent supplies syntactically valid JSON.
 
 The Builder review page is the acceptance interface. It shows the current
 candidate, agent changes, evidence and human questions, and allows corrections,
-explicit acceptance or confirmed discard. Offer View HTML, Preview PDF and
-Download PDF; the user chooses any combination or may accept without opening a
-preview. Do not require a preview/download event or recorded PDF inspection to
-enable acceptance. Resolve blocking findings before acceptance. Review links
+explicit acceptance or confirmed discard. Offer View HTML; Preview PDF and
+Download PDF stay disabled locally with a clear explanation. The user may view
+HTML or accept without opening a preview. Do not require a local PDF, viewing or
+download event, or recorded PDF inspection for acceptance or transfer. Normal PDF
+actions become available on the saved result in a configured environment, not
+in the local candidate review. Resolve blocking findings before acceptance. Review links
 need authentication and current document/group authorization; an unguessable
-URL is not sufficient. Local proof reviewer access must be documented before use;
-a shared review service is a separate operating decision.
+URL is not sufficient. #1145 must document whose machine hosts the local instance,
+who operates it and how an authorized reviewer accesses it before use. Access from
+another person's computer is not implied; a shared review service is a separate
+operating decision and not a prerequisite to local synthetic implementation.
 
 Each review package must identify source digest, imported-baseline digest,
 candidate revision, allowed design settings and owned-asset manifest. Record exact
-digests and inputs for previews that have been generated; mark others not generated
-rather than requiring a PDF to exist before acceptance. Bind the candidate also to
+digests and inputs for generated HTML; mark local PDF output unsupported rather
+than requiring a PDF to exist before acceptance or transfer. Bind the candidate also to
 the Builder commit, templates/styles, relevant feature flags, render options and
 immutable asset bytes. A stable candidate revision alone does not freeze the
 generated document. Changing these inputs invalidates affected evidence and stale
@@ -154,21 +171,23 @@ isolated design workflow; it is not a ready-made capability of this proposal.
 
 Destination IDs and asset URLs may be remapped; record that mapping and compare
 all reviewed record fields, ordered content, design settings and asset bytes
-after the transfer. Check destination rendering against the reviewed package,
-including its actual flags/templates/styles. Do not require identical PDF bytes
-when harmless generated metadata changes, but do not treat a content digest as
-layout verification. Technical content/asset/link checks and rendering validation
-remain required implementation work; engineering HTML/PDF quality checks do not
-require the accepting user to open either format. If destination inputs or output
+after transfer. Check destination HTML against the accepted candidate, declared
+ID/URL mappings and actual flags/templates/styles. No local PDF exists to compare;
+neither a PDF digest nor PDF generation is a transfer/completion prerequisite.
+Technical content/settings/asset/link and HTML checks remain required, without
+claiming those checks establish final PDF pagination. Keep normal PDF actions
+working on the saved NOFO in its configured environment. Separate synthetic PDF
+engineering checks do not require an individual accepting user to open a PDF.
+If destination inputs or output
 materially differ from the accepted candidate, surface the difference and require
 a fresh human decision on the current version through the review page, retaining
-the same optional viewing choices. An interrupted verification leaves a recoverable
+HTML review without a required PDF. An interrupted verification leaves a recoverable
 pending result, not another NOFO on retry or an automatically completed design.
 
 Discard requires human confirmation and revision/state checks. Cancel leaves the
 candidate intact. Confirm removes only the unaccepted candidate and its owned
-artifacts. Accepted results and unrelated documents must not be deletable through
-this operation. Acceptance/discard races and partial transfer/cleanup need tests.
+artifacts that actually exist; no PDF is required for cleanup. Accepted results
+and unrelated documents must not be deletable through this operation. Acceptance/discard races and partial transfer/cleanup need tests.
 
 The existing handoff state machine is a source of transition patterns, not proof
 of reviewer authentication, artifact binding or promotion. External source identity
@@ -192,15 +211,18 @@ Before #1145 can close:
 2. Implement the smallest synthetic candidate-only adapter proof. Include another
    candidate and test cross-candidate reads, unknown operations, stale revisions,
    document-borne instructions, path/URL escape, ambient credential discovery,
-   S3/URL-check side effects and attempted acceptance. These
+   S3/URL-check side effects, attempts to invoke local DocRaptor and attempted
+   acceptance. These
    must be rejected by code, not just instructions in a prompt.
-3. Record actual model/renderer configuration, handling approvals, functional
-   operating/support owners, resource limits and cleanup behavior before real-data
+3. Record actual model configuration, the absence of local PDF access, handling
+   approvals, functional operating/support owners, resource limits and cleanup behavior before real-data
    or shared operation. No new account or service is assumed necessary; the
-   applicable configuration and permissions still need verification.
+   applicable configuration and permissions still need verification. Renderer
+   configuration belongs only to the separate configured-environment PDF path.
 
 Proposed initial resource scope: one document, one operator, bounded attempts and
-rendering calls. Choose numeric limits from the synthetic measurement rather than
+model/HTML-rendering calls, with zero local DocRaptor calls. Choose numeric limits
+from the synthetic measurement rather than
 claiming an unmeasured cost or treating the AS 45 MB limit as a safe expanded-ZIP,
 image, token or renderer limit.
 
@@ -208,8 +230,8 @@ image, token or renderer limit.
 
 - [Shared processor](../DOCUMENT_PROCESSING.md) and
   [application adapter](../../nofos/nofos/document_processing.py).
-- [PDF service](../../nofos/nofos/pdf_service.py), which retains caller-owned
-  authorization and trusted base-URL responsibilities.
+- [PDF service](../../nofos/nofos/pdf_service.py), retained for configured
+  environments with caller-owned authorization and trusted base-URL responsibilities.
 - [Handoff identity](../WORD_HANDOFF_IDENTITY.md) and
   [lifecycle](../WORD_HANDOFF_LIFECYCLE.md); neither is a ready-made ingress or
   promotion boundary.
