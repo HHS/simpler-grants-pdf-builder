@@ -14,7 +14,6 @@ updates:
       - dependency-name: "*"
         update-types:
           - "version-update:semver-major"
-          - "version-update:semver-minor"
       # cssutils: any update breaks the build, so pin it manually and
       # exclude it from all Dependabot updates (no update-types = ignore all)
       - dependency-name: "cssutils"
