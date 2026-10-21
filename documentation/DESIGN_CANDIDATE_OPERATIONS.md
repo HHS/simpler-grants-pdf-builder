@@ -6,7 +6,29 @@ sandbox. It creates no NOFO record and changes no existing import/editor route.
 
 `nofos/design_candidate.py` holds immutable candidate snapshots and validates
 three presentation operations. `nofos/design_candidate_choices.py` supplies
-legal theme/cover values from current Builder model choices, not a copied catalog.
+theme/cover values from current Builder model choices, not a copied catalog.
+Retired themes are excluded from new selection. Calling
+`design_capabilities(candidate=current_candidate)` also retains that candidate's
+current legacy theme, so an existing design can keep it. Once changed away, the
+retired theme is no longer offered. Rebuild choices from the authoritative current
+candidate before each operation; do not reuse a previous revision's choice list.
+
+### Permission policy for integration
+
+The agreed integration policy is to constrain agent design choices using the
+initiating person's group permissions plus the document's design restrictions.
+The host must derive those permissions from authenticated user context, never
+imported OpDiv text or an agent-supplied group. Apply the existing Builder rules
+for the resulting theme/cover combination as well as individual field values.
+Access remains limited to the assigned candidate and supported design operations;
+the person's broader account permissions do not grant the agent access to other
+NOFOs or acceptance/transfer authority.
+
+This slice supplies a catalog, not permission enforcement. The host must further
+filter and validate its choices using that policy. Agent authentication and access
+mechanisms remain integration work; no normal Builder user account for the agent
+is assumed or implemented here. These internal changes do not alter editor tasks
+or the existing Builder editing screen.
 
 ## Trusted-host boundary
 

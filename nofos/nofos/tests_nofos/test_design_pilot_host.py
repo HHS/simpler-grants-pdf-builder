@@ -145,6 +145,108 @@ class ConnectedDesignPilotTests(TestCase):
         with self.assertRaises(DesignRequestError):
             host.update_candidate(self.user, run.pk, command)
 
+    def theme_command(self, run, theme):
+        command = self.command(run)
+        command.pop("section_id")
+        command.update(operation="set_theme", value=theme)
+        return command
+
+    def test_group_policy_uses_authenticated_owner_not_imported_opdiv(self):
+        self.user.group = "cdc"
+        self.user.save(update_fields=["group"])
+        run = self.candidate()  # Source metadata still describes HRSA.
+        choices = host.candidate_capabilities(self.user, run)["choices"]["theme"]
+        self.assertIn("portrait-cdc-blue", choices)
+        self.assertNotIn("portrait-hrsa-white", choices)
+        self.assertNotIn("portrait-nih-white", choices)
+        response = self.client.get(reverse("design_pilot:review", args=[run.pk]))
+        self.assertEqual(response.context["choices"]["theme"], choices)
+        before = (run.revision, run.presentation_json, run.content_json)
+        with self.assertRaises(DesignRequestError):
+            host.update_candidate(
+                self.user, run.pk, self.theme_command(run, "portrait-hrsa-white")
+            )
+        run.refresh_from_db()
+        self.assertEqual(
+            before, (run.revision, run.presentation_json, run.content_json)
+        )
+        updated = host.update_candidate(
+            self.user, run.pk, self.theme_command(run, "portrait-cdc-blue")
+        )
+        self.assertEqual(updated.nofo.theme, "portrait-cdc-blue")
+        self.assertEqual(updated.content_json, before[2])
+
+    def test_nih_theme_policy_and_stale_membership_fail_closed(self):
+        self.user.group = "nih"
+        self.user.save(update_fields=["group"])
+        run = self.candidate()
+        self.assertEqual(
+            host.candidate_capabilities(self.user, run)["choices"]["theme"],
+            ["portrait-nih-white"],
+        )
+        command = self.theme_command(run, "portrait-cdc-blue")
+        with self.assertRaises(DesignRequestError):
+            host.update_candidate(self.user, run.pk, command)
+        BloomUser.objects.filter(pk=self.user.pk).update(group="bloom")
+        with self.assertRaises(Http404):
+            host.candidate_capabilities(self.user, run)
+        with self.assertRaises(Http404):
+            host.update_candidate(self.user, run.pk, command)
+
+    def test_retired_theme_can_be_kept_but_not_reselected(self):
+        suggest = host.suggest_all_nofo_fields
+
+        def legacy_import(nofo, *args, **kwargs):
+            suggest(nofo, *args, **kwargs)
+            nofo.theme = "portrait-hrsa-blue"
+
+        with patch.object(host, "suggest_all_nofo_fields", side_effect=legacy_import):
+            run = self.candidate()
+        self.assertEqual(run.nofo.theme, "portrait-hrsa-blue")
+        choices = host.candidate_capabilities(self.user, run)["choices"]["theme"]
+        self.assertIn(run.nofo.theme, choices)
+        self.assertNotIn("landscape-cdc-blue", choices)
+        self.assertNotIn("landscape-cdc-white", choices)
+        kept = host.update_candidate(
+            self.user, run.pk, self.theme_command(run, run.nofo.theme)
+        )
+        self.assertEqual(kept.sequence, 0)
+        changed = host.update_candidate(
+            self.user, run.pk, self.theme_command(run, "portrait-hrsa-white")
+        )
+        self.assertNotIn(
+            "portrait-hrsa-blue",
+            host.candidate_capabilities(self.user, changed)["choices"]["theme"],
+        )
+        with self.assertRaises(DesignRequestError):
+            host.update_candidate(
+                self.user, run.pk, self.theme_command(changed, "portrait-hrsa-blue")
+            )
+
+    def test_resulting_theme_cover_policy_is_reused_without_mutating_document(self):
+        run = self.candidate()
+        original_theme = run.nofo.theme
+        real_form = host.NofoThemeOptionsForm
+
+        def restricted_form(*args, **kwargs):
+            form = real_form(*args, **kwargs)
+            if kwargs["data"]["theme"] == "portrait-cdc-blue":
+                form.fields["cover"].choices = [("unavailable-cover", "Unavailable")]
+            return form
+
+        with patch.object(host, "NofoThemeOptionsForm", side_effect=restricted_form):
+            self.assertNotIn(
+                "portrait-cdc-blue",
+                host.candidate_capabilities(self.user, run)["choices"]["theme"],
+            )
+            with self.assertRaises(DesignRequestError):
+                host.update_candidate(
+                    self.user, run.pk, self.theme_command(run, "portrait-cdc-blue")
+                )
+        run.nofo.refresh_from_db()
+        self.assertEqual(run.nofo.theme, original_theme)
+        host.snapshot(run)
+
     def test_same_group_other_owner_cannot_read_or_change(self):
         run = self.candidate()
         with self.assertRaises(Http404):

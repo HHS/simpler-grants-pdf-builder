@@ -1,4 +1,5 @@
 import re
+from unittest.mock import patch
 
 from bs4 import BeautifulSoup, Tag
 from django.contrib.staticfiles import finders
@@ -7,6 +8,7 @@ from django.utils.safestring import SafeString
 from martor.utils import markdownify
 
 from nofos.models import Nofo, Section, Subsection
+from nofos.nofo_markdown import md
 from nofos.templatetags.add_classes_to_links import add_classes_to_broken_links
 from nofos.templatetags.add_classes_to_tables import add_classes_to_tables
 from nofos.templatetags.replace_unicode_with_icon import (
@@ -1188,6 +1190,28 @@ class AddClassToPointsColumnsTests(TestCase):
             "| Relevant experience. | 10 points |"
         )
         self.assertEqual(soup.find_all(class_="col--points"), [])
+
+    def test_import_marks_points_and_removing_marker_disables_styling(self):
+        html = (
+            "<table><tr><th>Reviewers will evaluate how well the applicant provides:</th>"
+            "<th>Point value</th></tr>"
+            "<tr><td>Relevant management, administrative, and technical experience and capacity to carry out the activities and achieve the project outcomes.</td><td>10 points</td></tr>"
+            "<tr><td>A staffing plan that is sufficient to achieve the project outcomes and clearly defines staff roles.</td><td>10 points</td></tr>"
+            "<tr><td>Collaborations that support the applicant’s capacity or add value to the project.</td><td>10 points</td></tr>"
+            "<tr><td>An organizational chart that supports the program approach.</td><td>5 points</td></tr></table>"
+        )
+        imported = md(html)
+        self.assertEqual(imported.count("{: .col--points }"), 1)
+        self.assertEqual(
+            self._get_points_cell_texts(self._render(imported)),
+            ["Point value", "10 points", "10 points", "10 points", "5 points"],
+        )
+        without_marker = imported.replace("{: .col--points }", "")
+        with patch("nofos.templatetags.utils.get_points_column_indexes") as detector:
+            rendered = self._render(without_marker)
+            self.assertEqual(self._get_points_cell_texts(rendered), [])
+            self.assertEqual(add_classes_to_tables(str(rendered)), str(rendered))
+            detector.assert_not_called()
 
     def test_user_width_class_wins(self):
         soup = self._render(
