@@ -397,6 +397,16 @@ footer .usa-footer__primary-link:visited {
   max-width: 80ex;
 }
 
+/* Use existing points markers in the saved-content editor preview. */
+table th.col--points,
+table td.col--points {
+  width: 1%;
+}
+
+table td.col--points {
+  white-space: nowrap;
+}
+
 @media (min-width: 64em) {
   /* Make sure header is evenly spaced */
   .usa-logo {

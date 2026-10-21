@@ -11,7 +11,7 @@ from nofos.design_candidate import (
     apply_design_request,
 )
 from nofos.design_candidate_choices import design_capabilities
-from nofos.models import Nofo
+from nofos.models import RETIRED_THEME_CHOICES, Nofo
 
 
 class DesignCandidateTests(unittest.TestCase):
@@ -200,8 +200,60 @@ class BuilderDesignCapabilitiesTests(SimpleTestCase):
         for field in ("theme", "cover"):
             self.assertEqual(
                 capabilities["choices"][field],
-                [value for value, _label in Nofo._meta.get_field(field).flatchoices],
+                [
+                    value
+                    for value, _label in Nofo._meta.get_field(field).flatchoices
+                    if field != "theme" or value not in RETIRED_THEME_CHOICES
+                ],
             )
         self.assertFalse(capabilities["pdf"]["supported"])
         self.assertFalse(capabilities["html_review"]["supported"])
         self.assertFalse(capabilities["acceptance"]["supported"])
+
+    def candidate(self, theme):
+        return DesignCandidate.create(
+            "candidate-a",
+            "a" * 64,
+            {},
+            {
+                "theme": theme,
+                "cover": "nofo--cover-page--text",
+                "section_table_width": {},
+            },
+        )
+
+    def set_theme(self, candidate, theme):
+        return apply_design_request(
+            candidate,
+            {
+                "operation": "set_theme",
+                "candidate_id": candidate.candidate_id,
+                "expected_revision": candidate.revision,
+                "value": theme,
+                "reason": "Synthetic theme selection",
+            },
+            choices=design_capabilities(candidate=candidate)["choices"],
+        )
+
+    def test_retired_themes_cannot_be_new_selections(self):
+        candidate = self.candidate("portrait-nih-white")
+        for theme in (
+            "portrait-hrsa-blue",
+            "landscape-cdc-blue",
+            "landscape-cdc-white",
+        ):
+            with self.subTest(theme=theme):
+                self.assertNotIn(theme, design_capabilities()["choices"]["theme"])
+                with self.assertRaises(DesignRequestError):
+                    self.set_theme(candidate, theme)
+
+    def test_current_legacy_theme_can_be_kept_but_not_reselected_after_change(self):
+        for theme in RETIRED_THEME_CHOICES:
+            with self.subTest(theme=theme):
+                candidate = self.candidate(theme)
+                choices = design_capabilities(candidate=candidate)["choices"]["theme"]
+                self.assertEqual(set(choices) & set(RETIRED_THEME_CHOICES), {theme})
+                self.assertIs(self.set_theme(candidate, theme), candidate)
+                changed = self.set_theme(candidate, "portrait-nih-white")
+                with self.assertRaises(DesignRequestError):
+                    self.set_theme(changed, theme)

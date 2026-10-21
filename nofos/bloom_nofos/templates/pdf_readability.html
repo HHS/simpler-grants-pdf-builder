@@ -45,13 +45,20 @@
               {% endif %}{% endif %}{% endif %}
             </p>
           {% endif %}
+          {% if source_word %}
+            <p id="readability-word-guidance"><strong>Why “Estimated”?</strong> These measures describe text recovered from your Word document. Missing or changed text can affect the results. The tool may miss text in text boxes, headers, and footers, and cannot read text in images. Keep important text in the main document body. Remove template instructions and unused draft options from the copy you upload so they aren’t counted as part of your NOFO.</p>
+          {% endif %}
+          {% if source_word and not report.reliability %}
+            <p id="readability-reliability">This analysis does not check how completely the Word document was converted, so it does not assign a reliability rating. This does not mean a problem was detected in your upload. Any conversion warnings appear in Calculation notes.</p>
+          {% else %}
           <div class="usa-alert usa-alert--{% if report.reliability == 'low' %}warning{% else %}info{% endif %} readability-reliability" role="note" id="readability-reliability">
             <div class="usa-alert__body">
               <h3 class="usa-alert__heading">{% if report.reliability %}Reliability of these estimates: {{ report.reliability|capfirst }}{% else %}What this report includes{% endif %}</h3>
-              <p class="usa-alert__text">{% if source_word %}This report measures text recovered from your Word document. The tool may miss or change text in text boxes, headers, and footers. It cannot read text in images. For a more complete analysis, make sure important text is in the main document body. Remove template instructions and unused draft options from the copy you upload so they aren’t counted as part of your NOFO.{% elif report.profile == 'generic' %}The tool could not reliably determine the order of text in this PDF, so the scores may be less reliable. {% if word_uploads_allowed %}For your next upload, try uploading the original Word document instead. If you need to use a PDF, save it from Word using “Save as PDF” rather than “Print to PDF.”{% else %}For your next upload, save the original document from Word using “Save as PDF” rather than “Print to PDF.”{% endif %}{% else %}PDF structure tags helped the tool read the text in order, but some text may still be missed or read out of order, especially in columns and tables. These scores describe the text the tool recovered and may not reflect the entire PDF.{% endif %}</p>
+              <p class="usa-alert__text">{% if source_word %}A reliability rating does not verify that all Word content was converted.{% elif report.profile == 'generic' %}The tool could not reliably determine the order of text in this PDF, so the scores may be less reliable. {% if word_uploads_allowed %}For your next upload, try uploading the original Word document instead. If you need to use a PDF, save it from Word using “Save as PDF” rather than “Print to PDF.”{% else %}For your next upload, save the original document from Word using “Save as PDF” rather than “Print to PDF.”{% endif %}{% else %}PDF structure tags helped the tool read the text in order, but some text may still be missed or read out of order, especially in columns and tables. These scores describe the text the tool recovered and may not reflect the entire PDF.{% endif %}</p>
               {% if not report.reliability %}<p class="usa-alert__text">Reliability has not been assessed for these estimates.</p>{% endif %}
             </div>
           </div>
+          {% endif %}
         </section>
 
         <section aria-labelledby="metrics-title" class="margin-top-4">
@@ -62,7 +69,7 @@
                 <h3 class="font-heading-md margin-y-0">{{ metric.label }}</h3>
                 <p class="readability-metric-value margin-y-1">{{ metric.value }}</p>
                 <p class="margin-y-0">{{ metric.explanation }}</p>
-                <p class="text-base margin-bottom-0">{{ metric.status|capfirst }}{% if metric.status != 'Unavailable' %} · {% if metric.reliability == 'unknown' %}Reliability not assessed{% else %}{{ metric.reliability|capfirst }} reliability{% endif %}{% endif %}</p>
+                <p class="text-base margin-bottom-0">{{ metric.status|capfirst }}{% if metric.status != 'Unavailable' %}{% if metric.reliability != 'unknown' %} · {{ metric.reliability|capfirst }} reliability{% elif not source_word or report.reliability %} · Reliability not assessed{% endif %}{% endif %}</p>
               </div>
             {% endfor %}
           </div>
