@@ -48,7 +48,8 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-002 | conversion | DOCX Conversion | Word heading *character* styles → real `h2`-`h6` | `utils.py` |
 | IMPORT-003 | conversion | DOCX Conversion | Word `heading 7`/`heading 8` paragraph styles → synthetic H7/H8 divs | `utils.py` |
 | IMPORT-004 | repair | DOCX Conversion | Mis-styled Word bullet/numbered paragraph styles → real nested `ul`/`ol` | `utils.py` |
-| IMPORT-005 | conversion | DOCX Conversion | Word emphasis-signaling styles → `<strong>` variants | `utils.py` |
+| IMPORT-005 | conversion | DOCX Conversion | Word emphasis styles, including `Strong1` with explicit overrides → bold | `utils.py`, `import_transforms.py` |
+| IMPORT-069 | repair | Emphasis | Redundant nested `<strong>`/`<b>` → one pair of Markdown bold markers | `nofo_markdown.py` |
 | IMPORT-006 | conversion | DOCX Conversion | `Placeholder Text` style → visible flagged span | `utils.py` |
 | IMPORT-007 | repair | DOCX Conversion | ~30 cosmetic/noise Word styles → suppressed or flattened to plain tags | `utils.py` |
 | IMPORT-008 | repair | Text Normalization | Non-breaking space / checkbox glyph variants → unified characters | `nofo.py` |
@@ -161,9 +162,17 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 
 ### IMPORT-005 — Emphasis-signaling styles → `<strong>`
 - **Type:** conversion
-- **Trigger:** Styles `Style Bold`, `Subtle Emphasis`, `Emphasis A`, `Subhead2`, `Intense Reference`.
-- **Action:** Wrapped in `<strong>` with a style-specific class (e.g. `strong.style-bold`, `strong.subhead`) rather than left as plain text/span.
-- **Source:** `utils.py::style_map_manager`
+- **Trigger:** Styles `Style Bold`, `Subtle Emphasis`, `Emphasis A`, `Subhead2`, `Intense Reference`, or a Word character style whose exact name is `Strong1` (the style ID may differ). `Strong1` was observed in a GrantSolutions Announcement Module Word export supplied with issue [#1180](https://github.com/HHS/simpler-grants-pdf-builder/issues/1180); that document defines it as bold only. This identifies the observed source, not a guarantee that every Announcement Module export uses the style or an explanation of how the module applies it.
+- **Action:** Existing emphasis mappings wrap text in `<strong>` with a style-specific class (e.g. `strong.style-bold`, `strong.subhead`). For `Strong1`, materialize bold only where the run has no explicit bold setting, in an in-memory DOCX conversion copy before Mammoth loses the distinction between absent and disabled bold. Preserve explicit bold on/off (`0`, `false`, `off`) and separately applied italics. Remove only the resolved `Strong1` run-style reference to prevent duplicate wrappers; preserve unrelated formatting, styles, text and the original upload. Apply to main-body/table runs and native footnote/endnote runs through the shared Word conversion used by import/reimport across OpDivs and Composer. No change to existing stored content, HTML upload parsing, or formatting boundaries inside words.
+- **Source:** `utils.py::style_map_manager`; `import_transforms.py::normalize_strong1_runs`, invoked by `nofo.py::parse_uploaded_file_as_html_string`
+- **Safety boundary:** `Strong1` must directly define only enabled bold (`w:b`, absent value or `1`/`true`/`on`). Word UI metadata is allowed, but inherited/linked styles, additional formatting, disabled bold and unknown style children do not qualify. Leave those definitions and run references untouched on the existing Mammoth conversion/warning path, including existing strict-mode behavior. This is a bounded compatibility rule, not a general Word style resolver; unsupported formatting may still be omitted by Mammoth and needs comparison with Word.
+- **Status:** active
+
+### IMPORT-069 — Redundant bold wrappers
+- **Type:** repair
+- **Trigger:** HTML-to-Markdown conversion encounters a `<strong>` or `<b>` inside another `<strong>` or `<b>`.
+- **Action:** Emit bold delimiters only for the outer bold element. This avoids `****text****` rendering as unintended bold/italic with literal asterisks. Preserve text, intentionally nested italics and literal asterisks, including table-header footnote markers. Applies to the shared import Markdown converter; does not rewrite saved Markdown or expand formatting to adjacent unformatted characters.
+- **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_strong/convert_b`
 - **Status:** active
 
 ### IMPORT-006 — Placeholder text flagged visibly
