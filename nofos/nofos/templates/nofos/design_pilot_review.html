@@ -11,7 +11,7 @@
 <h2 class="font-heading-lg text-bold margin-top-4">Theme</h2>
 <form class="usa-form" method="post" action="{% url 'design_pilot:operation' run.pk %}">
 {% csrf_token %}<input type="hidden" name="candidate_id" value="{{ run.pk }}"><input type="hidden" name="expected_revision" value="{{ revision }}"><input type="hidden" name="operation" value="set_theme">
-<label class="usa-label" for="theme">Theme (current: {{ run.nofo.theme }})</label><select class="usa-select" id="theme" name="value">{% for value in choices.theme %}<option value="{{ value }}" {% if value == run.nofo.theme %}selected{% endif %}>{{ value }}</option>{% endfor %}</select>
+<label class="usa-label" for="theme">Theme (current: {{ run.nofo.theme }})</label><select class="usa-select" id="theme" name="value" required>{% if run.nofo.theme not in choices.theme %}<option value="" selected disabled>Choose a permitted theme</option>{% endif %}{% for value in choices.theme %}<option value="{{ value }}" {% if value == run.nofo.theme %}selected{% endif %}>{{ value }}</option>{% endfor %}</select>
 <label class="usa-label" for="theme-reason">Reason for this change</label><input class="usa-input" id="theme-reason" name="reason" maxlength="500" required><button class="usa-button margin-top-2">Save theme</button>
 </form>
 <h2 class="font-heading-lg text-bold margin-top-4">Cover</h2>
