@@ -104,3 +104,33 @@ behavior, so this spelling correction needs no navigation or task changes.
 Follow-up focused eligibility/shared-core/characterization suite: 37 tests pass,
 exit 0; changed-file Black/isort and `git diff --check` pass. The follow-up full
 suite is running at this commit; its outcome is not yet established by this note.
+
+
+## Visual review scenarios
+
+These side-by-side browser screenshots show actual results from the isolated
+`repair_eligibility_organization_lists` function at commit `a681fed715d8f16e0faf6abd32c5f37effb12161`.
+They are synthetic HTML comparisons, **not Builder editor screenshots**, full
+pipeline tests, or untouched Announcement Module exports. Identical styling is
+used before and after. All five outcomes and repeat-run idempotence were checked;
+all five screenshots were visually inspected. Application behavior is unchanged.
+
+| Scenario | After |
+| --- | --- |
+| [Recognized categories](scenarios/01-success.png) | Organization bullets restored; definition/restriction excluded |
+| [Later restriction list](scenarios/02-later-restriction-list.png) | Entire candidate unchanged despite recognized organization categories |
+| [Unfamiliar category](scenarios/03-unknown-category.png) | Entire candidate unchanged, including recognized categories |
+| [Straight quotes in Unrestricted](scenarios/04-straight-quotes.png) | Entire candidate unchanged because the category spelling is unsupported |
+| [Supported intro variant](scenarios/05-intro-variant.png) | Organization bullets restored |
+
+The later-list, unknown-category, and quote cases isolate the coverage limitations
+raised in review. Their unchanged results are intentional safeguards in this PR,
+not regressions asserted by these screenshots. The unknown category is illustrative
+and is not a transcription of an original export.
+
+Each screenshot has a corresponding HTML file for inspection. `scenarios/generate.py`
+extracts only the two constants and repair function from the checked-out source,
+generates the HTML, and asserts the outcomes and idempotence (requires
+Beautiful Soup). Screenshots were captured in headless Chrome at 1500×1050.
+The existing import/re-import screenshots above remain the evidence for actual
+Builder UI behavior. Anchore remediation is separate from this evidence change.
