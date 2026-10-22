@@ -36,7 +36,7 @@ cssutils = ">=2.11.1,<2.13.0"
 hhs-nofo-metrics = { url = "https://github.com/agilesix/hhs-nofo-metrics/releases/download/v0.6.0/hhs_nofo_metrics-0.6.0-py3-none-any.whl" }
 
 [tool.poetry.group.dev.dependencies]
-black = "^26.5.1"
+black = "^26.10.1"
 freezegun = "^1.5.5"
 isort = "^8.0.1"
 
