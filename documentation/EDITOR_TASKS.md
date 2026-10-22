@@ -883,6 +883,12 @@ This route is unavailable under normal settings. Do not upload real documents.
    review its latest state and enter the intended change again. An old HTML
    link must also be reopened from the current candidate.
 
+If the error says the candidate's content changed outside the pilot, ask the
+developer running it to follow [targeted recovery](DESIGN_PILOT_LOCAL_HOST.md#recover-a-candidate-after-an-outside-content-edit).
+Returning to the candidate or uploading the same file will not repair it. The
+developer must remove the affected candidate and its associated NOFO before you
+upload the original file again; this removes that candidate's saved changes.
+
 **PDF unavailable** is expected. Cover changes, acceptance, publication,
 production transfer and discard are not implemented in this slice. The human
 login is not an agent credential. Do not use ordinary editor tasks to bypass the

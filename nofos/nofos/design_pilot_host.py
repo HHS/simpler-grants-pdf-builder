@@ -124,7 +124,9 @@ def snapshot(run):
         raise DesignRequestError("Stored source failed its integrity check")
     if content_snapshot(run.nofo) != run.content_json:
         raise DesignRequestError(
-            "Candidate content changed outside this workflow. Import a fresh synthetic source."
+            "This candidate’s content changed outside the pilot and can no longer be used. "
+            "Ask the developer running the pilot to remove this candidate and its "
+            "associated NOFO record, then upload the original Word file again."
         )
     candidate = DesignCandidate(
         str(run.pk),
