@@ -370,7 +370,7 @@ Edit “{{ nofo|nofo_name }}”
               </summary>
               <ol class="usa-list usa-list--no-max-width">
                 {% for link in missing_destination_links %}
-                  <li><a href="#{{ link.subsection.html_id }}">{{ link.link_text }}</a> ({{ link.section.name }}, {{ link.subsection|subsection_name_or_order }})</li>
+                  <li><a href="#{{ link.location_html_id }}">{{ link.link_text }}</a> ({{ link.section.name }}, {{ link.subsection|subsection_name_or_order }})</li>
                 {% endfor %}
               </ol>
             </details>

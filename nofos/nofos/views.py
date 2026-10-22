@@ -559,7 +559,15 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context["broken_links"] = find_broken_links(self.object)
         context["external_links"] = find_external_links(self.object, with_status=False)
         context["missing_destination_links"] = [
-            link
+            {
+                **link,
+                "location_html_id": (
+                    link["subsection"].html_id
+                    if link["subsection"].name != "Basic information"
+                    and link["subsection"].html_id
+                    else link["section"].html_id
+                ),
+            }
             for link in context["external_links"]
             if link.get("invalid_destination")
         ]

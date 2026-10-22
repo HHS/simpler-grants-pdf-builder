@@ -29,3 +29,9 @@ Automated coverage exercises the real subsection edit-version/POST/save/redirect
 flow, correction/removal, multiple instances, the sole-warning state, existing
 destination-less anchor shapes, bookmark exclusions, unchanged inline tooltip,
 and absence of network fetching. See `test_link_classification.py`.
+
+Independent code review identified that suppressed Basic information content
+and subsections without an anchor need the containing section as their warning
+target. A follow-up preserves the detector output and supplies that location
+fallback in the edit-page context. Rendered-DOM tests verify each warning target
+exists for normal, suppressed and empty-anchor cases.

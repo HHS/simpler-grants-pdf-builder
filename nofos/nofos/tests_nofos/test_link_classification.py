@@ -228,6 +228,26 @@ class LinkClassificationViewTests(TestCase):
         self.assertEqual(response.context["missing_destination_links"], [])
         self.assertNotContains(response, 'id="tab-5"')
 
+    def test_missing_destination_warning_always_has_a_rendered_location_target(self):
+        subsection = self.section.subsections.get()
+        for name, html_id in (
+            ("Links", "links"),
+            ("Basic information", "suppressed-basic-information"),
+            ("", ""),
+        ):
+            with self.subTest(name=name, html_id=html_id):
+                subsection.name = name
+                subsection.html_id = html_id
+                subsection.body = "[Find this missing destination]()"
+                subsection.save()
+                response = self.client.get(self.edit_url)
+                soup = BeautifulSoup(response.content, "html.parser")
+                link = soup.select_one("#tabpanel-5 li a")
+                expected = html_id if name == "Links" else self.section.html_id
+                self.assertEqual(link["href"], "#" + expected)
+                self.assertIsNotNone(soup.find(id=expected))
+                self.assertEqual(link.get_text(), "Find this missing destination")
+
     @patch("nofos.nofo.requests.get")
     def test_missing_destination_alone_keeps_warning_summary_in_review(self, request):
         # External-link checking is hidden in this status. Complete metadata
