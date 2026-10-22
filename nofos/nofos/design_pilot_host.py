@@ -125,6 +125,7 @@ def snapshot(run):
     if content_snapshot(run.nofo) != run.content_json:
         raise DesignRequestError(
             "This candidate’s content changed outside the pilot and can no longer be used. "
+            "Uploading the same file again will not repair it. "
             "Ask the developer running the pilot to remove this candidate and its "
             "associated NOFO record, then upload the original Word file again."
         )
@@ -272,7 +273,9 @@ def import_candidate(user, upload):
         owner=owner, source_sha256=digest
     ).first()
     if existing:
-        return owned_candidate(owner, existing.pk)
+        run = owned_candidate(owner, existing.pk)
+        snapshot(run)
+        return run
     # Reuse the existing bounded Word container/recognition guard. Its readability
     # conversion is not used for Builder import, which retains its own transforms.
     try:
@@ -353,10 +356,12 @@ def import_candidate(user, upload):
             review_artifact(run)  # A real rendering failure rolls back the import.
             return run
     except IntegrityError:
-        return owned_candidate(
+        run = owned_candidate(
             owner,
             DesignPilotCandidate.objects.get(owner=owner, source_sha256=digest).pk,
         )
+        snapshot(run)
+        return run
 
 
 def update_candidate(user, candidate_id, request):

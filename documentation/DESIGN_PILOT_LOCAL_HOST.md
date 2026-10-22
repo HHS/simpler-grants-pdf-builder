@@ -62,8 +62,9 @@ checks are not an OS sandbox or proof of containment for arbitrary agent code.**
 
 If the pilot reports that a candidate's content changed outside the pilot, stop
 using that candidate and ask the developer running this local instance to clean
-it up. Uploading the identical file again reopens the existing candidate; it does
-not repair it. Ordinary theme and table-width changes do not cause this error.
+it up. Uploading the identical file again checks the existing candidate’s
+integrity. A valid candidate reopens; an invalid candidate shows recovery guidance
+without being replaced. Reuploading does not repair it. Ordinary theme and table-width changes do not cause this error.
 
 For targeted recovery, stop the local server and open `nofos/manage.py shell`
 using the same clean-environment command, Python and `DESIGN_PILOT_ROOT` used

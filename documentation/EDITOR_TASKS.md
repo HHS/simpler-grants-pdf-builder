@@ -854,7 +854,9 @@ This route is unavailable under normal settings. Do not upload real documents.
 2. Select **This file contains invented information only.**
 3. Select **Import candidate**.
 4. If an error appears, follow its guidance, choose the corrected file and
-   submit again. A retry of the same source returns the existing candidate.
+   submit again. A retry of the same source checks the existing candidate’s
+   integrity and reopens it if valid. If invalid, the upload shows recovery
+   guidance without replacing the candidate.
 5. On **Review synthetic candidate**, check the source name, conversion
    warnings and saved design-change count.
 
