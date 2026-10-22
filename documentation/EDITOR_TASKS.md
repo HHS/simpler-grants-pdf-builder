@@ -402,6 +402,13 @@ where needed. Unsupported custom numbering and typed marker-like text need
 review. Existing records are not converted just by opening or saving them.
 See [Word list import and editing](WORD_LIST_IMPORT.md).
 
+Under **Eligibility → Types of eligible organizations**, import/reimport can
+restore bullets for explicitly recognized organization-category paragraphs after
+a supported domestic-organization introduction. Compare the list with Word,
+including definitions and restrictions that must remain outside it. Existing or
+mixed lists and unfamiliar category/intro wording are left unchanged; no repair
+runs when ordinary edits are saved. See [the bounded eligibility import rule](IMPORT_RULES.md#import-070--missing-eligibility-organization-bullets).
+
 ---
 
 ## Tables
