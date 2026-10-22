@@ -110,6 +110,14 @@ THEME_CHOICES = [
 ]
 
 
+# Keep legacy theme values valid on stored NOFOs, but do not offer them for new selection.
+RETIRED_THEME_CHOICES = {
+    "portrait-hrsa-blue": "HRSA (Default, legacy)",
+    "landscape-cdc-blue": "CDC Landscape (Default, legacy)",
+    "landscape-cdc-white": "CDC Landscape (Light, legacy)",
+}
+
+
 class BaseNofo(models.Model):
     class Meta:
         abstract = True
