@@ -578,9 +578,17 @@ ALLOWED_HTML_ATTRIBUTES = [
 DJANGO_EASY_AUDIT_READONLY_EVENTS = True
 DJANGO_EASY_AUDIT_WATCH_REQUEST_EVENTS = False
 
+# Enable only after the separate post-rollout backfill and completeness checks.
+# Live index maintenance is independent of this read-path switch.
+DOCUMENT_HISTORY_INDEX_ENABLED = env.bool(
+    "DOCUMENT_HISTORY_INDEX_ENABLED", default=False
+)
+
 # NofoReadabilityScore is already an append-only record of when metrics were
 # calculated, so auditing it would only duplicate rows it already holds.
 DJANGO_EASY_AUDIT_UNREGISTERED_CLASSES_EXTRA = [
+    "nofos.AuditObjectDocument",
+    "nofos.DocumentAuditEvent",
     # Audit events can attach request/user metadata: never audit anonymous outcomes.
     "nofos.PdfReadabilityAttempt",
     "nofos.NofoReadabilityScore",
