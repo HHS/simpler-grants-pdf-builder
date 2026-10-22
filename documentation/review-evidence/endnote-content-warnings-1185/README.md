@@ -20,6 +20,15 @@ malformed native lists, escaped/bounded excerpts, manual continuation content,
 legacy Google Docs links, native Word imports, existing relationship warnings,
 group access denial, and a real subsection save that remains nonblocking.
 
+Review follow-up: a saved native citation with its matching reference and a
+nested Markdown heading formatted with emphasis, bold or a link exposed a false
+format warning quoting “Sources.” A regression reproduced all six cases before
+the fix: three heading formats, each with valid content alone or a subsequent
+malformed paragraph. The format check now skips heading descendants as well as
+the heading itself; valid citations have no warning and a later malformed block
+supplies the first excerpt. Saved content and import conversion are unchanged.
+No new browser or PDF validation was performed for this narrow correction.
+
 Full-suite and formatter results are recorded in the pull request. Repository-wide
 formatter checks have unrelated baseline failures in `policy_language.py`,
 `test_metrics.py`, and `test_policy_language.py`; changed Python files pass.

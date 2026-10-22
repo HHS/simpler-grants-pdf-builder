@@ -569,6 +569,7 @@ def _unstructured_endnote_content(soup):
         if id(tag) in covered:
             continue
         if _heading(tag):
+            covered.update(id(child) for child in tag.find_all(True))
             level = int(tag.name[1]) if re.fullmatch(r"h[1-7]", tag.name) else 7
             if scope is not None and level <= scope:
                 scope = None

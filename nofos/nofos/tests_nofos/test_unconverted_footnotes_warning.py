@@ -314,6 +314,42 @@ class NofoUnconvertedFootnotesWarningTests(TestCase):
             )
         )
 
+    def test_formatted_nested_headings_do_not_mask_endnote_content(self):
+        note = self.nofo.sections.first().subsections.first()
+        program = Section.objects.create(nofo=self.nofo, name="Program", order=0)
+        Subsection.objects.create(
+            section=program,
+            order=1,
+            name="",
+            tag="",
+            body='<p>Evidence <a id="endnote-ref-1" href="#endnote-1">[1]</a></p>',
+        )
+        citation = (
+            '<ol><li id="endnote-1"><p>Source '
+            '<a href="#endnote-ref-1">↑</a></p></li></ol>'
+        )
+        for heading in (
+            "*Sources*",
+            "**Sources**",
+            "[Sources](https://example.org/sources)",
+        ):
+            for malformed in ("", "Unstructured source text."):
+                with self.subTest(heading=heading, malformed=malformed):
+                    note.body = f"### {heading}\n\n{citation}\n\n{malformed}"
+                    note.save()
+                    response = self.client.get(self.edit_url)
+                    issues = response.context["unconverted_footnotes"]
+                    if malformed:
+                        self.assertEqual(len(issues), 1)
+                        self.assertEqual(issues[0]["code"], "content-format")
+                        self.assertEqual(issues[0]["excerpt"], malformed)
+                        self.assertEqual(issues[0]["subsection"], note)
+                    else:
+                        self.assertEqual(issues, [])
+                    saved_body = note.body
+                    note.refresh_from_db()
+                    self.assertEqual(note.body, saved_body)
+
     def test_format_warning_quotes_text_not_html(self):
         note = self.nofo.sections.first().subsections.first()
         note.body = '<p>&lt;script&gt;alert("citation")&lt;/script&gt;</p>'

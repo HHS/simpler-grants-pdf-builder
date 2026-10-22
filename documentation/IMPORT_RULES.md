@@ -743,6 +743,8 @@ One more view-time rule is worth calling out because it shares detection logic w
 
 The saved-content caller opts into a format review within Endnotes sections and
 subsections (including nested headings, stopping at the next peer/higher heading).
+Headings and their inline formatting/link descendants are not citation blocks;
+content following nested headings remains in scope.
 It reports the first unrecognized nonempty block per subsection with a bounded
 plain-text excerpt. Native note lists with IDs/return links, bracketed manual
 citations and continuation blocks, and legacy Google Docs bracketed citations
