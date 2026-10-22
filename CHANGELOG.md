@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.52.4](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.52.3...nofos-v3.52.4) (2026-10-21)
+
+
+### Bug Fixes
+
+* clarify Word readability report scope ([#1170](https://github.com/HHS/simpler-grants-pdf-builder/issues/1170)) ([0eb2c6a](https://github.com/HHS/simpler-grants-pdf-builder/commit/0eb2c6a9264dc83f047f8edeacb61d6f5d60c831))
+* prepare dev candidate without document history backfill ([#1166](https://github.com/HHS/simpler-grants-pdf-builder/issues/1166)) ([3a2efda](https://github.com/HHS/simpler-grants-pdf-builder/commit/3a2efda734bfd003fc9482d888729bf7042fd423))
+* preserve Strong1 bold formatting during Word import ([#1181](https://github.com/HHS/simpler-grants-pdf-builder/issues/1181)) ([5ac6983](https://github.com/HHS/simpler-grants-pdf-builder/commit/5ac6983c1f845e12c0e127f35c3649ebdd1b2b14))
+* reduce ACF standard-image cover title sizes ([#1167](https://github.com/HHS/simpler-grants-pdf-builder/issues/1167)) ([ad121f6](https://github.com/HHS/simpler-grants-pdf-builder/commit/ad121f6c56c7c1317be4890765e6162d2a3dd3fc))
+* update Pillow and certifi to unblock deployment scans ([#1172](https://github.com/HHS/simpler-grants-pdf-builder/issues/1172)) ([187b4ea](https://github.com/HHS/simpler-grants-pdf-builder/commit/187b4ead2abb1a31d811576dd8eaeec9ae430d83))
+
+
+### Documentation
+
+* align Word handoff foundations with current AS pilot ([#1176](https://github.com/HHS/simpler-grants-pdf-builder/issues/1176)) ([71a344d](https://github.com/HHS/simpler-grants-pdf-builder/commit/71a344d6aba7916dd96ba7c57fc388df32c7c86f))
+* document NOFO quality review and product-improvement triage ([#1179](https://github.com/HHS/simpler-grants-pdf-builder/issues/1179)) ([5b7b513](https://github.com/HHS/simpler-grants-pdf-builder/commit/5b7b5137199c4d5bda3dcf93cb24053754983cfa))
+
+
+### Miscellaneous Chores
+
+* allow Python minor updates in Dependabot group ([#1174](https://github.com/HHS/simpler-grants-pdf-builder/issues/1174)) ([a29b936](https://github.com/HHS/simpler-grants-pdf-builder/commit/a29b936bf585a0cb3070a7a1b5128fe51cc6f377))
+* bump the python-minor-and-patch group across 1 directory with 3 updates ([#1175](https://github.com/HHS/simpler-grants-pdf-builder/issues/1175)) ([49fb8db](https://github.com/HHS/simpler-grants-pdf-builder/commit/49fb8dbc509297a0fe438ff156458e80e421a7cd))
+* bump the python-minor-and-patch group with 10 updates ([#1177](https://github.com/HHS/simpler-grants-pdf-builder/issues/1177)) ([3baf6cc](https://github.com/HHS/simpler-grants-pdf-builder/commit/3baf6ccae68b1196d6d8174aa099be390daed789))
+* bump the python-minor-and-patch group with 2 updates ([#1137](https://github.com/HHS/simpler-grants-pdf-builder/issues/1137)) ([2bdf247](https://github.com/HHS/simpler-grants-pdf-builder/commit/2bdf247889823fdb3ea3d299aae5c2074bddc2ff))
+
 ## [3.52.3](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.52.2...nofos-v3.52.3) (2026-10-20)
 
 

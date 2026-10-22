@@ -1,6 +1,6 @@
 """
 HTML->Markdown conversion rules applied during NOFO import (import rules
-IMPORT-016, IMPORT-017, IMPORT-020, IMPORT-021, IMPORT-027, IMPORT-033 in
+IMPORT-016, IMPORT-017, IMPORT-020, IMPORT-021, IMPORT-027, IMPORT-033, IMPORT-069 in
 documentation/IMPORT_RULES.md). Update that document if you change one of
 NofoMarkdownConverter's conversion rules.
 """
@@ -79,6 +79,15 @@ class NofoMarkdownConverter(MarkdownConverter):
     """
     Leave ULs and OLs TDs as HTML
     """
+
+    def convert_strong(self, el, text, parent_tags):
+        # Nested bold is still one emphasis level. Repeating ** produces ****,
+        # which renders as bold/italic text with visible asterisks.
+        if {"strong", "b"} & parent_tags:
+            return text
+        return super().convert_strong(el, text, parent_tags)
+
+    convert_b = convert_strong
 
     def _remove_classes_recursive(self, container_el):
         if container_el.has_attr("class"):
