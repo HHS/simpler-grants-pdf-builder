@@ -106,31 +106,53 @@ exit 0; changed-file Black/isort and `git diff --check` pass. The follow-up full
 suite is running at this commit; its outcome is not yet established by this note.
 
 
-## Visual review scenarios
+## Visual review scenarios — actual NOFO Builder
 
-These side-by-side browser screenshots show actual results from the isolated
-`repair_eligibility_organization_lists` function at commit `a681fed715d8f16e0faf6abd32c5f37effb12161`.
-They are synthetic HTML comparisons, **not Builder editor screenshots**, full
-pipeline tests, or untouched Announcement Module exports. Identical styling is
-used before and after. All five outcomes and repeat-run idempotence were checked;
-all five screenshots were visually inspected. Application behavior is unchanged.
+These replace the standalone HTML comparisons from commit `108c03d`. All ten
+screenshots are unaltered full-page captures of the real NOFO Builder subsection
+editor's **Preview** tab in Chrome, served locally from this PR with an isolated
+SQLite database. No production data or production Builder records were changed.
+The application logic is unchanged from `a681fed`; later commits add evidence only.
 
-| Scenario | After |
-| --- | --- |
-| [Recognized categories](scenarios/01-success.png) | Organization bullets restored; definition/restriction excluded |
-| [Later restriction list](scenarios/02-later-restriction-list.png) | Entire candidate unchanged despite recognized organization categories |
-| [Unfamiliar category](scenarios/03-unknown-category.png) | Entire candidate unchanged, including recognized categories |
-| [Straight quotes in Unrestricted](scenarios/04-straight-quotes.png) | Entire candidate unchanged because the category spelling is unsupported |
-| [Supported intro variant](scenarios/05-intro-variant.png) | Organization bullets restored |
+### Setup and scope
 
-The later-list, unknown-category, and quote cases isolate the coverage limitations
-raised in review. Their unchanged results are intentional safeguards in this PR,
-not regressions asserted by these screenshots. The unknown category is illustrative
-and is not a transcription of an original export.
+Five clearly synthetic Word fixtures are included beside the screenshots.
+Each was submitted as a DOCX upload through `nofos:nofo_import` using Django's
+request client and a test-only user. This exercises the real Word conversion,
+shared processing, persistence, and rendered Builder UI; upload requests were
+programmatic, rather than clicks in the browser's file picker.
 
-Each screenshot has a corresponding HTML file for inspection. `scenarios/generate.py`
-extracts only the two constants and repair function from the checked-out source,
-generates the HTML, and asserts the outcomes and idempotence (requires
-Beautiful Soup). Screenshots were captured in headless Chrome at 1500×1050.
-The existing import/re-import screenshots above remain the evidence for actual
-Builder UI behavior. Anchore remediation is separate from this evidence change.
+For **Before**, only `repair_eligibility_organization_lists` was temporarily
+replaced with an identity function during that upload request using an in-memory
+mock. This isolates the missing-bullets behavior without the new rule; it is not
+a screenshot of a separately deployed older release. No persisted content was
+manually rewritten to manufacture the result.
+
+For **After**, the same fixture was imported with the normal, unmodified PR
+processor, then submitted again through `nofos:nofo_import_overwrite` to exercise
+re-import. The browser subsequently opened those persisted records and selected
+Preview. All ten screenshots were visually inspected. Saved content comparisons
+confirm that only scenarios 01 and 05 gain three organization bullets; 02–04
+remain unchanged. Definitions and restrictions stay outside repaired lists.
+
+### Before and after
+
+| Scenario | Before | After |
+| --- | --- | --- |
+| Recognized categories — bullets restored | [Before](scenarios/01-success-before.png) | [After](scenarios/01-success-after.png) |
+| Later restriction list — organization block unchanged | [Before](scenarios/02-later-restriction-list-before.png) | [After](scenarios/02-later-restriction-list-after.png) |
+| Unfamiliar Others category — entire block unchanged | [Before](scenarios/03-unknown-category-before.png) | [After](scenarios/03-unknown-category-after.png) |
+| Straight quotes in Unrestricted — entire block unchanged | [Before](scenarios/04-straight-quotes-before.png) | [After](scenarios/04-straight-quotes-after.png) |
+| Supported alternative intro — bullets restored | [Before](scenarios/05-intro-variant-before.png) | [After](scenarios/05-intro-variant-after.png) |
+
+Scenario 04 uses straight double quotes in its Word source. Builder's Markdown
+preview renders those as curly quotes, so their source spelling is not visually
+apparent in the Preview screenshot. The source fixture retains straight quotes;
+the import repair still skips that category. This makes the UI consequence more
+subtle than the earlier standalone rendering suggested.
+
+These synthetic fixtures establish behavior for the review scenarios, not the
+frequency of those shapes in untouched Announcement Module exports. The Others
+wording is illustrative. They do not establish the original export defect or
+replace representative-source validation. No PDF was generated. Anchore fixes
+remain separate from this evidence-only update.
