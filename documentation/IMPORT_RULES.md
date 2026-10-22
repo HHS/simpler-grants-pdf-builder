@@ -591,7 +591,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 
 ### IMPORT-039 — Writer-instructions table extraction
 - **Type:** extraction
-- **Trigger:** A single-cell table whose text starts with "Instructions for NOFO writers", "Instructions for new NOFO team", or matches the pattern `*-specific instructions`.
+- **Trigger:** A single-cell table whose text starts with "Instructions for NOFO writers", "Instructions for new NOFO team", "Instructions for template managers" (including combined manager/writer guidance), or matches the pattern `*-specific instructions`.
 - **Action:** Extracted (removed) from the document body, then matched by title to the corresponding subsection and reattached there as that subsection's "instructions" field (Composer import only).
 - **Source:** `content_processing.py::decompose_instructions_tables`; application attachment remains `nofo.py::add_instructions_to_subsections`
 - **Status:** active
