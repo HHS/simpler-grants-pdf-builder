@@ -19,7 +19,7 @@ DOCX_CONTENT_TYPE = (
 )
 
 
-def word_html(path: Path) -> tuple[str, bool]:
+def word_html(path: Path, *, require_nofo_recognition=True) -> tuple[str, bool]:
     """Validate the container before the installed converter reads any members."""
     try:
         with ZipFile(path) as archive:
@@ -91,7 +91,7 @@ def word_html(path: Path) -> tuple[str, bool]:
         # DOCX has no stable page boundaries. Reuse the same loose recognition
         # signals over a bounded leading text window, not a fictional page count.
         decision = recognize_word_nofo(text[:50000])
-        if decision.status != "supported":
+        if require_nofo_recognition and decision.status != "supported":
             raise ValueError("word_format_unsupported")
         return html, bool(converted.messages)
     except ValueError:

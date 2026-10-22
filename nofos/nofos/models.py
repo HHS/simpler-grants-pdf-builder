@@ -1765,3 +1765,30 @@ class ExternalSourceHandoffCurrent(models.Model):
         raise ValidationError(
             "A current-result selection cannot be deleted through the ORM."
         )
+
+
+class DesignPilotCandidate(models.Model):
+    """Synthetic local run state; never a production acceptance record."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    owner_group = models.CharField(max_length=32)
+    nofo = models.OneToOneField(Nofo, on_delete=models.CASCADE)
+    source_sha256 = models.CharField(max_length=64)
+    source_bytes = models.BinaryField()
+    source_name = models.CharField(max_length=200)
+    conversion_html = models.TextField()
+    content_json = models.TextField()
+    presentation_json = models.TextField()
+    changes_json = models.TextField(default="[]")
+    sequence = models.PositiveIntegerField(default=0)
+    revision = models.CharField(max_length=64)
+    warnings = models.JSONField(default=list)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["owner", "source_sha256"], name="design_pilot_owner_source_once"
+            )
+        ]

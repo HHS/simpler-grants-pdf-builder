@@ -1,0 +1,10 @@
+{% extends 'base_barebones.html' %}
+{% block title %}Synthetic design pilot | NOFO Builder{% endblock %}
+{% block external_fonts %}{% endblock %}
+{% block base_css %}{% endblock %}
+{% block main_container_start %}{% endblock %}
+{% block main_container_end %}{% endblock %}
+{% block header %}
+<header class="grid-container padding-y-3"><a href="{% url 'design_pilot:index' %}">NOFO Builder: local design pilot</a></header>
+{% endblock %}
+{% block content %}<main class="grid-container padding-y-3" id="main-content">{% block pilot_content %}{% endblock %}</main>{% endblock %}
