@@ -76,6 +76,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-067 | repair | Tables | Consecutive first-column single-item ordered lists → explicit continuing starts | `content_processing.py` |
 | IMPORT-021 | conversion | Lists | Custom fixed-indent bullet/number rendering in Markdown | `nofo_markdown.py` |
 | IMPORT-052 | repair | Lists | Canonical ACF required-alignment list groups → continuing numbered lists | `nofo.py` |
+| IMPORT-070 | repair | Lists | Recognized plain eligibility organization paragraphs → semantic bullets, with conservative no-ops | `content_processing.py` |
 | IMPORT-022 | repair *(see note)* | Tables | First table row's `<td>`s → `<th>`s (assumed header row) | `nofo.py` |
 | IMPORT-023 | repair | Tables | Multi-row `<thead>` with no `<tbody>` → rows after the first moved to a new `<tbody>` | `nofo.py` |
 | IMPORT-024 | conversion | Tables | Single-cell, single-row table → extracted as a callout-box subsection | `nofo.py` |
@@ -386,6 +387,15 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Action:** Normalize only those three `<ul>`/`<ol>` containers as ordered lists starting at 1, 2, and 4, removing explicit source marker types so this existing deliberate repair takes precedence over IMPORT-066. The first list becomes normal Markdown numbering; the latter two retain `<ol start="2">` / `<ol start="4">` through IMPORT-020. All source wording, links, emphasis, headings, and intervening paragraphs remain unchanged. If any agency, hierarchy, title, opening-text, list-count, or label check fails, leave the subsection untouched.
 - **Source:** `content_processing.py::repair_acf_required_alignment_lists` (using `is_acf_nofo_metadata`)
 - **Status:** active
+
+---
+
+### IMPORT-070 — Missing eligibility organization bullets
+- **Type:** repair
+- **Trigger:** A body-level H1–H6 heading reads exactly "Types of eligible organizations" within an active, lower-rank "Eligibility" heading. Its first nonblank paragraph matches one of three explicit affirmative introductions: "These types of domestic organizations may apply", "The following types of domestic organizations may apply", or "The following domestic organizations are eligible to apply". Compare case/whitespace (including NBSP), an optional literal asterisk immediately before domestic, and terminal colons/periods only; preserve source text. Immediately following paragraphs must match complete labels in the explicit organization-category vocabulary seeded by issue #1190, including the supplied qualified Unrestricted label. No agency metadata or endpoint assumption is used.
+- **Action:** Retag only a wholly recognized consecutive paragraph run as `ul/li`, preserving paragraph attributes, inline content, emphasis, links and bookmarks. Truly blank paragraphs may separate items; never jump over substantive content. A heading, table, document end, the reviewed `“Domestic” means` / `"Domestic" means` / `Domestic means` definition prefix, or exact "Additional information on eligibility" label (optional colon) safely ends the run. Any other unknown paragraph, stray text, comment or unsupported container before that boundary makes the entire candidate a no-op, rather than creating a partial list. Any existing unordered or ordered list anywhere before the targeted heading's next peer/higher heading skips the whole subsection, including mixed-list cases. Unsupported categories, introductions and malformed hierarchy are not inferred or fuzzily matched. Subsets and reordered recognized categories work without State governments or Unrestricted endpoints.
+- **Source:** `content_processing.py::repair_eligibility_organization_lists`, called by `process_nofo_html` after existing list repair and before bookmark rescue
+- **Status:** active on explicit Word/HTML import and re-import through the shared Builder, Composer and Compare pipeline; idempotent. No ordinary editing/save/render/export repair, saved-record migration, source-file modification or eligibility wording change. The reported Announcement Module omission is requester-reported; the named HRSA-27-033 existing-list fixture was unavailable during this implementation. Synthetic native-bullet and unbulleted sources cover both paths. A separate inspected HRSA-26-747 export remains a deliberate no-op because it contains an unrecognized Others category and a later restriction list. See [validation evidence and limits](review-evidence/1190/README.md).
 
 ---
 
