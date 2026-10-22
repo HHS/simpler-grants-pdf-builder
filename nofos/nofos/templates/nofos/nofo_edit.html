@@ -302,9 +302,9 @@ Edit “{{ nofo|nofo_name }}”
                 aria-selected="false"
                 aria-controls="tabpanel-4"
                 tabindex="-1"
-                aria-label="Review endnotes ({{ unconverted_footnotes|length }})">
+                aria-label="Check endnotes ({{ unconverted_footnotes|length }})">
           <span class="focus">
-            <span class="nofo_edit--tab-label">Review endnotes</span>
+            <span class="nofo_edit--tab-label">Check endnotes</span>
             <span class="nofo_edit--tab-count">({{ unconverted_footnotes|length }})</span>
           </span>
         </button>
@@ -418,7 +418,7 @@ Edit “{{ nofo|nofo_name }}”
                 <div>
                   <ol class="usa-list usa-list--no-max-width">
                     {% for unconverted_footnote in unconverted_footnotes %}
-                    <li><a href="#{{ unconverted_footnote.location_html_id }}">{{ unconverted_footnote.message }}</a> ({{ unconverted_footnote.section.name }}{% if unconverted_footnote.subsection %}, {{ unconverted_footnote.subsection|subsection_name_or_order }}{% endif %})</li>
+                    <li><a href="#{{ unconverted_footnote.location_html_id }}">{{ unconverted_footnote.message }}</a> ({{ unconverted_footnote.section.name }}{% if unconverted_footnote.subsection %}, {{ unconverted_footnote.subsection|subsection_name_or_order }}{% endif %}){% if unconverted_footnote.excerpt %}<br><q>{{ unconverted_footnote.excerpt }}</q>{% endif %}</li>
                     {% endfor %}
                   </ol>
                   <p>
