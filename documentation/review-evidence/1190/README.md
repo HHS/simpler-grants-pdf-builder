@@ -74,3 +74,33 @@ Changed-file Black and isort checks pass. Repository-wide checks report existing
 `policy_language.py`, `test_metrics.py`, and `test_policy_language.py` (Black),
 and `test_policy_language.py` (isort); these unrelated files were not reformatted.
 No PDF service or Word-export request was made.
+
+## Independent review follow-up: exact qualified Unrestricted label
+
+The independent Astra review identified that the issue's full qualified
+Unrestricted label uses curly single quotes around
+`‘Additional Information on Eligibility’`, whereas the vocabulary supported
+only the curly-double-quoted wording observed in the separate HRSA-26-747
+export. The exact issue example therefore caused a whole-candidate no-op.
+
+An independent hard-coded fixture now includes the complete issue label, rather
+than deriving it from the implementation's vocabulary. Before the fix, two
+regression tests failed in four subtests: direct repair, the shared processing
+entry point, actual HTML upload and actual DOCX upload all produced no list
+(exit 1). The fix adds only the exact curly-single-quoted label alongside the
+existing curly-double-quoted label. Source wording is unchanged; there is no
+general quote normalization or fuzzy matching. Straight/mismatched quotes,
+changed qualification wording and added punctuation retain whole-candidate
+no-op coverage. Both supported spellings have independent literal fixtures.
+
+The exact issue label is tested alongside State governments through actual
+HTML/DOCX import and re-import, with domestic definitions and restrictions kept
+outside the list. Direct/core checks also verify idempotence. This synthetic
+coverage does not depend on retrieving the original HRSA document; no original
+document requirement or review blocker is introduced. Editor Tasks was re-read:
+TASK-LIST-REVIEW already describes the bounded vocabulary and conservative no-op
+behavior, so this spelling correction needs no navigation or task changes.
+
+Follow-up focused eligibility/shared-core/characterization suite: 37 tests pass,
+exit 0; changed-file Black/isort and `git diff --check` pass. The follow-up full
+suite is running at this commit; its outcome is not yet established by this note.

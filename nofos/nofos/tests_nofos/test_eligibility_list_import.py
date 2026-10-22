@@ -11,6 +11,7 @@ from martor.templatetags.martortags import safe_markdown
 
 from nofos.content_processing import (
     ELIGIBLE_ORGANIZATION_CATEGORIES,
+    process_document_content,
     repair_eligibility_organization_lists,
 )
 from nofos.models import Nofo
@@ -21,6 +22,15 @@ INTRO = "These types of *domestic organizations may apply:"
 DOMESTIC = "“Domestic” means the 50 states and territories."
 LABEL = "Additional information on eligibility"
 RESTRICTION = "Individuals are not eligible applicants under this NOFO."
+# Literal issue #1190 example, deliberately independent of the production vocabulary.
+ISSUE_UNRESTRICTED = (
+    "Unrestricted (i.e., open to any type of entity above), subject to any clarification "
+    "in text field entitled ‘Additional Information on Eligibility’"
+)
+DOUBLE_QUOTED_UNRESTRICTED = (
+    "Unrestricted (i.e., open to any type of entity above), subject to any clarification "
+    "in text field entitled “Additional Information on Eligibility”"
+)
 PREFIX = (
     "<p>Opdiv: HRSA</p><p>Opportunity number: SYNTHETIC-ELIGIBILITY</p>"
     "<h1>Step 1: Review the opportunity</h1><h2>Eligibility</h2>"
@@ -54,12 +64,48 @@ class EligibilityRepairTests(SimpleTestCase):
 
     def test_all_reviewed_categories_and_idempotence(self):
         categories = sorted(ELIGIBLE_ORGANIZATION_CATEGORIES)
-        self.assertEqual(len(categories), 15)
+        self.assertEqual(
+            len(categories), 16
+        )  # Fifteen types; two reviewed Unrestricted spellings.
         soup = self.repair(html_source("".join(f"<p>{x}</p>" for x in categories)))
         self.assertEqual([x.text for x in soup.ul.find_all("li")], categories)
         before = str(soup)
         repair_eligibility_organization_lists(soup)
         self.assertEqual(str(soup), before)
+
+    def test_exact_issue_unrestricted_label_through_repair_and_shared_core(self):
+        expected = ["State governments", ISSUE_UNRESTRICTED]
+        html = html_source("".join(f"<p>{label}</p>" for label in expected))
+        for soup in (self.repair(html), process_document_content(html).soup):
+            with self.subTest(soup=str(soup)):
+                self.assertIsNotNone(soup.ul)
+                self.assertEqual(
+                    [item.text for item in soup.ul.find_all("li")], expected
+                )
+                self.assertIsNone(soup.find("p", string=DOMESTIC).find_parent("li"))
+                before = str(soup)
+                repair_eligibility_organization_lists(soup)
+                self.assertEqual(str(soup), before)
+
+    def test_existing_double_quote_label_remains_supported(self):
+        expected = ["State governments", DOUBLE_QUOTED_UNRESTRICTED]
+        html = html_source("".join(f"<p>{label}</p>" for label in expected))
+        self.assertEqual(
+            [item.text for item in self.repair(html).ul.find_all("li")], expected
+        )
+
+    def test_unreviewed_unrestricted_quote_and_wording_variants_remain_noops(self):
+        for label in (
+            ISSUE_UNRESTRICTED.replace("‘", "'").replace("’", "'"),
+            ISSUE_UNRESTRICTED.replace("’", "”"),
+            ISSUE_UNRESTRICTED.replace("‘", "“"),
+            ISSUE_UNRESTRICTED.replace(
+                "Additional Information on Eligibility", "Eligibility information"
+            ),
+            ISSUE_UNRESTRICTED + ".",
+        ):
+            with self.subTest(label=label):
+                self.assert_noop(html_source(f"<p>State governments</p><p>{label}</p>"))
 
     def test_explicit_intro_variants_and_comparison_only_normalization(self):
         for intro in (
@@ -172,7 +218,7 @@ class EligibilityRepairTests(SimpleTestCase):
         self.assertIsNone(soup.find("p", string=DOMESTIC).find_parent("li"))
 
 
-def word_source(*, native=False):
+def word_source(*, native=False, categories=None):
     styles = "".join(
         f'<w:style w:type="paragraph" w:styleId="Heading{n}">'
         f'<w:name w:val="heading {n}"/></w:style>'
@@ -189,7 +235,11 @@ def word_source(*, native=False):
     body += paragraph("Eligibility", num=None, style="Heading2")
     body += paragraph("Types of eligible organizations", num=None, style="Heading3")
     body += paragraph(INTRO, num=None)
-    for label in ("State governments", "Small businesses"):
+    for label in (
+        categories
+        if categories is not None
+        else ("State governments", "Small businesses")
+    ):
         body += paragraph(label, num="1" if native else None)
     body += "".join(paragraph(x, num=None) for x in (DOMESTIC, LABEL, RESTRICTION))
     return docx(body, styles=styles, levels=level(0, "bullet"))
@@ -207,9 +257,9 @@ class EligibilityImportTests(TestCase):
         )
         self.client.force_login(user)
 
-    def upload(self, *, word=False, native=False, url=None, html=None):
+    def upload(self, *, word=False, native=False, url=None, html=None, categories=None):
         source = (
-            word_source(native=native).getvalue()
+            word_source(native=native, categories=categories).getvalue()
             if word
             else (html or html_source()).encode()
         )
@@ -281,6 +331,50 @@ class EligibilityImportTests(TestCase):
                 self.upload(word=True, url=reverse(route)).status_code, 302
             )
             self.saved(model.objects.get())
+
+    def test_exact_issue_unrestricted_label_survives_html_word_import_and_reimport(
+        self,
+    ):
+        expected = ["State governments", ISSUE_UNRESTRICTED]
+        html = html_source("".join(f"<p>{label}</p>" for label in expected))
+        for word in (False, True):
+            with self.subTest(word=word):
+                self.assertEqual(
+                    self.upload(word=word, html=html, categories=expected).status_code,
+                    302,
+                )
+                document = Nofo.objects.latest("created")
+                original = None
+                for reimport in (False, True):
+                    if reimport:
+                        response = self.upload(
+                            word=word,
+                            html=html,
+                            categories=expected,
+                            url=reverse(
+                                "nofos:nofo_import_overwrite",
+                                kwargs={"pk": document.pk},
+                            ),
+                        )
+                        self.assertEqual(response.status_code, 302)
+                    body = (
+                        document.sections.get()
+                        .subsections.get(name="Types of eligible organizations")
+                        .body
+                    )
+                    rendered = BeautifulSoup(safe_markdown(body), "html.parser")
+                    self.assertIsNotNone(rendered.ul)
+                    self.assertEqual(
+                        [item.text for item in rendered.ul.find_all("li")], expected
+                    )
+                    for text in (DOMESTIC, LABEL, RESTRICTION):
+                        self.assertIsNone(
+                            rendered.find("p", string=text).find_parent("li")
+                        )
+                    if original is None:
+                        original = body
+                    else:
+                        self.assertEqual(body, original)
 
     def test_referenced_targets_links_and_emphasis_survive_actual_import(self):
         html = (

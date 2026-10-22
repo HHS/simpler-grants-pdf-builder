@@ -1133,6 +1133,7 @@ ELIGIBLE_ORGANIZATION_CATEGORIES = frozenset(
         "Private institutions of higher education",
         "For profit organizations other than small businesses",
         "Small businesses",
+        "Unrestricted (i.e., open to any type of entity above), subject to any clarification in text field entitled ‘Additional Information on Eligibility’",
         "Unrestricted (i.e., open to any type of entity above), subject to any clarification in text field entitled “Additional Information on Eligibility”",
     )
 )
