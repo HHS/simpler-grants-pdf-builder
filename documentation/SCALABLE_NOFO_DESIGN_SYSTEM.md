@@ -257,15 +257,20 @@ does not change that pilot's acceptance flow or introduce a new clearance gate.
 
 ## 5. Prioritized decisions and follow-through
 
-The proposed teams below must confirm responsibilities. Existing issues are
-related work, not commitments to implement these recommendations in another system.
+The proposed teams below must confirm responsibilities. The linked investigations
+own bounded follow-up questions, not commitments to implement these recommendations
+in another system. Remaining policy questions are not approved implementation work.
 
 1. **Immediate: agree component and identity contracts.** Enables SGM and other
    modernization teams to author meaningful content and change shared designs
    without per-NOFO visual version management. Proposed leads: modernization
    engineering/product with design and content owners. Depend on an inventory
    of real components, links and author tasks; resolve copy/delete behavior and
-   missing-information fallbacks. [#1008](https://github.com/HHS/simpler-grants-pdf-builder/issues/1008)
+   missing-information fallbacks. Existing investigation
+   [#1107](https://github.com/HHS/simpler-grants-pdf-builder/issues/1107) owns the
+   smallest reusable document contract, including identity/provenance and a
+   preservation fixture; it does not select a schema or persistence system.
+   [#1008](https://github.com/HHS/simpler-grants-pdf-builder/issues/1008)
    is a concrete points-column lesson, not a modernization implementation plan;
    [#851](https://github.com/HHS/simpler-grants-pdf-builder/issues/851) is related
    content/output separation work, not a requirement to publish HTML.
@@ -278,7 +283,12 @@ related work, not commitments to implement these recommendations in another syst
    [#1179](https://github.com/HHS/simpler-grants-pdf-builder/issues/1179) and the
    [quality guide](QUALITY_REVIEW_AND_TRIAGE.md) for evidence and triage, and
    [#1084](https://github.com/HHS/simpler-grants-pdf-builder/issues/1084) for
-   existing component/design expectations. These do not settle ownership.
+   existing component/design expectations. Bounded follow-up
+   [#1197](https://github.com/HHS/simpler-grants-pdf-builder/issues/1197) investigates
+   shared-change impact and exception visibility using pinned evidence and a
+   small synthetic example, comparing manual inspection, an on-demand report
+   and a minimal render-input record. These investigations do not settle ownership
+   or authorize a tracking system or automated rollout.
 3. **Before approving shared output changes: agree a PDF validation baseline.**
    Enables future design-quality oversight across components and themes.
    Proposed leads: accessibility/design reviewers and PDF engineering with
@@ -294,8 +304,12 @@ related work, not commitments to implement these recommendations in another syst
    invalidation. [#1145](https://github.com/HHS/simpler-grants-pdf-builder/issues/1145)
    and [#1149](https://github.com/HHS/simpler-grants-pdf-builder/issues/1149) address
    related candidate/transfer binding in the pilot, not a general archive service.
-   A concrete implementation gap found while choosing this policy needs its own
-   scoped issue; no new service is proposed or authorized here.
+   [#1197](https://github.com/HHS/simpler-grants-pdf-builder/issues/1197) also owns
+   the bounded assessment of effective render inputs and missing traceability,
+   reusing existing data before recommending new storage. It does not decide
+   retention or current-versus-historical rendering policy, implement a general
+   archive, or authorize a new service. Any later implementation needs a separate
+   scoped decision and issue.
 5. **Ongoing/future: preserve decisions and test results for transition.** Enables
    GPLE transition and later teams to distinguish supported behavior from proposals.
    Proposed leads: transition/product documentation owners with engineering/design.
