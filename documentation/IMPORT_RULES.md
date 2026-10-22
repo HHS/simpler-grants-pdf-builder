@@ -111,6 +111,8 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-047 | extraction | Non-Visual Tagging | `{Prompt}` / `{List: label}` syntax → Composer content-guide variables | `composer/models.py` |
 | IMPORT-048 | repair | Non-Visual Tagging | PDF metadata field is a whole-field `{placeholder}` → normalized to empty | `pdf_metadata.py` |
 
+| IMPORT-070 | repair | Emphasis | Explicit line breaks inside bold/italic text survive Markdown conversion | `nofo_markdown.py` |
+
 ---
 
 ## DOCX Conversion & Word Style Mapping
@@ -530,6 +532,13 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Trigger:** The document's embedded `<style>` block defines a CSS class with `font-weight: 700` and a font-size under 18pt (18pt+ is assumed to be a heading rather than bold body text) — this is how Google Docs exports encode bold, since it doesn't use semantic tags.
 - **Action:** Every element using that class is wrapped in `<strong>`, except elements inside a table's first row (already header cells). Only top-level embedded style rules participate. The parser does not fetch external `@import` URLs; imported rules were not part of the existing class selection.
 - **Source:** `content_processing.py::add_strongs_to_soup`, `_get_classnames_for_font_weight_bold`
+- **Status:** active
+
+### IMPORT-070 — Preserve explicit breaks in emphasized text
+- **Type:** repair
+- **Trigger:** A `<br>` inside `<strong>`, `<b>`, `<em>`, or `<i>` outside heading/table-cell inline conversion contexts. Word can include a soft break in the bold run at the end of a contact name.
+- **Action:** Preserve the break as raw `<br>` in Markdown so emphasis whitespace trimming cannot discard it. Other breaks and heading/table-cell conversion retain their existing behavior.
+- **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_br`
 - **Status:** active
 
 ### IMPORT-037 — "De minimis" auto-italicization
