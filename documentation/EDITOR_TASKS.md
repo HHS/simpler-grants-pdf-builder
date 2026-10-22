@@ -171,7 +171,9 @@ or reimport, or when you find writer-only notes in the content.
    decision, resolve it with your grants policy office.
 4. Select **Save subsection**, then **Preview PDF** to check the result.
 
-Automatic cleanup does not remove every instruction container. The warning is
+Automatic cleanup removes verified blue instruction boxes even when Word’s compatibility copies differ only in spacing before commas or full stops.
+Single-cell instruction tables beginning “Instructions for template managers” are also removed from applicant content, including tables that combine manager and writer guidance.
+Cleanup does not remove every instruction container. The warning is
 an invitation to review, not evidence that all highlighted content is disposable.
 
 ---
