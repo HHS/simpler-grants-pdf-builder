@@ -2004,7 +2004,7 @@ def add_instructions_to_subsections(sections, instructions_tables):
         try:
             node = instructions_body.find(
                 string=re.compile(
-                    r"^(instructions for nofo writers|instructions for new nofo team)",
+                    r"^(instructions for nofo writers|instructions for new nofo team|instructions for template managers)",
                     re.IGNORECASE,
                 )
             )

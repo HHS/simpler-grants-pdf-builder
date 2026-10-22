@@ -1948,7 +1948,7 @@ def decompose_instructions_tables(soup):
     and return them as a list of extracted HTML snippets for later use.
 
     This function iterates through all the <table> elements in the BeautifulSoup object.
-    If a table contains text that starts with "Instructions for NOFO writers:",
+    If a single-cell table starts with a recognized writer or template-manager label,
     it is removed from the soup object.
     """
     instructions_tables = []
@@ -1960,6 +1960,7 @@ def decompose_instructions_tables(soup):
             table_text_lowercase = table.get_text().lower()
             if (
                 table_text_lowercase.startswith("instructions for nofo writers")
+                or table_text_lowercase.startswith("instructions for template managers")
                 or table_text_lowercase.startswith("instructions for new nofo team")
                 or re.match(r".+-specific instructions", table_text_lowercase)
             ):
