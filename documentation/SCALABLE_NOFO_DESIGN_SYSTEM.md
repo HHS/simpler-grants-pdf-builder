@@ -2,7 +2,8 @@
 
 A shared component should be improved once and used consistently wherever it
 applies. Authors should choose what their content means, not manage visual
-design versions for individual NOFOs. Achieving that requires more than a shared
+design versions for individual NOFOs. Making a shared improvement available
+does not mean automatically applying it to a NOFO already under clearance. Achieving that requires more than a shared
 stylesheet: stored content, authoring controls, branding, PDF generation and
 validation need agreed responsibilities.
 
@@ -12,6 +13,25 @@ oversight. For SGM, the working assumption is that NOFO information is authored
 or held in the application that generates the PDF. No Word intake or export is
 required. Other applications may obtain content differently. Nothing here
 selects a technology stack, storage schema, renderer or operating owner.
+
+## Leadership summary
+
+A shared NOFO design system could help HHS improve common components consistently,
+support approved OpDiv branding and reduce repeated design work. Builder provides
+implementation examples; software reuse within SGM still requires validation.
+
+The proposed approach preserves common component meaning and accessibility behavior
+while allowing governed presentation variations. It also protects design stability:
+a NOFO routed for Department or OMB clearance should retain its reviewed design
+unless an authorized user deliberately accepts a redesign. Responsible authorities
+would determine whether that change requires renewed review.
+
+**Suggested use:** SGM and other modernization teams can use this guide to assess
+component, branding and design-change needs. A small representative demonstration
+would help establish which Builder lessons transfer and what requires adaptation.
+Ownership, OpDiv variation boundaries and protection of NOFOs undergoing clearance
+remain decisions to resolve with responsible teams. This summary requests no
+project approval or organizational assignment.
 
 ## How to read the recommendations
 
@@ -49,6 +69,7 @@ generation agree to preserve. It need not be a particular object model:
 | Table | Caption or nearby description, header/cell relationships, row/column order, spans and column meaning such as points. Width is separate from those relationships. |
 | List | Ordered versus unordered meaning, item nesting, starts/restarts and continuation content; not just visible bullet or number characters. |
 | Image | Asset identity, informative versus decorative intent, alternative text where needed, and any caption/link relationship. Missing information is not evidence that an image is decorative. |
+| Notes and cross-references | Note identity, reference order, targets and backlinks; preserve relationships when sections move or content is copied. |
 | Link and navigation | Target identity, visible label and destination scope; distinguish internal targets from external destinations and broken/unknown targets. |
 
 For content authored directly in an application, capture those meanings through
@@ -86,14 +107,43 @@ layers. Do not infer that all overrides are safe, discoverable or routinely used
 from their existence in source. A new architecture should make precedence
 explicit and show maintainers which documents depend on an exception.
 
-**Ownership decision:** agree who can propose, approve, implement and retire each
-shared change or exception. Proposed participants are the modernization product
-and engineering teams, design-system maintainers, OpDiv brand/content contacts,
-and accessibility reviewers. These are suggested roles, not current assignments.
-Applicant research and recurring support findings should inform priorities;
-neither an available theme nor a reviewer preference establishes applicant benefit.
-Use the existing [quality review and triage process](QUALITY_REVIEW_AND_TRIAGE.md)
+### Proposed common behavior and OpDiv flexibility
+
+Common expectations should cover component meaning, heading hierarchy, table
+relationships, reading order, image alternatives, links and preservation of
+substantive content. OpDivs may vary approved logos, colors, typography and layout
+where the resulting output meets those expectations. Layout and branding changes
+still need evaluation: placement, contrast and pagination can affect usability
+and accessibility. A variation that changes component meaning or behavior needs
+explicit review, with its rationale, scope, owner and validation evidence recorded.
+
+Modernization teams and OpDiv representatives should confirm this boundary using
+brand constraints, representative NOFOs, accessibility evaluation and applicant
+research. Neither an available theme nor a reviewer preference establishes applicant
+benefit. Use the existing [quality review and triage process](QUALITY_REVIEW_AND_TRIAGE.md)
 to distinguish a document correction from a shared defect or missing capability.
+
+### Proposed accountability and escalation
+
+Assign a shared design-system owner accountable for coordinating shared releases,
+impact assessment, communication and resolution of shared defects. Its organizational
+home and mandate need confirmation; a list of participants alone is insufficient.
+
+| Proposed role | Decision or responsibility to confirm |
+| --- | --- |
+| Shared design-system owner | Coordinate shared-change review, release disposition, affected-team notification and defect resolution. |
+| Application owner | Control application adoption and implement containment or recovery. |
+| Program office or designated NOFO owner | Decide whether to accept an available redesign, subject to applicable clearance requirements. |
+| Accessibility and policy/clearance authorities | Determine applicable criteria and whether a correction needs further review. |
+| Designated HHS grants governance sponsor | Resolve cross-OpDiv disagreements or risks beyond the other owners' authority. |
+
+For a defective release, application teams should notify the shared owner, assess
+affected outputs and consider pausing further adoption. Agree on correction or
+recovery, notify affected program offices and preserve the identity of outputs
+already routed, cleared or published. Confirm escalation contacts and response
+timeframes before operational adoption. Urgent accessibility or substantive
+correctness defects need an explicit disposition with relevant authorities;
+neither silent redesign nor indefinite preservation should be assumed.
 
 ## 3. Plan for five kinds of change
 
@@ -102,7 +152,8 @@ to distinguish a document correction from a shared defect or missing capability.
 **Options and tradeoffs.** A shared presentation change can apply on the next
 generation without editing stored content when the callout's meaning and required
 information are unchanged. A staged rollout limits exposure but requires an
-explicit applicability policy. An intentional exception may stay on an older
+explicit applicability policy and a recovery path. Apply the clearance-state
+proposal below before changing an existing NOFO. An intentional exception may stay on an older
 design; it should not force every author to choose a design release.
 
 **Preserve and account for.** Retain content, identity, heading level, links and
@@ -188,7 +239,8 @@ asset references and dangling references need explicit verification.
 consistency, preserve an earlier supported design for a justified historical
 need, or offer both as clearly labeled outputs. Current styling is easier to
 maintain; historical rendering requires retained dependencies and increases
-support cost. The system—not routine author choice—should apply the agreed policy.
+support cost. The system should manage technical design versions while an authorized user
+can deliberately accept an available redesign under the agreed clearance policy.
 
 **Preserve and account for.** Distinguish a content revision from a design/component
 release and from the PDF renderer/dependencies. A content revision or source-code
@@ -199,7 +251,7 @@ and generated artifact digest. Record substitutions and unavailable dependencies
 Decide retention/access and whether the goal is exact bytes or equivalent content,
 semantics and layout; do not promise byte-for-byte reproducibility without testing.
 
-Existing drafts may change on their next generation under a current-design policy;
+Eligible drafts may change on their next generation under an agreed current-design policy;
 missing information still requires the compatibility treatment above. Already
 downloaded or published PDFs do not change. Keep those artifacts and their
 publication history distinct from a newly generated edition.
@@ -211,6 +263,40 @@ reproduction. Builder's PDF service chooses a render pipeline/profile and resolv
 relative assets against a supplied base URL (E7); that is not an immutable output
 manifest. The pilot's revision-binding proposal offers useful requirements, not
 proof that historical reproduction is implemented (E8).
+
+### Cross-cutting scenario: preserve design during clearance
+
+Program-office feedback informing this guide identifies a recurring situation:
+a designed NOFO is routed for Department and OMB clearance, and the office wants
+its design to remain stable unless it explicitly requests a change. This is
+stakeholder context, not a claim that Builder implements design freezing or a
+statement of approved Department/OMB policy.
+
+| NOFO state | Proposed treatment of shared design changes |
+| --- | --- |
+| Draft | Apply the agreed adoption policy and make changes visible; do not assume all drafts should update automatically. |
+| Under Department or OMB clearance | Preserve the design used for routing unless an authorized user explicitly accepts redesign. |
+| Cleared, awaiting publication | Preserve the cleared output; responsible authorities determine whether an accepted redesign requires renewed review. |
+| Published | Preserve the published artifact and identify any redesigned output as a separate edition subject to applicable publication procedures. |
+
+An action such as **Review available design updates** or **Redesign NOFO** could
+preview changes and let an authorized user accept them deliberately. Retain the
+previous output and identify which exact output was routed or cleared, its content
+revision and effective design inputs. Decide whether updates are accepted individually
+or as a tested bundle, who may accept them, what invalidates earlier review and how
+that disposition is recorded. This is a proposed capability, not an existing control.
+
+Consider redesign independently of content intake: users should not need to import
+content again solely to adopt design improvements. Re-importing Word was raised as
+a possible Builder workaround; its necessity and effects require verification and
+are not prescribed for SGM. Preserving the reviewed artifact is also distinct from
+maintaining an executable historical renderer, which has separate costs and policies.
+
+**Verify.** Exercise regeneration in each state, preview without acceptance,
+authorized acceptance, recovery and any renewed-review decision. Confirm that no
+unaccepted update changes the reviewed design and that previous and candidate
+outputs remain distinguishable. For a serious defect, test the agreed notification
+and exception path rather than silently replacing a routed or published output.
 
 ## 4. Validate the PDF, not just the authoring screen
 
@@ -237,6 +323,13 @@ branding, fonts/assets or rendering dependencies change. Compare intermediate
 meaning/links as well as visual pages; text extraction alone can misread tables
 or columns. Establish who reviews exceptions and unresolved manual checks.
 
+For the bounded proof, propose a matrix crossing component, OpDiv variation,
+exception, long/missing content and clearance state. Record severity, expected
+results, actual findings and unresolved manual checks against each candidate
+output. Responsible reviewers should confirm acceptance thresholds and disposition
+of failures before treating the proof as successful. A passing automated scan alone
+is insufficient.
+
 An authoring preview may omit transformations or use different layout rules.
 State its scope and validate the generated PDF separately. Builder's live table
 preview is not identical to saved-content/PDF processing (E2). Its PDF/UA-1 request
@@ -255,75 +348,111 @@ for scanner contracts and source mapping rather than starting another scanner.
 The HTML-only local agent pilot does not verify PDF pagination (E8); this guide
 does not change that pilot's acceptance flow or introduce a new clearance gate.
 
-## 5. Prioritized decisions and follow-through
+## 5. Recommended sequence and follow-through
 
-The proposed teams below must confirm responsibilities. The linked investigations
-own bounded follow-up questions, not commitments to implement these recommendations
-in another system. Remaining policy questions are not approved implementation work.
+The proposed roles must confirm responsibilities. The investigations below inform
+decisions; they do not authorize implementation, a new service or a general archive.
+Use the [contribution workflow](CONTRIBUTION_WORKFLOW.md) to scope later work.
 
-1. **Immediate: agree component and identity contracts.** Enables SGM and other
-   modernization teams to author meaningful content and change shared designs
-   without per-NOFO visual version management. Proposed leads: modernization
-   engineering/product with design and content owners. Depend on an inventory
-   of real components, links and author tasks; resolve copy/delete behavior and
-   missing-information fallbacks. Existing investigation
-   [#1107](https://github.com/HHS/simpler-grants-pdf-builder/issues/1107) owns the
-   smallest reusable document contract, including identity/provenance and a
-   preservation fixture; it does not select a schema or persistence system.
-   [#1008](https://github.com/HHS/simpler-grants-pdf-builder/issues/1008)
-   is a concrete points-column lesson, not a modernization implementation plan;
-   [#851](https://github.com/HHS/simpler-grants-pdf-builder/issues/851) is related
-   content/output separation work, not a requirement to publish HTML.
-2. **Immediate: agree shared-change and variation ownership.** Enables approved
-   OpDiv branding without divergent component copies. Proposed leads: design-system
-   and modernization product teams with OpDiv contacts/accessibility reviewers.
-   Depend on brand constraints, applicant research and actual exception inventory;
-   decide approval, rollout, deprecation and support responsibilities. Use
-   [#1178](https://github.com/HHS/simpler-grants-pdf-builder/issues/1178) /
-   [#1179](https://github.com/HHS/simpler-grants-pdf-builder/issues/1179) and the
-   [quality guide](QUALITY_REVIEW_AND_TRIAGE.md) for evidence and triage, and
-   [#1084](https://github.com/HHS/simpler-grants-pdf-builder/issues/1084) for
-   existing component/design expectations. Bounded follow-up
-   [#1197](https://github.com/HHS/simpler-grants-pdf-builder/issues/1197) investigates
-   shared-change impact and exception visibility using pinned evidence and a
-   small synthetic example, comparing manual inspection, an on-demand report
-   and a minimal render-input record. These investigations do not settle ownership
-   or authorize a tracking system or automated rollout.
-3. **Before approving shared output changes: agree a PDF validation baseline.**
-   Enables future design-quality oversight across components and themes.
-   Proposed leads: accessibility/design reviewers and PDF engineering with
-   responsible policy/clearance stakeholders. Depend on representative generated
-   PDFs and confirmed applicable criteria; decide manual checks, exception handling
-   and source mapping under [#980](https://github.com/HHS/simpler-grants-pdf-builder/issues/980).
-   Production coverage and applicant benefit cannot be inferred from repository tests.
-4. **Before promising historical reproduction: choose version and retention policy.**
-   Enables explainable regeneration and controlled transition. Proposed leads:
-   modernization architecture/engineering with records/security and content owners.
-   Depend on renderer/font/asset availability and retention constraints; resolve
-   current-versus-historical generation, exact-versus-equivalent output and evidence
-   invalidation. [#1145](https://github.com/HHS/simpler-grants-pdf-builder/issues/1145)
-   and [#1149](https://github.com/HHS/simpler-grants-pdf-builder/issues/1149) address
-   related candidate/transfer binding in the pilot, not a general archive service.
-   [#1197](https://github.com/HHS/simpler-grants-pdf-builder/issues/1197) also owns
-   the bounded assessment of effective render inputs and missing traceability,
-   reusing existing data before recommending new storage. It does not decide
-   retention or current-versus-historical rendering policy, implement a general
-   archive, or authorize a new service. Any later implementation needs a separate
-   scoped decision and issue.
-5. **Ongoing/future: preserve decisions and test results for transition.** Enables
-   GPLE transition and later teams to distinguish supported behavior from proposals.
-   Proposed leads: transition/product documentation owners with engineering/design.
-   Depend on accepted decisions and named maintainers; retain the rationale,
-   component examples, exceptions and known gaps in repository documentation.
-   [#1148](https://github.com/HHS/simpler-grants-pdf-builder/issues/1148) and
-   [#1151](https://github.com/HHS/simpler-grants-pdf-builder/issues/1151) cover
-   related pilot review/evaluation. Broader automation is a future opportunity
-   after contracts and human review work reliably, not a prerequisite for reuse.
+### 1. Foundational decisions: establish the boundaries
 
-Before turning a recommendation into implementation, confirm the goal and owner,
-search existing work, and record the smallest uncovered need using the
-[contribution workflow](CONTRIBUTION_WORKFLOW.md). Do not treat this guide as
-approval to migrate stored NOFOs, alter published artifacts or expand access.
+| Decision and outcome enabled | Rationale and dependencies | Proposed leads and existing work |
+| --- | --- | --- |
+| Component and identity contracts for SGM and other modernization teams | Preserve meaning across authoring and output; inventory real components, links and tasks, then resolve copying, deletion and missing information. | Modernization engineering/product with design/content owners; [#1107](https://github.com/HHS/simpler-grants-pdf-builder/issues/1107) covers the portable contract and preservation fixture. [#1008](https://github.com/HHS/simpler-grants-pdf-builder/issues/1008) provides the points-column lesson; [#851](https://github.com/HHS/simpler-grants-pdf-builder/issues/851) concerns content/output separation. |
+| Shared behavior, variations and accountability | Avoid divergent copies while accommodating OpDiv needs; depend on brand constraints, exception inventory and applicant research. Resolve approval, escalation, deprecation and support authority. | Shared design-system and modernization product owners with OpDiv/accessibility representatives; use [#1178](https://github.com/HHS/simpler-grants-pdf-builder/issues/1178), [#1179](https://github.com/HHS/simpler-grants-pdf-builder/issues/1179) and [#1084](https://github.com/HHS/simpler-grants-pdf-builder/issues/1084). |
+| Clearance stability and deliberate redesign | Protect reviewed outputs while making improvements available; confirm states, authority, evidence invalidation and recovery with program offices. | Application/product owners and program-office/clearance representatives; the cross-cutting scenario above identifies unresolved policy. |
+| PDF validation baseline | Judge actual output quality before broader adoption; depend on representative PDFs and confirmed applicable criteria. Resolve manual checks, severity and exception disposition. | Accessibility/design reviewers and PDF engineering with relevant authorities; coordinate with [#980](https://github.com/HHS/simpler-grants-pdf-builder/issues/980). |
+
+**Expected result:** a concise decision record of agreed boundaries, proposed roles
+and remaining questions. Record significant implementation selections in an ADR
+when made; detailed technology choices can remain open during initial investigation.
+
+### 2. Bounded proof: demonstrate one shared change
+
+Use a shared callout change against a small synthetic set: two OpDiv variants,
+one document-specific override, an older content example and a NOFO representing
+clearance in progress. Show the intended changes and failures, including long
+content, missing information and a deliberately defective update. Real examples
+require an agreed scope and appropriate access.
+
+Demonstrate preservation of meaning/content, intended update applicability,
+reviewed-design stability until explicit acceptance, identifiable old/new outputs,
+PDF validation findings and containment/recovery. Compare a shared implementation,
+adaptation and implementation within SGM before recommending an integration approach.
+
+Coordinate with [#1107](https://github.com/HHS/simpler-grants-pdf-builder/issues/1107)
+on the contract and [#1197](https://github.com/HHS/simpler-grants-pdf-builder/issues/1197)
+on shared-change impact, exceptions and effective render inputs. The latter compares
+manual inspection, an on-demand report and a minimal render-input record; it does
+not settle clearance policy or implement redesign. The expanded proof described
+here is a proposal beyond those issues' existing scope: confirm its owner and
+capture uncovered work separately. Reuse #980 for PDF validation investigation.
+
+**Expected result:** a worked example, evidence, limitations and a recommendation
+to proceed, revise or stop, with estimated implementation and maintenance effort.
+Collect baselines for shared-fix propagation time, author rework, defects and
+exceptions. Research should assess applicant tasks such as finding eligibility
+or understanding scoring. These are candidate measures, not demonstrated savings
+or benefits; production and applicant evidence require separate evaluation.
+
+### 3. Future capabilities: expand where evidence supports investment
+
+Prioritize broader component/OpDiv coverage, affected-document visibility,
+user-facing design acceptance, automated regression comparisons and supported
+recovery according to the proof's findings. Each needs a demonstrated need,
+responsible owner, scoped effort and acceptance criteria.
+
+Before promising historical reproduction, modernization architecture/engineering,
+records/security and content owners should resolve retention/access, current versus
+historical rendering and exact versus equivalent output. Depend on font, asset
+and renderer availability. Keeping a reviewed PDF does not require solving full
+historical rendering first. [#1145](https://github.com/HHS/simpler-grants-pdf-builder/issues/1145)
+and [#1149](https://github.com/HHS/simpler-grants-pdf-builder/issues/1149) concern
+pilot candidate/transfer binding; #1197 examines traceability using existing data.
+None establishes a general archive or an approved retention policy.
+
+## 6. What SGM can reuse from Builder
+
+The immediate assets are documented considerations, source examples and candidate
+validation criteria. Software reuse remains subject to investigation with SGM teams.
+
+| Existing capability or evidence | Reusable lesson | What needs proof for SGM |
+| --- | --- | --- |
+| Callout settings and shared templates (E1) | Separate meaning from presentation. | SGM captures intent and preserves it through authoring/output. |
+| Points-column markers and table styling (E2) | Retain column meaning without requiring import inference. | Table relationships, long-content behavior and accessible PDF output. |
+| Layered branding and document CSS (E3) | Share behavior with explicit variation precedence. | Fit with SGM design rules, approved boundaries and exception visibility. |
+| Legacy theme retention (E4) | Existing selections can remain supported while new choices narrow. | Preservation of reviewed designs and deliberate redesign acceptance; legacy retention alone does not freeze design. |
+| Identity, link rewriting and duplication (E5) | Distinguish content, displayed and copied identities. | Reference preservation through SGM rename/reorder/copy/delete operations. |
+| Processing and PDF-generation boundaries (E6–E7) | Separate content processing from output generation. | Extraction/adaptation suitability, dependencies, security, fidelity and maintenance cost. |
+| Review guidance and pilot limits (E8) | Bind findings to reviewed inputs/output and distinguish evaluation methods. | A validation baseline demonstrated on representative SGM-generated PDFs. |
+
+## 7. Preserve continuity through the GPLE transition
+
+Confirm organizational assignments for these proposed functions. Preserve concrete
+artifacts and decision authority alongside written guidance.
+
+| What must survive | Proposed receiving responsibility | Retained information/evidence |
+| --- | --- | --- |
+| Component meaning and supported behavior | Design-system maintainer with content/accessibility specialists | Component inventory, examples, variants and known limitations. |
+| Decisions and open work | Product/architecture owner | Rationale, alternatives, status, dependencies and linked follow-ups. |
+| Shared-change accountability | Shared owner and governance sponsor | Authority, escalation contacts and release/support responsibilities. |
+| OpDiv branding and exceptions | OpDiv contacts with design maintainers | Approval evidence, scope, rationale, owner and review conditions. |
+| Clearance stability | Application owner with program-office/clearance representatives | Redesign policy and identification of routed, cleared and published outputs. |
+| Validation capability | Accessibility/design reviewers and PDF engineering | Fixtures, methods, output-bound findings and unresolved defects. |
+| Maintenance and recovery | Application engineering/operations owners | Dependencies/assets, configuration guidance, release history, failure modes and recovery procedures. |
+| Applicant and staff knowledge | Research/product owner | Research findings, recurring support problems and evidence limitations. |
+
+Keep durable guides and decisions in repository documentation. Retain restricted
+operational details, research and document-specific evidence in approved locations
+with appropriate access; link where permitted. Retention obligations remain for
+responsible authorities to determine.
+
+As proposed handoff evidence, confirm a receiving owner for each function, verify
+access and exercise one representative change-and-recovery scenario. Record gaps
+with an owner and next action. Related pilot evaluation work in
+[#1148](https://github.com/HHS/simpler-grants-pdf-builder/issues/1148) and
+[#1151](https://github.com/HHS/simpler-grants-pdf-builder/issues/1151) supplies
+bounded context, not proof of broader operational handoff.
 
 <a id="builder-evidence"></a>
 
