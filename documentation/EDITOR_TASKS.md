@@ -117,6 +117,9 @@ is needed, contact the SimplerNOFOs team.
   Redundant bold
   formatting imports as a single bold level. Review the result against Word;
   existing saved content receives this handling only when reimported.
+- Consecutive Word bullets at the same numbering level import as one list even
+  when their internal list IDs differ, avoiding extra gaps between bullet groups.
+  Paragraphs still separate lists; numbered-list restarts remain separate.
 - For an existing NOFO, reimport replaces sections and subsections and can lose
   manual edits. It is not a way to apply import repairs to saved edits in place.
   Reimport preserves saved theme, cover and introductory ownership choices.
