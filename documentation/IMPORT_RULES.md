@@ -76,6 +76,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-067 | repair | Tables | Consecutive first-column single-item ordered lists → explicit continuing starts | `content_processing.py` |
 | IMPORT-021 | conversion | Lists | Custom fixed-indent bullet/number rendering in Markdown | `nofo_markdown.py` |
 | IMPORT-052 | repair | Lists | Canonical ACF required-alignment list groups → continuing numbered lists | `nofo.py` |
+| IMPORT-070 | repair | Lists | Recognized plain eligibility organization paragraphs → semantic bullets, with conservative no-ops | `content_processing.py` |
 | IMPORT-022 | repair *(see note)* | Tables | First table row's `<td>`s → `<th>`s (assumed header row) | `nofo.py` |
 | IMPORT-023 | repair | Tables | Multi-row `<thead>` with no `<tbody>` → rows after the first moved to a new `<tbody>` | `nofo.py` |
 | IMPORT-024 | conversion | Tables | Single-cell, single-row table → extracted as a callout-box subsection | `nofo.py` |
@@ -111,6 +112,8 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-047 | extraction | Non-Visual Tagging | `{Prompt}` / `{List: label}` syntax → Composer content-guide variables | `composer/models.py` |
 | IMPORT-048 | repair | Non-Visual Tagging | PDF metadata field is a whole-field `{placeholder}` → normalized to empty | `pdf_metadata.py` |
 
+| IMPORT-070 | repair | Emphasis | Explicit line breaks inside bold/italic text survive Markdown conversion | `nofo_markdown.py` |
+
 ---
 
 ## DOCX Conversion & Word Style Mapping
@@ -135,7 +138,7 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 ### IMPORT-066 — Native Word list semantics
 - **Type:** conversion
 - **Trigger:** An uploaded Word body/table paragraph resolves to supported native numbering: decimal, lower/upper letter, lower/upper Roman or bullet. Resolve paragraph/style-based numbering, based-on inheritance, unique paragraph-style associations, abstract definitions, numbering instances, level overrides, start overrides and linked numbering styles. Explicit disabled numbering remains disabled. Headings and native checkbox paragraphs in table first columns retain their existing conversion/IMPORT-001 path.
-- **Action:** Capture native identity, level, effective marker and ordinal in a per-upload sidecar; mark only conversion-copy paragraphs with temporary styles so Mammoth still converts their rich content. Reconstruct semantic `ol`/`ul` → `li` trees with explicit ordered types and non-one starts. Normalize nonzero initial source levels without empty parent items. Keep numbering continuation after unrelated prose as separate lists with explicit starts; attach only bounded, explicitly indented continuation paragraphs between items of the same numbering instance. Table/container boundaries are not crossed. Source reconstruction precedes legacy repair and IMPORT-052's deliberate ACF normalization. IMPORT-020 preserves complete trees when Markdown would lose semantics; standalone simple lists retain IMPORT-021. Temporary source attributes/styles never become visible markers or stored metadata.
+- **Action:** Consecutive bullet items at the same resolved level share one list even when Word changes numbering instance (`numId`); ordinary paragraphs and container boundaries still separate lists. Ordered lists retain their instance/restart boundaries. Capture native identity, level, effective marker and ordinal in a per-upload sidecar; mark only conversion-copy paragraphs with temporary styles so Mammoth still converts their rich content. Reconstruct semantic `ol`/`ul` → `li` trees with explicit ordered types and non-one starts. Normalize nonzero initial source levels without empty parent items. Keep numbering continuation after unrelated prose as separate lists with explicit starts; attach only bounded, explicitly indented continuation paragraphs between items of the same numbering instance. Table/container boundaries are not crossed. Source reconstruction precedes legacy repair and IMPORT-052's deliberate ACF normalization. IMPORT-020 preserves complete trees when Markdown would lose semantics; standalone simple lists retain IMPORT-021. Temporary source attributes/styles never become visible markers or stored metadata.
 - **Source:** `word_lists.py::prepare_word_lists`, `WordListPlan.restore_html`; integrated by `nofo.py::parse_uploaded_file_as_html_string`
 - **Status:** active for explicit Word conversion through shared Builder, Composer and Compare consumers. Source uploads, note ZIP parts and existing saved records are not rewritten. Unsupported/custom compound marker formats and ambiguous numbering associations retain Mammoth's prior path with a nonblocking, content-free list-review advisory; no guessing from typed numbers or inline prose. Builder shows **Check list numbering** after successful new/re-import, with comparison, subsection-edit/save and PDF-review steps. No blocking import-error code is introduced. See [Word list import and editing](WORD_LIST_IMPORT.md).
 
@@ -361,8 +364,8 @@ The example that prompted this document: detecting a footnote/endnote list and f
 
 ### IMPORT-020 — Numbered-list-start / table-cell lists kept as raw HTML
 - **Type:** conversion
-- **Trigger:** During Markdown conversion, an `<ol start="N">` where N ≠ 1, a letter/Roman marker, an explicit decimal descendant, paragraph-bearing list items, a reversed/item-value list, adjacent separate lists of the same kind (including decimal restarts at 1), or any list nested inside a `<td>`/`<th>`.
-- **Action:** Keep the complete containing list tree as semantic HTML when marker/start semantics require it, including ordered and unordered descendants. Surround raw blocks with blank lines so adjacent Markdown stays separate. Retain adjacent same-kind list boundaries as HTML because blank lines between Markdown lists would merge their items and lose restarts. Preserve `type`/`start`; remove conversion-only source markers before storage. Table-cell and native/manual endnote preservation remain in force. Simple standalone decimal/bullet lists still use IMPORT-021.
+- **Trigger:** During Markdown conversion, an `<ol start="N">` where N ≠ 1, a letter/Roman marker, an explicit decimal descendant, paragraph-bearing list items, a reversed/item-value list, adjacent separate lists of either kind (including decimal restarts at 1 and mixed bullet/numbered siblings at any depth), or any list nested inside a `<td>`/`<th>`.
+- **Action:** Keep the complete containing list tree as semantic HTML when marker/start semantics require it, including ordered and unordered descendants. Surround raw blocks with blank lines so adjacent Markdown stays separate. Retain adjacent list boundaries as HTML because blank lines between Markdown lists can merge their items, lose restarts or change marker kinds. Only whitespace between sibling lists is skipped when checking adjacency; intervening prose or other elements remain boundaries. Preserve `type`/`start`; remove conversion-only source markers before storage. Table-cell and native/manual endnote preservation remain in force. Simple standalone decimal/bullet lists and simple lists separated by prose still use IMPORT-021. Applies during conversion only, not to existing saved content.
 - **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_ol/convert_ul`
 - **Status:** active
 
@@ -386,6 +389,15 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Action:** Normalize only those three `<ul>`/`<ol>` containers as ordered lists starting at 1, 2, and 4, removing explicit source marker types so this existing deliberate repair takes precedence over IMPORT-066. The first list becomes normal Markdown numbering; the latter two retain `<ol start="2">` / `<ol start="4">` through IMPORT-020. All source wording, links, emphasis, headings, and intervening paragraphs remain unchanged. If any agency, hierarchy, title, opening-text, list-count, or label check fails, leave the subsection untouched.
 - **Source:** `content_processing.py::repair_acf_required_alignment_lists` (using `is_acf_nofo_metadata`)
 - **Status:** active
+
+---
+
+### IMPORT-070 — Missing eligibility organization bullets
+- **Type:** repair
+- **Trigger:** A body-level H1–H6 heading reads exactly "Types of eligible organizations" within an active, lower-rank "Eligibility" heading. Its first nonblank paragraph matches one of three explicit affirmative introductions: "These types of domestic organizations may apply", "The following types of domestic organizations may apply", or "The following domestic organizations are eligible to apply". Compare case/whitespace (including NBSP), an optional literal asterisk immediately before domestic, and terminal colons/periods only; preserve source text. Immediately following paragraphs must match complete labels in the explicit organization-category vocabulary seeded by issue #1190, including the supplied qualified Unrestricted label. That full label explicitly supports both `‘Additional Information on Eligibility’` (the exact issue wording) and `“Additional Information on Eligibility”` (the separately inspected export wording). These are two reviewed spellings of one category, not general quote/punctuation normalization: straight quotes, mismatched quotes, changed qualification text and added punctuation remain unrecognized. No agency metadata or endpoint assumption is used.
+- **Action:** Retag only a wholly recognized consecutive paragraph run as `ul/li`, preserving paragraph attributes, inline content, emphasis, links and bookmarks. Truly blank paragraphs may separate items; never jump over substantive content. A heading, table, document end, the reviewed `“Domestic” means` / `"Domestic" means` / `Domestic means` definition prefix, or exact "Additional information on eligibility" label (optional colon) safely ends the run. Any other unknown paragraph, stray text, comment or unsupported container before that boundary makes the entire candidate a no-op, rather than creating a partial list. Any existing unordered or ordered list anywhere before the targeted heading's next peer/higher heading skips the whole subsection, including mixed-list cases. Unsupported categories, introductions and malformed hierarchy are not inferred or fuzzily matched. Subsets and reordered recognized categories work without State governments or Unrestricted endpoints.
+- **Source:** `content_processing.py::repair_eligibility_organization_lists`, called by `process_nofo_html` after existing list repair and before bookmark rescue
+- **Status:** active on explicit Word/HTML import and re-import through the shared Builder, Composer and Compare pipeline; idempotent. No ordinary editing/save/render/export repair, saved-record migration, source-file modification or eligibility wording change. The reported Announcement Module omission is requester-reported; the named HRSA-27-033 existing-list fixture was unavailable during this implementation. Synthetic native-bullet and unbulleted sources cover both paths. A separate inspected HRSA-26-747 export remains a deliberate no-op because it contains an unrecognized Others category and a later restriction list. See [validation evidence and limits](review-evidence/1190/README.md).
 
 ---
 
@@ -532,6 +544,13 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Source:** `content_processing.py::add_strongs_to_soup`, `_get_classnames_for_font_weight_bold`
 - **Status:** active
 
+### IMPORT-070 — Preserve explicit breaks in emphasized text
+- **Type:** repair
+- **Trigger:** A `<br>` inside `<strong>`, `<b>`, `<em>`, or `<i>` outside heading/table-cell inline conversion contexts. Word can include a soft break in the bold run at the end of a contact name.
+- **Action:** Preserve the break as raw `<br>` in Markdown so emphasis whitespace trimming cannot discard it. Other breaks and heading/table-cell conversion retain their existing behavior.
+- **Source:** `nofo_markdown.py::NofoMarkdownConverter.convert_br`
+- **Status:** active
+
 ### IMPORT-037 — "De minimis" auto-italicization
 - **Type:** conversion
 - **Trigger:** The literal text "de minimis" (case-insensitive) appears in a text node outside `<em>`, `<script>`, or `<style>`.
@@ -591,14 +610,14 @@ The example that prompted this document: detecting a footnote/endnote list and f
 
 ### IMPORT-039 — Writer-instructions table extraction
 - **Type:** extraction
-- **Trigger:** A single-cell table whose text starts with "Instructions for NOFO writers", "Instructions for new NOFO team", or matches the pattern `*-specific instructions`.
+- **Trigger:** A single-cell table whose text starts with "Instructions for NOFO writers", "Instructions for new NOFO team", "Instructions for template managers" (including combined manager/writer guidance), or matches the pattern `*-specific instructions`.
 - **Action:** Extracted (removed) from the document body, then matched by title to the corresponding subsection and reattached there as that subsection's "instructions" field (Composer import only).
 - **Source:** `content_processing.py::decompose_instructions_tables`; application attachment remains `nofo.py::add_instructions_to_subsections`
 - **Status:** active
 
 ### IMPORT-058 — Pale-blue Word instruction-container cleanup
 - **Type:** removal
-- **Trigger:** A Word text-box container resolves to the verified HHS master fill `DCEAF7` (one RGB level allowed for Word rounding). DrawingML resolves document theme relationships, color mappings and supported luminance/tint/shade transformations; VML reads explicit solid fills. Compatibility copies must agree on color, normalized text and link destinations/anchors; tooltip/history-only differences do not create separate logical boxes. Independent grouped boxes are not deduplicated. This is per-container detection, not date, filename, agency or saved-template classification.
+- **Trigger:** A Word text-box container resolves to the verified HHS master fill `DCEAF7` (one RGB level allowed for Word rounding). DrawingML resolves document theme relationships, color mappings and supported luminance/tint/shade transformations; VML reads explicit solid fills. Compatibility copies must agree on color, normalized text and link destinations/anchors; for removal of verified blue boxes only, spaces before commas and full stops are ignored (for example `GrantSolutions ,` and `OpDiv .`). Other text differences remain conflicts; tooltip/history-only differences do not create separate logical boxes. Independent grouped boxes are not deduplicated. This is per-container detection, not date, filename, agency or saved-template classification.
 - **Action:** Remove the complete recognized shape or its paired compatibility container from an in-memory DOCX conversion copy, not its enclosing paragraph/run. Preserve adjacent text, bookmarks, links and images. White, unfilled and transparent boxes remain, even with instruction-like wording/styles. Unknown/conflicting fills or compatibility text are retained with a content-free review warning. Supply a conversion-only text copy for retained DrawingML boxes that Mammoth would otherwise ignore; preserve the original uploaded file and other ZIP parts. IMPORT-039 continues unchanged, including removal of recognized old instruction tables regardless of their fill. Non-instructional one-cell tables continue through IMPORT-024/IMPORT-025.
 - **Source:** `word_instruction_boxes.py::clean_instruction_boxes`, called by `nofo.py::parse_uploaded_file_as_html_string`; Builder new/re-import views opt in. Composer and Compare retain their existing conversion behavior, including Composer table-guidance extraction/reattachment. No cleanup runs on saved records, views or exports.
 - **Status:** active for uploaded Word documents in Builder new imports and authorized re-imports; HTML uploads are unchanged. Only the verified fill pattern is removed. Gradient/pattern fills, unresolved colors, local color-map overrides, partial transparency and unsupported representations are not inferred as instructions. Removing an option label does not remove following alternative NOFO content or resolve duplicate headings. See [compatibility evidence and production procedure](review-evidence/1089/README.md).

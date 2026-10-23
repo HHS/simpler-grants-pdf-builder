@@ -117,9 +117,15 @@ is needed, contact the SimplerNOFOs team.
   Redundant bold
   formatting imports as a single bold level. Review the result against Word;
   existing saved content receives this handling only when reimported.
+- Consecutive Word bullets at the same numbering level import as one list even
+  when their internal list IDs differ, avoiding extra gaps between bullet groups.
+  Paragraphs still separate lists; numbered-list restarts remain separate.
 - For an existing NOFO, reimport replaces sections and subsections and can lose
   manual edits. It is not a way to apply import repairs to saved edits in place.
   Reimport preserves saved theme, cover and introductory ownership choices.
+- Adjacent bullet and numbered lists remain separate HTML lists after import,
+  including within a nested list. Compare their markers and nesting with Word;
+  this conversion does not repair previously saved content automatically.
 
 <a id="task-import-recover"></a>
 
@@ -171,7 +177,9 @@ or reimport, or when you find writer-only notes in the content.
    decision, resolve it with your grants policy office.
 4. Select **Save subsection**, then **Preview PDF** to check the result.
 
-Automatic cleanup does not remove every instruction container. The warning is
+Automatic cleanup removes verified blue instruction boxes even when Word’s compatibility copies differ only in spacing before commas or full stops.
+Single-cell instruction tables beginning “Instructions for template managers” are also removed from applicant content, including tables that combine manager and writer guidance.
+Cleanup does not remove every instruction container. The warning is
 an invitation to review, not evidence that all highlighted content is disposable.
 
 ---
@@ -400,6 +408,13 @@ where needed. Unsupported custom numbering and typed marker-like text need
 review. Existing records are not converted just by opening or saving them.
 See [Word list import and editing](WORD_LIST_IMPORT.md).
 
+Under **Eligibility → Types of eligible organizations**, import/reimport can
+restore bullets for explicitly recognized organization-category paragraphs after
+a supported domestic-organization introduction. Compare the list with Word,
+including definitions and restrictions that must remain outside it. Existing or
+mixed lists and unfamiliar category/intro wording are left unchanged; no repair
+runs when ordinary edits are saved. See [the bounded eligibility import rule](IMPORT_RULES.md#import-070--missing-eligibility-organization-bullets).
+
 ---
 
 ## Tables
@@ -585,6 +600,14 @@ You can make every table in a section use the full page width.
 1. On the NOFO edit page, select **Check external links** when it appears
    (the button is shown only when external links are present).
 2. Fix any failing links using the content editor ([TASK-SUBSECTION-EDIT](#task-subsection-edit)).
+
+**Missing destinations:** the **Check missing link destinations** tab under
+**Before publishing, address the following** lists each affected link and its
+subsection. Open that subsection, add the intended destination inside the link's
+parentheses (for example, `[See eligibility](#eligibility)`), then select
+**Save subsection**. If ordinary text is intended, remove the link markup instead.
+Clearing only the destination leaves a warning; these are separate from broken
+internal links and are not requested over the network.
 
 <a id="task-endnote-review"></a>
 
@@ -832,6 +855,71 @@ Preview and download require the configured PDF service. The controls are
 disabled when the app is accessed through localhost; the local walkthrough
 did not generate or verify PDFs.
 
+## Synthetic local design pilot
+
+These tasks apply only to the isolated synthetic profile, not a deployed Builder
+or an ordinary NOFO. They were checked in local Chrome on October 20, 2026.
+See [local host setup and limitations](DESIGN_PILOT_LOCAL_HOST.md).
+
+<a id="task-design-pilot-import"></a>
+
+### TASK-DESIGN-PILOT-IMPORT: Import an invented Word document
+
+**Starting point:** `/design-pilot/` on the separately configured localhost
+instance. The profile must be started with a private scratch database and no
+provider credentials. Sign in with its ordinary synthetic test account.
+This route is unavailable under normal settings. Do not upload real documents.
+
+**Steps**
+
+1. Under **Synthetic NOFO Word document**, choose one invented `.docx` file,
+   no larger than 1 MB.
+2. Select **This file contains invented information only.**
+3. Select **Import candidate**.
+4. If an error appears, follow its guidance, choose the corrected file and
+   submit again. A retry of the same source checks the existing candidate’s
+   integrity and reopens it if valid. If invalid, the upload shows recovery
+   guidance without replacing the candidate.
+5. On **Review synthetic candidate**, check the source name, conversion
+   warnings and saved design-change count.
+
+<a id="task-design-pilot-review"></a>
+
+### TASK-DESIGN-PILOT-REVIEW: Change presentation and optionally view HTML
+
+**Starting point:** **Review synthetic candidate** after the local import.
+
+**Steps**
+
+1. To change the theme, select **Theme**, enter **Reason for this change** and
+   select **Save theme**. Choices follow your current group permissions and
+   the candidate's design restrictions, not the OpDiv named in the upload.
+   A permitted current legacy theme can be retained, but cannot be selected
+   again after changing away from it.
+2. To change table widths, choose **Standard** or **Full width** for the
+   relevant section, enter a reason and select that section's **Save table width**.
+   This applies to every table in that section, not one table.
+3. Confirm the saved setting and **Saved design changes** count. Saving an
+   unchanged setting does not add a change.
+4. Optionally select **View current HTML (opens a new tab)**. It uses Builder's
+   existing templates but does not verify PDF pagination. External links are
+   inactive in this preview; stored source content remains unchanged.
+5. If **Request not saved** appears, use **Return to current candidate**,
+   review its latest state and enter the intended change again. An old HTML
+   link must also be reopened from the current candidate.
+
+If the error says the candidate's content changed outside the pilot, ask the
+developer running it to follow [targeted recovery](DESIGN_PILOT_LOCAL_HOST.md#recover-a-candidate-after-an-outside-content-edit).
+Returning to the candidate or uploading the same file will not repair it. The
+developer must remove the affected candidate and its associated NOFO before you
+upload the original file again; this removes that candidate's saved changes.
+
+**PDF unavailable** is expected. Cover changes, acceptance, publication,
+production transfer and discard are not implemented in this slice. The human
+login is not an agent credential. Do not use ordinary editor tasks to bypass the
+local profile's restrictions. Stopping the server does not erase the scratch
+database or the source documents it contains.
+
 ## Maintaining this page
 
 Labels on this page come from these files. When you change one, update the
@@ -839,6 +927,7 @@ matching task in the same pull request.
 
 | UI area | Source |
 | --- | --- |
+| Synthetic local candidate upload, changes and HTML review | `nofos/nofos/templates/nofos/design_pilot_*.html`; `nofos/nofos/design_pilot_views.py`; [local profile guide](DESIGN_PILOT_LOCAL_HOST.md) |
 | NOFO edit page, section tables, warning tabs | `nofos/nofos/templates/nofos/nofo_edit.html` |
 | **NOFO actions** menu | `get_nofo_action_links()` in `nofos/nofos/nofo.py` |
 | Subsection edit page, conflict recovery, **Other actions** | `nofos/nofos/templates/nofos/subsection_edit.html`; `NofoSubsectionEditView` in `nofos/nofos/views.py` |

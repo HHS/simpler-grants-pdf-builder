@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from urllib.parse import parse_qs, urlparse
 
 import cssutils
-from bs4 import BeautifulSoup, NavigableString, Tag
+from bs4 import BeautifulSoup, Comment, NavigableString, Tag
 
 from .content_text import clean_string
 from .endnotes import (
@@ -150,6 +150,7 @@ def process_nofo_html(soup, top_heading_level, *, debug_capture=None):
     join_nested_lists(soup)
     add_strongs_to_soup(soup)
     repair_acf_required_alignment_lists(soup)
+    repair_eligibility_organization_lists(soup)  # IMPORT-070
     preserve_bookmark_links(soup)
     preserve_heading_links(soup)
     preserve_table_heading_links(soup)
@@ -1115,6 +1116,139 @@ def repair_acf_required_alignment_lists(soup):
     return soup
 
 
+ELIGIBLE_ORGANIZATION_CATEGORIES = frozenset(
+    label.casefold()
+    for label in (
+        "State governments",
+        "County governments",
+        "City or township governments",
+        "Special district governments",
+        "Independent school districts",
+        "Public and State controlled institutions of higher education",
+        "Native American tribal governments (Federally recognized)",
+        "Public housing authorities/Indian housing authorities",
+        "Native American tribal organizations (other than Federally recognized tribal governments)",
+        "Nonprofits having a 501(c)(3) status with the IRS, other than institutions of higher education",
+        "Nonprofits without 501(c)(3) status with the IRS, other than institutions of higher education",
+        "Private institutions of higher education",
+        "For profit organizations other than small businesses",
+        "Small businesses",
+        "Unrestricted (i.e., open to any type of entity above), subject to any clarification in text field entitled ‘Additional Information on Eligibility’",
+        "Unrestricted (i.e., open to any type of entity above), subject to any clarification in text field entitled “Additional Information on Eligibility”",
+    )
+)
+ELIGIBLE_ORGANIZATION_INTROS = frozenset(
+    (
+        "these types of domestic organizations may apply",
+        "the following types of domestic organizations may apply",
+        "the following domestic organizations are eligible to apply",
+    )
+)
+
+
+def repair_eligibility_organization_lists(soup):
+    """Repair only positively identified, wholly recognized eligibility runs.
+
+    Unknown prose is not inferred to be a boundary: it might be another category.
+    In that case leave the whole candidate alone rather than make a partial list.
+    Native/mixed lists anywhere in the subsection also opt out of this repair.
+    """
+    heading_names = {f"h{level}" for level in range(1, 7)}
+
+    def text(tag):
+        return " ".join(tag.get_text().split()).casefold()
+
+    def plain_paragraph(tag):
+        return (
+            tag.name == "p"
+            and not any(isinstance(child, Comment) for child in tag.descendants)
+            and all(
+                child.name
+                in {"a", "strong", "b", "em", "i", "span", "sup", "sub", "br"}
+                for child in tag.find_all(True)
+            )
+        )
+
+    active_headings = []
+    for heading in soup.body.find_all(heading_names, recursive=False):
+        rank = int(heading.name[1])
+        while active_headings and int(active_headings[-1].name[1]) >= rank:
+            active_headings.pop()
+        within_eligibility = any(text(h) == "eligibility" for h in active_headings)
+        active_headings.append(heading)
+        if text(heading) != "types of eligible organizations" or not within_eligibility:
+            continue
+
+        scope = []
+        for node in heading.next_siblings:
+            if isinstance(node, Tag) and (
+                node.name in heading_names and int(node.name[1]) <= rank
+            ):
+                break
+            scope.append(node)
+        if any(
+            isinstance(node, Tag)
+            and (node.name in {"ul", "ol"} or node.find(["ul", "ol"]))
+            for node in scope
+        ):
+            continue
+
+        # Ignore only genuinely empty paragraph/whitespace separators. Media,
+        # comments, stray text and unknown containers are not blank evidence.
+        content = [
+            node
+            for node in scope
+            if not (
+                type(node) is NavigableString
+                and not node.strip()
+                or isinstance(node, Tag)
+                and plain_paragraph(node)
+                and not text(node)
+                and not node.find("a", attrs={"id": True})
+            )
+        ]
+        if (
+            not content
+            or not isinstance(content[0], Tag)
+            or not plain_paragraph(content[0])
+        ):
+            continue
+        intro = re.sub(r"\*\s*(?=domestic\b)", "", text(content[0])).rstrip(".:")
+        if intro not in ELIGIBLE_ORGANIZATION_INTROS:
+            continue
+
+        items = []
+        ambiguous = False
+        for node in content[1:]:
+            if isinstance(node, Tag) and (
+                node.name in heading_names or node.name == "table"
+            ):
+                break
+            if not isinstance(node, Tag) or not plain_paragraph(node):
+                ambiguous = True
+                break
+            label = text(node)
+            if label in ELIGIBLE_ORGANIZATION_CATEGORIES:
+                items.append(node)
+            elif label.rstrip(
+                ":"
+            ) == "additional information on eligibility" or re.match(
+                r'^(?:“domestic”|"domestic"|domestic) means ', label
+            ):
+                break
+            else:
+                ambiguous = True
+                break
+        if not items or ambiguous:
+            continue
+        listing = soup.new_tag("ul")
+        items[0].insert_before(listing)
+        for item in items:
+            item.name = "li"
+            listing.append(item.extract())
+    return soup
+
+
 def remove_google_tracking_info_from_links(soup):
     """
     This function mutates the soup!
@@ -1948,7 +2082,7 @@ def decompose_instructions_tables(soup):
     and return them as a list of extracted HTML snippets for later use.
 
     This function iterates through all the <table> elements in the BeautifulSoup object.
-    If a table contains text that starts with "Instructions for NOFO writers:",
+    If a single-cell table starts with a recognized writer or template-manager label,
     it is removed from the soup object.
     """
     instructions_tables = []
@@ -1960,6 +2094,7 @@ def decompose_instructions_tables(soup):
             table_text_lowercase = table.get_text().lower()
             if (
                 table_text_lowercase.startswith("instructions for nofo writers")
+                or table_text_lowercase.startswith("instructions for template managers")
                 or table_text_lowercase.startswith("instructions for new nofo team")
                 or re.match(r".+-specific instructions", table_text_lowercase)
             ):

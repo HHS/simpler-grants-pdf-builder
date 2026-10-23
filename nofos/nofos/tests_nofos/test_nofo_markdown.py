@@ -1,6 +1,6 @@
 import markdown
 from bs4 import BeautifulSoup
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase
 
 from nofos.endnotes import convert_bracketed_endnotes
 from nofos.nofo_markdown import md
@@ -8,6 +8,31 @@ from nofos.nofo_markdown import md
 #########################################################
 ############# MARKDOWNIFY CONVERTER TESTS ###############
 #########################################################
+
+
+class FormattedLineBreakTests(SimpleTestCase):
+    def test_formatted_breaks_survive_markdown_round_trip(self):
+        for tag in ("strong", "b", "em", "i"):
+            for content in ("Name<br>", "<br>Name", "First<br>Last", "<br>"):
+                with self.subTest(tag=tag, content=content):
+                    html = f'<p><{tag}>{content}</{tag}><a href="mailto:person@example.org">Email</a></p>'
+                    rendered = BeautifulSoup(markdown.markdown(md(html)), "html.parser")
+                    self.assertEqual(len(rendered.find_all("br")), 1)
+                    self.assertEqual(
+                        rendered.get_text(),
+                        BeautifulSoup(html, "html.parser").get_text(),
+                    )
+                    self.assertIsNotNone(
+                        rendered.find("a", href="mailto:person@example.org")
+                    )
+
+    def test_contact_breaks_and_bold_name_survive(self):
+        html = '<p><strong>Contact Name<br></strong><a href="mailto:person@example.org">person@example.org</a> <br>Phone: 555-0100</p>'
+        rendered = BeautifulSoup(markdown.markdown(md(html)), "html.parser")
+        self.assertEqual(len(rendered.find_all("br")), 2)
+        self.assertEqual(rendered.strong.get_text(), "Contact Name")
+        self.assertEqual(rendered.a.previous_sibling.name, "strong")
+        self.assertIsNotNone(rendered.strong.find("br"))
 
 
 class ManualEndnoteRoundTripTests(TestCase):

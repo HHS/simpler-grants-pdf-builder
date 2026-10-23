@@ -17,8 +17,10 @@ Simple standalone bullets and ordinary decimal lists remain readable Markdown:
 ```
 
 Builder retains semantic HTML when a list tree needs letter/Roman markers,
-explicit decimal descendants or non-one starts. Keep nested lists inside their
-parent list item when editing this representation:
+explicit decimal descendants or non-one starts. Separate adjacent lists also
+remain HTML, including a bullet list immediately followed by a numbered list
+(or the reverse), so their boundaries and markers survive rendering. Keep nested
+lists inside their parent list item when editing this representation:
 
 ```html
 <ol type="a">
