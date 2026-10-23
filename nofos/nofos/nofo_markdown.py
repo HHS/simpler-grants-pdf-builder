@@ -175,6 +175,16 @@ class NofoMarkdownConverter(MarkdownConverter):
 
         return super().convert_a(el, text, parent_tags)
 
+    def convert_br(self, el, text, parent_tags):
+        # Markdownify strips boundary whitespace from emphasis, including the
+        # two-space/newline representation of a Word soft break. Raw HTML
+        # survives that stripping and the subsequent Markdown render.
+        if "_inline" not in parent_tags and parent_tags.intersection(
+            {"strong", "b", "em", "i"}
+        ):
+            return "<br>"
+        return super().convert_br(el, text, parent_tags)
+
     def convert_div(self, el, text, parent_tags):
         # Output raw HTML if the div has role="heading" attribute
         if el.get("role") == "heading":
