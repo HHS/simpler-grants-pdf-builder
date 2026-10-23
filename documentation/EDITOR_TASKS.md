@@ -595,6 +595,14 @@ You can make every table in a section use the full page width.
    (the button is shown only when external links are present).
 2. Fix any failing links using the content editor ([TASK-SUBSECTION-EDIT](#task-subsection-edit)).
 
+**Missing destinations:** the **Check missing link destinations** tab under
+**Before publishing, address the following** lists each affected link and its
+subsection. Open that subsection, add the intended destination inside the link's
+parentheses (for example, `[See eligibility](#eligibility)`), then select
+**Save subsection**. If ordinary text is intended, remove the link markup instead.
+Clearing only the destination leaves a warning; these are separate from broken
+internal links and are not requested over the network.
+
 <a id="task-endnote-review"></a>
 
 ### TASK-ENDNOTE-REVIEW — Investigate a broken endnote relationship

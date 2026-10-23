@@ -558,6 +558,19 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         )
         context["broken_links"] = find_broken_links(self.object)
         context["external_links"] = find_external_links(self.object, with_status=False)
+        context["missing_destination_links"] = [
+            {
+                **link,
+                "location_html_id": (
+                    link["subsection"].html_id
+                    if link["subsection"].name != "Basic information"
+                    and link["subsection"].html_id
+                    else link["section"].html_id
+                ),
+            }
+            for link in context["external_links"]
+            if link.get("invalid_destination")
+        ]
         context["heading_errors"] = find_same_or_higher_heading_levels_consecutive(
             self.object
         ) + find_incorrectly_nested_heading_levels(self.object)
@@ -592,6 +605,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         # booleans to show/hide our various warning messages
         context["has_missing_metadata"] = len(context["missing_metadata_fields"])
         context["has_broken_links"] = len(context["broken_links"])
+        context["has_missing_destinations"] = len(context["missing_destination_links"])
         context["has_heading_errors"] = len(context["heading_errors"])
         context["has_unconverted_footnotes"] = len(context["unconverted_footnotes"])
         context["has_external_links"] = len(
@@ -600,6 +614,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context["has_warnings"] = (
             context["has_missing_metadata"]
             or context["has_broken_links"]
+            or context["has_missing_destinations"]
             or context["has_heading_errors"]
             or context["has_unconverted_footnotes"]
             or context["has_external_links"]
