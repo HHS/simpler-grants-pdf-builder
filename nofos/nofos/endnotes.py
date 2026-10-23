@@ -554,9 +554,79 @@ def _inspect(soup):
     return issues, invalid, (headings, section, blocks, refs, citations, entries)
 
 
-def analyze_endnotes(soup):
+def _unstructured_endnote_content(soup):
+    """Find content outside recognized citations within hierarchical note scopes.
+
+    This saved-content review is separate from import matching: nested headings
+    stay in scope, and legacy/manual citations may have continuation blocks.
+    Existing relationship diagnostics still check their destinations separately.
+    """
+    scope = None
+    continuation = False
+    covered = set()
+    issues = []
+    for tag in soup.find_all(True):
+        if id(tag) in covered:
+            continue
+        if _heading(tag):
+            covered.update(id(child) for child in tag.find_all(True))
+            level = int(tag.name[1]) if re.fullmatch(r"h[1-7]", tag.name) else 7
+            if scope is not None and level <= scope:
+                scope = None
+            if is_endnotes_heading(tag.get_text(strip=True)):
+                scope = level
+            continuation = False
+            continue
+        if scope is None:
+            continue
+        if (
+            tag.name in {"ol", "ul", "div", "section", "article"}
+            and tag.find(True)
+            and not any(
+                isinstance(child, NavigableString) and child.strip()
+                for child in tag.contents
+            )
+        ):
+            continue
+        # Inline elements belong to their containing block, not separate entries.
+        if tag.find_parent(BLOCK_NAMES + ["pre", "blockquote", "table"]):
+            continue
+        text = tag.get_text(" ", strip=True)
+        if not text:
+            continue
+        covered.update(id(child) for child in tag.find_all(True))
+        native = (
+            tag.name == "li"
+            and tag.parent.name == "ol"
+            and (
+                NATIVE_TARGET_ID.match(tag.get("id", ""))
+                or CITATION_TARGET_ID.fullmatch(tag.get("id", ""))
+            )
+            and tag.find("a", href=re.compile(r"^#(?:endnote|footnote)-ref-"))
+        )
+        # Google Docs stored citations start with a linked [N] return marker;
+        # generated manual notes have the same visible bracket convention.
+        manual = bool(MARKER.match(tag.get_text().lstrip()))
+        if native or manual:
+            continuation = bool(manual and not native)
+        elif not continuation:
+            issues.append(
+                {
+                    "tag": tag,
+                    "message": "Content under Endnotes is not formatted as an endnote citation.",
+                    "code": "content-format",
+                    "excerpt": text[:180] + ("…" if len(text) > 180 else ""),
+                }
+            )
+    return issues
+
+
+def analyze_endnotes(soup, *, check_content=False):
     """Return actionable issues with their source Tag, without changing HTML."""
-    return _inspect(soup)[0]
+    issues = _inspect(soup)[0]
+    if check_content:
+        issues.extend(_unstructured_endnote_content(soup))
+    return issues
 
 
 def _wrap_range(soup, block, start, end, wrapper):

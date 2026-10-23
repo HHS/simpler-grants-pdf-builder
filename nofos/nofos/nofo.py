@@ -1594,7 +1594,8 @@ def find_endnote_issues(nofo):
             append_fragment(fragment, section, subsection)
 
     results = []
-    for issue in analyze_endnotes(soup):
+    content_locations = set()
+    for issue in analyze_endnotes(soup, check_content=True):
         tag = issue["tag"]
         location = (
             tag
@@ -1604,6 +1605,11 @@ def find_endnote_issues(nofo):
         if location is None:
             continue
         section, subsection = locations[location["data-endnote-location"]]
+        if issue["code"] == "content-format":
+            key = location["data-endnote-location"]
+            if key in content_locations:
+                continue
+            content_locations.add(key)
         # Basic information is represented by the metadata table rather than its
         # imported subsection, and unnamed subsections have no editor anchor.
         # In either case, link to the containing section, which is always rendered.
@@ -1619,6 +1625,7 @@ def find_endnote_issues(nofo):
                 ),
                 "message": issue["message"],
                 "code": issue["code"],
+                "excerpt": issue.get("excerpt", ""),
             }
         )
     return results

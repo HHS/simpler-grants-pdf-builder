@@ -615,12 +615,14 @@ internal links and are not requested over the network.
 
 **Steps**
 
-1. On the NOFO edit page, look for endnote warnings under
+1. On the NOFO edit page, open **Check endnotes** under
    **Before publishing, address the following**.
 2. Follow the affected subsection or section link and locate the reference
    and its matching citation entry.
 3. Check that each reference has an entry and each entry has a reference;
    identify missing or repeated numbers and broken destinations.
+   For a content-format warning, use the quoted block to locate content that
+   is not recognized as a citation. Keep valid citation continuation content.
 4. If the correction is unclear, contact your grants policy office first.
    If additional help is needed, contact the SimplerNOFOs team.
 
