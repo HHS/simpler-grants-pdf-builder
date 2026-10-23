@@ -284,6 +284,66 @@ def remove_duplicate_native_note_custom_marks(soup):
     return removed
 
 
+def normalize_repeated_native_note_links(soup):
+    """Give explicit references to one native note unique IDs and return links.
+
+    IMPORT-072. Never infer a relationship from unlinked superscript numbers.
+    Ambiguous destinations, conflicting labels, and unrelated ID collisions
+    remain untouched for the read-only validator to report.
+    """
+    groups = defaultdict(list)
+    for anchor in soup.find_all("a", href=NATIVE_TARGET_HREF):
+        if anchor.find_parent(["pre", "code"]) or anchor.find_parent(
+            id=NATIVE_TARGET_ID
+        ):
+            continue
+        if re.fullmatch(r"\[?\d{1,9}\]?", anchor.get_text(strip=True)):
+            groups[anchor["href"][1:]].append(anchor)
+    for target_id, anchors in groups.items():
+        targets = soup.find_all(id=target_id)
+        if len(targets) != 1 or targets[0].name != "li":
+            continue
+        target = targets[0]
+        native = [a for a in anchors if NATIVE_REFERENCE_ID.match(a.get("id", ""))]
+        if not native:
+            continue
+        label = native[0].get_text(strip=True)
+        if any(a.get_text(strip=True) != label for a in native):
+            continue
+        if any(
+            a.get("id")
+            and any(other not in anchors for other in soup.find_all(id=a["id"]))
+            for a in anchors
+        ):
+            continue
+        base = target_id.replace("-", "-ref-", 1)
+        used = set()
+        for anchor in anchors:
+            reference_id = anchor.get("id")
+            if not reference_id or reference_id in used:
+                reference_id = base
+                suffix = 2
+                while soup.find(id=reference_id) is not None or reference_id in used:
+                    reference_id = f"{base}-repeat-{suffix}"
+                    suffix += 1
+                anchor["id"] = reference_id
+            used.add(reference_id)
+            anchor.string = label
+            if anchor.parent.name != "sup":
+                anchor.wrap(soup.new_tag("sup"))
+            if not target.find("a", href=f"#{reference_id}"):
+                back = soup.new_tag("a", href=f"#{reference_id}")
+                back["aria-label"] = (
+                    f"Return to endnote {label.strip('[]')} reference {len(used)}"
+                )
+                back.string = "↑"
+                # Keep the citation's paragraph structure valid.
+                container = target.find_all("p", recursive=False)
+                container = container[-1] if container else target
+                container.append(" ")
+                container.append(back)
+
+
 def _scan(soup):
     headings = [
         t for t in soup.find_all(_heading) if HEADING.fullmatch(t.get_text(strip=True))
@@ -423,11 +483,22 @@ def _inspect(soup):
                 "destination",
             )
     for number, anchors in native_refs.items():
-        if len(anchors) > 1:
+        if len(anchors) > 1 and len({a["href"] for a in anchors}) > 1:
             warn(
                 anchors[0],
                 f"[{number}] is used more than once in linked endnotes.",
                 "duplicate",
+            )
+    target_labels = defaultdict(set)
+    for number, anchors in native_refs.items():
+        for anchor in anchors:
+            target_labels[anchor["href"]].add(number)
+    for href, labels in target_labels.items():
+        if len(labels) > 1:
+            warn(
+                soup.find("a", href=href),
+                "References to the same endnote have conflicting numbers.",
+                "conflict",
             )
     for target in soup.find_all(id=re.compile(r"^(?:endnote|footnote)-(?!ref-).+")):
         if not soup.find("a", href=f'#{target["id"]}'):
@@ -515,7 +586,21 @@ def _inspect(soup):
                 if id(anchor) not in section
             ]
         )
-        combined_sequence = [n for _, n in combined_events]
+        # Repeated explicit native references reuse a citation, not a new number.
+        seen_native = set()
+        combined_sequence = []
+        native_positions = {
+            text_start(a): a["href"]
+            for anchors in native_refs.values()
+            for a in anchors
+        }
+        for position, number in combined_events:
+            destination = native_positions.get(position)
+            if destination and destination in seen_native:
+                continue
+            if destination:
+                seen_native.add(destination)
+            combined_sequence.append(number)
         if sequence and combined_sequence != list(range(1, len(combined_sequence) + 1)):
             warn(
                 refs[sequence[0]][0][0],

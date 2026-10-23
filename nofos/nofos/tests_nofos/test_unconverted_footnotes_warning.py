@@ -75,7 +75,11 @@ class NofoUnconvertedFootnotesWarningTests(TestCase):
         panel_text = panel.get_text(" ", strip=True)
         self.assertIn("Warning: review endnotes", panel_text)
         self.assertIn(
-            "Reference numbers must be sequential and can't repeat", panel_text
+            "Manually bracketed references must be sequential and can't repeat",
+            panel_text,
+        )
+        self.assertIn(
+            "Word cross-references can reuse an existing native endnote", panel_text
         )
         self.assertIn(
             "Every reference number must have a corresponding endnote entry",

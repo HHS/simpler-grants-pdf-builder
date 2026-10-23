@@ -629,6 +629,11 @@ internal links and are not requested over the network.
 - Builder supports native Word notes and unambiguous manually bracketed notes.
   Do not recommend adding or removing an Endnotes heading without identifying
   the source authoring workflow.
+- Supported Word cross-references reuse a native citation with a unique link ID
+  and a return link for each occurrence. Typed superscripts have no relationship
+  to recover; replace them with actual Word endnotes or cross-references.
+  Import repairs unambiguous duplicate native IDs and extracts a standalone
+  References title from the first note. See the [Windows Word FAQ](endnote-import.md#faq-for-authors-using-microsoft-word-on-windows).
 - Explicit URLs and DOI identifiers in eligible imported citations are linked
   automatically; incomplete references are not guessed. A native note's isolated
   return arrow is moved inline only when it matches the narrow import rule.
