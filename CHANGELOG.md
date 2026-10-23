@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.53.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.52.4...nofos-v3.53.0) (2026-10-23)
+
+
+### Features
+
+* add bounded synthetic design candidate operations ([#1160](https://github.com/HHS/simpler-grants-pdf-builder/issues/1160)) ([57094f2](https://github.com/HHS/simpler-grants-pdf-builder/commit/57094f2d45fb73dc7501d904291c2bc0a90e9aa5))
+* connect synthetic design candidates to isolated local HTML review ([#1161](https://github.com/HHS/simpler-grants-pdf-builder/issues/1161)) ([e0106b9](https://github.com/HHS/simpler-grants-pdf-builder/commit/e0106b9cf34f212d9bb78feade3e375291291c7c))
+
+
+### Bug Fixes
+
+* remove instruction boxes with spacing differences and manager labels ([#1199](https://github.com/HHS/simpler-grants-pdf-builder/issues/1199)) ([c63200e](https://github.com/HHS/simpler-grants-pdf-builder/commit/c63200e8655f37cfa64fecd3c048cb730abb125f))
+* repair recognized eligibility organization bullets on import ([#1193](https://github.com/HHS/simpler-grants-pdf-builder/issues/1193)) ([0848b9f](https://github.com/HHS/simpler-grants-pdf-builder/commit/0848b9f0594848297425e90934d3c1d60e896250))
+* retain missing link destinations in publication warnings ([#1191](https://github.com/HHS/simpler-grants-pdf-builder/issues/1191)) ([038f330](https://github.com/HHS/simpler-grants-pdf-builder/commit/038f330b91e54040b2a828076cfb5faa9a761224))
+* upgrade Black to patch image scan finding ([#1195](https://github.com/HHS/simpler-grants-pdf-builder/issues/1195)) ([a18c093](https://github.com/HHS/simpler-grants-pdf-builder/commit/a18c0934ca7ee69fc77e848af731882cdb1a68d1))
+
+
+### Miscellaneous Chores
+
+* bump pypdf from 6.19.0 to 6.21.1 ([#1182](https://github.com/HHS/simpler-grants-pdf-builder/issues/1182)) ([79dd6e0](https://github.com/HHS/simpler-grants-pdf-builder/commit/79dd6e02e303298723de1c0a8910df464e3c676e))
+* bump virtualenv from 21.14.2 to 21.14.9 ([#1183](https://github.com/HHS/simpler-grants-pdf-builder/issues/1183)) ([8d43eee](https://github.com/HHS/simpler-grants-pdf-builder/commit/8d43eee1f1a1cf7768787929130a14bb3aeb4a17))
+
 ## [3.52.4](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.52.3...nofos-v3.52.4) (2026-10-21)
 
 
