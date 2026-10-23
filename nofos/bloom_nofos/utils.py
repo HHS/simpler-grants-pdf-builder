@@ -100,6 +100,15 @@ def generate_docx_download_response(
     """
     Convert a URL to DOCX using GrabzIt and return it as an attachment response.
     """
+    from constance import config
+
+    if config.PANDOC_WORD_EXPORT_ENABLED:
+        from .word_export import pandoc_download_response
+
+        return pandoc_download_response(
+            request, export_url, target_element, filename_base
+        )
+
     request_host = _normalize_hostname(request.get_host())
     if not is_grabzit_word_export_enabled(request_host):
         logger.warning(

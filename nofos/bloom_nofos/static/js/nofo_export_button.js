@@ -12,6 +12,8 @@
     const error = modal.querySelector('[data-docx-state="error"]');
     const errorText = modal.querySelector("[data-docx-error-text]");
     const status = modal.querySelector("[data-docx-status]");
+    const heading = modal.querySelector(".usa-modal__heading");
+    const loadingHeading = heading?.textContent;
     const doneBtn = modal.querySelector("[data-docx-done-btn]");
     const horseTrack = modal.querySelector("[data-docx-horse-track]");
     const modalWrapper = modal.closest(".usa-modal-wrapper");
@@ -32,6 +34,10 @@
     }
 
     function setState(state, message) {
+      if (heading) {
+        heading.textContent = state === "error" ? "Word document not generated" :
+          state === "success" ? "Your Word document is ready" : loadingHeading;
+      }
       loading.hidden = state !== "loading";
       success.hidden = state !== "success";
       error.hidden = state !== "error";
@@ -90,7 +96,8 @@
         console.error(err);
         setState(
           "error",
-          "Sorry — something went wrong generating the document. Please try again.",
+          err.userMessage ||
+            "Sorry — something went wrong generating the document. Please try again.",
         );
       }
     });

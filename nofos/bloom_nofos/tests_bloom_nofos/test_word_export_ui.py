@@ -1,5 +1,6 @@
+from constance.test import override_config
 from django.template.loader import render_to_string
-from django.test import RequestFactory, SimpleTestCase, override_settings
+from django.test import RequestFactory, TestCase, override_settings
 
 
 @override_settings(
@@ -11,7 +12,8 @@ from django.test import RequestFactory, SimpleTestCase, override_settings
     GRABZIT_APPLICATION_SECRET="synthetic-secret",
     GRABZIT_WORD_EXPORT_ALLOWED_HOSTS=("nofos.simpler.grants.gov",),
 )
-class WordExportAvailabilityUITests(SimpleTestCase):
+@override_config(PANDOC_WORD_EXPORT_ENABLED=False)
+class WordExportAvailabilityUITests(TestCase):
     def render_button(self, host):
         request = RequestFactory().get("/export", HTTP_HOST=host)
         return render_to_string(
@@ -33,3 +35,12 @@ class WordExportAvailabilityUITests(SimpleTestCase):
         self.assertNotIn('class="docx-download-form"', html)
         self.assertIn("disabled", html)
         self.assertIn("Word export is not available in this environment.", html)
+
+    @override_config(PANDOC_WORD_EXPORT_ENABLED=True)
+    @override_settings(GRABZIT_APPLICATION_KEY="", GRABZIT_APPLICATION_SECRET="")
+    def test_local_export_renders_form_without_vendor_configuration(self):
+        html = self.render_button("nofos.dev.simpler.grants.gov")
+
+        self.assertIn('class="docx-download-form"', html)
+        self.assertIn("data-open-modal", html)
+        self.assertNotIn("Word export is not available", html)
