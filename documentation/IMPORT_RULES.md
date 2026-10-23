@@ -7,6 +7,7 @@ This document catalogs every automatic content rule the NOFO Builder applies whe
 **Not to be confused with import error *codes*.** The `IMPORT-NNN` IDs here are numbered rule identifiers for content transformations. The `IMPORT-NAME` strings a user sees when an import is blocked (`IMPORT-NO-SECTIONS`, `IMPORT-OPDIV-BLANK`, and so on) are a separate namespace, catalogued in [`IMPORT_ERROR_CODES.md`](IMPORT_ERROR_CODES.md). A rule here can be the *reason* an error code fires; they are not the same registry.
 
 **Source files covered by this document:**
+- `nofos/nofos/typed_bullets.py` — literal bullet group repair during import
 - `nofos/nofos/content_processing.py` — framework-independent normalization, section parsing and shared source recognition; existing helpers are reexported by `nofo.py`.
 - `nofos/nofos/document_processing.py` — application error translation and DEBUG capture adapter; see [DOCUMENT_PROCESSING.md](DOCUMENT_PROCESSING.md).
 - `nofos/nofos/nofo.py` — Word conversion, metadata defaults, persistence and workflow; compatibility entry points forward content processing to the shared core
@@ -70,6 +71,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-053 | repair | Footnotes/Endnotes | Duplicated Word custom note mark beside native link → duplicate removed | `nofo.py`, `endnotes.py` |
 | IMPORT-068 | repair | Footnotes/Endnotes | Isolated final native-note return-link paragraph → inline backlink after citation | `content_processing.py`, `endnotes.py` |
 | IMPORT-064 | conversion | Footnotes/Endnotes | Explicit URL/www/DOI citation text → links inside recognized note targets only | `content_processing.py`, `endnotes.py` |
+| IMPORT-071 | repair | Lists | Literal • / o bullet groups → semantic two-level lists | `typed_bullets.py`, `content_processing.py` |
 | IMPORT-018 | repair | Lists | Adjacent same-class lists merged; differing-class lists nested | `nofo.py` |
 | IMPORT-019 | repair | Lists | Redundant `<li>`/`<ul>` wrapper levels unwrapped | `nofo.py` |
 | IMPORT-020 | conversion | Lists | `<ol start="N≠1">` or list-in-table-cell → kept as raw HTML in Markdown | `nofo_markdown.py` |
@@ -347,6 +349,14 @@ The example that prompted this document: detecting a footnote/endnote list and f
 ---
 
 ## List Structure Repair
+
+### IMPORT-071 — Literal bullet groups
+
+- **Type:** repair
+- **Trigger:** Consecutive paragraph/explicit `<br>` lines containing at least two `•` + whitespace + nonempty-text items. Lowercase `o` + whitespace lines are children only after a root bullet ending in a colon. Non-bullet lines and non-paragraph blocks end the run; blank paragraphs also end it.
+- **Action:** Remove literal markers and emit semantic `<ul>`/`<li>` trees with first- and second-level nesting. Preserve wording, inline formatting, links, paragraph attributes, and untouched paragraphs. Skip existing lists, tables, code/pre blocks, paragraphs with images/superscripts, and paragraphs with IDs or descendant IDs. Isolated bullets and standalone `o` groups stay unchanged. Only these two marker forms/levels are inferred; ambiguous indentation and third-level symbols are not guessed. Runs in the shared import/re-import cleanup, including Composer/Compare; does not scan or update saved NOFO records.
+- **Source:** `typed_bullets.py::repair_typed_bullets`, called by `content_processing.py::process_nofo_html`
+- **Status:** active
 
 ### IMPORT-018 — Adjacent list merging/nesting
 - **Type:** repair
