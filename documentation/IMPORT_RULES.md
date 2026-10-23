@@ -57,6 +57,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-010 | repair | Text Normalization | Metadata field values → NFKC-normalized, control chars stripped, whitespace collapsed | `nofo.py` |
 | IMPORT-011 | validation | Heading Structure | `h2` before first `h1` → import blocked with actionable error | `nofo.py` |
 | IMPORT-012 | validation | Heading Structure | No `h1` present → section level defaults to `h2` | `nofo.py` |
+| IMPORT-071 | removal | Heading Structure | Empty trailing Appendix/Endnotes/Footnotes H1/H2 placeholders → omitted before hierarchy validation | `content_processing.py` |
 | IMPORT-013 | repair | Heading Structure | Heading cleanup: unwrap spans, collapse whitespace, drop empty headings | `nofo.py` |
 | IMPORT-014 | conversion | Heading Structure | Auto-generate heading IDs; rewrite internal links to match | `nofo.py` |
 | IMPORT-055 | validation | Heading Structure | Report all over-limit section/subsection names before creating sections | `nofo.py` |
@@ -235,6 +236,14 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 - **Action:** Section-level heading defaults to `h2`.
 - **Source:** `content_processing.py::resolve_section_heading_level`; application adapters retain the existing Django validation error and detail fields
 - **Status:** active
+
+### IMPORT-071 — Empty optional headings at the document tail
+- **Type:** removal
+- **Trigger:** A trailing run of H1/H2 headings whose complete text is `Appendix`, `Endnotes`, or `Footnotes`, ignoring case, surrounding whitespace, and one optional trailing colon. Only whitespace, comments, ordinary role-free div wrappers, and blank paragraphs/inline formatting/line breaks may follow or separate them.
+- **Action:** Remove those headings before choosing the section heading level or running generic cleanup. Stop at any other heading or content, including images, tables, lists, rules, or semantic containers, even if textless. Preserve headings and blank elements containing referenced `id`/`name` bookmarks, and referenced div wrappers. Exact matching excludes `Appendix A`, `Appendices`, singular note names, and spaced `End notes`/`Foot notes`. An empty Appendix immediately before populated Endnotes remains outside this narrow trailing-run rule. Actual Word note lists count as content and retain their normal heading synthesis/link handling. Removed placeholders create no sections or subsections; an upload containing only these placeholders still fails the existing no-sections validation.
+- **Source:** `content_processing.py::remove_empty_trailing_optional_headings`, called by `process_document_content` before `resolve_section_heading_level`
+- **Status:** active on incoming Word/HTML through shared Builder, reimport, Composer, and Compare processing. No saved-record migration, original Word-file change, or new delete action. Editors may add Appendix or Endnotes after import using the existing actions.
+- **Origin:** HRSA reported an empty, unnecessary Endnotes heading through the NOFO Builder feedback form. The maintainer traced that report to imported optional headings; see [#1207](https://github.com/HHS/simpler-grants-pdf-builder/issues/1207). Announcement Module retaining an unused heading or exposing an unclear setting is a hypothesis, not a verified cause.
 
 ### IMPORT-013 — Heading tag cleanup
 - **Type:** repair *(the empty-heading case is a removal)*
