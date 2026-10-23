@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}PDF readability pilot usage{% endblock %}
+{% block title %}Readability pilot usage{% endblock %}
 {% block css %}
 <style>
   .pilot-table, .metrics-data-table { width: 100%; border-collapse: collapse; }
@@ -20,19 +20,20 @@
 {% endblock %}
 {% block content %}
 {% url 'nofos:builder_metrics' as metrics_href %}
-{% include "includes/page_heading.html" with title="PDF readability pilot usage" back_text="Back to usage &amp; quality metrics" back_href=metrics_href only %}
+{% include "includes/page_heading.html" with title="Readability pilot usage" back_text="Back to usage &amp; quality metrics" back_href=metrics_href only %}
+<p>Totals combine recorded PDF and Word upload attempts. The authenticated tool supports PDF and Word (.docx) uploads; the public tool supports PDF uploads only. File type is not recorded, so these metrics cannot separate PDF from Word usage.</p>
 <details class="margin-top-2 margin-bottom-3 border-1px border-base-lighter radius-md padding-2">
   <summary class="text-bold">About these metrics</summary>
   <div class="usa-prose">
     <p>Figures cover currently retained outcomes, not lifetime usage. Rates include all recorded attempts, including disabled and busy responses. CSRF, authentication, permission and upstream rejections are not counted.</p>
-    <p>Source describes the upload route, not whether a visitor happened to be signed in. Unknown records have no established source. OpDiv filtering isn't available: outcomes have no document or user association. Internal pilot participants are included.</p>
+    <p>Source describes the upload route, not the file type or whether a visitor happened to be signed in. Unknown records have no established source. OpDiv filtering isn't available: outcomes have no document or user association. Internal pilot participants are included.</p>
     <p>Chart windows are the last 30 days and 12 weeks. Missing observations show “No data,” not zero: recording may have been off or retention may have removed records. The current day and week are in progress. Weeks start Monday; dates use the application time zone.</p>
     <p>All-source breakdown: {% for row in metrics.sources %}{{ row.label }}: {{ row.attempts }}{% if not forloop.last %} · {% endif %}{% endfor %}.</p>
   </div>
 </details>
 <div class="pilot-source-filter no-print margin-bottom-2">
   <label class="usa-label margin-top-0" for="pilot-source">Upload source</label>
-  <span class="usa-sr-only" id="pilot-source-hint">Selecting an upload source updates all metrics on this page.</span>
+  <span class="usa-hint" id="pilot-source-hint">Filter by upload route, not file type. Selecting a source updates all metrics on this page.</span>
   <select class="usa-select" id="pilot-source" name="source" aria-describedby="pilot-source-hint">
     <option value="all" {% if metrics.source == 'all' %}selected{% endif %}>All sources</option>
     {% for row in metrics.sources %}<option value="{{ row.code }}" {% if metrics.source == row.code %}selected{% endif %}>{{ row.label }}</option>{% endfor %}
@@ -53,7 +54,7 @@
 <details class="margin-top-2 font-sans-2xs"><summary>Error codes and explanations</summary><table class="pilot-table"><thead><tr><th scope="col">Code</th><th scope="col">Meaning</th><th scope="col">Attempts</th></tr></thead><tbody>{% for row in metrics.outcomes %}<tr><th scope="row"><code>{{ row.code }}</code></th><td>{{ row.meaning }}</td><td>{{ row.attempts }}</td></tr>{% endfor %}</tbody></table></details>
 <h2 class="font-heading-md margin-top-4">Recent upload attempts</h2>
 <div class="pilot-scroll"><table class="pilot-table"><thead><tr><th scope="col">Time</th><th scope="col">Source</th><th scope="col">Result</th></tr></thead><tbody>{% for row in metrics.recent_attempts %}<tr><th scope="row">{{ row.created_at|date:"M j, Y, g:i:s a" }}</th><td>{{ row.source|capfirst }}</td><td>{% for outcome in metrics.outcomes %}{% if outcome.code == row.outcome %}{{ outcome.label }}{% endif %}{% endfor %}</td></tr>{% empty %}<tr><td colspan="3">No recorded attempts.</td></tr>{% endfor %}</tbody></table></div>
-{% if attempts_page.has_other_pages %}<nav class="pilot-pagination margin-top-2" aria-label="PDF readability attempts pages">{% if attempts_page.has_previous %}<a href="?source={{ metrics.source }}&amp;page={{ attempts_page.previous_page_number }}">Previous</a>{% endif %} Page {{ attempts_page.number }} of {{ attempts_page.paginator.num_pages }} {% if attempts_page.has_next %}<a href="?source={{ metrics.source }}&amp;page={{ attempts_page.next_page_number }}">Next</a>{% endif %}</nav>{% endif %}
+{% if attempts_page.has_other_pages %}<nav class="pilot-pagination margin-top-2" aria-label="Readability attempts pages">{% if attempts_page.has_previous %}<a href="?source={{ metrics.source }}&amp;page={{ attempts_page.previous_page_number }}">Previous</a>{% endif %} Page {{ attempts_page.number }} of {{ attempts_page.paginator.num_pages }} {% if attempts_page.has_next %}<a href="?source={{ metrics.source }}&amp;page={{ attempts_page.next_page_number }}">Next</a>{% endif %}</nav>{% endif %}
 <h2 class="font-heading-md margin-top-4">Usage over time</h2>
 <div class="metrics-chart-grid">
   <section class="metrics-chart-card border-1px border-base-lighter radius-md padding-2">

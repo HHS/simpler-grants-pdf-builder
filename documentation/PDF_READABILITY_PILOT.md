@@ -75,13 +75,24 @@ safeguards below still apply and are not replaced by ZIP validation.
 
 ### Content-free outcome monitoring (draft approval gate, #985)
 
-Metrics viewers can open `/nofos/metrics/readability-pilot` from **Other metrics**
+Metrics viewers can open **Readability pilot usage** at
+`/nofos/metrics/readability-pilot` from **Other metrics**
 on `/nofos/metrics`, including while the pilot is disabled. The page shows the
 stored pilot flag, recording state, retained daily/weekly attempts, all-attempt
 success and capacity rates, nearest-rank durations, outcome meanings, and pages
 of 50 recent attempts. JSON uses the same permission and `private, no-store`.
 No OpDiv or user attribution is possible. It is a support trend source, not an
 infrastructure alarm or evidence that #970's safeguards are deployed.
+
+Totals combine recorded PDF and Word attempts where those formats are supported.
+The authenticated `/nofos/readability/` tool supports PDF and Word (.docx);
+public `/readability/` remains PDF-only. The source filter selects the upload
+route (public, authenticated or unknown), not file type or the visitor's login
+state. File type is not stored, so successful attempts cannot be split into
+PDF and Word totals. Format-specific failure codes describe those failures,
+not the format of every upload. Shared counts, rates, charts, duration
+percentiles and recent attempts use the same retained records and route filters.
+Recording switches, retention and permissions are unchanged.
 
 Recording is separately default-off via
 `PDF_READABILITY_ATTEMPT_RECORDING_ENABLED=false`, including disabled POSTs.
