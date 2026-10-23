@@ -120,6 +120,11 @@ is needed, contact the SimplerNOFOs team.
 - Consecutive Word bullets at the same numbering level import as one list even
   when their internal list IDs differ, avoiding extra gaps between bullet groups.
   Paragraphs still separate lists; numbered-list restarts remain separate.
+- Import also repairs clear groups of typed `•` bullets (at least two items).
+  Following `o` lines become nested bullets when their parent bullet ends in a
+  colon. Standalone `o` lines, isolated bullets, existing lists, and table content
+  stay as supplied. Check the nesting after import; other ambiguous marker styles
+  need correction in the source. This applies on import/reimport only.
 - For an existing NOFO, reimport replaces sections and subsections and can lose
   manual edits. It is not a way to apply import repairs to saved edits in place.
   Reimport preserves saved theme, cover and introductory ownership choices.
