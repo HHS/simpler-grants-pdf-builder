@@ -110,15 +110,16 @@ class NofoMarkdownConverter(MarkdownConverter):
         for parent in el.parents:
             if parent.name in ("ol", "ul"):
                 root = parent
-        # Markdown merges adjacent lists of the same kind, even when the
-        # second ordered list explicitly restarts at 1. Preserve both trees;
-        # blank lines alone do not retain their independent boundaries.
-        for direction in ("previous_sibling", "next_sibling"):
-            sibling = getattr(root, direction)
-            while isinstance(sibling, NavigableString) and not sibling.strip():
-                sibling = getattr(sibling, direction)
-            if getattr(sibling, "name", None) == root.name:
-                return True
+        # Markdown can merge adjacent lists, including different marker kinds
+        # and decimal restarts at 1. Preserve the complete tree if a boundary
+        # would be lost at either the root or a nested sibling list.
+        for listing in [root, *root.find_all(["ol", "ul"])]:
+            for direction in ("previous_sibling", "next_sibling"):
+                sibling = getattr(listing, direction)
+                while isinstance(sibling, NavigableString) and not sibling.strip():
+                    sibling = getattr(sibling, direction)
+                if getattr(sibling, "name", None) in ("ol", "ul"):
+                    return True
         # Paragraph-bearing (loose) items need their block boundaries retained.
         # The renderer can otherwise absorb the next marker into a continuation.
         if root.find("p") is not None:
