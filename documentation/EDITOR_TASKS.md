@@ -120,6 +120,9 @@ is needed, contact the SimplerNOFOs team.
 - For an existing NOFO, reimport replaces sections and subsections and can lose
   manual edits. It is not a way to apply import repairs to saved edits in place.
   Reimport preserves saved theme, cover and introductory ownership choices.
+- Adjacent bullet and numbered lists remain separate HTML lists after import,
+  including within a nested list. Compare their markers and nesting with Word;
+  this conversion does not repair previously saved content automatically.
 
 <a id="task-import-recover"></a>
 
