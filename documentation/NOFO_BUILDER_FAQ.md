@@ -526,33 +526,37 @@ unlinked.
   Word's endnote tool isn't available in your template, or if you're working from
   an Announcement Module export.
 
-For both formats:
+For both formats, every reference needs a matching citation and every citation
+needs a reference. The remaining requirements depend on the source:
 
-- Every reference number needs a matching endnote, and every endnote needs a
-  matching reference.
-- Number references in order, starting at 1, without repeating a number.
-- To cite a source again, use the next number and repeat the citation. Don't
-  reuse an earlier number.
-- The Endnotes heading must use the same heading level as your top-level NOFO
-  sections, such as Step 1: Review the Opportunity. A heading that's only bold or
-  larger won't be recognized, and your endnotes won't link.
+- With manually bracketed notes, use each number once, in order starting at 1.
+  To cite a source again, use the next number and repeat the citation. Use a
+  structural Endnotes heading at the same level as your main NOFO sections.
+- With native Word notes, let Word manage numbering. Builder supplies the
+  Endnotes heading; don't type a title inside the first citation. Supported Word
+  cross-references can point to an existing note again, with separate return links.
+- A typed superscript number is ordinary text, not a Word endnote relationship.
+
+See the [Windows Word author FAQ](endnote-import.md#faq-for-authors-using-microsoft-word-on-windows)
+for repair steps and **Insert > Cross-reference** instructions.
 
 For how NOFO Builder converts endnotes on import, see
 [Endnotes in Word imports](endnote-import.md) and the
 [import rules for footnotes and endnotes](IMPORT_RULES.md#footnotes--endnotes).
 
-### Why can't I reuse an endnote number to cite the same source twice?
+### Can I cite the same source more than once?
 
-Each endnote number must be unique and in order, for two reasons:
+Yes. With Word's endnote tool, either insert a new endnote and repeat the source
+information, or use a supported Word cross-reference to the existing note.
+Builder preserves explicit relationships, gives each occurrence a unique link
+ID, and adds a return link for each occurrence during import.
 
-- **Accessibility:** Section 508-compliant PDFs need a unique identifier for each
-  endnote in the document's tag structure. Reusing a number can break that
-  structure for screen reader users.
-- **Readability:** unique, sequential numbers make citations easier to follow.
-
-Each endnote also has only one link back (the ↑ arrow) to a single in-text
-reference. If you reused `[2]` in two places, the ↑ link would return readers to
-only one of them.
+For manually bracketed notes, each number must still appear once in the body and
+once in the citation list. Repeated numbers are ambiguous because they do not
+identify an explicit destination. Use the next number and repeat the citation.
+Copying an HTML link can duplicate its ID; matching destination numbers alone do
+not make those IDs valid. Unique IDs and working links are necessary checks,
+but do not by themselves establish that a generated PDF is fully accessible.
 
 ### Why isn't my endnote linking to its entry in the endnotes list?
 

@@ -20,6 +20,7 @@ from .endnotes import (
     inline_native_note_return_links,
     is_endnotes_heading,
     linkify_endnote_citations,
+    normalize_repeated_native_note_links,
     remove_duplicate_native_note_custom_marks,
 )
 from .nofo_markdown import MISSING_ALT_TEXT_ATTR, PRESERVE_BOOKMARK_TARGET_ATTR, md
@@ -228,6 +229,7 @@ def process_nofo_html(soup, top_heading_level, *, debug_capture=None):
     unwrap_nested_lists(soup)
     preserve_bookmark_targets(soup)
     remove_duplicate_native_note_custom_marks(soup)  # IMPORT-053
+    normalize_repeated_native_note_links(soup)  # IMPORT-072
     convert_bracketed_endnotes(soup)  # IMPORT-050 in documentation/IMPORT_RULES.md
     linkify_endnote_citations(soup)  # IMPORT-064
 
@@ -1648,6 +1650,27 @@ def add_endnotes_header_if_exists(soup, top_heading_level="h1"):
         # Else, find the endnotes in Google Docs HTML export
         last_ol = _find_docx_html_endnotes(soup)
         if last_ol:
+            # Word allows authors to type a list title inside the first note.
+            # Promote only a standalone leading title followed by citation text.
+            first_note = last_ol.find("li")
+            first_block = first_note.find(recursive=False)
+            if (
+                first_block is not None
+                and first_block.name == "p"
+                and re.fullmatch(
+                    r"(?:references|endnotes?|footnotes?)\s*:?",
+                    first_block.get_text(strip=True),
+                    re.I,
+                )
+                and any(
+                    sibling.get_text(strip=True)
+                    for sibling in first_block.find_next_siblings()
+                )
+                and not first_block.find(["a", "img"])
+                and not first_block.get("id")
+            ):
+                first_block.extract()  # IMPORT-073
+
             # Create the h1 element
             heading_tag = soup.new_tag(top_heading_level)
             heading_tag.string = "Endnotes"

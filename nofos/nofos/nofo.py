@@ -128,6 +128,7 @@ from .utils import (
     strip_markdown_links,
     style_map_manager,
 )
+from .word_endnotes import preserve_word_note_cross_references
 from .word_instruction_boxes import clean_instruction_boxes
 
 
@@ -211,6 +212,7 @@ def parse_uploaded_file_as_html_string(
 
             conversion_file, list_plan = prepare_word_lists(conversion_file)
             conversion_file = normalize_strong1_runs(conversion_file)
+            conversion_file = preserve_word_note_cross_references(conversion_file)
             if list_review_warnings is not None:
                 list_review_warnings.extend(list_plan.warnings)
             doc_to_html_result = mammoth.convert_to_html(
