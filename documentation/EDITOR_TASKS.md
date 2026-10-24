@@ -786,6 +786,21 @@ structured field instead.
 
 ## Checking your work
 
+<a id="task-history-review"></a>
+
+### TASK-HISTORY-REVIEW — Review a NOFO's updates
+
+1. On the NOFO edit page, select **See all updates** beside **Last updated**.
+2. Review the latest events. Select **Load More Events** for the next batch.
+3. Follow an available comparison link to inspect a subsection's changes.
+
+The indexed history reader is enabled separately after deployment and backfill.
+Until that cutover, the existing reader can still be slow. With indexed reads,
+events use exact timestamp order, then event ID for ties; deleted objects retain
+history descriptions but have no live comparison link. Concurrent new edits can
+shift offset-based batches. Report a timeout rather than repeatedly reloading.
+See [history rollout and limitations](DOCUMENT_HISTORY.md).
+
 <a id="task-preview"></a>
 
 ### TASK-PREVIEW — Preview the PDF after making changes

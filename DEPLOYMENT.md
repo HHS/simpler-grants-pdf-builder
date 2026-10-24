@@ -226,6 +226,21 @@ The following are excluded from formatting: static files, migration files, SVGs,
 
 ---
 
+## Document history index rollout (#1142)
+
+Keep `DOCUMENT_HISTORY_INDEX_ENABLED=False` for initial rollout. Migration 0154
+adds lookup tables; 0155 retains its identity but no longer runs a data backfill.
+Do not fake/reverse migrations from the earlier deployment. After the rollout
+has completed and all old workers have stopped, separately run
+`poetry run python manage.py backfill_document_audit_index --chunk-size 100`
+from `nofos/` in that environment. Measure load/duration on dev first; run only
+one job at a time. Investigate unresolved ownership, then require a successful
+`backfill_document_audit_index --check` before setting
+`DOCUMENT_HISTORY_INDEX_ENABLED=True` and rolling workers. Until then the
+existing reader remains active, not an incomplete indexed history. Validate
+first-page and Load More timing on the affected NOFO before sign-off. See
+[document history deployment and rollback](documentation/DOCUMENT_HISTORY.md#migration-and-deployment).
+
 ## Hotfixes
 
 If a fix needs to bypass the normal PR flow (e.g. a critical production bug), prefix the PR title with `fix: [Hotfix] ...` in lieu of an issue number — keep the `fix:` type prefix so the change still categorizes correctly in CHANGELOG.md, with `[Hotfix]` flagging why it skipped the normal flow. CI must still pass before merging.
