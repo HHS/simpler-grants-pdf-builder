@@ -120,6 +120,13 @@ is needed, contact the SimplerNOFOs team.
 - Consecutive Word bullets at the same numbering level import as one list even
   when their internal list IDs differ, avoiding extra gaps between bullet groups.
   Paragraphs still separate lists; numbered-list restarts remain separate.
+- Empty **Appendix**, **Endnotes**, and **Footnotes** headings at Heading 1 or
+  Heading 2 are omitted when they form an unused run at the end of the document.
+  Capitalization and a trailing colon do not matter. Text, images, tables, lists,
+  child headings, and referenced bookmarks preserve the heading. You can add an
+  Appendix or Endnotes section afterward using the existing NOFO actions.
+  This cleanup applies on new import and reimport; it does not remove sections
+  from already saved NOFOs automatically.
 - For an existing NOFO, reimport replaces sections and subsections and can lose
   manual edits. It is not a way to apply import repairs to saved edits in place.
   Reimport preserves saved theme, cover and introductory ownership choices.
