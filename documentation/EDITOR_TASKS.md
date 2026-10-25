@@ -120,6 +120,11 @@ is needed, contact the SimplerNOFOs team.
 - Consecutive Word bullets at the same numbering level import as one list even
   when their internal list IDs differ, avoiding extra gaps between bullet groups.
   Paragraphs still separate lists; numbered-list restarts remain separate.
+- Import also repairs clear groups of typed `•` bullets (at least two items).
+  Following `o` lines become nested bullets when their parent bullet ends in a
+  colon. Standalone `o` lines, isolated bullets, existing lists, and table content
+  stay as supplied. Check the nesting after import; other ambiguous marker styles
+  need correction in the source. This applies on import/reimport only.
 - Empty **Appendix**, **Endnotes**, and **Footnotes** headings at Heading 1 or
   Heading 2 are omitted when they form an unused run at the end of the document.
   Capitalization and a trailing colon do not matter. Text, images, tables, lists,

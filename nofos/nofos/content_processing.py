@@ -24,6 +24,7 @@ from .endnotes import (
     remove_duplicate_native_note_custom_marks,
 )
 from .nofo_markdown import MISSING_ALT_TEXT_ATTR, PRESERVE_BOOKMARK_TARGET_ATTR, md
+from .typed_bullets import repair_typed_bullets
 
 
 class ContentProcessingError(ValueError):
@@ -210,6 +211,7 @@ def process_nofo_html(soup, top_heading_level, *, debug_capture=None):
     normalize_whitespace_img_alt_text(soup)
     add_missing_alt_text_to_imgs(soup)
     join_nested_lists(soup)
+    repair_typed_bullets(soup)  # IMPORT-074
     add_strongs_to_soup(soup)
     repair_acf_required_alignment_lists(soup)
     repair_eligibility_organization_lists(soup)  # IMPORT-070

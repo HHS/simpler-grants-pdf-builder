@@ -31,7 +31,7 @@ production screenshots or a production import/reimport.
 
 ## Scope and checks
 
-IMPORT-071 preserves supported explicit Word cross-references; IMPORT-072 repairs
+IMPORT-076 preserves supported explicit Word cross-references; IMPORT-072 repairs
 unambiguous repeated native IDs and adds individual return links; IMPORT-073
 extracts a standalone title from the first native note. Distinct accessible names are restored for the repeated citation return arrows
 after Markdown sanitization. Existing stored records are not mutated on view. Manual bracketed repeats still require correction.
