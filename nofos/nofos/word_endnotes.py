@@ -1,6 +1,6 @@
 """Preserve explicit Word NOTEREF relationships before Mammoth flattens fields.
 
-IMPORT-071 in documentation/IMPORT_RULES.md. Only an in-memory import copy
+IMPORT-076 in documentation/IMPORT_RULES.md. Only an in-memory import copy
 is rewritten; the uploaded source is never modified.
 """
 

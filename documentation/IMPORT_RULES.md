@@ -70,7 +70,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-049 | conversion | Footnotes/Endnotes | "Footnotes"/"Footnote:"/etc. heading text → canonical "Endnotes" | `nofo.py`, `endnotes.py` |
 | IMPORT-050 | conversion | Footnotes/Endnotes | Unambiguous `[N]` reference/citation pairs → forward/return links | `nofo.py`, `endnotes.py` |
 | IMPORT-051 | conversion | Footnotes/Endnotes | Manually-linked endnote lists/links → preserved as raw HTML | `nofo_markdown.py` |
-| IMPORT-071 | conversion | Footnotes/Endnotes | Explicit Word NOTEREF fields → native citation links | `word_endnotes.py`, `nofo.py` |
+| IMPORT-076 | conversion | Footnotes/Endnotes | Explicit Word NOTEREF fields → native citation links | `word_endnotes.py`, `nofo.py` |
 | IMPORT-072 | repair | Footnotes/Endnotes | Repeated explicit native links → unique reference IDs and individual return links | `endnotes.py`, `nofo.py` |
 | IMPORT-073 | extraction | Footnotes/Endnotes | Standalone title inside first native note → synthesized Endnotes heading | `nofo.py` |
 | IMPORT-053 | repair | Footnotes/Endnotes | Duplicated Word custom note mark beside native link → duplicate removed | `nofo.py`, `endnotes.py` |
@@ -119,7 +119,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-047 | extraction | Non-Visual Tagging | `{Prompt}` / `{List: label}` syntax → Composer content-guide variables | `composer/models.py` |
 | IMPORT-048 | repair | Non-Visual Tagging | PDF metadata field is a whole-field `{placeholder}` → normalized to empty | `pdf_metadata.py` |
 
-| IMPORT-070 | repair | Emphasis | Explicit line breaks inside bold/italic text survive Markdown conversion | `nofo_markdown.py` |
+| IMPORT-075 | repair | Emphasis | Explicit line breaks inside bold/italic text survive Markdown conversion | `nofo_markdown.py` |
 
 ---
 
@@ -352,7 +352,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Status:** active
 - **Evidence limit:** The reported arrow-only paragraph could not be reproduced by importing the supplied Word document with the current converter. This defensive repair targets the reported HTML shape; it does not establish that trailing empty Word paragraphs caused it.
 
-### IMPORT-071 — Preserve explicit Word note cross-references
+### IMPORT-076 — Preserve explicit Word note cross-references
 - **Type:** conversion
 - **Trigger:** A Word `NOTEREF` field in the document body resolves through a complete, uniquely named bookmark enclosing exactly one native footnote/endnote reference. The cached result is numeric; supported switches are `\f`, `\h`, and `\* MERGEFORMAT`.
 - **Action:** Rewrite a temporary in-memory DOCX copy so Mammoth emits a hyperlink to that native note. Supports simple fields and non-nested complex fields with instructions split across runs within one paragraph. Existing native links supply the canonical visible label during IMPORT-072, including when the cached field number is stale. Unsupported switches, nonnumeric results, nested/incomplete fields, and missing/ambiguous bookmarks retain existing conversion behavior. Typed superscript numbers are never inferred to be links. Source bytes are unchanged.
@@ -588,7 +588,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Source:** `content_processing.py::add_strongs_to_soup`, `_get_classnames_for_font_weight_bold`
 - **Status:** active
 
-### IMPORT-070 — Preserve explicit breaks in emphasized text
+### IMPORT-075 — Preserve explicit breaks in emphasized text
 - **Type:** repair
 - **Trigger:** A `<br>` inside `<strong>`, `<b>`, `<em>`, or `<i>` outside heading/table-cell inline conversion contexts. Word can include a soft break in the bold run at the end of a contact name.
 - **Action:** Preserve the break as raw `<br>` in Markdown so emphasis whitespace trimming cannot discard it. Other breaks and heading/table-cell conversion retain their existing behavior.

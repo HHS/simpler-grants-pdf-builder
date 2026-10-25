@@ -32,7 +32,7 @@ with real notes. A typed `1,2` needs two note references, with a comma between
 them. Keep the source information when making repairs; deleting a genuine Word
 reference mark also removes its associated note. Replace the repeated Word
 cross-reference to note 3 with another native endnote if compatibility with an
-importer predating IMPORT-071 is required.
+importer predating IMPORT-076 is required.
 
 Microsoft documents the Windows ribbon steps in
 [Insert footnotes and endnotes in Word](https://support.microsoft.com/en-au/word/training/insert-footnotes-and-endnotes-in-word).
@@ -45,7 +45,7 @@ existing note, keep **Insert as hyperlink** checked, and select **Insert**.
 This creates an explicit relationship instead of a typed number. See
 [Microsoft's cross-reference instructions](https://support.microsoft.com/en-us/word/create-a-cross-reference).
 
-The import fallback in IMPORT-071/IMPORT-072 preserves supported native Word
+The import fallback in IMPORT-076/IMPORT-072 preserves supported native Word
 cross-references and gives each occurrence its own forward and return link.
 Availability depends on the deployed release. Unsupported fields and unresolved
 bookmarks still need author review. Manual bracketed references do not gain
