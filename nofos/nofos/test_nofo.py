@@ -4189,12 +4189,12 @@ class TestGetSideNavLinks(TestCase):
 
         result = get_side_nav_links(nofo)
 
-        # Should have summary plus 3 sections
+        # Should have Basic information plus 3 sections
         self.assertEqual(len(result), 4)
 
-        # First item should always be the summary
-        self.assertEqual(result[0]["id"], "summary-box-key-information")
-        self.assertEqual(result[0]["name"], "NOFO Summary")
+        # First item should always be Basic information
+        self.assertEqual(result[0]["id"], "nofo-edit--basic-information")
+        self.assertEqual(result[0]["name"], "Basic information")
 
         # Check section data
         self.assertEqual(result[1]["id"], "section-1")
@@ -4207,12 +4207,12 @@ class TestGetSideNavLinks(TestCase):
         self.assertEqual(result[3]["name"], "Section 3")
 
     def test_get_side_nav_links_with_no_sections(self):
-        """Test that get_side_nav_links returns only summary when no sections exist"""
+        """Test that get_side_nav_links returns no links when no sections exist"""
         nofo = create_nofo("Empty NOFO", [], opdiv="Test OpDiv")
 
         result = get_side_nav_links(nofo)
 
-        # Should only have the summary
+        # Should have no links
         self.assertEqual(len(result), 0)
 
 
