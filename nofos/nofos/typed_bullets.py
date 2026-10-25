@@ -1,4 +1,4 @@
-"""Conservative import-only repair of literal bullet groups (IMPORT-071)."""
+"""Conservative import-only repair of literal bullet groups (IMPORT-074)."""
 
 import re
 from copy import copy

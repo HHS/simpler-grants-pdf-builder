@@ -128,6 +128,7 @@ from .utils import (
     strip_markdown_links,
     style_map_manager,
 )
+from .word_endnotes import preserve_word_note_cross_references
 from .word_instruction_boxes import clean_instruction_boxes
 
 
@@ -211,6 +212,7 @@ def parse_uploaded_file_as_html_string(
 
             conversion_file, list_plan = prepare_word_lists(conversion_file)
             conversion_file = normalize_strong1_runs(conversion_file)
+            conversion_file = preserve_word_note_cross_references(conversion_file)
             if list_review_warnings is not None:
                 list_review_warnings.extend(list_plan.warnings)
             doc_to_html_result = mammoth.convert_to_html(
@@ -1639,7 +1641,7 @@ def get_side_nav_links(nofo):
 
     Example:
         [
-            {'id': 'summary-box-key-information', 'name': 'NOFO Summary'},
+            {'id': 'nofo-edit--basic-information', 'name': 'Basic information'},
             {'id': 'section-1-html-id', 'name': 'Section 1 Name'},
             ...
         ]
@@ -1647,7 +1649,9 @@ def get_side_nav_links(nofo):
     if nofo.sections.count() == 0:
         return []
 
-    side_nav_links = [{"id": "summary-box-key-information", "name": "NOFO Summary"}]
+    side_nav_links = [
+        {"id": "nofo-edit--basic-information", "name": "Basic information"}
+    ]
 
     for section in nofo.sections.all().order_by("order"):
         side_nav_links.append({"id": section.html_id, "name": section.name})

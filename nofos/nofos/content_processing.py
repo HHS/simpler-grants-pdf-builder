@@ -20,6 +20,7 @@ from .endnotes import (
     inline_native_note_return_links,
     is_endnotes_heading,
     linkify_endnote_citations,
+    normalize_repeated_native_note_links,
     remove_duplicate_native_note_custom_marks,
 )
 from .nofo_markdown import MISSING_ALT_TEXT_ATTR, PRESERVE_BOOKMARK_TARGET_ATTR, md
@@ -48,6 +49,67 @@ class AmbiguousHeadingHierarchyError(ContentProcessingError):
 
 
 DEFAULT_NOFO_OPPORTUNITY_NUMBER = "NOFO #999"
+
+
+def remove_empty_trailing_optional_headings(soup):
+    """Drop only unused Appendix/Endnotes/Footnotes tail placeholders (IMPORT-071).
+
+    Inspect source content before generic cleanup can erase evidence of a table,
+    list, image or child heading. Ordinary div wrappers and blank paragraphs do
+    not make a heading populated. Referenced bookmarks remain available to the
+    existing link-preservation pipeline.
+    """
+    referenced_ids = {
+        link["href"][1:]
+        for link in soup.find_all("a", href=True)
+        if link["href"].startswith("#")
+    }
+    blank_tags = {"p", "span", "em", "strong", "b", "i", "u", "sup", "sub", "br", "a"}
+
+    def is_referenced(tag):
+        return any(
+            node.get("id") in referenced_ids or node.get("name") in referenced_ids
+            for node in [tag, *tag.find_all(True)]
+        )
+
+    def reverse_blocks(parent):
+        for node in reversed(list(parent.children)):
+            if isinstance(node, Tag) and node.name == "div" and not node.get("role"):
+                if is_referenced(node):
+                    yield node
+                else:
+                    yield from reverse_blocks(node)
+            else:
+                yield node
+
+    def is_blank(node):
+        if isinstance(node, Comment):
+            return True
+        if isinstance(node, NavigableString):
+            return not node.strip()
+        return (
+            node.name in blank_tags
+            and not node.get("role")
+            and not is_referenced(node)
+            and all(is_blank(child) for child in node.children)
+        )
+
+    for node in reverse_blocks(soup.body or soup):
+        if is_blank(node):
+            continue
+        if (
+            not isinstance(node, Tag)
+            or node.name not in {"h1", "h2"}
+            or not re.fullmatch(
+                r"(?:appendix|endnotes|footnotes)\s*:?",
+                clean_string(node.get_text(" ", strip=True)),
+                flags=re.IGNORECASE,
+            )
+            or is_referenced(node)
+            or any(child.name not in blank_tags for child in node.find_all(True))
+        ):
+            break
+        node.decompose()
 
 
 def resolve_section_heading_level(soup):
@@ -149,7 +211,7 @@ def process_nofo_html(soup, top_heading_level, *, debug_capture=None):
     normalize_whitespace_img_alt_text(soup)
     add_missing_alt_text_to_imgs(soup)
     join_nested_lists(soup)
-    repair_typed_bullets(soup)  # IMPORT-071
+    repair_typed_bullets(soup)  # IMPORT-074
     add_strongs_to_soup(soup)
     repair_acf_required_alignment_lists(soup)
     repair_eligibility_organization_lists(soup)  # IMPORT-070
@@ -169,6 +231,7 @@ def process_nofo_html(soup, top_heading_level, *, debug_capture=None):
     unwrap_nested_lists(soup)
     preserve_bookmark_targets(soup)
     remove_duplicate_native_note_custom_marks(soup)  # IMPORT-053
+    normalize_repeated_native_note_links(soup)  # IMPORT-072
     convert_bracketed_endnotes(soup)  # IMPORT-050 in documentation/IMPORT_RULES.md
     linkify_endnote_citations(soup)  # IMPORT-064
 
@@ -1589,6 +1652,27 @@ def add_endnotes_header_if_exists(soup, top_heading_level="h1"):
         # Else, find the endnotes in Google Docs HTML export
         last_ol = _find_docx_html_endnotes(soup)
         if last_ol:
+            # Word allows authors to type a list title inside the first note.
+            # Promote only a standalone leading title followed by citation text.
+            first_note = last_ol.find("li")
+            first_block = first_note.find(recursive=False)
+            if (
+                first_block is not None
+                and first_block.name == "p"
+                and re.fullmatch(
+                    r"(?:references|endnotes?|footnotes?)\s*:?",
+                    first_block.get_text(strip=True),
+                    re.I,
+                )
+                and any(
+                    sibling.get_text(strip=True)
+                    for sibling in first_block.find_next_siblings()
+                )
+                and not first_block.find(["a", "img"])
+                and not first_block.get("id")
+            ):
+                first_block.extract()  # IMPORT-073
+
             # Create the h1 element
             heading_tag = soup.new_tag(top_heading_level)
             heading_tag.string = "Endnotes"
@@ -2330,6 +2414,7 @@ def process_document_content(
         soup = prepare_editable_introduction(soup, editable_intro)
     # Preserve the pre-pass before selecting the main section heading level.
     decompose_before_you_begin_section(soup)
+    remove_empty_trailing_optional_headings(soup)  # IMPORT-071
     top_heading_level = resolve_section_heading_level(
         builder_import_content(soup) if builder_import else soup
     )

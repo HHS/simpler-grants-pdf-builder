@@ -467,8 +467,8 @@ Edit “{{ nofo|nofo_name }}”
                   </p>
                   <ul class="usa-list">
                     <li>Every reference number must have a corresponding endnote entry</li>
-                    <li>Reference numbers must be sequential and can't repeat</li>
-                    <li>To cross-reference an earlier endnote, use the next number in the sequence and repeat that endnote's text — don't reuse a number</li>
+                    <li>Manually bracketed references must be sequential and can't repeat</li>
+                    <li>Word cross-references can reuse an existing native endnote. Each reference needs a unique link ID and its own return link; copying link markup can create conflicting IDs.</li>
                   </ul>
                   <p>
                     For source-document issues, repair affected endnotes using Microsoft Word's endnote tool or correct the bracketed numbers and citations in Announcement Module, then export and import the document again. If the issue was introduced by an edit in NOFO Builder, correct the affected content here.
@@ -486,7 +486,7 @@ Edit “{{ nofo|nofo_name }}”
 <table class="usa-table usa-table--borderless width-full table--hide-edit-if-published table--hide-edit-if-archived">
   <caption>
     <div>
-      <h2 class="margin-bottom-0">Basic information</h2>
+      <h2 class="margin-bottom-0" id="nofo-edit--basic-information">Basic information</h2>
     </div>
   </caption>
   <thead class="usa-sr-only">

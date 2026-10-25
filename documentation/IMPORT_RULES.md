@@ -17,7 +17,8 @@ This document catalogs every automatic content rule the NOFO Builder applies whe
 - `nofos/nofos/nofo_markdown.py` — `NofoMarkdownConverter`, the HTML→Markdown conversion rules
 - `nofos/nofos/policy_language.py` — policy-language status detection (feature-flagged)
 - `nofos/nofos/pdf_metadata.py` — PDF metadata placeholder normalization
-- `nofos/nofos/endnotes.py` — bracketed manual endnote detection and linking
+- `nofos/nofos/endnotes.py` — native note repair and bracketed manual endnote detection/linking
+- `nofos/nofos/word_endnotes.py` — conversion-copy preservation of explicit Word note cross-references
 - `nofos/composer/models.py` — `extract_variables` (Composer-only)
 
 **Format note for automated/AI readers:** Each rule has a stable ID (`IMPORT-NNN`) that never changes or gets reused, even if a rule is later removed (mark it `status: removed` instead). Every rule uses the same five fields in the same order — **Type**, **Trigger**, **Action**, **Source**, **Status** — so a rule's meaning can be extracted reliably without parsing prose. The index table below is a complete, compact summary of every rule; the sections after it give full detail. If you are an AI agent editing import-pipeline code, treat this file as the authoritative rule registry: check it before changing behavior, and update it as part of the same change.
@@ -58,6 +59,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-010 | repair | Text Normalization | Metadata field values → NFKC-normalized, control chars stripped, whitespace collapsed | `nofo.py` |
 | IMPORT-011 | validation | Heading Structure | `h2` before first `h1` → import blocked with actionable error | `nofo.py` |
 | IMPORT-012 | validation | Heading Structure | No `h1` present → section level defaults to `h2` | `nofo.py` |
+| IMPORT-071 | removal | Heading Structure | Empty trailing Appendix/Endnotes/Footnotes H1/H2 placeholders → omitted before hierarchy validation | `content_processing.py` |
 | IMPORT-013 | repair | Heading Structure | Heading cleanup: unwrap spans, collapse whitespace, drop empty headings | `nofo.py` |
 | IMPORT-014 | conversion | Heading Structure | Auto-generate heading IDs; rewrite internal links to match | `nofo.py` |
 | IMPORT-055 | validation | Heading Structure | Report all over-limit section/subsection names before creating sections | `nofo.py` |
@@ -68,10 +70,13 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-049 | conversion | Footnotes/Endnotes | "Footnotes"/"Footnote:"/etc. heading text → canonical "Endnotes" | `nofo.py`, `endnotes.py` |
 | IMPORT-050 | conversion | Footnotes/Endnotes | Unambiguous `[N]` reference/citation pairs → forward/return links | `nofo.py`, `endnotes.py` |
 | IMPORT-051 | conversion | Footnotes/Endnotes | Manually-linked endnote lists/links → preserved as raw HTML | `nofo_markdown.py` |
+| IMPORT-071 | conversion | Footnotes/Endnotes | Explicit Word NOTEREF fields → native citation links | `word_endnotes.py`, `nofo.py` |
+| IMPORT-072 | repair | Footnotes/Endnotes | Repeated explicit native links → unique reference IDs and individual return links | `endnotes.py`, `nofo.py` |
+| IMPORT-073 | extraction | Footnotes/Endnotes | Standalone title inside first native note → synthesized Endnotes heading | `nofo.py` |
 | IMPORT-053 | repair | Footnotes/Endnotes | Duplicated Word custom note mark beside native link → duplicate removed | `nofo.py`, `endnotes.py` |
 | IMPORT-068 | repair | Footnotes/Endnotes | Isolated final native-note return-link paragraph → inline backlink after citation | `content_processing.py`, `endnotes.py` |
 | IMPORT-064 | conversion | Footnotes/Endnotes | Explicit URL/www/DOI citation text → links inside recognized note targets only | `content_processing.py`, `endnotes.py` |
-| IMPORT-071 | repair | Lists | Literal • / o bullet groups → semantic two-level lists | `typed_bullets.py`, `content_processing.py` |
+| IMPORT-074 | repair | Lists | Literal • / o bullet groups → semantic two-level lists | `typed_bullets.py`, `content_processing.py` |
 | IMPORT-018 | repair | Lists | Adjacent same-class lists merged; differing-class lists nested | `nofo.py` |
 | IMPORT-019 | repair | Lists | Redundant `<li>`/`<ul>` wrapper levels unwrapped | `nofo.py` |
 | IMPORT-020 | conversion | Lists | `<ol start="N≠1">` or list-in-table-cell → kept as raw HTML in Markdown | `nofo_markdown.py` |
@@ -238,6 +243,14 @@ Mammoth converts the uploaded `.docx` to HTML using a style-name map (`style_map
 - **Source:** `content_processing.py::resolve_section_heading_level`; application adapters retain the existing Django validation error and detail fields
 - **Status:** active
 
+### IMPORT-071 — Empty optional headings at the document tail
+- **Type:** removal
+- **Trigger:** A trailing run of H1/H2 headings whose complete text is `Appendix`, `Endnotes`, or `Footnotes`, ignoring case, surrounding whitespace, and one optional trailing colon. Only whitespace, comments, ordinary role-free div wrappers, and blank paragraphs/inline formatting/line breaks may follow or separate them.
+- **Action:** Remove those headings before choosing the section heading level or running generic cleanup. Stop at any other heading or content, including images, tables, lists, rules, or semantic containers, even if textless. Preserve headings and blank elements containing referenced `id`/`name` bookmarks, and referenced div wrappers. Exact matching excludes `Appendix A`, `Appendices`, singular note names, and spaced `End notes`/`Foot notes`. An empty Appendix immediately before populated Endnotes remains outside this narrow trailing-run rule. Actual Word note lists count as content and retain their normal heading synthesis/link handling. Removed placeholders create no sections or subsections; an upload containing only these placeholders still fails the existing no-sections validation.
+- **Source:** `content_processing.py::remove_empty_trailing_optional_headings`, called by `process_document_content` before `resolve_section_heading_level`
+- **Status:** active on incoming Word/HTML through shared Builder, reimport, Composer, and Compare processing. No saved-record migration, original Word-file change, or new delete action. Editors may add Appendix or Endnotes after import using the existing actions.
+- **Origin:** HRSA reported an empty, unnecessary Endnotes heading through the NOFO Builder feedback form. The maintainer traced that report to imported optional headings; see [#1207](https://github.com/HHS/simpler-grants-pdf-builder/issues/1207). Announcement Module retaining an unused heading or exposing an unclear setting is a hypothesis, not a verified cause.
+
 ### IMPORT-013 — Heading tag cleanup
 - **Type:** repair *(the empty-heading case is a removal)*
 - **Trigger:** Any heading (`h1`-`h6`) containing `<span>` wrappers, extra internal whitespace, or leading/trailing whitespace; or a heading that becomes empty after this cleanup.
@@ -339,6 +352,27 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Status:** active
 - **Evidence limit:** The reported arrow-only paragraph could not be reproduced by importing the supplied Word document with the current converter. This defensive repair targets the reported HTML shape; it does not establish that trailing empty Word paragraphs caused it.
 
+### IMPORT-071 — Preserve explicit Word note cross-references
+- **Type:** conversion
+- **Trigger:** A Word `NOTEREF` field in the document body resolves through a complete, uniquely named bookmark enclosing exactly one native footnote/endnote reference. The cached result is numeric; supported switches are `\f`, `\h`, and `\* MERGEFORMAT`.
+- **Action:** Rewrite a temporary in-memory DOCX copy so Mammoth emits a hyperlink to that native note. Supports simple fields and non-nested complex fields with instructions split across runs within one paragraph. Existing native links supply the canonical visible label during IMPORT-072, including when the cached field number is stale. Unsupported switches, nonnumeric results, nested/incomplete fields, and missing/ambiguous bookmarks retain existing conversion behavior. Typed superscript numbers are never inferred to be links. Source bytes are unchanged.
+- **Source:** `word_endnotes.py::preserve_word_note_cross_references`, called by `nofo.py::parse_uploaded_file_as_html_string`
+- **Status:** active
+
+### IMPORT-072 — Repeated native note reference links
+- **Type:** repair
+- **Trigger:** Explicit numeric links to a unique native note `<li>` include an existing native reference ID; native reference labels agree, and their IDs do not collide with unrelated elements.
+- **Action:** Keep the citation and its original reference ID, allocate collision-free IDs to additional/missing-ID references, normalize their labels to the native reference label, render them as superscripts, and add any missing individual return links inside the citation. Existing unique IDs and return links survive. Ambiguous targets, conflicting native labels, code/preformatted content, and unrelated ID collisions are unchanged. Runs on import/reimport only and is idempotent. Manual bracketed pairs still require unique numbers. Read-only validation permits repeated native numbers pointing to the same citation, checks unique IDs and reciprocal links, and counts only the first native occurrence for mixed-document numbering.
+- **Source:** `endnotes.py::normalize_repeated_native_note_links`, called by `content_processing.py::process_nofo_html`
+- **Status:** active
+
+### IMPORT-073 — Extract a native note list title
+- **Type:** extraction
+- **Trigger:** IMPORT-015 is synthesizing a heading for a native note list, and the first note begins with a standalone paragraph reading References, Endnote(s), or Footnote(s), optionally followed by a colon. That paragraph has no links, images, or ID, and a later sibling contains citation text.
+- **Action:** Remove that title paragraph from the first citation and use the synthesized canonical Endnotes heading above the list. Other occurrences of References, existing structural headings, and citation content remain unchanged.
+- **Source:** `content_processing.py::add_endnotes_header_if_exists`
+- **Status:** active
+
 ### IMPORT-053 — Duplicate Word custom note mark removal
 - **Type:** repair
 - **Trigger:** Mammoth emits a native footnote/endnote link containing a bracketed number such as `[1]` inside a nested superscript, immediately followed within the same outer superscript by the identical bracketed number. This is the HTML shape produced when Word stores a custom note mark with `customMarkFollows=1` and Mammoth renders both the linked reference and its following display text.
@@ -350,7 +384,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 
 ## List Structure Repair
 
-### IMPORT-071 — Literal bullet groups
+### IMPORT-074 — Literal bullet groups
 
 - **Type:** repair
 - **Trigger:** Consecutive paragraph/explicit `<br>` lines containing at least two `•` + whitespace + nonempty-text items. Lowercase `o` + whitespace lines are children only after a root bullet ending in a colon. Non-bullet lines and non-paragraph blocks end the run; blank paragraphs also end it.
