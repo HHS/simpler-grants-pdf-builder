@@ -1641,7 +1641,7 @@ def get_side_nav_links(nofo):
 
     Example:
         [
-            {'id': 'summary-box-key-information', 'name': 'NOFO Summary'},
+            {'id': 'nofo-edit--basic-information', 'name': 'Basic information'},
             {'id': 'section-1-html-id', 'name': 'Section 1 Name'},
             ...
         ]
@@ -1649,7 +1649,9 @@ def get_side_nav_links(nofo):
     if nofo.sections.count() == 0:
         return []
 
-    side_nav_links = [{"id": "summary-box-key-information", "name": "NOFO Summary"}]
+    side_nav_links = [
+        {"id": "nofo-edit--basic-information", "name": "Basic information"}
+    ]
 
     for section in nofo.sections.all().order_by("order"):
         side_nav_links.append({"id": section.html_id, "name": section.name})
