@@ -49,8 +49,10 @@ are rejected. Revalidate applicable deployed safeguards before introducing Word
 documents into an approved pilot; this source change is not operating approval.
 
 Use text-based HHS NOFO PDFs. Existing configurable recognition checks the first
-two pages for NOFO signals such as opportunity number, Assistance Listing number
-and Grants.gov reference. These rules are not broadened. See
+five pages for NOFO signals such as HHS agency name, opportunity number,
+Assistance Listing number and Grants.gov reference. Agency text can replace
+agency metadata lost in a print export; two different signal types are still
+required. See
 [PDF_READABILITY_PILOT.md](PDF_READABILITY_PILOT.md) and
 [PDF_READABILITY_SAFEGUARDS.md](PDF_READABILITY_SAFEGUARDS.md).
 
@@ -82,7 +84,10 @@ The existing `/nofos/metrics/readability-pilot` page offers All, Authenticated,
 Public and Unknown filters in HTML and JSON. Selected source survives pagination
 and is visible in printed output. Its labeled source breakdown covers all
 retained rows. Other counts, rates, outcomes, daily/weekly totals, percentiles and
-recent attempts use the selected source.
+recent attempts use the selected source and file-category filter. File categories
+are PDF, DOCX or Unknown, derived from a single completed upload's recognized
+extension rather than verified contents. Historical rows remain Unknown.
+The category breakdown covers the selected route before applying category filtering.
 
 The dashboard leads with attempts, reports returned and unsuccessful uploads.
 Daily and weekly charts cover the last 30 days and 12 weeks, including the current
@@ -105,7 +110,8 @@ rejections are not counted. Operational monitoring must cover those. Duration is
 workflow processing time, including form parsing and rendering, not pure parser
 execution. Recording failure does not prevent a report from being returned.
 
-Stored facts are timestamp, source, fixed outcome code, HTTP status and duration.
+Stored facts are timestamp, source, attempted file category (PDF/DOCX/unknown),
+fixed outcome code, HTTP status and duration.
 There is no filename, document text, metric value, IP, account/session ID or raw
 exception. Internal/staging participant activity is included without changing
 the main Builder dashboard's OpDiv eligibility or denominators. Both upload
@@ -121,7 +127,9 @@ Authenticated recording requires only the recording switch. Leave the optional
 `AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS` unset for this production
 pilot: content-free usage records have no automatic expiration. Uploaded PDFs
 and document contents are not retained. No authenticated cleanup schedule is
-required. This is the pilot's chosen behavior, not a claim about HHS policy.
+required. Public content-free usage records follow the same no-automatic-expiration
+policy; see the [public pilot retention decision](PDF_READABILITY_PILOT.md#content-free-outcome-monitoring-985).
+This is the pilot's chosen behavior, not a claim about HHS policy.
 
 If a future decision introduces expiration, configure a positive retention
 period and explicitly schedule the existing source-specific cleanup command:

@@ -108,6 +108,60 @@ def repackage(upload, edits):
 
 
 class InstructionBoxConversionTests(TestCase):
+    def test_blue_compatibility_punctuation_spacing_is_removed(self):
+        for text, fallback in (
+            (
+                "Help with systems: GrantSolutions, or eRA Commons.",
+                "Help with systems: GrantSolutions , or eRA Commons.",
+            ),
+            ("Metadata: Author with the OpDiv.", "Metadata: Author with the OpDiv ."),
+        ):
+            with self.subTest(text=text):
+                unit = alternate(text).replace(
+                    f"<w:t>{text}</w:t>", f"<w:t>{fallback}</w:t>", 1
+                )
+                upload = docx(
+                    paragraph("Keep applicant content.")
+                    + "<w:p><w:r>"
+                    + unit
+                    + "</w:r></w:p>"
+                )
+                original = upload.read()
+                xml, warnings = self.cleaned(upload)
+                self.assertNotIn(b"txbxContent", xml)
+                self.assertIn(b"Keep applicant content.", xml)
+                self.assertEqual(warnings, ())
+                upload.seek(0)
+                self.assertEqual(upload.read(), original)
+
+    def test_blue_compatibility_meaningful_differences_are_preserved(self):
+        for fallback in (
+            "Apply after Friday.",
+            "Apply before Friday!",
+            "Apply before Fri day.",
+        ):
+            with self.subTest(fallback=fallback):
+                unit = alternate("Apply before Friday.").replace(
+                    "<w:t>Apply before Friday.</w:t>", f"<w:t>{fallback}</w:t>", 1
+                )
+                xml, warnings = self.cleaned(docx("<w:p><w:r>" + unit + "</w:r></w:p>"))
+                self.assertIn(b"txbxContent", xml)
+                self.assertIn(fallback.encode(), xml)
+                self.assertEqual(warnings, (REVIEW_MESSAGE,))
+
+    def test_nonblue_punctuation_mismatch_keeps_both_versions(self):
+        unit = alternate(
+            "Keep applicant content.", modern="<a:noFill/>", legacy='filled="false"'
+        ).replace(
+            "<w:t>Keep applicant content.</w:t>",
+            "<w:t>Keep applicant content .</w:t>",
+            1,
+        )
+        xml, warnings = self.cleaned(docx("<w:p><w:r>" + unit + "</w:r></w:p>"))
+        self.assertIn(b"Keep applicant content.", xml)
+        self.assertIn(b"Keep applicant content .", xml)
+        self.assertEqual(warnings, (REVIEW_MESSAGE,))
+
     def test_compatibility_tooltip_difference_preserves_one_logical_box(self):
         modern = box("Applicant content", "<a:noFill/>").replace(
             "</w:txbxContent>",

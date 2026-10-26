@@ -45,6 +45,26 @@ before merging. In the PR checklist, confirm the instructions were updated or ex
 update is needed. Routine internal changes with no effect on editor instructions need only a
 brief explanation; they do not require a documentation edit.
 
+## Runtime feature switches
+
+If a feature should be enabled or disabled by an administrator after deployment,
+manage its switch through Django Constance and read it through `constance.config`
+when the behavior runs. Do not require an environment change or worker restart
+for an operational feature toggle.
+
+- Default new optional features to disabled.
+- Explain the effect and any enablement prerequisites in the admin help text.
+- If an environment variable supplies the initial default, document that a saved
+  Constance value takes precedence.
+- Test both states and verify that changing the switch takes effect without
+  restarting workers.
+- Update rollout, rollback, and affected editor instructions in the same PR.
+
+Keep credentials, infrastructure configuration, and settings that must be fixed
+at application startup in environment-based settings. Do not expose them through
+Constance. A feature switch does not replace permission checks or required data
+preparation.
+
 ## UI patterns
 
 Before adding or changing user-facing UI, read

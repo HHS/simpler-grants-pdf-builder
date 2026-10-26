@@ -52,9 +52,16 @@ findings, change content, alter ordinary NOFO status or transfer/delete a record
 Retries preserve the original reason/time. After a design or render-input change,
 the old acknowledgment is retained as historical local data but is not applied to
 the new revision. A changed warning/check result also invalidates an old form,
-even if rendered HTML is unchanged. Forms that fail return a recovery link to
-the current review page; an unsaved acknowledgment reason is not retained, so
-copy it before leaving if needed.
+even if rendered HTML is unchanged. A rejected form reloads the current findings
+without recording a decision. If the same warning and evidence still exist,
+its form keeps the explanation and uses fresh revision fields; the human must
+review the current findings and explicitly submit again. If the warning changed,
+disappeared or was already acknowledged, the unsaved explanation appears in a
+separate read-only field for copying and is not attached to another warning.
+If rendering or database access prevents reloading the review, the recovery page
+keeps the explanation for copying before returning to the candidate. Drafts live
+only in the returned page, not in a session or saved decision; copy them before
+leaving or refreshing if needed. Untrusted text remains escaped.
 
 Presentation edits still use the existing bounded theme/table-width controls.
 Their earlier operation log has reasons and before/after values, but does not

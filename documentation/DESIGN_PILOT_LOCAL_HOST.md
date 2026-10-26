@@ -59,6 +59,50 @@ unreachable in this profile. Without this profile, pilot views return 404.
 Python socket connection/send calls are denied as defense in depth. **These
 checks are not an OS sandbox or proof of containment for arbitrary agent code.**
 
+## Recover a candidate after an outside content edit
+
+If the pilot reports that a candidate's content changed outside the pilot, stop
+using that candidate and ask the developer running this local instance to clean
+it up. Uploading the identical file again checks the existing candidate’s
+integrity. A valid candidate reopens; an invalid candidate shows recovery guidance
+without being replaced. Reuploading does not repair it. Ordinary theme and table-width changes do not cause this error.
+
+For targeted recovery, stop the local server and open `nofos/manage.py shell`
+using the same clean-environment command, Python and `DESIGN_PILOT_ROOT` used
+above. In that shell, identify the candidate by the UUID in its review URL:
+
+```python
+from nofos.models import DesignPilotCandidate
+
+run = DesignPilotCandidate.objects.select_related("nofo", "owner").get(
+    pk="REPLACE_WITH_CANDIDATE_UUID"
+)
+print(run.pk, run.owner.email, run.source_name, run.nofo_id)
+```
+
+Verify that these identify the affected synthetic candidate and the intended
+local test account. This cleanup permanently removes its imported NOFO, saved
+design changes and candidate history. Keep the original Word file for reupload.
+Only after verifying the record, run:
+
+```python
+from django.db import transaction
+
+with transaction.atomic():
+    run.nofo.delete()
+```
+
+Deleting the associated NOFO also deletes its linked candidate through the
+existing cascade. Deleting only the candidate would leave the NOFO behind.
+Restart the server with the same profile, sign in and upload the original Word
+file again. Other candidates and local accounts are retained.
+
+Alternatively, start with a fresh private scratch directory, run migrations and
+create a new test account as above. That starts an empty database with none of
+the previous candidates or accounts. The old scratch directory still contains
+its database, original source bytes and history until the developer removes it;
+changing directories does not erase that data.
+
 ## Review limitations and remaining work
 
 Theme choices are rebuilt on every read and write using the initiating person's
