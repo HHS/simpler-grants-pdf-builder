@@ -39,7 +39,7 @@ OUTCOME_LABELS = {
     "timeout": "Analysis timed out",
     "busy": "Analyzer busy",
     "unavailable": "Service unavailable",
-    "disabled": "Pilot disabled",
+    "disabled": "Calculator disabled",
     "internal_error": "Unexpected analysis failure",
 }
 
