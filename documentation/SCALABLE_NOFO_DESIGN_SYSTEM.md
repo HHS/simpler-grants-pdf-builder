@@ -7,12 +7,18 @@ does not mean automatically applying it to a NOFO already under clearance. Achie
 stylesheet: stored content, authoring controls, branding, PDF generation and
 validation need agreed responsibilities.
 
-This guide supports modernization decisions, including Smarter Grants Management
-(SGM), and preserves knowledge for transition to GPLE and future design-quality
-oversight. For SGM, the working assumption is that NOFO information is authored
+This work aims to sustain NOFO design and accessibility quality, establish
+long-term review ownership and expertise, and support changing design needs in
+Smarter Grants Management (SGM). The working ownership assumptions are that the
+GPLE office owns design-quality oversight and SGM is responsible for implementation
+within SGM. Policy, clearance and publication decisions remain with the responsible
+authorities.
+
+This guide supports modernization decisions and preserves knowledge for transition
+to GPLE and future design-quality oversight. For SGM, the working assumption is that NOFO information is authored
 or held in the application that generates the PDF. No Word intake or export is
 required. Other applications may obtain content differently. Nothing here
-selects a technology stack, storage schema, renderer or operating owner.
+selects a technology stack, storage schema or renderer.
 
 ## Leadership summary
 
@@ -29,9 +35,10 @@ would determine whether that change requires renewed review.
 **Suggested use:** SGM and other modernization teams can use this guide to assess
 component, branding and design-change needs. A small representative demonstration
 would help establish which Builder lessons transfer and what requires adaptation.
-Ownership, OpDiv variation boundaries and protection of NOFOs undergoing clearance
-remain decisions to resolve with responsible teams. This summary requests no
-project approval or organizational assignment.
+Detailed operating responsibilities, OpDiv variation boundaries and protection of
+NOFOs undergoing clearance remain decisions to resolve with responsible teams.
+This summary requests no project approval; it uses the GPLE and SGM ownership
+assumptions stated above.
 
 ## How to read the recommendations
 
