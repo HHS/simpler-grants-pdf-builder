@@ -48,11 +48,14 @@ function setup({ form = true, error = false, report = false, word = false, valid
       'readability-version': node('0.5.3'),
       'readability-scope-pages': node('2 of 2 pages processed.'),
       'readability-scope-method': node('Text was reconstructed from page layout.'),
+      'readability-draft-scope': node('Writer instructions and placeholders may be included. Keep instructions that applicants need.'),
+      'readability-draft-readiness': node('Compare drafts with the same content scope.'),
       'readability-coverage': node('Text recovered from 2 pages.'),
       'readability-word-scope': node('Word count includes all text recovered from the PDF: 23 words.'),
       'readability-reliability': node(word ? 'This analysis does not check how completely the Word document was converted, so it does not assign a reliability rating.' : 'Reliability of these estimates: Low'),
       'readability-disclaimer': node('Estimates, not a clearance determination.'),
     });
+    if (word) delete elements['readability-draft-scope'];
     if (word) elements['readability-word-guidance'] = node('Why “Estimated”? These measures describe text recovered from your Word document. Missing or changed text can affect the results.');
   }
   const metrics = [node('Word count 23 words Estimate · Low reliability'),
@@ -149,6 +152,8 @@ test('copy includes provenance, scope, every metric and note, and disclaimer', a
   assert.match(state.copiedText, /Analyzed: September 23, 2026/);
   assert.match(state.copiedText, /Measurement version: 0\.5\.3/);
   assert.match(state.copiedText, /Word count includes all text recovered/);
+  assert.match(state.copiedText, /Writer instructions and placeholders may be included/);
+  assert.match(state.copiedText, /Compare drafts with the same content scope/);
   assert.match(state.copiedText, /Flesch-Kincaid Grade Level 8\.4/);
   assert.match(state.copiedText, /A layout limitation\.[\s\S]*Excluded fragments\./);
   assert.match(state.copiedText, /Estimates, not a clearance determination/);
@@ -159,6 +164,8 @@ test('copy identifies Word reports without a PDF source label', async () => {
   const state = setup({ form: false, report: true, word: true });
   await state.listeners['copy:click']();
   assert.match(state.copiedText, /^HHS NOFO Builder: Word readability pilot report/);
+  assert.doesNotMatch(state.copiedText, /Writer instructions and placeholders may be included/);
+  assert.match(state.copiedText, /Compare drafts with the same content scope/);
   assert.match(state.copiedText, /Why “Estimated”\? These measures describe text recovered from your Word document/);
   assert.match(state.copiedText, /does not check how completely the Word document was converted/);
 });

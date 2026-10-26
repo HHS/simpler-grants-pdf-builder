@@ -38,8 +38,10 @@ Word recognition reuses the PDF pilot's loose signals over the first
 compound signal requires both an HHS agency name (including the explicit
 “HHS-wide” alias) and “Notice of funding opportunity” or “NOFO [master] template.”
 A distinct existing signal such as Grants.gov is still required. A filename,
-agency name alone or repeated signal is insufficient. PDF recognition is
-unchanged. This is modest abuse deterrence, not exact template validation.
+agency name alone or repeated signal is insufficient. Word recognition retains
+this compound-context rule; the PDF agency page-text alternative described below
+does not add another vote to Word template context. This is modest abuse
+deterrence, not exact template validation.
 It does not claim a stable Word page count. The existing HTML
 profile `hhs-nofo-fy27-html@0.5.0` measures UTF-8 converted body HTML with the
 pinned metrics package and corrected passive classifier. No intermediate
@@ -142,11 +144,16 @@ not install ingress rate limiting or authorize production enablement.
 
 The launch approach is a deliberately loose NOFO check, not approved-template
 recognition. Before analysis, the bounded worker inspects descriptive PDF
-metadata and extractable text from the first two pages for four distinct
-signals: an HHS agency or division in metadata, a labeled opportunity number, a
+metadata and extractable text from the first five pages for four distinct
+signals: an HHS agency or division in metadata or opening-page text, a labeled opportunity number, a
 labeled Assistance Listing number, and a Grants.gov reference. Any two signals
 allow analysis. Repeating one signal in multiple fields does not increase the
 count, and filename alone never counts.
+
+The bounded five-page window accommodates cover and contents pages in ordinary
+Word print exports. Agency metadata and agency page text are alternative sources
+of one signal, never two votes. This does not admit blank templates without two
+different identification signal types. See drafting-stage evidence in #1059.
 
 The field shapes are grounded in the [Simpler.Grants.gov Opportunities v1
 OpenAPI examples](https://api.staging.simpler.grants.gov/docs#/Opportunity%20v1/post_v1_opportunities_search):
