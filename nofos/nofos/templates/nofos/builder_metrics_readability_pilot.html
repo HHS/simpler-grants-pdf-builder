@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Readability pilot usage{% endblock %}
+{% block title %}Readability Calculator usage{% endblock %}
 {% block css %}
 <style>
   .pilot-table, .metrics-data-table { width: 100%; border-collapse: collapse; }
@@ -20,26 +20,26 @@
 {% endblock %}
 {% block content %}
 {% url 'nofos:builder_metrics' as metrics_href %}
-{% include "includes/page_heading.html" with title="Readability pilot usage" back_text="Back to usage &amp; quality metrics" back_href=metrics_href only %}
-<p>Totals combine recorded PDF and Word upload attempts. The authenticated tool supports PDF and Word (.docx) uploads; the public tool supports PDF uploads only. File type is not recorded, so these metrics cannot separate PDF from Word usage.</p>
+{% include "includes/page_heading.html" with title="Readability Calculator usage" back_text="Back to usage &amp; quality metrics" back_href=metrics_href only %}
+<p>These metrics include recorded attempts from the Readability Calculator. Authenticated uploads support PDF and Word (.docx); public uploads support PDF only. File type is not recorded, so PDF and Word usage cannot be reported separately.</p>
 <details class="margin-top-2 margin-bottom-3 border-1px border-base-lighter radius-md padding-2">
   <summary class="text-bold">About these metrics</summary>
   <div class="usa-prose">
     <p>Figures cover currently retained outcomes, not lifetime usage. Rates include all recorded attempts, including disabled and busy responses. CSRF, authentication, permission and upstream rejections are not counted.</p>
-    <p>Source describes the upload route, not the file type or whether a visitor happened to be signed in. Unknown records have no established source. OpDiv filtering isn't available: outcomes have no document or user association. Internal pilot participants are included.</p>
+    <p>Source describes the upload route, not the file type or whether a visitor happened to be signed in. Unknown records have no established source. OpDiv filtering isn't available: outcomes have no document or user association.</p>
     <p>Chart windows are the last 30 days and 12 weeks. Missing observations show “No data,” not zero: recording may have been off or retention may have removed records. The current day and week are in progress. Weeks start Monday; dates use the application time zone.</p>
     <p>All-source breakdown: {% for row in metrics.sources %}{{ row.label }}: {{ row.attempts }}{% if not forloop.last %} · {% endif %}{% endfor %}.</p>
   </div>
 </details>
 <div class="pilot-source-filter no-print margin-bottom-2">
-  <label class="usa-label margin-top-0" for="pilot-source">Upload source</label>
-  <span class="usa-hint" id="pilot-source-hint">Filter by upload route, not file type. Selecting a source updates all metrics on this page.</span>
+  <label class="usa-label margin-top-0" for="pilot-source">Upload route</label>
+  <span class="usa-hint" id="pilot-source-hint">Choose public, authenticated or unknown to filter usage by upload route.</span>
   <select class="usa-select" id="pilot-source" name="source" aria-describedby="pilot-source-hint">
     <option value="all" {% if metrics.source == 'all' %}selected{% endif %}>All sources</option>
     {% for row in metrics.sources %}<option value="{{ row.code }}" {% if metrics.source == row.code %}selected{% endif %}>{{ row.label }}</option>{% endfor %}
   </select>
 </div>
-<p>Selected source: <strong>{{ metrics.source|capfirst }}</strong> · All retained attempts.</p>
+<p>Selected route: <strong>{{ metrics.source|capfirst }}</strong> · All retained attempts.</p>
 {% if metrics.source == 'all' or metrics.source == 'public' %}{% if not metrics.recording_enabled %}<p class="border-left-05 border-info padding-left-2">Public recording is off. New public attempts will not appear here.</p>{% endif %}{% endif %}
 {% if metrics.source == 'all' or metrics.source == 'authenticated' %}{% if not metrics.authenticated_recording_enabled %}<p class="border-left-05 border-info padding-left-2">Authenticated recording is off. New authenticated attempts will not appear here.</p>{% endif %}{% endif %}
 <div class="grid-row grid-gap-2 margin-top-3">
@@ -76,7 +76,7 @@
 <h2 class="font-heading-md margin-top-4">Processing time and availability</h2>
 <table class="pilot-table"><tbody><tr><th scope="row">Median workflow duration</th><td>{{ metrics.p50_duration_ms|default_if_none:"No data" }}{% if metrics.total_attempts %} ms{% endif %}</td></tr><tr><th scope="row">95th percentile workflow duration</th><td>{{ metrics.p95_duration_ms|default_if_none:"No data" }}{% if metrics.total_attempts %} ms{% endif %}</td></tr>{% for row in metrics.capacity %}<tr><th scope="row">{{ row.label }}</th><td>{{ row.rate_pct|default_if_none:"No data" }}{% if metrics.total_attempts %}% of attempts{% endif %}</td></tr>{% endfor %}</tbody></table>
 <p class="font-sans-2xs">Workflow duration includes parsing and rendering, not just analysis. Percentiles use nearest rank across all retained attempts for the selected source.</p>
-<h2 class="font-heading-md margin-top-4">Pilot status and recording settings</h2>
+<h2 class="font-heading-md margin-top-4">Calculator availability and usage recording</h2>
 <table class="pilot-table"><thead><tr><th scope="col">Source</th><th scope="col">Uploads</th><th scope="col">Recording</th></tr></thead><tbody><tr><th scope="row">Public</th><td>{{ metrics.enabled|yesno:"Enabled,Disabled" }}</td><td>{{ metrics.recording_enabled|yesno:"Enabled,Disabled" }}</td></tr><tr><th scope="row">Authenticated</th><td>{{ metrics.authenticated_enabled|yesno:"Enabled,Disabled" }}</td><td>{{ metrics.authenticated_recording_enabled|yesno:"Enabled,Disabled" }}</td></tr></tbody></table>
 <p>Public retention: {% if metrics.retention_days %}{{ metrics.retention_days }} days{% else %}Not configured{% endif %}. Authenticated retention: {% if metrics.authenticated_retention_days %}{{ metrics.authenticated_retention_days }} days (optional cleanup){% else %}No automatic expiration{% endif %}.</p>
 <details class="margin-top-2 font-sans-2xs"><summary>Recent technical details</summary><table class="pilot-table"><thead><tr><th scope="col">Time</th><th scope="col">Outcome code</th><th scope="col">HTTP status</th><th scope="col">Duration (ms)</th></tr></thead><tbody>{% for row in metrics.recent_attempts %}<tr><th scope="row">{{ row.created_at|date:"M j, Y, g:i:s a" }}</th><td>{{ row.outcome }}</td><td>{{ row.http_status }}</td><td>{{ row.duration_ms }}</td></tr>{% empty %}<tr><td colspan="4">No recorded attempts.</td></tr>{% endfor %}</tbody></table></details>

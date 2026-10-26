@@ -1,4 +1,4 @@
-# Readability pilot usage copy (#1119)
+# Readability Calculator usage copy (#1119)
 
 October 16, 2026. Local-only synthetic verification. No deployment, pilot
 enablement, new telemetry, migration or calculation changes.
@@ -48,3 +48,11 @@ No real uploads, credentials, session cookies or production data are included.
 ![Desktop dashboard](desktop.jpg)
 ![Narrow dashboard, authenticated route](narrow.jpg)
 ![Print-media presentation, authenticated route](print.jpg)
+
+## October 26 wording update
+
+Visible dashboard wording now uses **Readability Calculator usage**, **Upload
+route**, **Selected route** and **Calculator availability and usage recording**.
+The disabled outcome label uses **Calculator disabled**. Internal routes and
+settings retain their existing names. The screenshots above are historical
+layout evidence from before this wording update, not current-copy captures.

@@ -241,27 +241,31 @@ class MetricsTests(TestCase):
     def test_file_neutral_copy_and_route_help(self):
         self.login_viewer()
         page = self.client.get(self.url)
-        self.assertContains(page, "<title>Readability pilot usage", html=False)
-        self.assertContains(page, "Readability pilot usage")
+        self.assertContains(page, "<title>Readability Calculator usage", html=False)
+        self.assertContains(page, "Readability Calculator usage")
         self.assertNotContains(page, "PDF readability pilot usage")
         self.assertContains(
-            page, "Totals combine recorded PDF and Word upload attempts."
+            page,
+            "These metrics include recorded attempts from the Readability Calculator.",
         )
         self.assertContains(
             page,
-            "The authenticated tool supports PDF and Word (.docx) uploads; "
-            "the public tool supports PDF uploads only.",
+            "Authenticated uploads support PDF and Word (.docx); "
+            "public uploads support PDF only.",
         )
         self.assertContains(
             page,
-            "File type is not recorded, so these metrics cannot separate PDF from Word usage.",
+            "File type is not recorded, so PDF and Word usage cannot be reported separately.",
         )
-        self.assertContains(page, "Filter by upload route, not file type.")
+        self.assertContains(
+            page,
+            "Choose public, authenticated or unknown to filter usage by upload route.",
+        )
         self.assertContains(page, 'aria-describedby="pilot-source-hint"')
         self.assertContains(page, "No recorded attempts.")
         main = self.client.get(reverse("nofos:builder_metrics"))
         self.assertContains(
-            main, f'<a href="{self.url}">Readability pilot usage</a>', html=True
+            main, f'<a href="{self.url}">Readability Calculator usage</a>', html=True
         )
         self.assertNotContains(main, "PDF readability pilot usage")
 
