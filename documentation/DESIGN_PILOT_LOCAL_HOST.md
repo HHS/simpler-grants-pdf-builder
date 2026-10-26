@@ -3,7 +3,8 @@
 This is a synthetic, human-operated integration slice under [#1147](https://github.com/HHS/simpler-grants-pdf-builder/issues/1147), built on the
 [presentation-operation rules](DESIGN_CANDIDATE_OPERATIONS.md). It reuses Builder's
 Word import, metadata suggestions, section graph, theme choices and HTML templates.
-It does not run a model or expose an agent tool endpoint.
+It does not run a model. The optional [candidate-only interface](DESIGN_CANDIDATE_INTERFACE.md)
+adds narrow local HTTP tools without granting a broad human session.
 
 ## What it provides
 
@@ -121,9 +122,10 @@ covers only and rejects cover mutations/custom CSS. Do not infer asset or
 external-link fidelity from the filtered preview. HTML review does not verify PDF
 pagination, and opening it is not an acceptance prerequisite.
 
-No acceptance, promotion, discard, production transfer, model credentials or
-candidate-only agent transport is implemented. An ordinary human login is **not**
-a candidate-scoped agent credential. Those boundaries must be implemented and
+No acceptance, promotion, discard, production transfer or model runtime is
+implemented. An ordinary human login is **not** a candidate-scoped credential;
+the optional HTTP interface uses separate expiring/revocable keys. Remaining
+runtime and human-authority boundaries must be implemented and
 independently reviewed before claiming #1147 complete or running agent/real-data
 work. Processing is synchronous, not a cancellable worker. Discard/retention and
 full resource/time budgets are follow-up work; stopping the server does not erase

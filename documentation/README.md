@@ -19,7 +19,8 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 - [Agent design pilot investigation](AGENT_DESIGN_PILOT.md) - Proposed bounded rules, fidelity checks and manual baseline; not an implemented pilot
 - [Agent design pilot boundary ADR](adr/2026-10-20-agent-design-pilot-boundary.md) - Accepted HTML-only local synthetic-proof direction and human acceptance boundary for #902/#1145
 - [Design candidate operation rules](DESIGN_CANDIDATE_OPERATIONS.md) - In-memory presentation-operation slice; trusted-host integration and runtime isolation still required
-- [Connected local design host](DESIGN_PILOT_LOCAL_HOST.md) - Synthetic human upload, candidate persistence and revision-bound HTML review; no agent transport or acceptance
+- [Connected local design host](DESIGN_PILOT_LOCAL_HOST.md) - Synthetic human upload, candidate persistence and revision-bound HTML review; no model runtime or acceptance
+- [Candidate-only local interface](DESIGN_CANDIDATE_INTERFACE.md) - Expiring, revocable access to one synthetic candidate; no broad session, runtime or acceptance authority
 - [EDITOR_TASKS.md](EDITOR_TASKS.md) — Instructions for common NOFO Builder tasks, including prerequisites and support contacts
 - [GROUPS.md](GROUPS.md) — How user groups and permissions work
 - [DOCUMENT_HISTORY.md](DOCUMENT_HISTORY.md) - Indexed history pagination, deleted-item retention, backfill and rollout verification

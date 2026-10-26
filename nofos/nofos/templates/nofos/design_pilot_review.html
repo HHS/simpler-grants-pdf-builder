@@ -16,6 +16,29 @@
 </form>
 <h2 class="font-heading-lg text-bold margin-top-4">Cover</h2>
 <p>This slice uses text covers only. Cover assets are not available.</p>
+<h2 class="font-heading-lg text-bold margin-top-4">Candidate-only agent access</h2>
+<p>An approved local client can read this candidate and request theme or table-width changes. Access expires after 20 minutes or 100 requests. It cannot accept, transfer, discard or publish a design.</p>
+<div id="candidate-access-status" class="usa-alert {% if tool_access_active %}usa-alert--success{% elif tool_access_status == 'none' %}usa-alert--info{% else %}usa-alert--warning{% endif %} margin-y-2" role="status">
+  <div class="usa-alert__body">
+    {% if tool_access_active %}
+    <h3 class="usa-alert__heading text-bold">Active</h3>
+    <p class="usa-alert__text">Expires: {{ tool_expires_at }}. {{ tool_requests }} of {{ tool_request_limit }} requests used. The key is not shown again.</p>
+    {% elif tool_access_status == 'expired' %}
+    <h3 class="usa-alert__heading text-bold">Expired</h3>
+    <p class="usa-alert__text">This key has expired. The client can no longer access this candidate.</p>
+    <p class="usa-alert__text">{{ tool_requests }} of {{ tool_request_limit }} requests used. Create new access to reconnect the client.</p>
+    {% elif tool_access_status == 'exhausted' %}
+    <h3 class="usa-alert__heading text-bold">Request limit reached</h3>
+    <p class="usa-alert__text">{{ tool_requests }} of {{ tool_request_limit }} requests used. The client can no longer access this candidate. Create new access to reconnect the client.</p>
+    {% else %}
+    <h3 class="usa-alert__heading text-bold">No active access</h3>
+    <p class="usa-alert__text">No key has been issued, or access was revoked.</p>
+    {% endif %}
+  </div>
+</div>
+<form method="post" action="{% url 'design_pilot:issue_access' run.pk %}">{% csrf_token %}<button class="usa-button" type="submit">{% if tool_access_active %}Create or replace agent access{% elif tool_access_status == 'none' %}Create agent access{% else %}Create new agent access{% endif %}</button></form>
+<p>The new key will be shown only once. Creating new access replaces the previous key.</p>
+<form method="post" action="{% url 'design_pilot:revoke_access' run.pk %}" class="margin-top-2">{% csrf_token %}<button class="usa-button usa-button--outline" type="submit" {% if not tool_access_active %}disabled{% endif %}>Revoke agent access</button></form>
 <h2 class="font-heading-lg text-bold margin-top-4">Table widths</h2>
 {% for section in sections %}
 <form class="usa-form margin-bottom-4" method="post" action="{% url 'design_pilot:operation' run.pk %}">
