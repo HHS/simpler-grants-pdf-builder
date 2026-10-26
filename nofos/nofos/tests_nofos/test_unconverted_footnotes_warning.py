@@ -54,7 +54,7 @@ class NofoUnconvertedFootnotesWarningTests(TestCase):
         tab = soup.find(id="tab-4")
         panel = soup.find(id="tabpanel-4")
         self.assertIsNotNone(tab)
-        self.assertEqual(tab.get("aria-label"), f"Review endnotes ({len(issues)})")
+        self.assertEqual(tab.get("aria-label"), f"Check endnotes ({len(issues)})")
         copy_button = panel.find("button", string="Copy endnote issues")
         self.assertIsNotNone(copy_button)
         self.assertEqual(copy_button.get("type"), "button")
@@ -243,3 +243,163 @@ class NofoUnconvertedFootnotesWarningTests(TestCase):
         self.assertTrue(response.context["has_unconverted_footnotes"])
         reference.refresh_from_db()
         self.assertIn('href="#endnote-8"', reference.body)
+
+    def test_unstructured_content_is_bounded_and_grouped_per_subsection(self):
+        note = self.nofo.sections.first().subsections.first()
+        for body in (
+            "Plain citation.\n\nAnother plain citation.",
+            "- Unlinked bullet\n- Another bullet",
+            '<ol><li id="endnote-2">Missing return link</li></ol>',
+            "2legislation-title-xxvi.pdf",
+            "<div>Pasted source text.</div>",
+            "Long citation " * 50,
+        ):
+            with self.subTest(body=body):
+                note.body = body
+                note.save()
+                response = self.client.get(self.edit_url)
+                issues = [
+                    i
+                    for i in response.context["unconverted_footnotes"]
+                    if i["code"] == "content-format"
+                ]
+                self.assertEqual(len(issues), 1)
+                self.assertEqual(issues[0]["subsection"], note)
+                self.assertLessEqual(len(issues[0]["excerpt"]), 181)
+                soup = BeautifulSoup(response.content, "html.parser")
+                self.assertEqual(
+                    soup.select_one("#tabpanel-4 q").get_text(), issues[0]["excerpt"]
+                )
+
+    def test_nested_endnotes_scope_ends_at_peer_heading(self):
+        section = self.nofo.sections.first()
+        section.name = "Appendices"
+        section.save()
+        note = section.subsections.first()
+        note.name, note.tag, note.html_id = "Endnotes", "h3", "endnotes"
+        note.body = "First unstructured source."
+        note.save()
+        child = Subsection.objects.create(
+            section=section,
+            name="Sources",
+            tag="h4",
+            html_id="sources",
+            order=2,
+            body="Nested unstructured source.",
+        )
+        Subsection.objects.create(
+            section=section,
+            name="Other appendix",
+            tag="h3",
+            html_id="other",
+            order=3,
+            body="Ordinary prose outside endnotes.",
+        )
+        response = self.client.get(self.edit_url)
+        issues = [
+            i
+            for i in response.context["unconverted_footnotes"]
+            if i["code"] == "content-format"
+        ]
+        self.assertEqual([i["subsection"] for i in issues], [note, child])
+        self.assertEqual(
+            [i["location_html_id"] for i in issues], ["endnotes", "sources"]
+        )
+
+    def test_manual_continuations_are_not_unstructured_content(self):
+        note = self.nofo.sections.first().subsections.first()
+        note.body = "[1] Source.\n\nContinuation paragraph.\n\n- Supporting detail\n\n| Source | Detail |\n| --- | --- |\n| A | B |"
+        note.save()
+        response = self.client.get(self.edit_url)
+        self.assertFalse(
+            any(
+                i["code"] == "content-format"
+                for i in response.context["unconverted_footnotes"]
+            )
+        )
+
+    def test_formatted_nested_headings_do_not_mask_endnote_content(self):
+        note = self.nofo.sections.first().subsections.first()
+        program = Section.objects.create(nofo=self.nofo, name="Program", order=0)
+        Subsection.objects.create(
+            section=program,
+            order=1,
+            name="",
+            tag="",
+            body='<p>Evidence <a id="endnote-ref-1" href="#endnote-1">[1]</a></p>',
+        )
+        citation = (
+            '<ol><li id="endnote-1"><p>Source '
+            '<a href="#endnote-ref-1">↑</a></p></li></ol>'
+        )
+        for heading in (
+            "*Sources*",
+            "**Sources**",
+            "[Sources](https://example.org/sources)",
+        ):
+            for malformed in ("", "Unstructured source text."):
+                with self.subTest(heading=heading, malformed=malformed):
+                    note.body = f"### {heading}\n\n{citation}\n\n{malformed}"
+                    note.save()
+                    response = self.client.get(self.edit_url)
+                    issues = response.context["unconverted_footnotes"]
+                    if malformed:
+                        self.assertEqual(len(issues), 1)
+                        self.assertEqual(issues[0]["code"], "content-format")
+                        self.assertEqual(issues[0]["excerpt"], malformed)
+                        self.assertEqual(issues[0]["subsection"], note)
+                    else:
+                        self.assertEqual(issues, [])
+                    saved_body = note.body
+                    note.refresh_from_db()
+                    self.assertEqual(note.body, saved_body)
+
+    def test_format_warning_quotes_text_not_html(self):
+        note = self.nofo.sections.first().subsections.first()
+        note.body = '<p>&lt;script&gt;alert("citation")&lt;/script&gt;</p>'
+        note.save()
+        response = self.client.get(self.edit_url)
+        soup = BeautifulSoup(response.content, "html.parser")
+        quote = soup.select_one("#tabpanel-4 q")
+        self.assertIsNone(quote.find("script"))
+        self.assertIn('<script>alert("citation")</script>', quote.get_text())
+
+    def test_other_groups_cannot_access_endnote_warnings(self):
+        other = BloomUser.objects.create_user(
+            email="other-endnotes@example.com",
+            password="testpass123",
+            group="hrsa",
+            force_password_reset=False,
+        )
+        self.client.force_login(other)
+        response = self.client.get(self.edit_url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_saving_unstructured_endnotes_is_not_blocked(self):
+        note = self.nofo.sections.first().subsections.first()
+        note.name, note.tag, note.html_id = "Endnotes", "h3", "endnotes-subsection"
+        note.save()
+        url = reverse(
+            "nofos:subsection_edit", args=[self.nofo.pk, note.section_id, note.pk]
+        )
+        form = self.client.get(url).context["form"]
+        response = self.client.post(
+            url,
+            {
+                "name": note.name,
+                "tag": note.tag,
+                "body": "Unstructured source text.",
+                "html_class": "",
+                "edit_version": form["edit_version"].value(),
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        note.refresh_from_db()
+        self.assertEqual(note.body, "Unstructured source text.")
+        response = self.client.get(self.edit_url)
+        self.assertTrue(
+            any(
+                i["code"] == "content-format"
+                for i in response.context["unconverted_footnotes"]
+            )
+        )

@@ -94,6 +94,15 @@ Viewing a saved NOFO recalculates advisory warnings without changing stored
 content or IDs. Correct issues in the system where the source is maintained, or
 correct an issue introduced by an edit in NOFO Builder at the affected location.
 
+The **Check endnotes** tab also reviews content under an Endnotes section or
+subsection, including nested headings until the next peer/higher heading. It
+shows one format warning per affected subsection, quoting up to 180 characters
+of its first unrecognized block. Native ordered-list notes with note IDs and
+return links, manual `[N]` citations and their continuation blocks, and legacy
+Google Docs bracketed return-link citations remain supported. Relationship
+warnings are retained separately. Empty content is not a format warning.
+These checks never block saving or automatically repair authored content.
+
 Automatic conversion happens only on import/reimport. Reimport retains the parent
 NOFO record and the existing revision/transaction behavior; it replaces sections
 and subsections as before. It does not guarantee stable child IDs or stable anchor

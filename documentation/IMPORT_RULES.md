@@ -803,3 +803,13 @@ Two things worth knowing when tracing one of these by hand, because they make th
 - **The editor's sanitizer strips two schemes.** martor's bleach pass allows only `http`, `https` and `mailto`, so in the *rendered* edit page both `about:blank` and `bookmark://…` arrive href-less. The inline highlight (`templatetags/add_classes_to_links.py`) therefore cannot tell which scheme a bare `<a>text</a>` started as, which is why every no-destination link gets the same "Link with no destination" tooltip rather than a scheme-specific one.
 
 One more view-time rule is worth calling out because it shares detection logic with IMPORT-050/IMPORT-051: **`nofo.py::find_endnote_issues`** reruns the same bracketed-endnote analysis (`endnotes.py::analyze_endnotes`) fresh against a NOFO's *saved* content every time its detail page is viewed, surfacing warnings (missing/duplicate/empty/malformed/conflicting markers, non-sequential numbering, missing return links) without changing stored content or ids. It's what powers the `unconverted_footnotes` warnings shown in the editor — not an import transformation itself, but the reason a NOFO's endnote warnings can change after import without anyone re-importing it. Warning links use the affected rendered subsection when it has an editor anchor; otherwise they fall back to the containing section so every fragment has a target on the edit page.
+
+The saved-content caller opts into a format review within Endnotes sections and
+subsections (including nested headings, stopping at the next peer/higher heading).
+Headings and their inline formatting/link descendants are not citation blocks;
+content following nested headings remains in scope.
+It reports the first unrecognized nonempty block per subsection with a bounded
+plain-text excerpt. Native note lists with IDs/return links, bracketed manual
+citations and continuation blocks, and legacy Google Docs bracketed citations
+are accepted; existing relationship checks remain independent. This opt-in
+does not run during import conversion or change saving, content or IDs.
