@@ -134,7 +134,6 @@ home and mandate need confirmation; a list of participants alone is insufficient
 | Shared design-system owner | Coordinate shared-change review, release disposition, affected-team notification and defect resolution. |
 | Application owner | Control application adoption and implement containment or recovery. |
 | Program office or designated NOFO owner | Decide whether to accept an available redesign, subject to applicable clearance requirements. |
-| Accessibility and policy/clearance authorities | Determine applicable criteria and whether a correction needs further review. |
 | Designated HHS grants governance sponsor | Resolve cross-OpDiv disagreements or risks beyond the other owners' authority. |
 
 For a defective release, application teams should notify the shared owner, assess
@@ -265,6 +264,9 @@ manifest. The pilot's revision-binding proposal offers useful requirements, not
 proof that historical reproduction is implemented (E8).
 
 ### Cross-cutting scenario: preserve design during clearance
+
+Design-quality review does not replace any required content, clearance, or
+publication review.
 
 Program-office feedback informing this guide identifies a recurring situation:
 a designed NOFO is routed for Department and OMB clearance, and the office wants
