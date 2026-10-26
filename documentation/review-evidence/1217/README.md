@@ -45,11 +45,13 @@ scroll rounding, immediate link/pipe synchronization, and mobile close behavior.
 - `git diff --check` passes.
 - The upstream base initially blocked all Django tests with conflicting migration
   leaves `0154_design_pilot_candidate` and `0155_backfill_document_audit_index`.
-  The added empty `0156_merge_design_pilot_history_index` joins both branches
-  without changing existing migrations or restoring the retired backfill.
-- The full Django suite passes: 2,845 tests, with 3 existing skips.
+  Upstream now supplies the empty `0156_merge_20261026_1349`, which joins both
+  branches without restoring the retired backfill. The equivalent PR-local
+  merge migration was removed when updating this branch to avoid duplicate leaves.
+- After merging upstream `1600d6d8`, the full Django suite passes with
+  `--parallel 4`: 2,846 tests, with 3 existing skips.
 - All 24 focused history/navigation tests pass with the final migration graph.
-  The partial-rollout test now temporarily clears descendant migration records
+  Upstream's partial-rollout test temporarily clears descendant migration records
   too, preserving a valid historical graph before replaying 0155.
 - Verified upgrades from each original leaf independently in fresh in-memory
   SQLite databases: both table sets remain present, the graph has one NOFO leaf,
