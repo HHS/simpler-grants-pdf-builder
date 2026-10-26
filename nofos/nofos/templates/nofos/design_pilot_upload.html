@@ -1,0 +1,11 @@
+{% extends 'nofos/design_pilot_base.html' %}
+{% block pilot_content %}
+<h1 class="font-heading-xl text-bold">Try a synthetic Word import</h1>
+<p>This local pilot keeps candidates in a separate database. Use invented information only. No PDF rendering, acceptance or transfer is available.</p>
+<form method="post" enctype="multipart/form-data" class="usa-form">
+{% csrf_token %}
+{% include 'includes/file_input.html' with id='source' name='source' label='Synthetic NOFO Word document' hint='Choose a .docx file, no larger than 1 MB.' accept='.docx' error=upload_error %}
+<div class="usa-checkbox margin-top-3"><input class="usa-checkbox__input" type="checkbox" name="synthetic" value="yes" id="synthetic"><label class="usa-checkbox__label" for="synthetic">This file contains invented information only.</label></div>
+<button class="usa-button margin-top-3" type="submit">Import candidate</button>
+</form>
+{% endblock %}

@@ -29,6 +29,36 @@ Whitespace/bookmarks and recognized Metadata before the introduction are safe;
 ordinary prose or other headings before it must be moved into the appropriate
 section by the author. No content is discarded to force a match.
 
+### Template guidance before the introduction
+
+Valid introductory and Step 1 heading levels do not make content before the
+introduction safe to import. For example, a General instructions table before
+Before You Get Started still triggers `IMPORT-INTRODUCTION-STRUCTURE`. The error
+identifies the first unassigned content with a short excerpt and explains that
+this check does not mean the heading styles are incorrect. Remove template-only
+guidance from the import copy; move content applicants need into its appropriate
+section. Save and import again.
+
+Word text boxes and tables have separate cleanup rules:
+
+- [IMPORT-058](IMPORT_RULES.md#import-058--pale-blue-word-instruction-container-cleanup)
+  removes supported Word text-box containers before Word-to-HTML conversion.
+  The fill must resolve to solid, fully opaque `DCEAF7` (RGB 220, 234, 247, with
+  one RGB level allowed for Word rounding). The container must have no adjacent
+  content bundled into the same drawing; modern/compatibility copies, when
+  present, must agree on fill, normalized text and links. Wording and heading
+  styles do not determine eligibility. Copying a known supported instruction
+  text box preserves the intended container and fill; test the resulting import.
+- [IMPORT-039](IMPORT_RULES.md#import-039--writer-instructions-table-extraction)
+  extracts single-cell tables with specific instruction labels later in HTML
+  processing, after introductory validation. Its labels do not include
+  General instructions. Table shading does not turn a table into a Word text
+  box or make it eligible for IMPORT-058.
+
+Changing a General instructions table's background to DCEAF7 therefore does not
+resolve this error. These diagnostics do not expand automatic removal or move
+cleanup earlier; unknown content remains protected by the existing check.
+
 ## Editing and record lifecycle
 
 Imported ownership stores one `Section.role=introduction`, constrained to one per
@@ -47,9 +77,17 @@ authors remove all introductory prose, they are responsible for supplying the
 applicant instructions they need; the fixed parent is not deleted or replaced.
 
 The template-selection control is absent for imported ownership. Direct GET/POST
-to the template-settings endpoint is forbidden. The editor explains that dates
-and registration instructions in imported text are editor-maintained. Updating
-metadata never rewrites that text.
+to the template-settings endpoint is forbidden. On the NOFO edit page, the
+introductory section uses the same heading, action controls and subsection table
+layout as other sections, without an additional explanatory paragraph.
+
+Imported text is not automatically synchronized with structured fields. The
+existing Application Deadline edit workflow searches all subsection bodies,
+including the imported introduction, for the current deadline text and offers
+checkboxes to replace it in selected subsections when saving. Matching is
+case-insensitive literal text, not date interpretation: differently formatted
+dates or relative instructions are not inferred. Saving a structured field alone
+does not rewrite introductory content.
 
 Re-import keeps ownership and wording family stable. For imported ownership, a
 unique populated Before You Begin or Before You Get Started introduction can be
@@ -68,11 +106,15 @@ reordering. The shared BaseSection ordering fallback is not changed.
 | Output | Imported body | Generated decorations |
 | --- | --- | --- |
 | HTML preview and PDF | Once, with ordinary section typography | Fixed heading, theme-aware introductory icon; optional PDF navigation-help callout |
-| Table of contents | Compact parent entry and BYB icon | Child introductory headings deliberately omitted from the TOC |
+| Table of contents | Compact parent entry without an icon, aligned with subsection text | Child introductory headings deliberately omitted from the TOC; the bell stays on the introductory page |
 | Numbered navigation | Ordinary numbered steps only | No introductory divider page or extra numbered step |
 | Full Word-export HTML | Once, with authored links and notes | Fixed heading only; no generated icon/help or legacy registration/deadline body |
 | Abbreviated/policy export | Once, with existing policy-language rules | Same decoration policy as full Word export |
 | Readability input | Once through the shared export document | No generated help or legacy introductory body |
+
+See the [Contents icon correction evidence](review-evidence/intro-toc-icon-1130/README.md)
+for before/after HTML and actual test-provider PDF screenshots. The introductory
+page keeps its bell while its Contents entry uses the existing plain-link layout.
 
 The optional callout is suppressed if authored introductory content includes
 Adobe Reader and either keyboard, left arrow or left-arrow wording. This is a

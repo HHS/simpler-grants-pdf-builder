@@ -110,6 +110,14 @@ THEME_CHOICES = [
 ]
 
 
+# Keep legacy theme values valid on stored NOFOs, but do not offer them for new selection.
+RETIRED_THEME_CHOICES = {
+    "portrait-hrsa-blue": "HRSA (Default, legacy)",
+    "landscape-cdc-blue": "CDC Landscape (Default, legacy)",
+    "landscape-cdc-white": "CDC Landscape (Light, legacy)",
+}
+
+
 class BaseNofo(models.Model):
     class Meta:
         abstract = True
@@ -1727,6 +1735,58 @@ class ExternalSourceHandoffResult(models.Model):
         raise ValidationError("Handoff results cannot be deleted through the ORM.")
 
 
+class AuditObjectDocument(models.Model):
+    """Durable document ownership, including objects removed by a reimport."""
+
+    content_type = models.ForeignKey(
+        "contenttypes.ContentType", on_delete=models.CASCADE, related_name="+"
+    )
+    object_id = models.UUIDField()
+    document_content_type = models.ForeignKey(
+        "contenttypes.ContentType", on_delete=models.CASCADE, related_name="+"
+    )
+    document_id = models.UUIDField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["content_type", "object_id"],
+                name="audit_object_document_unique",
+            )
+        ]
+
+
+class DocumentAuditEvent(models.Model):
+    """Small indexed projection; original audit content remains in CRUDEvent."""
+
+    event = models.OneToOneField(
+        "easyaudit.CRUDEvent",
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name="document_index",
+    )
+    document_content_type = models.ForeignKey(
+        "contenttypes.ContentType", on_delete=models.CASCADE, related_name="+"
+    )
+    document_id = models.UUIDField()
+    datetime = models.DateTimeField()
+    visible = models.BooleanField()
+
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=[
+                    "document_content_type",
+                    "document_id",
+                    "-datetime",
+                    "-event",
+                ],
+                condition=models.Q(visible=True),
+                name="document_audit_page_idx",
+            )
+        ]
+
+
 class ExternalSourceHandoffCurrent(models.Model):
     """The sole mutable current-result selector for a receipt."""
 
@@ -1757,3 +1817,35 @@ class ExternalSourceHandoffCurrent(models.Model):
         raise ValidationError(
             "A current-result selection cannot be deleted through the ORM."
         )
+
+
+class DesignPilotCandidate(models.Model):
+    """Synthetic local run state; never a production acceptance record."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    owner_group = models.CharField(max_length=32)
+    nofo = models.OneToOneField(Nofo, on_delete=models.CASCADE)
+    source_sha256 = models.CharField(max_length=64)
+    source_bytes = models.BinaryField()
+    source_name = models.CharField(max_length=200)
+    conversion_html = models.TextField()
+    content_json = models.TextField()
+    presentation_json = models.TextField()
+    changes_json = models.TextField(default="[]")
+    sequence = models.PositiveIntegerField(default=0)
+    revision = models.CharField(max_length=64)
+    warnings = models.JSONField(default=list)
+    tool_token_digest = models.CharField(
+        max_length=64, null=True, unique=True, editable=False
+    )
+    tool_expires_at = models.DateTimeField(null=True, editable=False)
+    tool_requests = models.PositiveIntegerField(default=0, editable=False)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["owner", "source_sha256"], name="design_pilot_owner_source_once"
+            )
+        ]

@@ -121,7 +121,17 @@ class WordReadabilityTests(SimpleTestCase):
         )
         self.path.write_bytes(synthetic_docx(text))
         self.assertGreater(analyze_word(self.path)["metrics"]["word_count"]["value"], 0)
-        self.assertEqual(recognize_nofo({}, text).status, "unsupported")
+        # PDFs now accept an agency in page text plus Grants.gov. Word keeps
+        # its existing compound agency/title rule rather than counting both.
+        pdf_decision = recognize_nofo({}, text)
+        self.assertEqual(pdf_decision.status, "supported")
+        self.assertEqual(
+            pdf_decision.signal_ids, ("hhs_agency_page_text", "grants_gov")
+        )
+        self.assertEqual(
+            recognize_word_nofo(text).signal_ids,
+            ("grants_gov", "hhs_nofo_template_context"),
+        )
         self.assertEqual(
             recognize_word_nofo(
                 "HHS-wide NOFO Master Template. See Grants.gov."
@@ -199,7 +209,7 @@ class WordReadabilityTests(SimpleTestCase):
         self.assertIn("synthetic supporting note", soup.get_text())
         expected = metrics.analyze(
             metrics.SourceBundle.from_html(html.encode()),
-            profile="hhs-nofo-fy27-html@0.4.0",
+            profile="hhs-nofo-fy27-html@0.5.0",
         ).to_dict()
         report = analyze_word(self.path)
         for metric_id in report["metrics"]:
@@ -210,6 +220,43 @@ class WordReadabilityTests(SimpleTestCase):
                 expected["metrics"][metric_id]["value"],
                 metric_id,
             )
+
+    def test_word_uses_corrected_passive_method_without_changing_other_metrics(self):
+        import hhs_nofo_metrics as metrics
+
+        self.path.write_bytes(
+            synthetic_docx(
+                "Opportunity number: HRSA-26-106. Assistance listing: 93.123. "
+                "Applications aren't accepted after Friday. "
+                "The application wasn't reviewed by the agency. "
+                "Applications aren't evaluated by the agency. "
+                "The program is in need of additional staff. "
+                "The applicant is indeed eligible."
+            )
+        )
+        html, _ = word_html(self.path)
+        source = metrics.SourceBundle.from_html(html.encode())
+        old = metrics.analyze(source, profile="hhs-nofo-fy27-html@0.4.0")
+        corrected = metrics.analyze(source, profile="hhs-nofo-fy27-html@0.5.0")
+        before = old.metrics["passive_sentence_percentage"]
+        after = corrected.metrics["passive_sentence_percentage"]
+        self.assertEqual(before.components["passive_sentence_count"], 2)
+        self.assertEqual(after.components["passive_sentence_count"], 3)
+        self.assertEqual(
+            before.components["sentence_count"], after.components["sentence_count"]
+        )
+        self.assertEqual(after.method.version, "0.4.0-provisional")
+        report = analyze_word(self.path)
+        self.assertEqual(report["version"], "0.6.0")
+        self.assertEqual(
+            report["metrics"]["passive_sentence_percentage"]["value"], after.value
+        )
+        for metric_id in old.metrics:
+            if metric_id != "passive_sentence_percentage":
+                self.assertEqual(
+                    old.metrics[metric_id].to_dict(),
+                    corrected.metrics[metric_id].to_dict(),
+                )
 
     def test_expanded_limit_is_checked_before_conversion(self):
         self.path.write_bytes(synthetic_docx())

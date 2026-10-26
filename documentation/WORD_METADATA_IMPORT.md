@@ -65,6 +65,30 @@ with real values before using the document. No subject generation is added.
 
 ## Legacy imports and saved records
 
+### ACL theme selection
+
+On a new import, a resolved OpDiv of `Administration for Community Living`,
+`Administration for Community Living (ACL)` or standalone `ACL` selects
+**ACL (Default)** (`portrait-acl-white`), ignoring case. The opportunity number
+does not need an `ACL-` prefix: blank, generic and template-placeholder numbers
+still select ACL from that OpDiv, as do conflicting number prefixes. Existing
+NIH, HRSA and SAMHSA OpDiv checks retain their priority for mixed agency text.
+The Author field is extracted separately and does not select the theme.
+
+Previously, ACL theme detection depended on `acl-` in the opportunity number,
+so an ACL template with `{Insert opportunity number.}` fell through to
+**NIH (Light)** even when its OpDiv and Author were correctly populated as ACL.
+The fix applies to new imports using either legacy labels or a recognized
+Metadata block. It does not replace placeholder values or change metadata
+block precedence.
+
+Saved records are not backfilled. Reimport preserves the existing theme,
+including a previously suggested NIH theme. For an already imported ACL NOFO,
+use its theme settings to choose **ACL (Default)** explicitly.
+See [IMPORT-042](IMPORT_RULES.md#import-042--cover-theme-suggestion).
+
+### Saved-record behavior
+
 Without a recognized Metadata block, legacy scanning remains active, including the
 guarded next-paragraph OpDiv continuation. Legacy Subagency spellings and spaced aliases
 are supported. Tagline and assistance-listing extraction remain independent of this block.

@@ -3,6 +3,7 @@ from martor.fields import MartorFormField
 from users.models import BloomUser
 
 from .models import (
+    RETIRED_THEME_CHOICES,
     STATUS_CHOICES,
     THEME_CHOICES,
     Nofo,
@@ -160,14 +161,7 @@ NIH_ALLOWED_CHOICES = {
     "icon_style": frozenset(["nofo--icons--solid"]),
 }
 
-HRSA_ALLOWED_COVERS = frozenset(["nofo--cover-page--text"])
-
-# Keep legacy theme values valid on stored NOFOs, but do not offer them for new selection.
-RETIRED_THEME_CHOICES = {
-    "portrait-hrsa-blue": "HRSA (Default, legacy)",
-    "landscape-cdc-blue": "CDC Landscape (Default, legacy)",
-    "landscape-cdc-white": "CDC Landscape (Light, legacy)",
-}
+HRSA_ALLOWED_COVERS = frozenset(["nofo--cover-page--text", "nofo--cover-page--medium"])
 
 
 class NofoThemeOptionsForm(forms.ModelForm):

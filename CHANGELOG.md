@@ -5,6 +5,150 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.54.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.53.2...nofos-v3.54.0) (2026-10-26)
+
+
+### Features
+
+* manage document history reader through Constance ([#1220](https://github.com/HHS/simpler-grants-pdf-builder/issues/1220)) ([1d2cefb](https://github.com/HHS/simpler-grants-pdf-builder/commit/1d2cefb61d0d87c9dbd44382cb4d6aa65697c214))
+
+
+### Bug Fixes
+
+* align Constance breadcrumbs with Django admin markup ([#1222](https://github.com/HHS/simpler-grants-pdf-builder/issues/1222)) ([e802b98](https://github.com/HHS/simpler-grants-pdf-builder/commit/e802b989ead225683d67262e8931abe722b8f657))
+
+
+### Miscellaneous Chores
+
+* bump boto3 from 1.43.109 to 1.43.111 in the python-minor-and-patch group ([#1223](https://github.com/HHS/simpler-grants-pdf-builder/issues/1223)) ([b430087](https://github.com/HHS/simpler-grants-pdf-builder/commit/b43008749a0544fd98fa257d5f68d3ddcb7e2bcf))
+
+## [3.53.2](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.53.1...nofos-v3.53.2) (2026-10-26)
+
+
+### Bug Fixes
+
+* align readability retention and privacy guidance ([#1219](https://github.com/HHS/simpler-grants-pdf-builder/issues/1219)) ([1600d6d](https://github.com/HHS/simpler-grants-pdf-builder/commit/1600d6d87abdd55a2cd21134c7509e1979e875de))
+* keep admin styles and scripts aligned with Django ([#1212](https://github.com/HHS/simpler-grants-pdf-builder/issues/1212)) ([5c60b2f](https://github.com/HHS/simpler-grants-pdf-builder/commit/5c60b2fdcee271607dece901796fd91d87655599))
+* keep NOFO jump navigation highlighting on the selected section ([#1218](https://github.com/HHS/simpler-grants-pdf-builder/issues/1218)) ([26b9c85](https://github.com/HHS/simpler-grants-pdf-builder/commit/26b9c85902c09da692f15280e35d65796a2a3689))
+* restore bounded history with separate backfill cutover ([#1187](https://github.com/HHS/simpler-grants-pdf-builder/issues/1187)) ([b3e23b2](https://github.com/HHS/simpler-grants-pdf-builder/commit/b3e23b2f33515fe28482108cff9a2016f9a88ca6))
+* warn about unstructured endnote content ([#1192](https://github.com/HHS/simpler-grants-pdf-builder/issues/1192)) ([1cacc30](https://github.com/HHS/simpler-grants-pdf-builder/commit/1cacc30b7d41b369c19b7a8789bd419f5a36f763))
+
+## [3.53.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.53.0...nofos-v3.53.1) (2026-10-25)
+
+
+### Bug Fixes
+
+* keep consecutive Word bullets together across list IDs ([#1201](https://github.com/HHS/simpler-grants-pdf-builder/issues/1201)) ([2683103](https://github.com/HHS/simpler-grants-pdf-builder/commit/2683103c994c0b97bb5387c82ec096159b925b38))
+* omit empty optional tail headings on import ([#1209](https://github.com/HHS/simpler-grants-pdf-builder/issues/1209)) ([4664953](https://github.com/HHS/simpler-grants-pdf-builder/commit/4664953b72aaef7548c0aaebad485524b8d86caf))
+* point first side nav link to Basic information ([31c8637](https://github.com/HHS/simpler-grants-pdf-builder/commit/31c8637786798a0a1a402aa6abc5ec251c10631b))
+* preserve adjacent mixed list boundaries in Markdown ([#1204](https://github.com/HHS/simpler-grants-pdf-builder/issues/1204)) ([032dc6a](https://github.com/HHS/simpler-grants-pdf-builder/commit/032dc6a822ab9b24a962160309a3f33c9f6e410a))
+* preserve native Word endnote cross-references on import ([#1211](https://github.com/HHS/simpler-grants-pdf-builder/issues/1211)) ([dc59aec](https://github.com/HHS/simpler-grants-pdf-builder/commit/dc59aec39a9eae6dfa958ceec99f0f23bd64f08c))
+* preserve Word line breaks inside emphasized text ([#1202](https://github.com/HHS/simpler-grants-pdf-builder/issues/1202)) ([72dc5aa](https://github.com/HHS/simpler-grants-pdf-builder/commit/72dc5aaf1da9ffb3a7c1db46c7fb944f4f6989e6))
+* repair literal bullet groups during NOFO import ([c7ae30e](https://github.com/HHS/simpler-grants-pdf-builder/commit/c7ae30e2b9da0e7964c841dc97d3cbb560cb9ae4))
+
+
+### Documentation
+
+* renumber duplicate import rule IDs ([c7ae30e](https://github.com/HHS/simpler-grants-pdf-builder/commit/c7ae30e2b9da0e7964c841dc97d3cbb560cb9ae4))
+
+
+### Miscellaneous Chores
+
+* **deps:** update pypdf, virtualenv, filelock for vulnerability scan ([31c8637](https://github.com/HHS/simpler-grants-pdf-builder/commit/31c8637786798a0a1a402aa6abc5ec251c10631b))
+
+## [3.53.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.52.4...nofos-v3.53.0) (2026-10-23)
+
+
+### Features
+
+* add bounded synthetic design candidate operations ([#1160](https://github.com/HHS/simpler-grants-pdf-builder/issues/1160)) ([57094f2](https://github.com/HHS/simpler-grants-pdf-builder/commit/57094f2d45fb73dc7501d904291c2bc0a90e9aa5))
+* connect synthetic design candidates to isolated local HTML review ([#1161](https://github.com/HHS/simpler-grants-pdf-builder/issues/1161)) ([e0106b9](https://github.com/HHS/simpler-grants-pdf-builder/commit/e0106b9cf34f212d9bb78feade3e375291291c7c))
+
+
+### Bug Fixes
+
+* remove instruction boxes with spacing differences and manager labels ([#1199](https://github.com/HHS/simpler-grants-pdf-builder/issues/1199)) ([c63200e](https://github.com/HHS/simpler-grants-pdf-builder/commit/c63200e8655f37cfa64fecd3c048cb730abb125f))
+* repair recognized eligibility organization bullets on import ([#1193](https://github.com/HHS/simpler-grants-pdf-builder/issues/1193)) ([0848b9f](https://github.com/HHS/simpler-grants-pdf-builder/commit/0848b9f0594848297425e90934d3c1d60e896250))
+* retain missing link destinations in publication warnings ([#1191](https://github.com/HHS/simpler-grants-pdf-builder/issues/1191)) ([038f330](https://github.com/HHS/simpler-grants-pdf-builder/commit/038f330b91e54040b2a828076cfb5faa9a761224))
+* upgrade Black to patch image scan finding ([#1195](https://github.com/HHS/simpler-grants-pdf-builder/issues/1195)) ([a18c093](https://github.com/HHS/simpler-grants-pdf-builder/commit/a18c0934ca7ee69fc77e848af731882cdb1a68d1))
+
+
+### Miscellaneous Chores
+
+* bump pypdf from 6.19.0 to 6.21.1 ([#1182](https://github.com/HHS/simpler-grants-pdf-builder/issues/1182)) ([79dd6e0](https://github.com/HHS/simpler-grants-pdf-builder/commit/79dd6e02e303298723de1c0a8910df464e3c676e))
+* bump virtualenv from 21.14.2 to 21.14.9 ([#1183](https://github.com/HHS/simpler-grants-pdf-builder/issues/1183)) ([8d43eee](https://github.com/HHS/simpler-grants-pdf-builder/commit/8d43eee1f1a1cf7768787929130a14bb3aeb4a17))
+
+## [3.52.4](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.52.3...nofos-v3.52.4) (2026-10-21)
+
+
+### Bug Fixes
+
+* clarify Word readability report scope ([#1170](https://github.com/HHS/simpler-grants-pdf-builder/issues/1170)) ([0eb2c6a](https://github.com/HHS/simpler-grants-pdf-builder/commit/0eb2c6a9264dc83f047f8edeacb61d6f5d60c831))
+* prepare dev candidate without document history backfill ([#1166](https://github.com/HHS/simpler-grants-pdf-builder/issues/1166)) ([3a2efda](https://github.com/HHS/simpler-grants-pdf-builder/commit/3a2efda734bfd003fc9482d888729bf7042fd423))
+* preserve Strong1 bold formatting during Word import ([#1181](https://github.com/HHS/simpler-grants-pdf-builder/issues/1181)) ([5ac6983](https://github.com/HHS/simpler-grants-pdf-builder/commit/5ac6983c1f845e12c0e127f35c3649ebdd1b2b14))
+* reduce ACF standard-image cover title sizes ([#1167](https://github.com/HHS/simpler-grants-pdf-builder/issues/1167)) ([ad121f6](https://github.com/HHS/simpler-grants-pdf-builder/commit/ad121f6c56c7c1317be4890765e6162d2a3dd3fc))
+* update Pillow and certifi to unblock deployment scans ([#1172](https://github.com/HHS/simpler-grants-pdf-builder/issues/1172)) ([187b4ea](https://github.com/HHS/simpler-grants-pdf-builder/commit/187b4ead2abb1a31d811576dd8eaeec9ae430d83))
+
+
+### Documentation
+
+* align Word handoff foundations with current AS pilot ([#1176](https://github.com/HHS/simpler-grants-pdf-builder/issues/1176)) ([71a344d](https://github.com/HHS/simpler-grants-pdf-builder/commit/71a344d6aba7916dd96ba7c57fc388df32c7c86f))
+* document NOFO quality review and product-improvement triage ([#1179](https://github.com/HHS/simpler-grants-pdf-builder/issues/1179)) ([5b7b513](https://github.com/HHS/simpler-grants-pdf-builder/commit/5b7b5137199c4d5bda3dcf93cb24053754983cfa))
+
+
+### Miscellaneous Chores
+
+* allow Python minor updates in Dependabot group ([#1174](https://github.com/HHS/simpler-grants-pdf-builder/issues/1174)) ([a29b936](https://github.com/HHS/simpler-grants-pdf-builder/commit/a29b936bf585a0cb3070a7a1b5128fe51cc6f377))
+* bump the python-minor-and-patch group across 1 directory with 3 updates ([#1175](https://github.com/HHS/simpler-grants-pdf-builder/issues/1175)) ([49fb8db](https://github.com/HHS/simpler-grants-pdf-builder/commit/49fb8dbc509297a0fe438ff156458e80e421a7cd))
+* bump the python-minor-and-patch group with 10 updates ([#1177](https://github.com/HHS/simpler-grants-pdf-builder/issues/1177)) ([3baf6cc](https://github.com/HHS/simpler-grants-pdf-builder/commit/3baf6ccae68b1196d6d8174aa099be390daed789))
+* bump the python-minor-and-patch group with 2 updates ([#1137](https://github.com/HHS/simpler-grants-pdf-builder/issues/1137)) ([2bdf247](https://github.com/HHS/simpler-grants-pdf-builder/commit/2bdf247889823fdb3ea3d299aae5c2074bddc2ff))
+
+## [3.52.3](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.52.2...nofos-v3.52.3) (2026-10-20)
+
+
+### Bug Fixes
+
+* bound document history queries and preserve deleted events ([#1143](https://github.com/HHS/simpler-grants-pdf-builder/issues/1143)) ([33552ed](https://github.com/HHS/simpler-grants-pdf-builder/commit/33552ed202e8f5e611e864d162cfa0dfcacff8b9))
+* keep isolated native-note return links inline on import ([#1141](https://github.com/HHS/simpler-grants-pdf-builder/issues/1141)) ([5fe16ad](https://github.com/HHS/simpler-grants-pdf-builder/commit/5fe16ad6493534c9329f7258425effc2b9005298))
+* keep marked scoring-table point values together in editor previews ([#1139](https://github.com/HHS/simpler-grants-pdf-builder/issues/1139)) ([753749f](https://github.com/HHS/simpler-grants-pdf-builder/commit/753749f66616e8bbad7227044d9745c5720a7d3b))
+
+
+### Documentation
+
+* Clarify HTML-only local agent design review ([#1159](https://github.com/HHS/simpler-grants-pdf-builder/issues/1159)) ([d3d5121](https://github.com/HHS/simpler-grants-pdf-builder/commit/d3d5121430788c45c07192212b0ddc7f04b148a0))
+* propose bounded agent design pilot and reuse plan ([#1154](https://github.com/HHS/simpler-grants-pdf-builder/issues/1154)) ([a77415c](https://github.com/HHS/simpler-grants-pdf-builder/commit/a77415cba0582eb93bf54da8395b0bd037ff3387))
+* Refresh editor tasks for recent import, review and readability changes ([#1153](https://github.com/HHS/simpler-grants-pdf-builder/issues/1153)) ([060e793](https://github.com/HHS/simpler-grants-pdf-builder/commit/060e793658b4c7f01ba88d30771eeeb1c0d04170))
+* Require Editor Tasks review in the contribution workflow ([#1156](https://github.com/HHS/simpler-grants-pdf-builder/issues/1156)) ([7feb3ab](https://github.com/HHS/simpler-grants-pdf-builder/commit/7feb3ab2c06c78c0c268efe17e06236f9222af8f))
+
+
+### Tests
+
+* add synthetic design pilot fixtures and walkthrough evidence ([#1157](https://github.com/HHS/simpler-grants-pdf-builder/issues/1157)) ([43b8c8c](https://github.com/HHS/simpler-grants-pdf-builder/commit/43b8c8c22a0656043d77ef4d0e620834caa0973a))
+
+## [3.52.2](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.52.1...nofos-v3.52.2) (2026-10-19)
+
+
+### Bug Fixes
+
+* clarify introduction import errors for preceding template guidance ([#1129](https://github.com/HHS/simpler-grants-pdf-builder/issues/1129)) ([7498537](https://github.com/HHS/simpler-grants-pdf-builder/commit/7498537f1f355d68136cd8a7c70ecf0d8cfa8d08))
+* continue numbered items across imported table rows ([#1127](https://github.com/HHS/simpler-grants-pdf-builder/issues/1127)) ([289a164](https://github.com/HHS/simpler-grants-pdf-builder/commit/289a164c616bfb330a0916a874d196643d9989d1))
+* remove introductory bell icon from the table of contents ([#1131](https://github.com/HHS/simpler-grants-pdf-builder/issues/1131)) ([87edf74](https://github.com/HHS/simpler-grants-pdf-builder/commit/87edf74d304af13212aa6a7ad4fe83fcd45e7a08))
+* remove introductory heading description from the editor ([#1135](https://github.com/HHS/simpler-grants-pdf-builder/issues/1135)) ([3a1cd44](https://github.com/HHS/simpler-grants-pdf-builder/commit/3a1cd442fcc8f212d52b5b44067cf0a23c9f1dec))
+* select ACL theme from OpDiv on new imports ([#1133](https://github.com/HHS/simpler-grants-pdf-builder/issues/1133)) ([037e1e6](https://github.com/HHS/simpler-grants-pdf-builder/commit/037e1e67e649df56dadc81d39b24fe5baf2e5719))
+
+## [3.52.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.52.0...nofos-v3.52.1) (2026-10-16)
+
+
+### Bug Fixes
+
+* adopt corrected passive profiles across readability paths ([#1123](https://github.com/HHS/simpler-grants-pdf-builder/issues/1123)) ([7a5672a](https://github.com/HHS/simpler-grants-pdf-builder/commit/7a5672a645e453da4d5894f9edd7d982689a88aa))
+* preserve native Word list markers and hierarchy ([#1125](https://github.com/HHS/simpler-grants-pdf-builder/issues/1125)) ([223a633](https://github.com/HHS/simpler-grants-pdf-builder/commit/223a63399f6f38a5dc2e056efc250cb63179d3bb))
+
+
+### Miscellaneous Chores
+
+* bump boto3 from 1.43.98 to 1.43.105 in the python-minor-and-patch group ([#1102](https://github.com/HHS/simpler-grants-pdf-builder/issues/1102)) ([a350ba7](https://github.com/HHS/simpler-grants-pdf-builder/commit/a350ba729e6ac4adf4c04a816dddce98829b4d4a))
+
 ## [3.52.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.51.0...nofos-v3.52.0) (2026-10-15)
 
 

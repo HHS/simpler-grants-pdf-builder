@@ -71,15 +71,31 @@ def prepare_editable_introduction(soup, policy="generated"):
         consumed_metadata_ids = {
             id(element) for h in headings for element in _metadata_block(h)[1]
         }
-        unsafe_prelude = any(
-            id(tag) not in consumed_metadata_ids
+        unsafe_prelude = [
+            tag
+            for tag in reversed(intro.find_previous_siblings())
+            if id(tag) not in consumed_metadata_ids
             and not _looks_like_metadata_line(tag)
             and (tag.get_text(strip=True) or tag.find("img"))
-            for tag in intro.find_previous_siblings()
-        )
+        ]
         if (fy27 or policy == "required") and (unsafe_prelude or prior_headings):
+            first = (unsafe_prelude or prior_headings)[0]
+            excerpt = " ".join(first.get_text(" ", strip=True).split())
+            if len(excerpt) > 160:
+                excerpt = excerpt[:157] + "..."
+            location = (
+                f"The first content begins: “{excerpt}”. "
+                if excerpt
+                else "The first item is an image or an empty heading. "
+            )
             raise ContentProcessingError(
-                "Move introductory prose beneath the Before You Get Started heading and keep other content in its main section before reimporting. Builder cannot safely attach the content before that heading. Your saved content has not changed.",
+                f'Builder found content before “{intro.get_text(" ", strip=True)}” '
+                "that it could not safely place in an editable section. "
+                f"{location}"
+                "Remove template guidance from your import copy, or move "
+                "applicant-facing content into the appropriate section. "
+                "This check does not mean your heading styles are incorrect. "
+                "No content was saved or replaced.",
                 code="introductory_content_unsafe",
             )
         # Recognized sources must not fall back to generated-text cleanup when

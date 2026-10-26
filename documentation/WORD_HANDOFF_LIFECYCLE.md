@@ -8,11 +8,37 @@ identity record starts at `received`; it is not yet wired to this function.
 
 The identity tuple `(source_system, source_record_id, source_version)` and the
 handoff ID are carried unchanged in each returned snapshot. For Announcement
-Services, `source_record_id` is the comp ID. Source versions are opaque: this
+Services, the current manual pilot uses FON as the source record identity and
+actual AM version as source version; the earlier comp-ID mapping is historical.
+Exact mapping into this optional foundation remains under #888. Source versions
+are opaque: this
 module does not compare them, resolve skipped/out-of-order versions, or choose a
 current version. The #953 unique identity boundary prevents a second identity
 record for the same exact tuple; this pure function cannot enforce database
 uniqueness or prevent duplicate downstream work by itself.
+
+## Relationship to the manual S3 pilot
+
+The [current manual pilot record (#950)](https://github.com/HHS/simpler-grants-pdf-builder/issues/950)
+is separate from this future automated lifecycle. Its October 21, 2026 written
+folder proposal uses `incoming` for AS Word/NB download, `processed` for
+NB-published successful results, and optional `failed` for NB processing errors.
+AS resolves its publication errors before a document reaches `incoming`.
+Folder names do not map directly to these lifecycle states or events.
+
+In particular, download, explicit acceptance of the design handoff, and design
+completion are separate. The written processed-results proposal does not settle
+handoff acceptance, source-file movement, result contents or permissions.
+The `accepted` state below does not record an S3 move or start a retention clock.
+
+AS's written no-repeat-publication/new-version-correction proposal conflicts
+with the October 20 pre-pickup overwrite discussion. Topic 3 remains open until
+the mid-design update process is finalized under #888/#950. The identity retry
+and lifecycle retry behavior here do not implement either exchange policy.
+Retention periods, acceptance recording and cleanup responsibilities still
+require agreement and approval under #952.
+
+## Proposed transitions
 
 | Current state | Event | Next state | Additional condition |
 | --- | --- | --- | --- |

@@ -36,6 +36,7 @@ admin.site.site_title = "NOFO Builder admin area"  # default: "Django site admin
 
 app_name = "bloom_nofos"
 urlpatterns = [
+    path("design-pilot/", include("nofos.design_pilot_urls")),
     re_path(
         r"^robots.txt",
         lambda x: HttpResponse("User-Agent: *\nDisallow: /", content_type="text/plain"),

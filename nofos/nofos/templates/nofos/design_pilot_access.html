@@ -1,0 +1,9 @@
+{% extends 'nofos/design_pilot_base.html' %}
+{% block pilot_content %}
+<h1 class="font-heading-xl text-bold">Candidate access created</h1>
+<div class="usa-alert usa-alert--warning" role="note"><div class="usa-alert__body"><h2 class="usa-alert__heading text-bold">Keep this key private</h2><p class="usa-alert__text">Copy it only into the approved local client. Do not put it in a URL, screenshot, chat, issue, command-line argument or log. Do not share your Builder session cookie. This key is shown only in this response.</p></div></div>
+<p>Candidate: {{ candidate_id }}. Expires: {{ expires }}. Maximum: 100 requests.</p>
+<p><code style="overflow-wrap:anywhere">{{ token }}</code></p>
+<p>Creating another key replaces this one immediately. Return to the candidate to revoke access. This does not run a model or establish an isolated agent runtime.</p>
+<a href="{% url 'design_pilot:review' candidate_id %}">Return to current candidate</a>
+{% endblock %}

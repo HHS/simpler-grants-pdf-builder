@@ -40,7 +40,14 @@ from nofos.tests_nofos.test_endnote_import import (
 )
 
 
-def metadata_docx(*, legacy=False, opdiv="HHS", legacy_intro=False):
+def metadata_docx(
+    *,
+    legacy=False,
+    opdiv="HHS",
+    legacy_intro=False,
+    number="TEST-1096",
+    author="Example Office",
+):
     """Real Word headings, split inline runs, appendix and native notes."""
     fields = (
         f"<w:p><w:r><w:t>OpDiv: {opdiv}</w:t></w:r></w:p>"
@@ -49,9 +56,9 @@ def metadata_docx(*, legacy=False, opdiv="HHS", legacy_intro=False):
         "<w:p><w:r><w:t>Sub Agency 2: Office</w:t></w:r></w:p>"
         "<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>Opportunity </w:t></w:r>"
         "<w:r><w:t>name: Synthetic: trailing metadata</w:t></w:r></w:p>"
-        "<w:p><w:r><w:t>Opportunity number: TEST-1096</w:t></w:r></w:p>"
+        f"<w:p><w:r><w:t>Opportunity number: {number}</w:t></w:r></w:p>"
         "<w:p><w:r><w:t>Application deadline: October 31, 2026</w:t></w:r></w:p>"
-        "<w:p><w:r><w:t>Metadata author: Example Office</w:t></w:r></w:p>"
+        f"<w:p><w:r><w:t>Metadata author: {author}</w:t></w:r></w:p>"
         "<w:p><w:r><w:t>Metadata subject: Research: community health</w:t></w:r></w:p>"
         "<w:p><w:r><w:t>Metadata keywords: research, health</w:t></w:r></w:p>"
     ).encode()
@@ -308,12 +315,58 @@ class MetadataWordImportTests(TestCase):
         )
         self.client.force_login(self.user)
 
-    def upload(self, *, legacy=False, opdiv="HHS", legacy_intro=False):
+    def upload(self, *, legacy=False, opdiv="HHS", legacy_intro=False, **metadata):
         return SimpleUploadedFile(
             "synthetic-metadata.docx",
-            metadata_docx(legacy=legacy, opdiv=opdiv, legacy_intro=legacy_intro),
+            metadata_docx(
+                legacy=legacy, opdiv=opdiv, legacy_intro=legacy_intro, **metadata
+            ),
             content_type=DOCX_CONTENT_TYPE,
         )
+
+    def test_acl_word_import_selects_acl_theme_from_resolved_opdiv(self):
+        opdiv = "Administration for Community Living (ACL)"
+        for legacy in (False, True):
+            for number in ("", "{Insert opportunity number.}", "HHS-2027-001"):
+                with self.subTest(legacy=legacy, number=number):
+                    response = self.client.post(
+                        reverse("nofos:nofo_import"),
+                        {
+                            "nofo-import": self.upload(
+                                legacy=legacy, opdiv=opdiv, number=number, author=opdiv
+                            )
+                        },
+                    )
+                    self.assertEqual(response.status_code, 302)
+                    nofo = Nofo.objects.latest("created")
+                    self.assertEqual((nofo.opdiv, nofo.author), (opdiv, opdiv))
+                    self.assertEqual(nofo.theme, "portrait-acl-white")
+                    self.assertEqual(nofo.cover, "nofo--cover-page--text")
+
+    def test_acl_word_reimport_keeps_saved_design_even_with_default_number(self):
+        opdiv = "Administration for Community Living (ACL)"
+        for theme in ("portrait-nih-white", "portrait-cdc-blue"):
+            with self.subTest(theme=theme):
+                nofo = Nofo.objects.create(
+                    title="Existing ACL opportunity",
+                    number="NOFO #999",
+                    opdiv=opdiv,
+                    group="bloom",
+                    theme=theme,
+                    cover="nofo--cover-page--medium",
+                    before_you_begin="era",
+                )
+                response = self.client.post(
+                    reverse("nofos:nofo_import_overwrite", args=[nofo.pk]),
+                    {"nofo-import": self.upload(opdiv=opdiv, number="", author=opdiv)},
+                )
+                self.assertEqual(response.status_code, 302)
+                nofo.refresh_from_db()
+                self.assertEqual((nofo.opdiv, nofo.author), (opdiv, opdiv))
+                self.assertEqual(
+                    (nofo.theme, nofo.cover, nofo.before_you_begin),
+                    (theme, "nofo--cover-page--medium", "era"),
+                )
 
     def test_new_and_legacy_real_word_uploads_fill_all_fields_and_keep_notes(self):
         for legacy in (False, True):

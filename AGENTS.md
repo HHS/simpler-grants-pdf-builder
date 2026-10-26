@@ -32,6 +32,39 @@ top-level `docs/` directory. Add durable guides to `documentation/README.md`; us
 `documentation/adr/` for architecture decision records and `documentation/review-evidence/` only
 for PR-specific screenshots and validation notes.
 
+## Keep editor tasks current
+
+When a change affects how someone imports, edits, reviews, previews, or exports a NOFO,
+review [`documentation/EDITOR_TASKS.md`](documentation/EDITOR_TASKS.md) and update affected
+tasks in the same PR. This includes changes to labels, navigation, permissions, prerequisites,
+warnings, recovery steps, and automatic behavior that affects the task's outcome. Add a task
+when an uncovered workflow needs instructions; preserve existing task IDs and anchors.
+
+Check this before opening the PR and recheck against the final behavior after review changes,
+before merging. In the PR checklist, confirm the instructions were updated or explain why no
+update is needed. Routine internal changes with no effect on editor instructions need only a
+brief explanation; they do not require a documentation edit.
+
+## Runtime feature switches
+
+If a feature should be enabled or disabled by an administrator after deployment,
+manage its switch through Django Constance and read it through `constance.config`
+when the behavior runs. Do not require an environment change or worker restart
+for an operational feature toggle.
+
+- Default new optional features to disabled.
+- Explain the effect and any enablement prerequisites in the admin help text.
+- If an environment variable supplies the initial default, document that a saved
+  Constance value takes precedence.
+- Test both states and verify that changing the switch takes effect without
+  restarting workers.
+- Update rollout, rollback, and affected editor instructions in the same PR.
+
+Keep credentials, infrastructure configuration, and settings that must be fixed
+at application startup in environment-based settings. Do not expose them through
+Constance. A feature switch does not replace permission checks or required data
+preparation.
+
 ## UI patterns
 
 Before adding or changing user-facing UI, read

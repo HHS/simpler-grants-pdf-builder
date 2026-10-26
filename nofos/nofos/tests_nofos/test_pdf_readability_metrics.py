@@ -188,7 +188,7 @@ class MetricsTests(TestCase):
         page = self.client.get(self.url)
         self.assertContains(page, "Back to usage &amp; quality metrics")
         self.assertContains(page, 'href="/nofos/metrics"')
-        self.assertContains(page, "Public retention: Not configured")
+        self.assertContains(page, "Public retention: No automatic expiration")
         self.assertContains(page, "Authenticated retention: No automatic expiration")
         self.assertContains(page, "OpDiv filtering isn't available")
         self.assertContains(page, ".back-link, .pilot-pagination")
@@ -365,18 +365,20 @@ class MetricsTests(TestCase):
             1,
         )
 
+    @override_settings(PDF_READABILITY_ATTEMPT_RETENTION_DAYS=None)
     def test_cleanup_requires_approved_configuration_and_dry_run(self):
-        with self.assertRaises(CommandError):
-            call_command("cleanup_pdf_readability_attempts", stdout=StringIO())
         old = PdfReadabilityAttempt.objects.create(
             outcome="success", http_status=200, duration_ms=1
         )
         PdfReadabilityAttempt.objects.filter(pk=old.pk).update(
-            created_at=timezone.now() - timedelta(days=31)
+            created_at=timezone.now() - timedelta(days=500)
         )
         recent = PdfReadabilityAttempt.objects.create(
             outcome="disabled", http_status=503, duration_ms=1
         )
+        with self.assertRaises(CommandError):
+            call_command("cleanup_pdf_readability_attempts", stdout=StringIO())
+        self.assertEqual(PdfReadabilityAttempt.objects.count(), 2)
         with override_settings(PDF_READABILITY_ATTEMPT_RETENTION_DAYS=30):
             call_command(
                 "cleanup_pdf_readability_attempts", dry_run=True, stdout=StringIO()

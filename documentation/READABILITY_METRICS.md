@@ -2,7 +2,7 @@
 
 NOFO Builder has a contained integration boundary for the standalone
 [`hhs-nofo-metrics`](https://github.com/agilesix/hhs-nofo-metrics) package.
-The package is pinned to the Agile Six `v0.5.4` release. The feature remains
+The package is pinned to the Agile Six `v0.6.0` release. The feature remains
 disabled by default so environments can opt into the provisional metrics UI
 independently.
 
@@ -19,11 +19,19 @@ forms, CSRF tokens, and other application shell content from the source hash.
 
 The caller selects:
 
-- profile `hhs-nofo-fy27-html@0.4.0`;
+- profile `hhs-nofo-fy27-html@0.5.0`;
 - adapter root `download_target`;
 - production path `nofo_builder_export_html`;
 - the NOFO UUID as `document_id`; and
 - `Nofo.updated` as the Builder revision.
+
+This profile explicitly selects passive classifier `0.4.0-provisional`. It
+recognizes unambiguous contracted be auxiliaries and avoids treating `need` or
+`indeed` as participles. Ambiguous pronoun `'s` forms, such as “it's required,”
+remain a known limitation. The sentence denominator, other metric formulas and
+configured targets are unchanged. Earlier stored results retain their original
+package/profile identities and remain available in history; they are not reused
+as current calculations under the new measurement contract.
 
 ## Endpoint
 

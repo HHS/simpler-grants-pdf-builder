@@ -1,0 +1,49 @@
+{% extends 'nofos/design_pilot_base.html' %}
+{% block pilot_content %}
+<h1 class="font-heading-xl text-bold">Review synthetic candidate</h1>
+<p>{{ run.source_name }}. Saved design changes: {{ run.sequence }}.</p>
+<p>Source SHA-256: <code style="overflow-wrap:anywhere">{{ run.source_sha256 }}</code></p>
+{% for warning in run.warnings %}<div class="usa-alert usa-alert--warning margin-y-2"><div class="usa-alert__body"><p class="usa-alert__text">{{ warning }}</p></div></div>{% endfor %}
+<p><a href="{% url 'design_pilot:document' run.pk %}?revision={{ revision }}" target="_blank" rel="noopener">View current HTML (opens a new tab)</a></p>
+<p>HTML review is optional. It does not verify PDF pagination. External links are inactive in this preview; stored source content is unchanged.</p>
+<button class="usa-button" disabled>PDF unavailable</button>
+<p>DocRaptor is disabled in lower environments. This slice does not accept, publish or transfer candidates.</p>
+<h2 class="font-heading-lg text-bold margin-top-4">Theme</h2>
+<form class="usa-form" method="post" action="{% url 'design_pilot:operation' run.pk %}">
+{% csrf_token %}<input type="hidden" name="candidate_id" value="{{ run.pk }}"><input type="hidden" name="expected_revision" value="{{ revision }}"><input type="hidden" name="operation" value="set_theme">
+<label class="usa-label" for="theme">Theme (current: {{ run.nofo.theme }})</label><select class="usa-select" id="theme" name="value" required>{% if run.nofo.theme not in choices.theme %}<option value="" selected disabled>Choose a permitted theme</option>{% endif %}{% for value in choices.theme %}<option value="{{ value }}" {% if value == run.nofo.theme %}selected{% endif %}>{{ value }}</option>{% endfor %}</select>
+<label class="usa-label" for="theme-reason">Reason for this change</label><input class="usa-input" id="theme-reason" name="reason" maxlength="500" required><button class="usa-button margin-top-2">Save theme</button>
+</form>
+<h2 class="font-heading-lg text-bold margin-top-4">Cover</h2>
+<p>This slice uses text covers only. Cover assets are not available.</p>
+<h2 class="font-heading-lg text-bold margin-top-4">Candidate-only agent access</h2>
+<p>An approved local client can read this candidate and request theme or table-width changes. Access expires after 20 minutes or 100 requests. It cannot accept, transfer, discard or publish a design.</p>
+<div id="candidate-access-status" class="usa-alert {% if tool_access_active %}usa-alert--success{% elif tool_access_status == 'none' %}usa-alert--info{% else %}usa-alert--warning{% endif %} margin-y-2" role="status">
+  <div class="usa-alert__body">
+    {% if tool_access_active %}
+    <h3 class="usa-alert__heading text-bold">Active</h3>
+    <p class="usa-alert__text">Expires: {{ tool_expires_at }}. {{ tool_requests }} of {{ tool_request_limit }} requests used. The key is not shown again.</p>
+    {% elif tool_access_status == 'expired' %}
+    <h3 class="usa-alert__heading text-bold">Expired</h3>
+    <p class="usa-alert__text">This key has expired. The client can no longer access this candidate.</p>
+    <p class="usa-alert__text">{{ tool_requests }} of {{ tool_request_limit }} requests used. Create new access to reconnect the client.</p>
+    {% elif tool_access_status == 'exhausted' %}
+    <h3 class="usa-alert__heading text-bold">Request limit reached</h3>
+    <p class="usa-alert__text">{{ tool_requests }} of {{ tool_request_limit }} requests used. The client can no longer access this candidate. Create new access to reconnect the client.</p>
+    {% else %}
+    <h3 class="usa-alert__heading text-bold">No active access</h3>
+    <p class="usa-alert__text">No key has been issued, or access was revoked.</p>
+    {% endif %}
+  </div>
+</div>
+<form method="post" action="{% url 'design_pilot:issue_access' run.pk %}">{% csrf_token %}<button class="usa-button" type="submit">{% if tool_access_active %}Create or replace agent access{% elif tool_access_status == 'none' %}Create agent access{% else %}Create new agent access{% endif %}</button></form>
+<p>The new key will be shown only once. Creating new access replaces the previous key.</p>
+<form method="post" action="{% url 'design_pilot:revoke_access' run.pk %}" class="margin-top-2">{% csrf_token %}<button class="usa-button usa-button--outline" type="submit" {% if not tool_access_active %}disabled{% endif %}>Revoke agent access</button></form>
+<h2 class="font-heading-lg text-bold margin-top-4">Table widths</h2>
+{% for section in sections %}
+<form class="usa-form margin-bottom-4" method="post" action="{% url 'design_pilot:operation' run.pk %}">
+{% csrf_token %}<input type="hidden" name="candidate_id" value="{{ run.pk }}"><input type="hidden" name="expected_revision" value="{{ revision }}"><input type="hidden" name="operation" value="set_table_width"><input type="hidden" name="section_id" value="{{ section.pk }}">
+<label class="usa-label" for="width-{{ section.pk }}">{{ section.name }}: table width</label><select class="usa-select" id="width-{{ section.pk }}" name="value"><option value="false" {% if 'section--tables-full-width' not in section.html_class %}selected{% endif %}>Standard</option><option value="true" {% if 'section--tables-full-width' in section.html_class %}selected{% endif %}>Full width</option></select>
+<label class="usa-label" for="reason-{{ section.pk }}">Reason for this change</label><input class="usa-input" id="reason-{{ section.pk }}" name="reason" maxlength="500" required><button class="usa-button margin-top-2">Save table width</button>
+</form>{% endfor %}
+{% endblock %}

@@ -226,12 +226,46 @@ class NonNIHUserThemeOptionsTests(TestCase):
         self.client.login(email="hrsa@example.com", password="testpass123")
         self.url = reverse("nofos:nofo_edit_theme_options", kwargs={"pk": self.nofo.id})
 
-    def test_hrsa_user_can_keep_current_legacy_cover_only(self):
+    def test_hrsa_user_can_select_standard_image_and_keep_current_legacy_cover(self):
         form = NofoThemeOptionsForm(instance=self.nofo, user=self.user)
         cover_values = [v for v, _ in form.fields["cover"].choices]
         self.assertIn("nofo--cover-page--hero", cover_values)
-        self.assertNotIn("nofo--cover-page--medium", cover_values)
+        self.assertIn("nofo--cover-page--medium", cover_values)
         self.assertIn("nofo--cover-page--text", cover_values)
+
+    def test_hrsa_user_can_switch_covers_and_selection_survives_page_load(self):
+        for theme in ["portrait-hrsa-white", "portrait-hrsa-blue"]:
+            with self.subTest(theme=theme):
+                self.nofo.theme = theme
+                self.nofo.cover = "nofo--cover-page--text"
+                self.nofo.save()
+                response = self.client.get(self.url)
+                self.assertContains(
+                    response, '<option value="nofo--cover-page--medium"'
+                )
+                self.assertContains(response, "Standard image")
+                self.assertContains(response, "Text only")
+                self.assertNotContains(
+                    response, "Standard image (current legacy value)"
+                )
+                self.assertNotContains(response, 'value="nofo--cover-page--hero"')
+
+                for cover in ["nofo--cover-page--medium", "nofo--cover-page--text"]:
+                    response = self.client.post(
+                        self.url,
+                        {
+                            "theme": theme,
+                            "cover": cover,
+                            "icon_style": "nofo--icons--solid",
+                        },
+                    )
+                    self.assertEqual(response.status_code, 302)
+                    self.nofo.refresh_from_db()
+                    self.assertEqual(self.nofo.cover, cover)
+                    response = self.client.get(self.url)
+                    self.assertEqual(response.status_code, 200)
+                    self.nofo.refresh_from_db()
+                    self.assertEqual(self.nofo.cover, cover)
 
     def test_hrsa_user_only_sees_hrsa_light_theme(self):
         form = NofoThemeOptionsForm(instance=self.nofo, user=self.user)
