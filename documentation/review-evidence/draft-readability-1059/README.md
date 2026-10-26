@@ -74,7 +74,8 @@ Validation on the integrated branch:
 
 The October 7 browser captures above were not recreated in this update. No
 private-source extraction or conversion matrix was rerun. The remaining
-accuracy and clearance limitations in the durable guide still apply. Announcement
+accuracy limitations in the durable guide still apply. FY27 clearance-guidance
+verification is outside scope and is no longer a tracked follow-up. Announcement
 Module provenance is handled manually by the team and is no longer a tracked
 follow-up for this work.
 No public pilot setting or deployment was changed.
