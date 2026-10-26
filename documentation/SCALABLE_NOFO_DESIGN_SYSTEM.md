@@ -412,33 +412,21 @@ validation criteria. Software reuse remains subject to investigation with SGM te
 | Processing and PDF-generation boundaries (E6–E7) | Separate content processing from output generation. | Extraction/adaptation suitability, dependencies, security, fidelity and maintenance cost. |
 | Review guidance and pilot limits (E8) | Bind findings to reviewed inputs/output and distinguish evaluation methods. | A validation baseline demonstrated on representative SGM-generated PDFs. |
 
-## 7. Preserve continuity through the GPLE transition
+## 7. Sustain design-quality oversight in GPLE
 
-Confirm organizational assignments for these proposed functions. Preserve concrete
-artifacts and decision authority alongside written guidance.
+GPLE’s long-term design-quality oversight depends on retaining review expertise,
+design and accessibility guidance, evaluation methods, and the evidence behind
+prior decisions. The transition should preserve access to these resources and the
+working relationship with SGM, which is responsible for implementation within SGM.
 
-| What must survive | Proposed receiving responsibility | Retained information/evidence |
-| --- | --- | --- |
-| Component meaning and supported behavior | Design-system maintainer with content/accessibility specialists | Component inventory, examples, variants and known limitations. |
-| Decisions and open work | Product/architecture owner | Rationale, alternatives, status, dependencies and linked follow-ups. |
-| Shared-change accountability | Shared owner and governance sponsor | Authority, escalation contacts and release/support responsibilities. |
-| OpDiv branding and exceptions | OpDiv contacts with design maintainers | Approval evidence, scope, rationale, owner and review conditions. |
-| Clearance stability | Application owner with program-office/clearance representatives | Redesign policy and identification of routed, cleared and published outputs. |
-| Validation capability | Accessibility/design reviewers and PDF engineering | Fixtures, methods, output-bound findings and unresolved defects. |
-| Maintenance and recovery | Application engineering/operations owners | Dependencies/assets, configuration guidance, release history, failure modes and recovery procedures. |
-| Applicant and staff knowledge | Research/product owner | Research findings, recurring support problems and evidence limitations. |
+| GPLE needs for oversight | SGM needs for implementation |
+| --- | --- |
+| Component guidance and approved variations | Component behavior, dependencies, and configuration guidance |
+| Review methods and accessibility expertise | Test fixtures and technical validation methods |
+| Prior findings, decision rationale, and known limitations | Defects, implementation decisions, and maintenance information |
+| Research findings and recurring quality concerns | Evidence needed to assess and demonstrate improvements |
 
-Keep durable guides and decisions in repository documentation. Retain restricted
-operational details, research and document-specific evidence in approved locations
-with appropriate access; link where permitted. Retention obligations remain for
-responsible authorities to determine.
-
-As proposed handoff evidence, confirm a receiving owner for each function, verify
-access and exercise one representative change-and-recovery scenario. Record gaps
-with an owner and next action. Related pilot evaluation work in
-[#1148](https://github.com/HHS/simpler-grants-pdf-builder/issues/1148) and
-[#1151](https://github.com/HHS/simpler-grants-pdf-builder/issues/1151) supplies
-bounded context, not proof of broader operational handoff.
+Detailed handoff arrangements can be agreed as the transition develops.
 
 <a id="builder-evidence"></a>
 
