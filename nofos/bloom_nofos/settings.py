@@ -580,6 +580,7 @@ ALLOWED_HTML_ATTRIBUTES = [
 DJANGO_EASY_AUDIT_READONLY_EVENTS = True
 DJANGO_EASY_AUDIT_WATCH_REQUEST_EVENTS = False
 
+# Environment fallback for Constance; a saved admin value takes precedence.
 # Enable only after the separate post-rollout backfill and completeness checks.
 # Live index maintenance is independent of this read-path switch.
 DOCUMENT_HISTORY_INDEX_ENABLED = env.bool(
@@ -711,6 +712,11 @@ HHS_NOFO_METRIC_GOALS = (
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
 CONSTANCE_CONFIG = {
+    "DOCUMENT_HISTORY_INDEX_ENABLED": (
+        DOCUMENT_HISTORY_INDEX_ENABLED,
+        "Use indexed document history. Keep disabled until the separate backfill and backfill_document_audit_index --check succeed in this environment. Changes apply without restarting workers; disable to restore the legacy reader.",
+        bool,
+    ),
     "DOCRAPTOR_IPS": (
         DOCRAPTOR_IPS,
         "IPs that are allowed to view and print NOFO documents. Latest IPs: https://docraptor.com/ips.txt",

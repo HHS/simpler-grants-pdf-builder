@@ -3,18 +3,23 @@
 import json
 from unittest.mock import patch
 
+from constance.test import override_config
 from django.db import connection
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from easyaudit.models import CRUDEvent
 
-from nofos.audits import document_audit_entries, get_audit_events_page
+from nofos.audits import (
+    document_audit_entries,
+    get_audit_events_for_document,
+    get_audit_events_page,
+)
 from nofos.models import DocumentAuditEvent, Nofo, Section, Subsection
 from nofos.tests_nofos import test_history
 
 
-@override_settings(DOCUMENT_HISTORY_INDEX_ENABLED=True)
+@override_config(DOCUMENT_HISTORY_INDEX_ENABLED=True)
 class HistoryPaginationTests(TestCase):
     setUp = test_history.NofoHistoryViewTests.setUp
 
@@ -59,7 +64,7 @@ class HistoryPaginationTests(TestCase):
         self.assertTrue(responses[0].context["has_more"])
         self.assertFalse(responses[-1].context["has_more"])
 
-    @override_settings(DOCUMENT_HISTORY_INDEX_ENABLED=False)
+    @override_config(DOCUMENT_HISTORY_INDEX_ENABLED=False)
     def test_disabled_index_uses_existing_history_even_with_empty_projection(self):
         event = self.event()
         DocumentAuditEvent.objects.all().delete()
@@ -71,11 +76,31 @@ class HistoryPaginationTests(TestCase):
         )
         self.assertFalse(any("nofos_documentauditevent" in q["sql"] for q in queries))
 
-    @override_settings(DOCUMENT_HISTORY_INDEX_ENABLED=False)
+    @override_config(DOCUMENT_HISTORY_INDEX_ENABLED=False)
     def test_disabled_index_does_not_leak_other_documents_when_no_sections(self):
         self.event()
         empty = Nofo.objects.create(title="Empty", group="bloom", opdiv="test")
         self.assertEqual(get_audit_events_page(empty), [])
+
+    def test_constance_switch_changes_both_readers_without_restart(self):
+        event = self.event()
+        DocumentAuditEvent.objects.all().delete()
+
+        def read_history():
+            return get_audit_events_for_document(
+                self.nofo, "nofo", "section", "subsection"
+            )
+
+        # An empty index makes the chosen reader observable without mocks.
+        for enabled in (False, True, False):
+            with (
+                self.subTest(enabled=enabled),
+                override_config(DOCUMENT_HISTORY_INDEX_ENABLED=enabled),
+            ):
+                for events in (get_audit_events_page(self.nofo), read_history()):
+                    self.assertEqual(
+                        [e.pk for e in events], [] if enabled else [event.pk]
+                    )
 
     def test_query_count_does_not_grow_per_visible_row_and_no_diff_runs(self):
         self.event()

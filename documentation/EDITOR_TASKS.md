@@ -801,7 +801,10 @@ structured field instead.
 2. Review the latest events. Select **Load More Events** for the next batch.
 3. Follow an available comparison link to inspect a subsection's changes.
 
-The indexed history reader is enabled separately after deployment and backfill.
+An administrator enables the indexed history reader separately after deployment,
+backfill and a successful completeness check: in **Django admin → Constance →
+Config**, check `DOCUMENT_HISTORY_INDEX_ENABLED` and save. No further deployment
+or worker restart is required. Uncheck and save to return to the legacy reader.
 Until that cutover, the existing reader can still be slow. With indexed reads,
 events use exact timestamp order, then event ID for ties; deleted objects retain
 history descriptions but have no live comparison link. Concurrent new edits can

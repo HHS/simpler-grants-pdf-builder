@@ -3,7 +3,7 @@ import re
 import uuid
 from collections import OrderedDict
 
-from django.conf import settings
+from constance import config
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from easyaudit.models import CRUDEvent
@@ -275,7 +275,7 @@ def _load_audit_events(event_ids):
 
 def get_audit_events_page(document, offset=0, limit=25):
     """Use bounded indexed reads after cutover; retain legacy reads until then."""
-    if not settings.DOCUMENT_HISTORY_INDEX_ENABLED:
+    if not config.DOCUMENT_HISTORY_INDEX_ENABLED:
         names = {
             "nofo": ("nofo", "section", "subsection"),
             "contentguide": (
@@ -309,7 +309,7 @@ def get_audit_events_for_document(
     scopes ownership, including the separate Composer and Writer document families.
     Interactive history pages must use get_audit_events_page instead.
     """
-    if not settings.DOCUMENT_HISTORY_INDEX_ENABLED:
+    if not config.DOCUMENT_HISTORY_INDEX_ENABLED:
         return _legacy_audit_events_for_document(
             document, document_model, section_model, subsection_model, reverse=reverse
         )
