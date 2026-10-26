@@ -20,6 +20,7 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 - [Connected local design host](DESIGN_PILOT_LOCAL_HOST.md) - Synthetic human upload, candidate persistence and revision-bound HTML review; no agent transport or acceptance
 - [EDITOR_TASKS.md](EDITOR_TASKS.md) — Instructions for common NOFO Builder tasks, including prerequisites and support contacts
 - [GROUPS.md](GROUPS.md) — How user groups and permissions work
+- [DOCUMENT_HISTORY.md](DOCUMENT_HISTORY.md) - Indexed history pagination, deleted-item retention, backfill and rollout verification
 - [IMPORT_ERROR_CODES.md](IMPORT_ERROR_CODES.md) — What each blocking import error code (`IMPORT-NO-SECTIONS`, `IMPORT-OPDIV-BLANK`, …) means and what to tell someone who hits one
 - [IMPORT_RULES.md](IMPORT_RULES.md) — Every automatic content rule applied when a NOFO is imported (footnote/endnote handling, list/table repair, metadata suggestion, etc.)
 - [TAGLINE_IMPORT.md](TAGLINE_IMPORT.md) — Legacy and Basic information tagline sources, blank precedence, editing, and re-import behavior
