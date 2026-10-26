@@ -397,12 +397,17 @@ and [#1149](https://github.com/HHS/simpler-grants-pdf-builder/issues/1149) conce
 pilot candidate/transfer binding; #1197 examines traceability using existing data.
 None establishes a general archive or an approved retention policy.
 
-## 6. What SGM can reuse from Builder
+## 6. Build on the design-reference handoff to SGM
 
-The immediate assets are documented considerations, source examples and candidate
-validation criteria. Software reuse remains subject to investigation with SGM teams.
+In September 2026, the SimplerNOFOs team provided a NOFO design-reference package
+to support design-template guidance for the SGM contract team. It included an
+overview, the design guide, published NOFO examples, supporting reference materials,
+and agency assets. The receiving team acknowledged the SharePoint upload.
 
-| Existing capability or evidence | Reusable lesson | What needs proof for SGM |
+Follow-up should build on that handoff: confirm which materials are informing SGM
+implementation, identify gaps or changed needs, and update guidance where useful.
+
+| Builder reference | Design consideration | What the SGM contract team should assess |
 | --- | --- | --- |
 | Callout settings and shared templates (E1) | Separate meaning from presentation. | SGM captures intent and preserves it through authoring/output. |
 | Points-column markers and table styling (E2) | Retain column meaning without requiring import inference. | Table relationships, long-content behavior and accessible PDF output. |
