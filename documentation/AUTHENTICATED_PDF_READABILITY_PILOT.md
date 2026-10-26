@@ -123,7 +123,9 @@ Authenticated recording requires only the recording switch. Leave the optional
 `AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS` unset for this production
 pilot: content-free usage records have no automatic expiration. Uploaded PDFs
 and document contents are not retained. No authenticated cleanup schedule is
-required. This is the pilot's chosen behavior, not a claim about HHS policy.
+required. Public content-free usage records follow the same no-automatic-expiration
+policy; see the [public pilot retention decision](PDF_READABILITY_PILOT.md#content-free-outcome-monitoring-985).
+This is the pilot's chosen behavior, not a claim about HHS policy.
 
 If a future decision introduces expiration, configure a positive retention
 period and explicitly schedule the existing source-specific cleanup command:

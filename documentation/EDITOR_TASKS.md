@@ -801,7 +801,10 @@ structured field instead.
 2. Review the latest events. Select **Load More Events** for the next batch.
 3. Follow an available comparison link to inspect a subsection's changes.
 
-The indexed history reader is enabled separately after deployment and backfill.
+An administrator enables the indexed history reader separately after deployment,
+backfill and a successful completeness check: in **Django admin → Constance →
+Config**, check `DOCUMENT_HISTORY_INDEX_ENABLED` and save. No further deployment
+or worker restart is required. Uncheck and save to return to the legacy reader.
 Until that cutover, the existing reader can still be slow. With indexed reads,
 events use exact timestamp order, then event ID for ties; deleted objects retain
 history descriptions but have no live comparison link. Concurrent new edits can
@@ -878,7 +881,10 @@ If access is denied or the page is unavailable, contact the pilot operator.
 5. Select **Copy metrics** or **Print / Save as PDF** before leaving the report.
    Use **Analyze another document** for another upload.
 
-This upload does not create a NOFO or save report history. Remove template
+This upload does not create a NOFO or save report history. When usage recording
+is enabled, **How we handle your document** explains that content-free usage/error
+records are kept without automatic expiration by default; they exclude your
+identity, filename, document text and scores. Remove template
 instructions and unused options from the copy you upload when they should not
 count. Keep instructions applicants need. An in-progress draft can be checked
 before publication design, but favorable scores do not establish publication

@@ -333,17 +333,17 @@ class DocumentAuditMissingSchemaTests(TransactionTestCase):
         DocumentAuditEvent.objects.all().delete()
         original = list(CRUDEvent.objects.values())
         recorder = MigrationRecorder(connection)
-        # Simulate the older rollout before this migration and its descendants.
-        # Leaving a later merge recorded would create an inconsistent history.
         loader = MigrationLoader(connection)
-        unapplied = [
+        # Simulate a partial rollout without leaving applied descendants whose
+        # dependency has been removed from migration history (including merges).
+        applied = [
             node
             for node in loader.graph.backwards_plan(
                 ("nofos", "0155_backfill_document_audit_index")
             )
             if node in loader.applied_migrations
         ]
-        for node in unapplied:
+        for node in applied:
             recorder.record_unapplied(*node)
         try:
             call_command(
@@ -355,7 +355,7 @@ class DocumentAuditMissingSchemaTests(TransactionTestCase):
             self.assertTrue(DocumentAuditEvent.objects.filter(event=event).exists())
             call_command("backfill_document_audit_index", check=True, stdout=StringIO())
         finally:
-            for node in reversed(unapplied):
+            for node in reversed(applied):
                 recorder.record_applied(*node)
 
     def test_real_missing_projection_table_preserves_original_audit_insert(self):

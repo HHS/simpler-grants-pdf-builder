@@ -50,7 +50,9 @@ env_exists = os.path.exists(env_path)
 if env_exists:
     environ.Env.read_env(env_path)
 
-# Pending privacy approval in #968; no scheduler is installed by this change.
+# Content-free public and authenticated usage records have no automatic expiration.
+# Leave retention unset; cleanup is optional if a future decision adds expiration.
+# Recording remains independently default-off for each route.
 PDF_READABILITY_ATTEMPT_RECORDING_ENABLED = env.bool(
     "PDF_READABILITY_ATTEMPT_RECORDING_ENABLED", default=False
 )
@@ -578,6 +580,7 @@ ALLOWED_HTML_ATTRIBUTES = [
 DJANGO_EASY_AUDIT_READONLY_EVENTS = True
 DJANGO_EASY_AUDIT_WATCH_REQUEST_EVENTS = False
 
+# Environment fallback for Constance; a saved admin value takes precedence.
 # Enable only after the separate post-rollout backfill and completeness checks.
 # Live index maintenance is independent of this read-path switch.
 DOCUMENT_HISTORY_INDEX_ENABLED = env.bool(
@@ -709,6 +712,11 @@ HHS_NOFO_METRIC_GOALS = (
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
 CONSTANCE_CONFIG = {
+    "DOCUMENT_HISTORY_INDEX_ENABLED": (
+        DOCUMENT_HISTORY_INDEX_ENABLED,
+        "Use indexed document history. Keep disabled until the separate backfill and backfill_document_audit_index --check succeed in this environment. Changes apply without restarting workers; disable to restore the legacy reader.",
+        bool,
+    ),
     "DOCRAPTOR_IPS": (
         DOCRAPTOR_IPS,
         "IPs that are allowed to view and print NOFO documents. Latest IPs: https://docraptor.com/ips.txt",

@@ -79,3 +79,26 @@ verification is outside scope and is no longer a tracked follow-up. Announcement
 Module provenance is handled manually by the team and is no longer a tracked
 follow-up for this work.
 No public pilot setting or deployment was changed.
+
+## Conflict resolution against updated main — October 26, 2026
+
+Updated again to main at `0ef39ee7`. Main now contains the equivalent empty
+merge migration, `0156_merge_20261026_1349`, and the descendant-aware
+prior-rollout test. Retained those versions and removed this branch's redundant
+`0156_merge_design_pilot_document_audit` migration so the migration graph has
+one leaf. The conflict resolution introduces no database operations or changes
+to editor instructions. Main's newer privacy, retention, and report changes
+remain alongside the drafting guidance.
+
+Validation after resolving the conflicts:
+
+- Full Python suite passed: 2,867 tests, with three existing skips, using
+  Django's four-process test runner.
+- All 113 focused Python tests passed: document history, real-worker draft
+  fixtures, PDF/Word recognition, authenticated uploads, and public boundaries.
+- All 61 JavaScript tests passed.
+- Migration drift, lockfile validation, formatting of the resolved test, and
+  whitespace checks passed.
+
+The historical browser captures and remaining accuracy limitations above still
+apply; this update does not add browser or private-source validation.

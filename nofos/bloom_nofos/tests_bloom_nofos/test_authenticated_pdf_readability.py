@@ -368,6 +368,36 @@ class AuthenticatedPilotTests(TestCase):
             )
         self.assertFalse(PdfReadabilityAttempt.objects.exists())
 
+    @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
+    def test_retention_notice_matches_each_route_and_recording_state(self):
+        self.login()
+        for url, prefix in (
+            (self.public_url, "PDF_READABILITY_ATTEMPT"),
+            (self.url, "AUTHENTICATED_PDF_READABILITY_ATTEMPT"),
+        ):
+            for enabled, days in ((True, None), (True, 30), (False, None)):
+                with self.subTest(
+                    url=url, enabled=enabled, days=days
+                ), override_settings(
+                    **{
+                        f"{prefix}_RECORDING_ENABLED": enabled,
+                        f"{prefix}_RETENTION_DAYS": days,
+                    }
+                ):
+                    response = self.client.get(url)
+                    if not enabled:
+                        self.assertNotContains(response, "Usage and error records")
+                    elif days is None:
+                        self.assertContains(
+                            response,
+                            "Usage and error records are kept without automatic expiration.",
+                        )
+                    else:
+                        self.assertContains(
+                            response,
+                            "Usage and error records are retained for 30 days.",
+                        )
+
     @override_settings(AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS=None)
     def test_auth_recording_without_expiration(self):
         self.login()
