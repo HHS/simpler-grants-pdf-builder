@@ -1413,6 +1413,13 @@ class PdfReadabilityAttempt(models.Model):
     outcome = models.CharField(max_length=32)
     http_status = models.PositiveSmallIntegerField()
     duration_ms = models.PositiveIntegerField()
+    file_category = models.CharField(
+        max_length=7,
+        choices=[("pdf", "PDF"), ("docx", "DOCX"), ("unknown", "Unknown")],
+        default="unknown",
+        db_index=True,
+        help_text="Attempted upload category from its recognized extension, not verified content.",
+    )
     source = models.CharField(
         max_length=16,
         choices=[
