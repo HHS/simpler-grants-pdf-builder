@@ -91,8 +91,7 @@
                         });
 
                         // Update active state
-                        navLinks.forEach(function (l) { l.classList.remove('usa-current'); });
-                        this.classList.add('usa-current');
+                        setActiveSection(targetId);
 
                         // Close nav on mobile
                         if (window.innerWidth <= 768) {
@@ -176,20 +175,25 @@
         // Update active state on scroll
         function updateActiveState() {
             const navLinks = sideNavList.querySelectorAll('a');
-            const pipes = document.querySelectorAll('.side-nav-pipe');
-            const headings = document.querySelectorAll('h2[id]');
             let currentSection = null;
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-            // Find the current section based on scroll position
-            headings.forEach(function (heading) {
-                const rect = heading.getBoundingClientRect();
-                const offsetTop = rect.top + scrollTop;
-
-                if (scrollTop >= offsetTop - 100) {
-                    currentSection = heading.getAttribute('id');
+            // Use the same positions as jump-to clicks. Live heading rectangles
+            // move with sticky captions and can incorrectly select the prior section.
+            navLinks.forEach(function (link) {
+                const id = link.getAttribute('data-section-id');
+                // Allow for fractional positions rounded by the browser when scrolling.
+                if (scrollTop >= originalPositions[id] - 1) {
+                    currentSection = id;
                 }
             });
+
+            setActiveSection(currentSection);
+        }
+
+        function setActiveSection(currentSection) {
+            const navLinks = sideNavList.querySelectorAll('a');
+            const pipes = document.querySelectorAll('.side-nav-pipe');
 
             // Update active state for sidebar links
             navLinks.forEach(function (link) {
