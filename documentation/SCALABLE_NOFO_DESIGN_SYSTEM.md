@@ -32,13 +32,43 @@ a NOFO routed for Department or OMB clearance should retain its reviewed design
 unless an authorized user deliberately accepts a redesign. Responsible authorities
 would determine whether that change requires renewed review.
 
-**Suggested use:** SGM and other modernization teams can use this guide to assess
-component, branding and design-change needs. A small representative demonstration
-would help establish which Builder lessons transfer and what requires adaptation.
-Detailed operating responsibilities, OpDiv variation boundaries and protection of
-NOFOs undergoing clearance remain decisions to resolve with responsible teams.
-This summary requests no project approval; it uses the GPLE and SGM contract team ownership
-assumptions stated above.
+### Where to start
+
+**GPLE:** Use the NOFO Design Standards and FY27 NOFO Content and Clearance Guidance
+as the basis for ongoing oversight. Build on Builder's existing document checks,
+PDF review capabilities, readability metrics and quality dashboard to gather
+evidence and identify issues requiring attention. Confirm reviewer access and
+which capabilities are enabled in the environment being used.
+
+**SGM contract team:** Assess how SGM supports those expectations and review
+activities, building on the design-reference package provided in September 2026.
+Identify what is already supported or planned, what needs clarification and any
+gaps.
+
+**Together:** Review those findings and choose the next useful action, if one is
+needed. Readers do not need to resolve every architectural consideration in this
+guide before moving forward; use the detailed sections to investigate specific
+questions as they arise.
+
+### Standards and review resources
+
+- [NOFO Design Standards](https://gartner365.sharepoint.com/:w:/r/sites/HHS947/Shared%20Documents/General/%5BEXTERNAL%5D%20Site%20Documents%20and%20Resources/Simpler_NOFO_Design_Standards.docx?d=wf15ca8507044455e958447570219ab10&csf=1&web=1&e=QkUpPq)
+  — Design and accessibility expectations. **Access required.**
+- [Calculating Final NOFO Metrics FY27](https://gartner365.sharepoint.com/:w:/r/sites/HHS947/Shared%20Documents/General/%5BEXTERNAL%5D%20Site%20Documents%20and%20Resources/Calculating%20Final%20NOFO%20Metrics%20FY27.docx?d=w21228e723be24975adf0b3ab46558e16&csf=1&web=1&e=bkphv3)
+  — Instructions for reporting final readability metrics with the Departmental and
+  OMB clearance package. Refer to the FY27 NOFO Content and Clearance Guidance for
+  numeric targets and ranges to strive for. **Access required.**
+- **Builder review tools:** [Editor tasks](EDITOR_TASKS.md) explain document checks
+  for heading levels, links, PDF metadata and endnotes, external-link checking,
+  and PDF preview/download. The [quality dashboard](BUILDER_METRICS.md) supports
+  monitoring usage, blocking import errors and warning counts. The
+  [readability panel and saved history](READABILITY_METRICS.md) support review of
+  writing metrics where enabled. [Quality review and triage](QUALITY_REVIEW_AND_TRIAGE.md)
+  explains how to investigate findings and follow through on improvements.
+
+These tools supply evidence for review; readability scores and automated document
+checks do not establish full PDF accessibility or guarantee clearance approval.
+This guide does not add a review gate or grant access to tools.
 
 ## How to read the recommendations
 
