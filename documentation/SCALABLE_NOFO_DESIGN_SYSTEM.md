@@ -89,13 +89,9 @@ This guide does not add a review gate or grant access to tools.
   examples, applicant research, accessibility evaluation and OpDiv/team agreement
   are still needed before adopting or approving a design change.
 
-No significant implementation choice is made here, so no new ADR is warranted.
-Record an ADR when a team selects a consequential option, with its alternatives,
-compatibility policy and validation evidence. The existing
-[agent pilot ADR](adr/2026-10-20-agent-design-pilot-boundary.md) has its own bounded
-status; it is not approval of the proposals in this guide.
+## Architecture considerations
 
-## 1. Agree what a component means
+### 1. Agree what a component means
 
 Separate content meaning from appearance. A heading is a heading because it
 introduces a section at a known level, not because it is large and blue. A callout
@@ -127,7 +123,7 @@ its points-column marker is inferred on import and acted on at render time
 Neither Builder's Boolean field nor its CSS class is a required representation
 for another application.
 
-## 2. Divide author choices from shared design
+### 2. Divide author choices from shared design
 
 **Proposal:** authors control wording, structure and supported component intent.
 Design maintainers control shared appearance, permitted variations and layout
@@ -150,7 +146,7 @@ layers. Do not infer that all overrides are safe, discoverable or routinely used
 from their existence in source. A new architecture should make precedence
 explicit and show maintainers which documents depend on an exception.
 
-### Proposed common behavior and OpDiv flexibility
+#### Proposed common behavior and OpDiv flexibility
 
 Common expectations should cover component meaning, heading hierarchy, table
 relationships, reading order, image alternatives, links and preservation of
@@ -166,7 +162,7 @@ research. Neither an available theme nor a reviewer preference establishes appli
 benefit. Use the existing [quality review and triage process](QUALITY_REVIEW_AND_TRIAGE.md)
 to distinguish a document correction from a shared defect or missing capability.
 
-### Working responsibilities for design quality
+#### Working responsibilities for design quality
 
 The GPLE office owns long-term design-quality oversight; the SGM contract team is
 responsible for implementation within SGM. The responsibilities below apply that working division.
@@ -187,9 +183,9 @@ routed, cleared or published. Urgent accessibility or substantive
 correctness defects need an explicit disposition with relevant authorities;
 neither silent redesign nor indefinite preservation should be assumed.
 
-## 3. Plan for five kinds of change
+### 3. Plan for five kinds of change
 
-### A. Update an existing callout's design
+#### A. Update an existing callout's design
 
 **Options and tradeoffs.** A shared presentation change can apply on the next
 generation without editing stored content when the callout's meaning and required
@@ -211,7 +207,7 @@ but its portrait sidebar path and text-dependent icons show why a color-only
 comparison is insufficient (E1). Current production variation and applicant
 benefit remain evidence gaps.
 
-### B. Introduce a new component
+#### B. Introduce a new component
 
 **Options and tradeoffs.** Reuse an existing component if the meaning truly
 matches; extend it with an approved variation for appearance alone; introduce a
@@ -233,7 +229,7 @@ compatibility limit: previously unmarked tables do not gain the feature merely
 because rendering code changes (E2). In-app authoring could capture column meaning
 directly; any backfill is a separate decision requiring evidence.
 
-### C. Add an approved OpDiv branding variant
+#### C. Add an approved OpDiv branding variant
 
 **Options and tradeoffs.** Prefer shared component behavior with limited approved
 brand values/assets. Use a component-specific variation only for a demonstrated
@@ -252,7 +248,7 @@ hierarchy, contrast, logos/alternatives, tables, callouts, links, fonts and page
 breaks. Obtain brand approval and accessibility evidence for the actual output.
 Source CSS is evidence of implementation, not either approval.
 
-### D. Rename, reorder or duplicate sections
+#### D. Rename, reorder or duplicate sections
 
 **Options and tradeoffs.** Stable identities independent of titles/order simplify
 renaming and movement. Regenerated identifiers require a complete target/link
@@ -275,7 +271,7 @@ construction, and copies sections/subsections to new records during duplication
 or that every copied/external link remains valid. Cross-document links, shared
 asset references and dangling references need explicit verification.
 
-### E. Regenerate an older NOFO after shared design changes
+#### E. Regenerate an older NOFO after shared design changes
 
 **Options and tradeoffs.** Generate with the current approved design for ongoing
 consistency, preserve an earlier supported design for a justified historical
@@ -306,7 +302,7 @@ relative assets against a supplied base URL (E7); that is not an immutable outpu
 manifest. The pilot's revision-binding proposal offers useful requirements, not
 proof that historical reproduction is implemented (E8).
 
-### Cross-cutting scenario: preserve design during clearance
+#### Cross-cutting scenario: preserve design during clearance
 
 Design-quality review does not replace any required content, clearance, or
 publication review.
@@ -343,7 +339,7 @@ unaccepted update changes the reviewed design and that previous and candidate
 outputs remain distinguishable. For a serious defect, test the agreed notification
 and exception path rather than silently replacing a routed or published output.
 
-## 4. Validate the PDF, not just the authoring screen
+### 4. Validate the PDF, not just the authoring screen
 
 Keep a clear boundary between authoritative content, shared design rules, assets
 and PDF generation. Either a package or service can honor that boundary; choose
@@ -386,7 +382,7 @@ for scanner contracts and source mapping rather than starting another scanner.
 The HTML-only local agent pilot does not verify PDF pagination (E8); this guide
 does not change that pilot's acceptance flow or introduce a new clearance gate.
 
-## 5. Recommended sequence and follow-through
+## Recommended sequence and follow-through
 
 GPLE and the SGM contract team can use the considerations below to identify
 follow-up work. Implementation should follow the planning, review, and contribution
@@ -402,8 +398,8 @@ practices of the team and repository responsible for the change.
 | PDF validation baseline | Judge actual output quality before broader adoption; depend on representative PDFs and confirmed applicable criteria. Resolve manual checks, severity and exception disposition. | Accessibility/design reviewers and PDF engineering with relevant authorities; coordinate with [#980](https://github.com/HHS/simpler-grants-pdf-builder/issues/980). |
 
 **Expected result:** a concise decision record of agreed boundaries, proposed roles
-and remaining questions. Record significant implementation selections in an ADR
-when made; detailed technology choices can remain open during initial investigation.
+and remaining questions. Detailed technology choices can remain open during initial
+investigation.
 
 ### 2. Optional investigation: use a representative example
 
@@ -433,7 +429,10 @@ and [#1149](https://github.com/HHS/simpler-grants-pdf-builder/issues/1149) conce
 pilot candidate/transfer binding; #1197 examines traceability using existing data.
 None establishes a general archive or an approved retention policy.
 
-## 6. Build on the design-reference handoff to SGM
+Record significant implementation decisions separately, including the rationale,
+alternatives, and validation evidence.
+
+## Build on the design-reference handoff to SGM
 
 In September 2026, the SimplerNOFOs team provided a NOFO design-reference package
 to support design-template guidance for the SGM contract team. It included an
@@ -453,7 +452,7 @@ implementation, identify gaps or changed needs, and update guidance where useful
 | Processing and PDF-generation boundaries (E6–E7) | Separate content processing from output generation. | Extraction/adaptation suitability, dependencies, security, fidelity and maintenance cost. |
 | Review guidance and pilot limits (E8) | Bind findings to reviewed inputs/output and distinguish evaluation methods. | A validation baseline demonstrated on representative SGM-generated PDFs. |
 
-## 7. Sustain design-quality oversight in GPLE
+## Sustain design-quality oversight in GPLE
 
 GPLE’s long-term design-quality oversight depends on retaining review expertise,
 design and accessibility guidance, evaluation methods, and the evidence behind
