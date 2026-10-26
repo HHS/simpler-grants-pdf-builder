@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.53.2](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.53.1...nofos-v3.53.2) (2026-10-26)
+
+
+### Bug Fixes
+
+* align readability retention and privacy guidance ([#1219](https://github.com/HHS/simpler-grants-pdf-builder/issues/1219)) ([1600d6d](https://github.com/HHS/simpler-grants-pdf-builder/commit/1600d6d87abdd55a2cd21134c7509e1979e875de))
+* keep admin styles and scripts aligned with Django ([#1212](https://github.com/HHS/simpler-grants-pdf-builder/issues/1212)) ([5c60b2f](https://github.com/HHS/simpler-grants-pdf-builder/commit/5c60b2fdcee271607dece901796fd91d87655599))
+* keep NOFO jump navigation highlighting on the selected section ([#1218](https://github.com/HHS/simpler-grants-pdf-builder/issues/1218)) ([26b9c85](https://github.com/HHS/simpler-grants-pdf-builder/commit/26b9c85902c09da692f15280e35d65796a2a3689))
+* restore bounded history with separate backfill cutover ([#1187](https://github.com/HHS/simpler-grants-pdf-builder/issues/1187)) ([b3e23b2](https://github.com/HHS/simpler-grants-pdf-builder/commit/b3e23b2f33515fe28482108cff9a2016f9a88ca6))
+* warn about unstructured endnote content ([#1192](https://github.com/HHS/simpler-grants-pdf-builder/issues/1192)) ([1cacc30](https://github.com/HHS/simpler-grants-pdf-builder/commit/1cacc30b7d41b369c19b7a8789bd419f5a36f763))
+
 ## [3.53.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.53.0...nofos-v3.53.1) (2026-10-25)
 
 
