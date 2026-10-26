@@ -10,8 +10,8 @@ validation need agreed responsibilities.
 This work aims to sustain NOFO design and accessibility quality, establish
 long-term review ownership and expertise, and support changing design needs in
 Smarter Grants Management (SGM). The working ownership assumptions are that the
-GPLE office owns design-quality oversight and SGM is responsible for implementation
-within SGM. Policy, clearance and publication decisions remain with the responsible
+GPLE office owns design-quality oversight and the SGM contract team is responsible
+for implementation within SGM. Policy, clearance and publication decisions remain with the responsible
 authorities.
 
 This guide supports modernization decisions and preserves knowledge for transition
@@ -37,7 +37,7 @@ component, branding and design-change needs. A small representative demonstratio
 would help establish which Builder lessons transfer and what requires adaptation.
 Detailed operating responsibilities, OpDiv variation boundaries and protection of
 NOFOs undergoing clearance remain decisions to resolve with responsible teams.
-This summary requests no project approval; it uses the GPLE and SGM ownership
+This summary requests no project approval; it uses the GPLE and SGM contract team ownership
 assumptions stated above.
 
 ## How to read the recommendations
@@ -132,20 +132,20 @@ to distinguish a document correction from a shared defect or missing capability.
 
 ### Working responsibilities for design quality
 
-The GPLE office owns long-term design-quality oversight; SGM is responsible for
-implementation within SGM. The responsibilities below apply that working division.
-GPLE and SGM should agree on review practices, quality criteria, and coordination
-arrangements as the work develops.
+The GPLE office owns long-term design-quality oversight; the SGM contract team is
+responsible for implementation within SGM. The responsibilities below apply that working division.
+GPLE and the SGM contract team should agree on review practices, quality criteria,
+and coordination arrangements as the work develops.
 
 | Responsibility | Working ownership |
 | --- | --- |
 | Maintain design-quality expectations, review practices and expertise | GPLE |
-| Implement and maintain design-quality capabilities within SGM | SGM |
-| Produce implementation evidence and address identified defects | SGM, coordinating with GPLE |
+| Implement and maintain design-quality capabilities within SGM | SGM contract team |
+| Produce implementation evidence and address identified defects | SGM contract team, coordinating with GPLE |
 | Assess design and accessibility quality against agreed criteria | GPLE, with appropriate specialists |
 
-For a defective release, SGM should notify GPLE, assess affected outputs and consider
-pausing further adoption. SGM should coordinate correction or recovery with GPLE,
+For a defective release, the SGM contract team should notify GPLE, assess affected
+outputs and consider pausing further adoption. The team should coordinate correction or recovery with GPLE,
 notify affected program offices and preserve the identity of outputs already
 routed, cleared or published. Urgent accessibility or substantive
 correctness defects need an explicit disposition with relevant authorities;
@@ -417,9 +417,10 @@ validation criteria. Software reuse remains subject to investigation with SGM te
 GPLE’s long-term design-quality oversight depends on retaining review expertise,
 design and accessibility guidance, evaluation methods, and the evidence behind
 prior decisions. The transition should preserve access to these resources and the
-working relationship with SGM, which is responsible for implementation within SGM.
+working relationship with the SGM contract team, which is responsible for
+implementation within SGM.
 
-| GPLE needs for oversight | SGM needs for implementation |
+| GPLE needs for oversight | SGM contract team needs for implementation |
 | --- | --- |
 | Component guidance and approved variations | Component behavior, dependencies, and configuration guidance |
 | Review methods and accessibility expertise | Test fixtures and technical validation methods |
