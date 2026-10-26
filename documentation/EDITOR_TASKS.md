@@ -975,15 +975,22 @@ does not configure or start an agent runtime.
 
 **Steps**
 
-1. Under **Candidate-only agent access**, select **Create or replace agent access**.
+1. Under **Candidate-only agent access**, select **Create agent access** (or
+   **Create or replace agent access** when a key is already active).
 2. On **Candidate access created**, copy the key only into the approved local
    client. Keep it out of screenshots, URLs, chats, issues and logs. Do not share
    your Builder cookie or give the client broad host/database access.
 3. Select **Return to current candidate**. The key is not shown there again;
-   the page shows the latest expiry and request count instead.
+   the page shows **Active**, the latest expiry and request count instead.
 4. To stop access early, select **Revoke agent access** on that candidate.
-5. To replace a lost, expired or exhausted key, repeat step 1. This immediately
-   invalidates the previous key.
+5. For a lost key, select **Create or replace agent access**. After **Expired**
+   or **Request limit reached** appears, select **Create new agent access** to
+   reconnect the client. Creating access immediately invalidates the previous key.
+
+The status updates when you load or refresh the review page. **No active access**
+means no key has been issued, or access was revoked. **Revoke agent access** is
+disabled when access is no longer active. The server enforces expiry and request
+limits on every client request even while an older review page remains open.
 
 Access ends after 20 minutes or 100 admitted requests. The client can read this
 candidate and request theme/table-width changes only. It cannot accept, transfer,

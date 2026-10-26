@@ -8,6 +8,7 @@ from django.db import OperationalError
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from . import design_pilot_host as host
@@ -101,6 +102,14 @@ def review(request, candidate_id):
         revision, _ = host.review_artifact(run)
     except DesignRequestError as exc:
         return error(request, str(exc), 409)
+    access_status = "none"
+    if run.tool_token_digest:
+        if not run.tool_expires_at or run.tool_expires_at <= timezone.now():
+            access_status = "expired"
+        elif run.tool_requests >= tools.MAX_REQUESTS:
+            access_status = "exhausted"
+        else:
+            access_status = "active"
     return render(
         request,
         "nofos/design_pilot_review.html",
@@ -109,7 +118,9 @@ def review(request, candidate_id):
             "revision": revision,
             "choices": host.candidate_capabilities(request.user, run)["choices"],
             "sections": run.nofo.sections.order_by("order", "pk"),
-            "tool_access_active": bool(run.tool_token_digest),
+            "tool_access_status": access_status,
+            "tool_access_active": access_status == "active",
+            "tool_request_limit": tools.MAX_REQUESTS,
             "tool_expires_at": run.tool_expires_at,
             "tool_requests": run.tool_requests,
         },
