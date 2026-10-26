@@ -74,5 +74,7 @@ Validation on the integrated branch:
 
 The October 7 browser captures above were not recreated in this update. No
 private-source extraction or conversion matrix was rerun. The remaining
-accuracy, provenance and clearance limitations in the durable guide still apply.
+accuracy and clearance limitations in the durable guide still apply. Announcement
+Module provenance is handled manually by the team and is no longer a tracked
+follow-up for this work.
 No public pilot setting or deployment was changed.

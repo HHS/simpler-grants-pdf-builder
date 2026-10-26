@@ -99,8 +99,9 @@ inspected privately. No source files, identifying details, or source
 scores are committed here.
 
 Issue #1059 remains open for independently checked extraction from real conversion
-paths, equivalent-prose Word exports, multipage paragraphs and lists, confirmed
-Announcement Module provenance, and applicable FY27 clearance guidance. No
+paths, equivalent-prose Word exports, multipage paragraphs and lists, and
+applicable FY27 clearance guidance. Announcement Module provenance is handled
+manually by the team and is outside the tracked follow-ups for this work. No
 recognition thresholds, formulas, authorization controls, or deployment flags
 change relative to current main in this slice. Do not describe this as complete
 draft-format validation.
