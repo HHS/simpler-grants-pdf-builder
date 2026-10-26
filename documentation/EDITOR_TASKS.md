@@ -876,7 +876,10 @@ If access is denied or the page is unavailable, contact the pilot operator.
 5. Select **Copy metrics** or **Print / Save as PDF** before leaving the report.
    Use **Analyze another document** for another upload.
 
-This upload does not create a NOFO or save report history. Remove template
+This upload does not create a NOFO or save report history. When usage recording
+is enabled, **How we handle your document** explains that content-free usage/error
+records are kept without automatic expiration by default; they exclude your
+identity, filename, document text and scores. Remove template
 instructions and unused options from the copy you upload when they should not
 count. Word, PDF and saved-Builder scores can differ; use the same format and
 analysis method when tracking revisions. The separate public `/readability/`
