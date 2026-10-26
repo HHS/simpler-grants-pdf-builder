@@ -35,10 +35,10 @@ would determine whether that change requires renewed review.
 ### Where to start
 
 **GPLE:** Use the NOFO Design Standards and FY27 NOFO Content and Clearance Guidance
-as the basis for ongoing oversight. Build on Builder's existing document checks,
-PDF review capabilities, readability metrics and quality dashboard to gather
-evidence and identify issues requiring attention. Confirm reviewer access and
-which capabilities are enabled in the environment being used.
+as the basis for ongoing oversight. Review available aggregate reporting, recurring
+support findings and targeted evaluations to identify trends and guide quality
+improvements. Identify the questions oversight needs to answer and any access,
+reporting or specialist-support gaps.
 
 **SGM contract team:** Assess how SGM supports those expectations and review
 activities, building on the design-reference package provided in September 2026.
@@ -46,12 +46,18 @@ Identify what is already supported or planned, what needs clarification and any
 gaps.
 
 **Together:** Review those findings and choose the next useful action, if one is
-needed. Readers do not need to resolve every architectural consideration in this
-guide before moving forward; use the detailed sections to investigate specific
-questions as they arise.
+needed. Keep a short shared list of what is covered, what is unclear and what needs
+attention, with a contact and next action for each follow-up. Confirm access to the
+September handoff package with the receiving team. Readers do not need to resolve
+every architectural consideration in this guide before moving forward; use the
+detailed sections to investigate specific questions as they arise.
 
 ### Standards and review resources
 
+- **FY27 NOFO Content and Clearance Guidance:** Available through the
+  [Office of Grants Resource Hub](https://hhsgov.sharepoint.com/sites/OGResourceHub).
+  Consult it for clearance requirements and readability targets.
+  This link opens the hub, not the individual guidance document. **Access required.**
 - [NOFO Design Standards](https://gartner365.sharepoint.com/:w:/r/sites/HHS947/Shared%20Documents/General/%5BEXTERNAL%5D%20Site%20Documents%20and%20Resources/Simpler_NOFO_Design_Standards.docx?d=wf15ca8507044455e958447570219ab10&csf=1&web=1&e=QkUpPq)
   — Design and accessibility expectations. **Access required.**
 - [Calculating Final NOFO Metrics FY27](https://gartner365.sharepoint.com/:w:/r/sites/HHS947/Shared%20Documents/General/%5BEXTERNAL%5D%20Site%20Documents%20and%20Resources/Calculating%20Final%20NOFO%20Metrics%20FY27.docx?d=w21228e723be24975adf0b3ab46558e16&csf=1&web=1&e=bkphv3)
@@ -461,6 +467,42 @@ implementation within SGM.
 | Review methods and accessibility expertise | Test fixtures and technical validation methods |
 | Prior findings, decision rationale, and known limitations | Defects, implementation decisions, and maintenance information |
 | Research findings and recurring quality concerns | Evidence needed to assess and demonstrate improvements |
+
+### Use document review and oversight reporting at the appropriate level
+
+| Audience | How Builder supports the work |
+| --- | --- |
+| NOFO authors and reviewers | Use document checks, readability metrics and PDF review to identify and correct individual NOFO issues. |
+| GPLE | Use aggregate reporting, recurring support findings and targeted evaluations to identify trends and guide quality improvements. |
+| SGM contract team | Assess which document-level checks and oversight reporting SGM should support. |
+
+GPLE's oversight questions may include whether recurring design or accessibility
+problems are emerging across NOFOs or OpDivs, which need shared guidance, training
+or product improvements, whether those improvements are reducing problems, and
+where specialist review or additional evidence is needed.
+
+Builder's current [dashboard](BUILDER_METRICS.md) provides usage and import-quality
+reporting. Broader aggregation of document checks, readability results or review
+findings could support GPLE's oversight, if needed. GPLE should first identify the
+questions it needs reporting to answer; the available data and any reporting gaps
+can then be assessed. This is a possible follow-up, not an existing capability or
+a commitment to build a dashboard. GPLE oversight does not require inspecting
+every warning on every NOFO.
+
+### Access and support
+
+For access to Builder and individual NOFOs, users should contact the relevant
+OpDiv's designated Builder administrator or grants policy office. Dashboard access
+requires a separate metrics permission; see [dashboard access instructions](BUILDER_METRICS.md#granting-and-removing-access)
+and [groups and permissions](GROUPS.md). Confirm the appropriate access arrangement
+and contact for GPLE staff needing access across OpDivs.
+
+Use experienced NOFO design reviewers or Builder support to interpret application
+findings, accessibility specialists for specialist evaluation, and the relevant
+grants policy office for interpretation of clearance guidance. The technical
+reference identifies the HHS Office of the Secretary Accessibility Program as a
+support resource. Confirm support contacts by role and maintain current contact
+details in the appropriate internal location.
 
 Detailed handoff arrangements can be agreed as the transition develops.
 
