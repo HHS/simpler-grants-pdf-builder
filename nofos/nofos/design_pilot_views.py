@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from . import design_pilot_host as host
+from . import design_pilot_review as candidate_review
 from . import design_pilot_tools as tools
 from .design_candidate import DesignRequestError
 
@@ -54,13 +55,14 @@ def pilot_view(view):
     return wrapped
 
 
-def error(request, message, status=400):
+def error(request, message, status=400, *, acknowledgment_reason=""):
     candidate_id = request.resolver_match.kwargs.get("candidate_id")
     return render(
         request,
         "nofos/design_pilot_error.html",
         {
             "message": message,
+            "acknowledgment_reason": acknowledgment_reason,
             "candidate_url": (
                 reverse("design_pilot:review", args=[candidate_id])
                 if candidate_id
@@ -97,11 +99,38 @@ def index(request):
 @pilot_view
 @require_GET
 def review(request, candidate_id):
-    run = host.owned_candidate(request.user, candidate_id)
+    return _review_response(request, candidate_id)
+
+
+def _review_response(request, candidate_id, *, message="", draft=None, status=200):
     try:
-        revision, _ = host.review_artifact(run)
+        run = host.owned_candidate(request.user, candidate_id)
+        report = candidate_review.report(run)
     except DesignRequestError as exc:
-        return error(request, str(exc), 409)
+        return error(
+            request,
+            str(exc),
+            409,
+            acknowledgment_reason=(draft or {}).get("reason", ""),
+        )
+    except OperationalError:
+        return error(
+            request,
+            "The local database is busy. Return to review before trying again.",
+            409,
+            acknowledgment_reason=(draft or {}).get("reason", ""),
+        )
+    draft_restored = False
+    if draft:
+        for finding in report["findings"]:
+            if (
+                finding["id"] == draft.get("finding_id")
+                and finding["digest"] == draft.get("finding_digest")
+                and finding["severity"] == "warning"
+                and not finding["decision"]
+            ):
+                finding["draft_reason"] = draft.get("reason", "")
+                draft_restored = True
     access_status = "none"
     if run.tool_token_digest:
         if not run.tool_expires_at or run.tool_expires_at <= timezone.now():
@@ -115,7 +144,14 @@ def review(request, candidate_id):
         "nofos/design_pilot_review.html",
         {
             "run": run,
-            "revision": revision,
+            "revision": report["revision"],
+            "report": report,
+            "review_error": message,
+            "acknowledgment_reason": (draft or {}).get("reason", ""),
+            "draft_restored": draft_restored,
+            "review_sections": run.nofo.sections.order_by(
+                "order", "pk"
+            ).prefetch_related("subsections"),
             "choices": host.candidate_capabilities(request.user, run)["choices"],
             "sections": run.nofo.sections.order_by("order", "pk"),
             "tool_access_status": access_status,
@@ -124,7 +160,33 @@ def review(request, candidate_id):
             "tool_expires_at": run.tool_expires_at,
             "tool_requests": run.tool_requests,
         },
+        status=status,
     )
+
+
+@pilot_view
+@require_POST
+def acknowledge(request, candidate_id):
+    if len(request.body) > 4096 or any(
+        len(values) != 1 for _, values in request.POST.lists()
+    ):
+        return error(request, "Use one current warning review form.")
+    command = request.POST.dict()
+    command.pop("csrfmiddlewaretoken", None)
+    try:
+        candidate_review.acknowledge(request.user, candidate_id, command)
+    except DesignRequestError as exc:
+        return _review_response(
+            request, candidate_id, message=str(exc), draft=command, status=409
+        )
+    except OperationalError:
+        return error(
+            request,
+            "The local database is busy. Return to review before trying again.",
+            409,
+            acknowledgment_reason=command.get("reason", ""),
+        )
+    return redirect("design_pilot:review", candidate_id=candidate_id)
 
 
 @pilot_view

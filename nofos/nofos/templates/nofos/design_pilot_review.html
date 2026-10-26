@@ -1,13 +1,56 @@
 {% extends 'nofos/design_pilot_base.html' %}
 {% block pilot_content %}
 <h1 class="font-heading-xl text-bold">Review synthetic candidate</h1>
+{% if review_error %}
+<div class="usa-alert usa-alert--warning margin-y-2" role="alert">
+  <div class="usa-alert__body">
+    <h2 class="usa-alert__heading text-bold">Warning not acknowledged</h2>
+    <p class="usa-alert__text">{{ review_error }}</p>
+    {% if draft_restored %}<p class="usa-alert__text">Your explanation is still in the warning form. Review the current findings before submitting it again.</p>
+    {% elif acknowledgment_reason %}<p class="usa-alert__text">The warning changed or is no longer available to acknowledge. Your unsaved explanation is retained below; review the current findings before reusing it.</p>{% endif %}
+  </div>
+</div>
+{% if acknowledgment_reason and not draft_restored %}
+<label class="usa-label" for="unsaved-acknowledgment-reason">Your unsaved explanation (copy if needed)</label>
+<textarea class="usa-textarea" id="unsaved-acknowledgment-reason" readonly>{{ acknowledgment_reason }}</textarea>
+{% endif %}
+{% endif %}
 <p>{{ run.source_name }}. Saved design changes: {{ run.sequence }}.</p>
 <p>Source SHA-256: <code style="overflow-wrap:anywhere">{{ run.source_sha256 }}</code></p>
-{% for warning in run.warnings %}<div class="usa-alert usa-alert--warning margin-y-2"><div class="usa-alert__body"><p class="usa-alert__text">{{ warning }}</p></div></div>{% endfor %}
+<p>Candidate: <code style="overflow-wrap:anywhere">{{ run.pk }}</code><br>Current revision: <code style="overflow-wrap:anywhere">{{ revision }}</code></p>
+<div class="usa-alert usa-alert--info margin-y-2" role="note"><div class="usa-alert__body">
+<h2 class="usa-alert__heading text-bold">{{ report.status }}</h2>
+<p class="usa-alert__text">Import processing is complete. This candidate is in private local staging, not a production NOFO. No model has run.</p>
+<p class="usa-alert__text">{{ report.blockers }} blocking finding{{ report.blockers|pluralize }} and {{ report.open_warnings }} unacknowledged warning{{ report.open_warnings|pluralize }}. Design acceptance is not available in this slice. Acknowledging a warning does not accept the design or clear a blocker.</p>
+</div></div>
 <p><a href="{% url 'design_pilot:document' run.pk %}?revision={{ revision }}" target="_blank" rel="noopener">View current HTML (opens a new tab)</a></p>
 <p>HTML review is optional. It does not verify PDF pagination. External links are inactive in this preview; stored source content is unchanged.</p>
 <button class="usa-button" disabled>PDF unavailable</button>
 <p>DocRaptor is disabled in lower environments. This slice does not accept, publish or transfer candidates.</p>
+<h2 class="font-heading-lg text-bold margin-top-4">Findings and next steps</h2>
+<p>Checks are rerun for the current revision. A pass covers only the stated check, not the whole document. Missing information and substantive corrections must come from a human, not an invented value.</p>
+{% for finding in report.findings %}
+<div class="border-bottom border-base-light padding-y-2" id="finding-{{ finding.id }}">
+<h3 class="font-heading-md text-bold">{{ finding.target }}: {{ finding.status_label }} ({{ finding.severity_label }})</h3>
+<p>Rule: {{ finding.rule }}. Human decision required: {{ finding.human_required|yesno:"Yes,No" }}.</p>
+<p>{{ finding.evidence }}</p><p>{{ finding.action }}</p>
+{% if finding.section_id %}<a href="#section-{{ finding.section_id }}">Review affected section</a>{% endif %}
+{% if finding.decision %}<p>Acknowledged by {{ finding.decision.actor.email }} on {{ finding.decision.created }}: {{ finding.decision.reason }}</p>
+{% elif finding.severity == 'warning' %}
+<form class="usa-form" method="post" action="{% url 'design_pilot:acknowledge' run.pk %}">{% csrf_token %}
+<input type="hidden" name="expected_revision" value="{{ revision }}"><input type="hidden" name="evidence_revision" value="{{ report.evidence_revision }}"><input type="hidden" name="finding_id" value="{{ finding.id }}"><input type="hidden" name="finding_digest" value="{{ finding.digest }}">
+<label class="usa-label" for="ack-{{ finding.id }}">Why can this warning be acknowledged?</label><textarea class="usa-textarea" id="ack-{{ finding.id }}" name="reason" maxlength="500" required>{{ finding.draft_reason }}</textarea>
+<button type="submit" class="usa-button margin-top-2">Acknowledge warning</button>
+</form>{% endif %}
+</div>{% endfor %}
+<h2 class="font-heading-lg text-bold margin-top-4">Presentation change summary</h2>
+<p>These are requested presentation changes, not approvals. This earlier operation log does not record actor identity or time.</p>
+{% for change in report.changes %}<p>{{ change.operation }} ({{ change.target }}): {{ change.before }} → {{ change.after }}. Reason: {{ change.reason }}</p>{% empty %}<p>No presentation changes have been saved.</p>{% endfor %}
+<h2 class="font-heading-lg text-bold margin-top-4">Imported content for review</h2>
+<p>Saved content is shown as read-only text. To correct wording, metadata or structure, return to the Word source and import a fresh synthetic copy. Theme and table-width controls below remain available.</p>
+{% for section in review_sections %}<details class="margin-y-2"><summary>{{ section.name }}</summary><div id="section-{{ section.pk }}">
+{% for subsection in section.subsections.all %}<h3 class="font-heading-md text-bold">{{ subsection.name }}</h3><pre style="white-space:pre-wrap;overflow-wrap:anywhere">{{ subsection.body }}</pre>{% endfor %}</div></details>{% endfor %}
+<details class="margin-y-2"><summary>Retained Word conversion output (read-only)</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere">{{ run.conversion_html }}</pre></details>
 <h2 class="font-heading-lg text-bold margin-top-4">Theme</h2>
 <form class="usa-form" method="post" action="{% url 'design_pilot:operation' run.pk %}">
 {% csrf_token %}<input type="hidden" name="candidate_id" value="{{ run.pk }}"><input type="hidden" name="expected_revision" value="{{ revision }}"><input type="hidden" name="operation" value="set_theme">

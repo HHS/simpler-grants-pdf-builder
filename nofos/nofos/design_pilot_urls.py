@@ -8,6 +8,7 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("<uuid:candidate_id>/", views.review, name="review"),
     path("<uuid:candidate_id>/operation", views.operation, name="operation"),
+    path("<uuid:candidate_id>/acknowledge", views.acknowledge, name="acknowledge"),
     path("<uuid:candidate_id>/html", views.document, name="document"),
     path("<uuid:candidate_id>/access", views.issue_access, name="issue_access"),
     path(

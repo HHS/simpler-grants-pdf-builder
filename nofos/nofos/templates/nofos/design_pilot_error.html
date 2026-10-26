@@ -2,6 +2,10 @@
 {% block pilot_content %}
 <h1 class="font-heading-xl text-bold">Request not saved</h1>
 <div class="usa-alert usa-alert--error"><div class="usa-alert__body"><p class="usa-alert__text">{{ message }}</p></div></div>
+{% if acknowledgment_reason %}
+<label class="usa-label" for="unsaved-acknowledgment-reason">Your unsaved explanation (copy before leaving this page)</label>
+<textarea class="usa-textarea" id="unsaved-acknowledgment-reason" readonly>{{ acknowledgment_reason }}</textarea>
+{% endif %}
 <p>Return to the candidate and review its current state before trying again.</p>
 {% if candidate_url %}<p><a href="{{ candidate_url }}">Return to current candidate</a></p>{% endif %}
 <a href="{% url 'design_pilot:index' %}">Start or retry an import</a>

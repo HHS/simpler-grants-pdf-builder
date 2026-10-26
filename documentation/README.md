@@ -35,6 +35,7 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 - [NOFO_BUILDER_FAQ.md](NOFO_BUILDER_FAQ.md) — Answers to common questions about designing a NOFO in NOFO Builder: importing, Markdown, tables, page layout, endnotes, appendices, metadata, and status; links to the editor tasks for step-by-step instructions
 - [READABILITY_METRICS.md](READABILITY_METRICS.md) — The `hhs-nofo-metrics` integration and source contract; when readability snapshots are saved (by a person, or automatically on import, re-import and Download PDF); saved readability history, deletion, archiving, and duplication behavior
 - [UI_PATTERNS.md](UI_PATTERNS.md) — Reusable interface patterns, including alert text and spacing, shared file-upload error states, loading progress modals, readability reliability alerts, and subsection save-conflict recovery
+- [DESIGN_CANDIDATE_REVIEW.md](DESIGN_CANDIDATE_REVIEW.md) — Synthetic local findings report, revision-bound human warning acknowledgments and remaining acceptance/fidelity work
 - [STYLE_GUIDE.md](STYLE_GUIDE.md) — The SimplerNOFOs Style Guide (edition of August 25, 2026) as Markdown: writing, formatting, and structure conventions for NOFO content, with known conversion gaps listed at the end
 - [TABLES.md](TABLES.md) — Automatic table styling: size classes, captions, points columns, import-time width classes, and how users override them
 - [UPDATING_PYTHON_DEPENDENCIES.md](UPDATING_PYTHON_DEPENDENCIES.md) — How to update Python dependencies
