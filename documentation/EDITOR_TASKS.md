@@ -735,6 +735,11 @@ where the link goes.
 2. Choose the **Theme**, **Cover style**, or **Icon style**.
 3. Select **Save theme options**.
 
+For HRSA NOFOs, **Cover style** offers **Text only** and **Standard image**.
+An existing **Full coverage with image** cover can also be retained as a legacy
+value. New HRSA imports start with **Text only**; choose **Standard image** here
+to use an image cover.
+
 **Notes**
 
 - New ACL imports can select **ACL (Default)** from the OpDiv even with a blank
