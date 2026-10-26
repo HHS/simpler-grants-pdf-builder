@@ -61,7 +61,10 @@ Resolved the branch's conflicts with current main, preserving the candidate-acce
 status UI, outside-edit recovery and HRSA cover policy. Migration 0158 joins the
 review-decision branch with main's tool-access/history migration branch. An
 isolated scratch SQLite upgrade from main's migration 0157 through the new review
-table and merge migration succeeded; the drift check reports no changes.
+table and merge migration succeeded. When #1228 subsequently added file-category
+migration 0158 on main, migration 0159 joined it with the review branch. The
+updated scratch upgrade from main's file-category schema also succeeds, and the
+drift check reports no changes.
 
 The import-to-review regression test constructs a real synthetic DOCX with an
 unmapped paragraph style. The installed converter emits a formatting warning;
@@ -79,7 +82,7 @@ No decision is recorded until an explicit valid submission. Drafts exist only
 in the returned response and are escaped; they are not saved in a session or
 decision record. The guide and Editor Task describe recovery and refresh limits.
 
-- Final full Django suite after syncing main: 2,901 tests passed, three existing
+- Final full Django suite after syncing main: 2,912 tests passed, three existing
   skips. Focused review/transport/host/kernel suite: 65 tests passed.
 - JavaScript suite: 61 tests passed.
 - Changed Python files pass Black/isort; diff and commit hooks pass.
