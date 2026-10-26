@@ -1,4 +1,4 @@
-"""Manually invocable cleanup; scheduling requires the privacy retention decision."""
+"""Optional cleanup for a future explicit expiration policy; unused by default."""
 
 from datetime import timedelta
 

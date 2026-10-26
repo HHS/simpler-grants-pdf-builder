@@ -50,7 +50,9 @@ env_exists = os.path.exists(env_path)
 if env_exists:
     environ.Env.read_env(env_path)
 
-# Pending privacy approval in #968; no scheduler is installed by this change.
+# Content-free public and authenticated usage records have no automatic expiration.
+# Leave retention unset; cleanup is optional if a future decision adds expiration.
+# Recording remains independently default-off for each route.
 PDF_READABILITY_ATTEMPT_RECORDING_ENABLED = env.bool(
     "PDF_READABILITY_ATTEMPT_RECORDING_ENABLED", default=False
 )
