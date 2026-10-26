@@ -20,7 +20,7 @@ from nofos.pdf_readability import (
     PdfSizeLimitUploadHandler,
     analyze_uploaded_pdf,
 )
-from nofos.pdf_readability_metrics import record_attempt
+from nofos.pdf_readability_metrics import record_attempt, retention_days
 
 logger = logging.getLogger("django.request.pdf_readability")
 
@@ -198,6 +198,7 @@ def _pdf_readability_form(request):
             if request.pdf_readability_source == "authenticated"
             else "pdf_readability"
         ),
+        "outcome_retention_days": retention_days(request.pdf_readability_source),
         "outcome_recording_enabled": (
             settings.AUTHENTICATED_PDF_READABILITY_ATTEMPT_RECORDING_ENABLED
             if request.pdf_readability_source == "authenticated"

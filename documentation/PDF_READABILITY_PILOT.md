@@ -73,7 +73,7 @@ safeguards below still apply and are not replaced by ZIP validation.
 
 ## Default-off release
 
-### Content-free outcome monitoring (draft approval gate, #985)
+### Content-free outcome monitoring (#985)
 
 Metrics viewers can open `/nofos/metrics/readability-pilot` from **Other metrics**
 on `/nofos/metrics`, including while the pilot is disabled. The page shows the
@@ -85,19 +85,35 @@ infrastructure alarm or evidence that #970's safeguards are deployed.
 
 Recording is separately default-off via
 `PDF_READABILITY_ATTEMPT_RECORDING_ENABLED=false`, including disabled POSTs.
-Do not turn it on before privacy approves notice wording and a retention window
-in #968, and operations configures and verifies cleanup. The proposed 13 months
-is **not approved** or a code default. No public privacy notice is changed here.
-Set `PDF_READABILITY_ATTEMPT_RETENTION_DAYS` to the agreed positive number of days
-only after approval. The management command
-`python manage.py cleanup_pdf_readability_attempts --dry-run` previews deletion;
-without `--dry-run` it deletes older rows. It refuses an unset/invalid window.
-This change installs **no schedule**: operations must agree on a cadence and
-schedule this command through the deployment's existing job mechanism, verify
-the effective cutoff, and record ownership/evidence in #968 before recording.
+Public and authenticated content-free usage/error records are retained indefinitely,
+with no automatic age-based expiration. Ben confirmed this choice on October 26,
+2026 for the public records as well as the existing authenticated approach. It
+supersedes the proposed 13-month window and the requirement to schedule deletion
+of outcome records under #985. This records the pilot's retention decision, not
+a claim about HHS-wide policy or completion of any separately required review.
 
-When enabled, each handled upload POST stores only a timestamp, outcome,
-returned HTTP status and processing duration, plus Django's internal row ID.
+Leave `PDF_READABILITY_ATTEMPT_RETENTION_DAYS` and
+`AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS` unset. No outcome-record
+cleanup schedule is required for either route. Before enabling public recording,
+verify the deployed retention setting is unset and no outcome-record cleanup job
+is active; remove any previously configured cutoff/job through the deployment's
+normal change process. Verify recording and the notice in the target environment,
+and record any applicable privacy review in #968. Recording and public upload
+enablement remain separate decisions.
+
+The existing cleanup command remains available if a future explicit decision
+introduces expiration. With a positive window configured,
+`python manage.py cleanup_pdf_readability_attempts --source public --dry-run`
+previews deletion; without `--dry-run` it deletes older public and legacy/unknown
+rows. Authenticated cleanup uses `--source authenticated` and its separate window.
+The command refuses an unset/invalid window. Revisit retention and notice wording
+if the stored fields change. Temporary uploaded files, document contents,
+infrastructure logs and backups have separate handling requirements; indefinite
+outcome retention does not extend their retention.
+
+When enabled, each handled upload POST stores only a timestamp, upload-route
+source, outcome, returned HTTP status and processing duration, plus Django's
+internal row ID.
 No filename, document hash/size/pages/text/signals/metrics, request headers,
 IP address, session or user ID is stored. The application inserts rows only;
 they are not registered for admin editing or exposed through a write API.
@@ -216,6 +232,10 @@ or kept as report history. The notice links to the
 [HHS Privacy Policy](https://www.hhs.gov/privacy/privacy-policy/index.html) and
 uses the same support path as the unavailable page: the user's agency grants
 policy office, then the NOFO Builder Feedback Form.
+
+When outcome recording is enabled, the notice also describes the content-free
+usage/error records and their retention: no automatic expiration by default, or
+the configured number of days if a future expiration policy is introduced.
 
 The notice deliberately does not state a data classification, say that
 pre-decisional use is approved, or promise deletion timing. Change that wording
