@@ -188,6 +188,51 @@ class PdfReadabilityTests(SimpleTestCase):
         self.assertEqual(decision.status, "unsupported")
         self.assertEqual(decision.signal_ids, ("hhs_agency_metadata",))
 
+    def test_agency_page_text_can_replace_lost_print_metadata(self):
+        decision = recognize_nofo(
+            {},
+            "Health Resources and Services Administration "
+            "Opportunity number: HRSA-26-106",
+        )
+        self.assertEqual(decision.status, "supported")
+        self.assertEqual(
+            decision.signal_ids, ("hhs_agency_page_text", "opportunity_number")
+        )
+
+    def test_agency_in_both_locations_still_counts_once(self):
+        decision = recognize_nofo({"/Author": "HRSA"}, "HRSA HRSA HHS NIH")
+        self.assertEqual(decision.status, "unsupported")
+        self.assertEqual(decision.signal_ids, ("hhs_agency_metadata",))
+
+    def test_page_agency_alone_or_inside_other_words_is_not_enough(self):
+        for text in ("HRSA HRSA HHS NIH", "biHHSological ACLoud NIHongo"):
+            with self.subTest(text=text):
+                self.assertEqual(recognize_nofo({}, text).status, "unsupported")
+
+    def test_worker_recognition_looks_past_cover_and_contents_but_stays_bounded(self):
+        for agency_page, expected in ((3, True), (5, True), (6, False)):
+            with self.subTest(agency_page=agency_page):
+                pages = [b"Opportunity number: HRSA-26-106"]
+                pages.extend([b"Contents"] * (agency_page - 2))
+                pages.append(b"Health Resources and Services Administration")
+                with tempfile.TemporaryDirectory() as directory:
+                    path = Path(directory) / "synthetic-print.pdf"
+                    path.write_bytes(synthetic_text_pdf(contents=tuple(pages)))
+                    with patch(
+                        "hhs_nofo_metrics.inspect_adapter_support",
+                        return_value=[{"assessment": {"status": "unsupported"}}],
+                    ), patch(
+                        "nofos.pdf_readability_worker._analyze_metrics",
+                        return_value={"recognized": True},
+                    ):
+                        if expected:
+                            self.assertEqual(analyze(path, 150), {"recognized": True})
+                        else:
+                            with self.assertRaisesRegex(
+                                ValueError, "format_unsupported"
+                            ):
+                                analyze(path, 150)
+
     def test_worker_accepts_recognized_untagged_pdf(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "synthetic.pdf"
