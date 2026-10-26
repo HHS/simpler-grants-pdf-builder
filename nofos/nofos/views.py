@@ -47,11 +47,12 @@ from martor.utils import markdownify
 from nofos.nofo_compare import extract_new_diff, extract_old_diff
 
 from .audits import (
+    audit_event_formatting_options,
     deduplicate_audit_events_by_day_and_object,
     format_audit_event,
     get_audit_event_by_id,
-    get_audit_events_for_document,
     get_audit_events_for_nofo,
+    get_audit_events_page,
     safe_get_changed_fields,
 )
 from .document_processing import (
@@ -558,6 +559,19 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         )
         context["broken_links"] = find_broken_links(self.object)
         context["external_links"] = find_external_links(self.object, with_status=False)
+        context["missing_destination_links"] = [
+            {
+                **link,
+                "location_html_id": (
+                    link["subsection"].html_id
+                    if link["subsection"].name != "Basic information"
+                    and link["subsection"].html_id
+                    else link["section"].html_id
+                ),
+            }
+            for link in context["external_links"]
+            if link.get("invalid_destination")
+        ]
         context["heading_errors"] = find_same_or_higher_heading_levels_consecutive(
             self.object
         ) + find_incorrectly_nested_heading_levels(self.object)
@@ -592,6 +606,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         # booleans to show/hide our various warning messages
         context["has_missing_metadata"] = len(context["missing_metadata_fields"])
         context["has_broken_links"] = len(context["broken_links"])
+        context["has_missing_destinations"] = len(context["missing_destination_links"])
         context["has_heading_errors"] = len(context["heading_errors"])
         context["has_unconverted_footnotes"] = len(context["unconverted_footnotes"])
         context["has_external_links"] = len(
@@ -600,6 +615,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context["has_warnings"] = (
             context["has_missing_metadata"]
             or context["has_broken_links"]
+            or context["has_missing_destinations"]
             or context["has_heading_errors"]
             or context["has_unconverted_footnotes"]
             or context["has_external_links"]
@@ -1987,24 +2003,24 @@ class BaseNofoHistoryView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        offset = int(self.request.GET.get("offset", 0))
+        try:
+            offset = max(0, int(self.request.GET.get("offset", 0)))
+        except (TypeError, ValueError):
+            offset = 0
+        if offset > 2**31 - 1:
+            offset = 0
         limit = self.events_per_page
         self.document = self.object
 
         # Get audit events for this document
-        events = get_audit_events_for_document(
-            self.document,
-            document_model=self.get_document_model_name(),
-            section_model=self.get_section_model_name(),
-            subsection_model=self.get_subsection_model_name(),
+        page = get_audit_events_page(self.document, offset=offset, limit=limit)
+        formatting_options = audit_event_formatting_options(
+            page[:limit], self.get_event_formatting_options()
         )
-        # add one extra audit event for detecting has_more
-        page = events[offset : offset + limit + 1]
 
         # Slice the results for pagination
         context["audit_events"] = [
-            format_audit_event(e, self.get_event_formatting_options())
-            for e in page[:limit]
+            format_audit_event(e, formatting_options) for e in page[:limit]
         ]
         context["has_more"] = len(page) > limit
         context["next_offset"] = offset + limit
@@ -2055,16 +2071,15 @@ class NofoHistoryView(
         if "body" not in changed_fields:
             return event
 
-        old_body, new_body = changed_fields.get("body")
-        event_has_diff = has_diff(
-            html_diff(
-                markdownify(old_body),
-                markdownify(new_body),
-            )
-        )
-        # If the event is for 'subsection', the 'body' was changed, and there is a displayable diff,
-        # then there should be a link to the diff view
-        if event_has_diff:
+        bodies = changed_fields.get("body")
+        # A comparison belongs on the comparison page, not on every history row.
+        # Deleted subsections retain history but have no live comparison destination.
+        if (
+            event.get("object_exists")
+            and isinstance(bodies, (list, tuple))
+            and len(bodies) == 2
+            and bodies[0] != bodies[1]
+        ):
             event["should_link_to_diff"] = True
         return event
 

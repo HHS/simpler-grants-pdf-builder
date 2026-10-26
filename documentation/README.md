@@ -5,6 +5,7 @@ here—not in a top-level `docs/` directory—and link durable guides from this 
 decision records belong in `adr/`; PR-specific screenshots and validation notes belong in
 `review-evidence/`.
 
+- [SECURITY.md](SECURITY.md) — Security vulnerability reporting through HHS responsible disclosure, research scope and policy contacts
 - [QUALITY_REVIEW_AND_TRIAGE.md](QUALITY_REVIEW_AND_TRIAGE.md) — Design/accessibility and application-experience review, evidence gathering, triage, proposed priorities and assisted-review boundaries
 - [BUILDER_METRICS.md](BUILDER_METRICS.md) — The usage & quality metrics dashboard at `/nofos/metrics`: what it reports and who can see it
 - [AUTHENTICATED_PDF_READABILITY_PILOT.md](AUTHENTICATED_PDF_READABILITY_PILOT.md) - Restricted PDF/Word upload pilot, access provisioning, source-aware reporting and activation checks
@@ -21,13 +22,14 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 - [Candidate-only local interface](DESIGN_CANDIDATE_INTERFACE.md) - Expiring, revocable access to one synthetic candidate; no broad session, runtime or acceptance authority
 - [EDITOR_TASKS.md](EDITOR_TASKS.md) — Instructions for common NOFO Builder tasks, including prerequisites and support contacts
 - [GROUPS.md](GROUPS.md) — How user groups and permissions work
+- [DOCUMENT_HISTORY.md](DOCUMENT_HISTORY.md) - Indexed history pagination, deleted-item retention, backfill and rollout verification
 - [IMPORT_ERROR_CODES.md](IMPORT_ERROR_CODES.md) — What each blocking import error code (`IMPORT-NO-SECTIONS`, `IMPORT-OPDIV-BLANK`, …) means and what to tell someone who hits one
 - [IMPORT_RULES.md](IMPORT_RULES.md) — Every automatic content rule applied when a NOFO is imported (footnote/endnote handling, list/table repair, metadata suggestion, etc.)
 - [TAGLINE_IMPORT.md](TAGLINE_IMPORT.md) — Legacy and Basic information tagline sources, blank precedence, editing, and re-import behavior
 - [WORD_METADATA_IMPORT.md](WORD_METADATA_IMPORT.md) — Legacy labels and trailing Metadata blocks, precedence, defaults and saved-record behavior
 - [INTRODUCTORY_PAGE_IMPORT.md](INTRODUCTORY_PAGE_IMPORT.md) — Supported Word introductory headings, destinations, maintained registration families and legacy preservation
 - [EDITABLE_INTRODUCTION.md](EDITABLE_INTRODUCTION.md) — Imported introductory ownership, compatibility, editing, output policy and resolving template guidance before the introduction
-- [endnote-import.md](endnote-import.md) — How Word imports preserve native notes and link manually authored bracketed references
+- [endnote-import.md](endnote-import.md) — Windows Word author FAQ, native note/cross-reference import fallbacks, and manually bracketed reference conventions
 - [DOCUMENT_PROCESSING.md](DOCUMENT_PROCESSING.md) — Shared content-processing boundary, application responsibilities and remaining portability limits
 - [NOFO_BUILDER_FAQ.md](NOFO_BUILDER_FAQ.md) — Answers to common questions about designing a NOFO in NOFO Builder: importing, Markdown, tables, page layout, endnotes, appendices, metadata, and status; links to the editor tasks for step-by-step instructions
 - [READABILITY_METRICS.md](READABILITY_METRICS.md) — The `hhs-nofo-metrics` integration and source contract; when readability snapshots are saved (by a person, or automatically on import, re-import and Download PDF); saved readability history, deletion, archiving, and duplication behavior
@@ -48,3 +50,5 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 - [Future automated PDF delivery (#951)](https://github.com/HHS/simpler-grants-pdf-builder/issues/951) — Separate future capability; the delivery approach and contract remain to be decided under [#957](https://github.com/HHS/simpler-grants-pdf-builder/issues/957). PDF retrieval and return remain manual in the current pilot.
 
 The earlier `ANNOUNCEMENT_SERVICES_DATA_FLOW.md` and `ANNOUNCEMENT_SERVICES_WORKFLOW.md` files are absent from `main`. Use #950 for the current pilot rather than those older diagrams.
+
+- [Admin styling](ADMIN_STYLING.md) — keep admin assets aligned with Django and add scoped customizations.

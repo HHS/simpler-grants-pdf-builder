@@ -104,6 +104,59 @@ class NativeListImportTests(TestCase):
         self.assertContains(response, 'type="a"')
         self.assertEqual(self.assert_saved_tree(document), before)
 
+    def test_adjacent_mixed_word_lists_survive_import_and_reimport(self):
+        styles = (
+            '<w:style w:type="paragraph" w:styleId="Heading1">'
+            '<w:name w:val="heading 1"/></w:style>'
+            '<w:style w:type="paragraph" w:styleId="Heading2">'
+            '<w:name w:val="heading 2"/></w:style>'
+        )
+        numbers = (
+            '<w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>'
+            '<w:abstractNum w:abstractNumId="1">' + level(0) + "</w:abstractNum>"
+            '<w:num w:numId="2"><w:abstractNumId w:val="1"/></w:num>'
+        )
+        for ids, tags in ((("1", "2"), ["ul", "ol"]), (("2", "1"), ["ol", "ul"])):
+            with self.subTest(tags=tags):
+                source = docx(
+                    paragraph("Opdiv: CDC", num=None)
+                    + paragraph("Opportunity number: SYNTHETIC-MIXED-1203", num=None)
+                    + paragraph(
+                        "Step 1: Review the opportunity", num=None, style="Heading1"
+                    )
+                    + paragraph("Activities", num=None, style="Heading2")
+                    + paragraph("First group", num=ids[0])
+                    + paragraph("Second group", num=ids[1]),
+                    levels=level(0, "bullet"),
+                    numbers=numbers,
+                    styles=styles,
+                )
+                self.assertEqual(self.upload(source).status_code, 302)
+                document = Nofo.objects.latest("created")
+                saved = document.sections.get().subsections.get(name="Activities").body
+                for reimport in (False, True):
+                    if reimport:
+                        response = self.upload(
+                            source,
+                            reverse(
+                                "nofos:nofo_import_overwrite",
+                                kwargs={"pk": document.pk},
+                            ),
+                        )
+                        self.assertEqual(response.status_code, 302)
+                    body = (
+                        document.sections.get().subsections.get(name="Activities").body
+                    )
+                    self.assertEqual(body, saved)
+                    rendered = BeautifulSoup(safe_markdown(body), "html.parser")
+                    lists = rendered.find_all(["ul", "ol"], recursive=False)
+                    self.assertEqual([tag.name for tag in lists], tags)
+                    self.assertEqual(
+                        [tag.li.text for tag in lists], ["First group", "Second group"]
+                    )
+                    self.assertNotIn("data-nofo-source-list", body)
+                    self.assertNotIn("nofo-native-list-", body)
+
     def test_unsupported_custom_marker_shows_nonblocking_review_guidance(self):
         response = self.upload(native_list_source(custom=True))
         self.assertEqual(response.status_code, 302)

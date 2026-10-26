@@ -338,6 +338,13 @@ Building a container on an M1 Mac to deploy on a cloud environment means targeti
    --allow-unauthenticated
 ```
 
+## Security
+
+Report vulnerabilities through the [HHS responsible disclosure portal](https://hhs.responsibledisclosure.com).
+See [Security and responsible disclosure](documentation/SECURITY.md) for reporting
+instructions and the HHS research policy. Do not post vulnerability details in
+public issues or pull requests.
+
 ## Related resources
 
 - [DEPLOYMENT.md](DEPLOYMENT.md) — Deployment & contribution workflow.

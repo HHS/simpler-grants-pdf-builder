@@ -4189,12 +4189,12 @@ class TestGetSideNavLinks(TestCase):
 
         result = get_side_nav_links(nofo)
 
-        # Should have summary plus 3 sections
+        # Should have Basic information plus 3 sections
         self.assertEqual(len(result), 4)
 
-        # First item should always be the summary
-        self.assertEqual(result[0]["id"], "summary-box-key-information")
-        self.assertEqual(result[0]["name"], "NOFO Summary")
+        # First item should always be Basic information
+        self.assertEqual(result[0]["id"], "nofo-edit--basic-information")
+        self.assertEqual(result[0]["name"], "Basic information")
 
         # Check section data
         self.assertEqual(result[1]["id"], "section-1")
@@ -4207,12 +4207,12 @@ class TestGetSideNavLinks(TestCase):
         self.assertEqual(result[3]["name"], "Section 3")
 
     def test_get_side_nav_links_with_no_sections(self):
-        """Test that get_side_nav_links returns only summary when no sections exist"""
+        """Test that get_side_nav_links returns no links when no sections exist"""
         nofo = create_nofo("Empty NOFO", [], opdiv="Test OpDiv")
 
         result = get_side_nav_links(nofo)
 
-        # Should only have the summary
+        # Should have no links
         self.assertEqual(len(result), 0)
 
 
@@ -8708,6 +8708,40 @@ class HTMLCalloutBoxTests(TestCase):
 
 
 class DecomposeInstructionsTablesTest(TestCase):
+    def test_template_manager_tables_are_extracted_with_writer_guidance(self):
+        for title in ("Project narrative", "Budget justification"):
+            with self.subTest(title=title):
+                soup = BeautifulSoup(
+                    f"<table><tr><td><p>Instructions for template managers: {title}</p>"
+                    "<ul><li>Add standard template content.</li></ul>"
+                    f"<p>Instructions for NOFO writers: {title}</p>"
+                    "<ul><li>Add scoring points.</li></ul></td></tr></table>"
+                    "<p>Keep applicant instructions.</p>",
+                    "html.parser",
+                )
+                extracted = decompose_instructions_tables(soup)
+                self.assertEqual(len(extracted), 1)
+                self.assertNotIn("Instructions for", soup.get_text())
+                self.assertIn("Keep applicant instructions.", soup.get_text())
+                sections = [{"subsections": [{"name": title}]}]
+                add_instructions_to_subsections(sections, extracted)
+                guidance = sections[0]["subsections"][0]["instructions"].get_text()
+                self.assertIn("Add standard template content.", guidance)
+                self.assertIn("Add scoring points.", guidance)
+
+    def test_template_manager_label_does_not_remove_applicant_content(self):
+        soup = BeautifulSoup(
+            "<table><tr><td><p>Instructions for template managers: Review</p></td>"
+            "<td>Applicant content</td></tr></table>"
+            "<table><tr><td>Applicant instructions: Submit a narrative.</td></tr></table>"
+            "<table><tr><td>See Instructions for template managers for context.</td></tr></table>"
+            "<p>Instructions for template managers: Outside a table</p>",
+            "html.parser",
+        )
+        self.assertEqual(decompose_instructions_tables(soup), [])
+        self.assertEqual(len(soup.find_all("table")), 3)
+        self.assertIn("Outside a table", soup.get_text())
+
     def test_removes_correct_tables(self):
         """Test that tables with specific instructional text are removed."""
         html_content = """
