@@ -17,6 +17,7 @@ from users.models import BloomUser
 
 from nofos.models import PdfReadabilityAttempt
 from nofos.pdf_readability import PdfReadabilityError
+from nofos.tests_nofos.draft_pdf_fixtures import draft_pdf
 
 
 @override_config(
@@ -109,6 +110,9 @@ class AuthenticatedPilotTests(TestCase):
         self.assertContains(response, f'href="{self.url}"')
         self.assertContains(response, "Print / Save as PDF")
         self.assertContains(response, "Copy metrics")
+        self.assertContains(response, 'id="readability-draft-scope"')
+        self.assertContains(response, "Keep instructions that applicants need.")
+        self.assertContains(response, "Compare drafts with the same content scope.")
         row = PdfReadabilityAttempt.objects.get()
         self.assertEqual((row.source, row.outcome), ("authenticated", "success"))
         self.assertNotIn("SECRET", str(row.__dict__))
@@ -119,6 +123,32 @@ class AuthenticatedPilotTests(TestCase):
             ).status_code,
             403,
         )
+
+    def test_draft_requirements_explain_scope_without_requiring_design(self):
+        self.login()
+        response = self.client.get(self.url)
+        self.assertContains(response, "it does not need to be designed for publication")
+        self.assertContains(response, "Blank templates without identifying details")
+        self.assertEqual(self.client.get(self.public_url).status_code, 503)
+
+    def test_real_draft_upload_returns_reference_metrics_with_public_disabled(self):
+        self.login()
+        response = self.client.post(
+            self.url,
+            {
+                "pdf": SimpleUploadedFile(
+                    "synthetic-draft.pdf", draft_pdf(), content_type="application/pdf"
+                )
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["report"]["version"], "0.6.0")
+        self.assertEqual(response.context["report"]["scope"]["sentence_word_count"], 17)
+        self.assertEqual(
+            response.context["report"]["scope"]["complete_sentence_count"], 3
+        )
+        self.assertContains(response, "Keep instructions that applicants need.")
+        self.assertEqual(self.client.get(self.public_url).status_code, 503)
 
     def test_real_word_upload_records_only_content_free_outcome(self):
         from nofos.models import Nofo
@@ -131,6 +161,10 @@ class AuthenticatedPilotTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Word readability pilot")
+        self.assertEqual(response.context["report"]["version"], "0.6.0")
+        self.assertNotContains(response, 'id="readability-draft-scope"')
+        self.assertNotContains(response, "before exporting it")
+        self.assertContains(response, "Compare drafts with the same content scope.")
         self.assertContains(response, "Word documents do not have a fixed page count")
         self.assertNotContains(response, "Reliability not assessed")
         self.assertNotContains(response, "Reliability has not been assessed")
@@ -333,6 +367,36 @@ class AuthenticatedPilotTests(TestCase):
                 self.client.post(self.url, {"pdf": self.upload()}).status_code, 200
             )
         self.assertFalse(PdfReadabilityAttempt.objects.exists())
+
+    @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
+    def test_retention_notice_matches_each_route_and_recording_state(self):
+        self.login()
+        for url, prefix in (
+            (self.public_url, "PDF_READABILITY_ATTEMPT"),
+            (self.url, "AUTHENTICATED_PDF_READABILITY_ATTEMPT"),
+        ):
+            for enabled, days in ((True, None), (True, 30), (False, None)):
+                with self.subTest(
+                    url=url, enabled=enabled, days=days
+                ), override_settings(
+                    **{
+                        f"{prefix}_RECORDING_ENABLED": enabled,
+                        f"{prefix}_RETENTION_DAYS": days,
+                    }
+                ):
+                    response = self.client.get(url)
+                    if not enabled:
+                        self.assertNotContains(response, "Usage and error records")
+                    elif days is None:
+                        self.assertContains(
+                            response,
+                            "Usage and error records are kept without automatic expiration.",
+                        )
+                    else:
+                        self.assertContains(
+                            response,
+                            "Usage and error records are retained for 30 days.",
+                        )
 
     @override_settings(AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS=None)
     def test_auth_recording_without_expiration(self):

@@ -127,6 +127,32 @@ class ConnectedDesignPilotTests(TestCase):
             200,
         )
 
+    def test_duplicate_upload_rejects_invalid_candidate_without_replacing_it(self):
+        run = self.candidate()
+        updated = host.update_candidate(self.user, run.pk, self.command(run))
+        Nofo.objects.filter(pk=run.nofo_id).update(title="Outside edit")
+        response = self.client.post(
+            reverse("design_pilot:index"),
+            {"synthetic": "yes", "source": self.upload()},
+        )
+        self.assertContains(
+            response,
+            "Uploading the same file again will not repair it.",
+            status_code=400,
+        )
+        self.assertContains(
+            response,
+            "remove this candidate and its associated NOFO record",
+            status_code=400,
+        )
+        run.refresh_from_db()
+        self.assertEqual(run.changes_json, updated.changes_json)
+        self.assertEqual(run.sequence, updated.sequence)
+        self.assertEqual(bytes(run.source_bytes), self.source)
+        self.assertEqual(run.nofo.title, "Outside edit")
+        self.assertEqual(DesignPilotCandidate.objects.count(), 1)
+        self.assertEqual(Nofo.objects.count(), 1)
+
     def test_update_preserves_content_and_rejects_old_html_and_retry(self):
         run = self.candidate()
         command = self.command(run)

@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from urllib.parse import parse_qs, urlparse
 
 import cssutils
-from bs4 import BeautifulSoup, NavigableString, Tag
+from bs4 import BeautifulSoup, Comment, NavigableString, Tag
 
 from .content_text import clean_string
 from .endnotes import (
@@ -20,9 +20,11 @@ from .endnotes import (
     inline_native_note_return_links,
     is_endnotes_heading,
     linkify_endnote_citations,
+    normalize_repeated_native_note_links,
     remove_duplicate_native_note_custom_marks,
 )
 from .nofo_markdown import MISSING_ALT_TEXT_ATTR, PRESERVE_BOOKMARK_TARGET_ATTR, md
+from .typed_bullets import repair_typed_bullets
 
 
 class ContentProcessingError(ValueError):
@@ -47,6 +49,67 @@ class AmbiguousHeadingHierarchyError(ContentProcessingError):
 
 
 DEFAULT_NOFO_OPPORTUNITY_NUMBER = "NOFO #999"
+
+
+def remove_empty_trailing_optional_headings(soup):
+    """Drop only unused Appendix/Endnotes/Footnotes tail placeholders (IMPORT-071).
+
+    Inspect source content before generic cleanup can erase evidence of a table,
+    list, image or child heading. Ordinary div wrappers and blank paragraphs do
+    not make a heading populated. Referenced bookmarks remain available to the
+    existing link-preservation pipeline.
+    """
+    referenced_ids = {
+        link["href"][1:]
+        for link in soup.find_all("a", href=True)
+        if link["href"].startswith("#")
+    }
+    blank_tags = {"p", "span", "em", "strong", "b", "i", "u", "sup", "sub", "br", "a"}
+
+    def is_referenced(tag):
+        return any(
+            node.get("id") in referenced_ids or node.get("name") in referenced_ids
+            for node in [tag, *tag.find_all(True)]
+        )
+
+    def reverse_blocks(parent):
+        for node in reversed(list(parent.children)):
+            if isinstance(node, Tag) and node.name == "div" and not node.get("role"):
+                if is_referenced(node):
+                    yield node
+                else:
+                    yield from reverse_blocks(node)
+            else:
+                yield node
+
+    def is_blank(node):
+        if isinstance(node, Comment):
+            return True
+        if isinstance(node, NavigableString):
+            return not node.strip()
+        return (
+            node.name in blank_tags
+            and not node.get("role")
+            and not is_referenced(node)
+            and all(is_blank(child) for child in node.children)
+        )
+
+    for node in reverse_blocks(soup.body or soup):
+        if is_blank(node):
+            continue
+        if (
+            not isinstance(node, Tag)
+            or node.name not in {"h1", "h2"}
+            or not re.fullmatch(
+                r"(?:appendix|endnotes|footnotes)\s*:?",
+                clean_string(node.get_text(" ", strip=True)),
+                flags=re.IGNORECASE,
+            )
+            or is_referenced(node)
+            or any(child.name not in blank_tags for child in node.find_all(True))
+        ):
+            break
+        node.decompose()
 
 
 def resolve_section_heading_level(soup):
@@ -148,8 +211,10 @@ def process_nofo_html(soup, top_heading_level, *, debug_capture=None):
     normalize_whitespace_img_alt_text(soup)
     add_missing_alt_text_to_imgs(soup)
     join_nested_lists(soup)
+    repair_typed_bullets(soup)  # IMPORT-074
     add_strongs_to_soup(soup)
     repair_acf_required_alignment_lists(soup)
+    repair_eligibility_organization_lists(soup)  # IMPORT-070
     preserve_bookmark_links(soup)
     preserve_heading_links(soup)
     preserve_table_heading_links(soup)
@@ -166,6 +231,7 @@ def process_nofo_html(soup, top_heading_level, *, debug_capture=None):
     unwrap_nested_lists(soup)
     preserve_bookmark_targets(soup)
     remove_duplicate_native_note_custom_marks(soup)  # IMPORT-053
+    normalize_repeated_native_note_links(soup)  # IMPORT-072
     convert_bracketed_endnotes(soup)  # IMPORT-050 in documentation/IMPORT_RULES.md
     linkify_endnote_citations(soup)  # IMPORT-064
 
@@ -1115,6 +1181,139 @@ def repair_acf_required_alignment_lists(soup):
     return soup
 
 
+ELIGIBLE_ORGANIZATION_CATEGORIES = frozenset(
+    label.casefold()
+    for label in (
+        "State governments",
+        "County governments",
+        "City or township governments",
+        "Special district governments",
+        "Independent school districts",
+        "Public and State controlled institutions of higher education",
+        "Native American tribal governments (Federally recognized)",
+        "Public housing authorities/Indian housing authorities",
+        "Native American tribal organizations (other than Federally recognized tribal governments)",
+        "Nonprofits having a 501(c)(3) status with the IRS, other than institutions of higher education",
+        "Nonprofits without 501(c)(3) status with the IRS, other than institutions of higher education",
+        "Private institutions of higher education",
+        "For profit organizations other than small businesses",
+        "Small businesses",
+        "Unrestricted (i.e., open to any type of entity above), subject to any clarification in text field entitled ‘Additional Information on Eligibility’",
+        "Unrestricted (i.e., open to any type of entity above), subject to any clarification in text field entitled “Additional Information on Eligibility”",
+    )
+)
+ELIGIBLE_ORGANIZATION_INTROS = frozenset(
+    (
+        "these types of domestic organizations may apply",
+        "the following types of domestic organizations may apply",
+        "the following domestic organizations are eligible to apply",
+    )
+)
+
+
+def repair_eligibility_organization_lists(soup):
+    """Repair only positively identified, wholly recognized eligibility runs.
+
+    Unknown prose is not inferred to be a boundary: it might be another category.
+    In that case leave the whole candidate alone rather than make a partial list.
+    Native/mixed lists anywhere in the subsection also opt out of this repair.
+    """
+    heading_names = {f"h{level}" for level in range(1, 7)}
+
+    def text(tag):
+        return " ".join(tag.get_text().split()).casefold()
+
+    def plain_paragraph(tag):
+        return (
+            tag.name == "p"
+            and not any(isinstance(child, Comment) for child in tag.descendants)
+            and all(
+                child.name
+                in {"a", "strong", "b", "em", "i", "span", "sup", "sub", "br"}
+                for child in tag.find_all(True)
+            )
+        )
+
+    active_headings = []
+    for heading in soup.body.find_all(heading_names, recursive=False):
+        rank = int(heading.name[1])
+        while active_headings and int(active_headings[-1].name[1]) >= rank:
+            active_headings.pop()
+        within_eligibility = any(text(h) == "eligibility" for h in active_headings)
+        active_headings.append(heading)
+        if text(heading) != "types of eligible organizations" or not within_eligibility:
+            continue
+
+        scope = []
+        for node in heading.next_siblings:
+            if isinstance(node, Tag) and (
+                node.name in heading_names and int(node.name[1]) <= rank
+            ):
+                break
+            scope.append(node)
+        if any(
+            isinstance(node, Tag)
+            and (node.name in {"ul", "ol"} or node.find(["ul", "ol"]))
+            for node in scope
+        ):
+            continue
+
+        # Ignore only genuinely empty paragraph/whitespace separators. Media,
+        # comments, stray text and unknown containers are not blank evidence.
+        content = [
+            node
+            for node in scope
+            if not (
+                type(node) is NavigableString
+                and not node.strip()
+                or isinstance(node, Tag)
+                and plain_paragraph(node)
+                and not text(node)
+                and not node.find("a", attrs={"id": True})
+            )
+        ]
+        if (
+            not content
+            or not isinstance(content[0], Tag)
+            or not plain_paragraph(content[0])
+        ):
+            continue
+        intro = re.sub(r"\*\s*(?=domestic\b)", "", text(content[0])).rstrip(".:")
+        if intro not in ELIGIBLE_ORGANIZATION_INTROS:
+            continue
+
+        items = []
+        ambiguous = False
+        for node in content[1:]:
+            if isinstance(node, Tag) and (
+                node.name in heading_names or node.name == "table"
+            ):
+                break
+            if not isinstance(node, Tag) or not plain_paragraph(node):
+                ambiguous = True
+                break
+            label = text(node)
+            if label in ELIGIBLE_ORGANIZATION_CATEGORIES:
+                items.append(node)
+            elif label.rstrip(
+                ":"
+            ) == "additional information on eligibility" or re.match(
+                r'^(?:“domestic”|"domestic"|domestic) means ', label
+            ):
+                break
+            else:
+                ambiguous = True
+                break
+        if not items or ambiguous:
+            continue
+        listing = soup.new_tag("ul")
+        items[0].insert_before(listing)
+        for item in items:
+            item.name = "li"
+            listing.append(item.extract())
+    return soup
+
+
 def remove_google_tracking_info_from_links(soup):
     """
     This function mutates the soup!
@@ -1453,6 +1652,27 @@ def add_endnotes_header_if_exists(soup, top_heading_level="h1"):
         # Else, find the endnotes in Google Docs HTML export
         last_ol = _find_docx_html_endnotes(soup)
         if last_ol:
+            # Word allows authors to type a list title inside the first note.
+            # Promote only a standalone leading title followed by citation text.
+            first_note = last_ol.find("li")
+            first_block = first_note.find(recursive=False)
+            if (
+                first_block is not None
+                and first_block.name == "p"
+                and re.fullmatch(
+                    r"(?:references|endnotes?|footnotes?)\s*:?",
+                    first_block.get_text(strip=True),
+                    re.I,
+                )
+                and any(
+                    sibling.get_text(strip=True)
+                    for sibling in first_block.find_next_siblings()
+                )
+                and not first_block.find(["a", "img"])
+                and not first_block.get("id")
+            ):
+                first_block.extract()  # IMPORT-073
+
             # Create the h1 element
             heading_tag = soup.new_tag(top_heading_level)
             heading_tag.string = "Endnotes"
@@ -1948,7 +2168,7 @@ def decompose_instructions_tables(soup):
     and return them as a list of extracted HTML snippets for later use.
 
     This function iterates through all the <table> elements in the BeautifulSoup object.
-    If a table contains text that starts with "Instructions for NOFO writers:",
+    If a single-cell table starts with a recognized writer or template-manager label,
     it is removed from the soup object.
     """
     instructions_tables = []
@@ -1960,6 +2180,7 @@ def decompose_instructions_tables(soup):
             table_text_lowercase = table.get_text().lower()
             if (
                 table_text_lowercase.startswith("instructions for nofo writers")
+                or table_text_lowercase.startswith("instructions for template managers")
                 or table_text_lowercase.startswith("instructions for new nofo team")
                 or re.match(r".+-specific instructions", table_text_lowercase)
             ):
@@ -2193,6 +2414,7 @@ def process_document_content(
         soup = prepare_editable_introduction(soup, editable_intro)
     # Preserve the pre-pass before selecting the main section heading level.
     decompose_before_you_begin_section(soup)
+    remove_empty_trailing_optional_headings(soup)  # IMPORT-071
     top_heading_level = resolve_section_heading_level(
         builder_import_content(soup) if builder_import else soup
     )

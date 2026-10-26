@@ -37,6 +37,10 @@
             {% endif %}
           </p>
           <p id="readability-scope-method">{% if source_word %}Word body text was converted to HTML and measured with the existing HTML readability profile. Template instructions and draft options that convert to text are included. This is not a saved Builder import or a PDF conversion.{% elif report.profile == 'generic' %}Text was reconstructed from page layout because usable PDF tags were unavailable.{% else %}Text was extracted using the PDF’s usable structure tags.{% endif %}</p>
+          {% if not source_word %}
+          <p id="readability-draft-scope">Writer instructions and placeholders left in your PDF may be included in these measures. The checker does not automatically separate them from applicant-facing content. For a check of applicant-facing writing, remove writer-only notes and template prompts from a copy before exporting it. Keep instructions that applicants need.</p>
+          {% endif %}
+          <p id="readability-draft-readiness">A short or incomplete draft is not necessarily ready for publication, even if its readability scores meet your target. Compare drafts with the same content scope.</p>
           {% if report.coverage %}<p id="readability-coverage">{{ report.coverage }}</p>{% endif %}
           {% if report.scope.recovered_word_count or report.scope.recovered_word_count == 0 %}
             <p id="readability-word-scope">Word count includes all text recovered from the {% if source_word %}Word conversion{% else %}PDF{% endif %}: {{ report.scope.recovered_word_count }} words.
@@ -106,7 +110,7 @@
           <div id="readability-privacy-details" class="usa-prose">
             <ul class="usa-list">
               <li>Your document isn’t sent to any outside service or added to NOFO Builder.</li>
-              {% if outcome_recording_enabled %}<li>We record when an upload is attempted, whether it succeeds, its error code and processing time. These records do not include your identity, filename, document text or scores.</li>{% endif %}
+              {% if outcome_recording_enabled %}<li>We record when an upload is attempted, whether it succeeds, its error code and processing time. These records do not include your identity, filename, document text or scores. {% if outcome_retention_days %}Usage and error records are retained for {{ outcome_retention_days }} days.{% else %}Usage and error records are kept without automatic expiration.{% endif %}</li>{% endif %}
             </ul>
             <p>Follow your agency’s rules for sharing pre-decisional NOFO content.</p>
             <p>Read the <a class="usa-link usa-link--external" href="https://www.hhs.gov/privacy/privacy-policy/index.html" target="_blank" rel="noopener noreferrer">HHS Privacy Policy<span class="usa-sr-only"> (opens in a new tab)</span></a>.</p>
@@ -118,7 +122,8 @@
       <details class="readability-additional-info margin-top-3 readability-form">
           <summary><span>Document requirements</span></summary>
           <div id="readability-pdf-requirements" class="usa-prose">
-          <p>Use a text-based HHS NOFO PDF. Keep the opportunity number, Assistance Listing number, and Grants.gov reference on the first two pages when possible.</p>
+          <p>Use a text-based HHS NOFO PDF. Keep the agency name, opportunity number, Assistance Listing number, and Grants.gov reference in the first five pages when possible.</p>
+          <p>You can check an in-progress draft; it does not need to be designed for publication. Export a copy containing the writing you want to measure. Writer-only notes and template prompts may affect the results. Blank templates without identifying details may not be recognized.</p>
           <p>Scanned or image-only pages need OCR before analysis. Untagged PDFs can receive a report, but their estimates have lower reliability.</p>
           {% if word_uploads_allowed %}<p>For Word, use an unlocked .docx file with NOFO details near the beginning. HHS NOFO templates can use placeholder identifiers if they identify the agency, identify themselves as a NOFO template or notice of funding opportunity, and reference Grants.gov. Legacy .doc and macro-enabled files are not supported. Word conversion can omit headers, footers, text boxes and images; template instructions and draft options may be counted.</p>{% endif %}
         </div>

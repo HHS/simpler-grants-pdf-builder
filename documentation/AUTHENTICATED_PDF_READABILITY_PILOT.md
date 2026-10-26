@@ -49,8 +49,10 @@ are rejected. Revalidate applicable deployed safeguards before introducing Word
 documents into an approved pilot; this source change is not operating approval.
 
 Use text-based HHS NOFO PDFs. Existing configurable recognition checks the first
-two pages for NOFO signals such as opportunity number, Assistance Listing number
-and Grants.gov reference. These rules are not broadened. See
+five pages for NOFO signals such as HHS agency name, opportunity number,
+Assistance Listing number and Grants.gov reference. Agency text can replace
+agency metadata lost in a print export; two different signal types are still
+required. See
 [PDF_READABILITY_PILOT.md](PDF_READABILITY_PILOT.md) and
 [PDF_READABILITY_SAFEGUARDS.md](PDF_READABILITY_SAFEGUARDS.md).
 
@@ -121,7 +123,9 @@ Authenticated recording requires only the recording switch. Leave the optional
 `AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS` unset for this production
 pilot: content-free usage records have no automatic expiration. Uploaded PDFs
 and document contents are not retained. No authenticated cleanup schedule is
-required. This is the pilot's chosen behavior, not a claim about HHS policy.
+required. Public content-free usage records follow the same no-automatic-expiration
+policy; see the [public pilot retention decision](PDF_READABILITY_PILOT.md#content-free-outcome-monitoring-985).
+This is the pilot's chosen behavior, not a claim about HHS policy.
 
 If a future decision introduces expiration, configure a positive retention
 period and explicitly schedule the existing source-specific cleanup command:

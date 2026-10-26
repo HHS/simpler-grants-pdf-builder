@@ -21,14 +21,17 @@ This is an internal module boundary, not an externally versioned package API.
 ## Responsibilities
 
 The shared sequence preserves character/link replacement, HTML parsing, the
-first Before you begin removal, heading-level resolution, ordered NOFO
-normalization, then section/subsection parsing. Builder opts into the existing
+first Before you begin removal, empty optional tail-heading removal (IMPORT-071),
+heading-level resolution, ordered NOFO normalization, then section/subsection
+parsing. Builder opts into the existing
 introductory-page capture, scoped tagline extraction and Metadata consumption
 rules through explicit `builder_import` and `extract_scoped_tagline` arguments.
 The result carries the captured tagline. Section parsing uses the same copied
 source as the application previously did, retaining intact metadata and callout
 content for field inference and confirmation. Composer/Compare retain their
-existing defaults. No transformation rule or order changes.
+existing defaults. IMPORT-071 runs before heading-level resolution so an unused
+final H1 does not make an otherwise H2 document ambiguous. Other transformation
+order is unchanged.
 
 Builder, Composer and Compare use the same core through the thin
 `document_processing.py` application adapter and `BaseNofoImportView`. The view
