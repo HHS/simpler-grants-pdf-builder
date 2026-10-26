@@ -31,7 +31,15 @@ class AttemptTests(TestCase):
         self.assertFalse(should_audit(PdfReadabilityAttempt()))
         self.assertEqual(
             {f.name for f in PdfReadabilityAttempt._meta.fields},
-            {"id", "created_at", "source", "outcome", "http_status", "duration_ms"},
+            {
+                "id",
+                "created_at",
+                "source",
+                "file_category",
+                "outcome",
+                "http_status",
+                "duration_ms",
+            },
         )
         self.assertEqual(
             set(PDF_READABILITY_OUTCOMES),
@@ -79,11 +87,11 @@ class AttemptTests(TestCase):
                     "text": "SECRET-TEXT",
                 }
 
-        def record(*args):
+        def record(*args, **kwargs):
             # A second slot acquisition would raise busy if recording ran under
             # the analysis lock. Exercise the real slot, not just call ordering.
             with _analysis_slot():
-                record_attempt(*args)
+                record_attempt(*args, **kwargs)
 
         with patch(
             "bloom_nofos.views.analyze_uploaded_pdf", side_effect=analyze
@@ -255,7 +263,7 @@ class MetricsTests(TestCase):
         )
         self.assertContains(
             page,
-            "File type is not recorded, so PDF and Word usage cannot be reported separately.",
+            "File categories describe the submitted extension, not verified contents.",
         )
         self.assertContains(
             page,
@@ -330,7 +338,9 @@ class MetricsTests(TestCase):
         )
         page = self.client.get(self.url, {"source": "authenticated"})
         self.assertContains(page, 'aria-label="Readability attempts pages"')
-        self.assertContains(page, 'href="?source=authenticated&amp;page=2"')
+        self.assertContains(
+            page, 'href="?source=authenticated&amp;file_category=all&amp;page=2"'
+        )
 
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
     def test_json_aggregates_pagination_and_denominator(self):
@@ -354,7 +364,14 @@ class MetricsTests(TestCase):
         self.assertEqual(len(data["recent_attempts"]), 50)
         self.assertEqual(
             set(data["recent_attempts"][0]),
-            {"created_at", "source", "outcome", "http_status", "duration_ms"},
+            {
+                "created_at",
+                "source",
+                "file_category",
+                "outcome",
+                "http_status",
+                "duration_ms",
+            },
         )
         self.assertEqual(
             len(

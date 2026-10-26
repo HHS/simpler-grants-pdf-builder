@@ -86,15 +86,25 @@ of 50 recent attempts. JSON uses the same permission and `private, no-store`.
 No OpDiv or user attribution is possible. It is a support trend source, not an
 infrastructure alarm or evidence that #970's safeguards are deployed.
 
-Totals combine recorded PDF and Word attempts where those formats are supported.
+Totals combine recorded attempts unless filtered by upload route or file category.
 The authenticated `/nofos/readability/` tool supports PDF and Word (.docx);
 public `/readability/` remains PDF-only. The source filter selects the upload
-route (public, authenticated or unknown), not file type or the visitor's login
-state. File type is not stored, so successful attempts cannot be split into
-PDF and Word totals. Format-specific failure codes describe those failures,
-not the format of every upload. Shared counts, rates, charts, duration
-percentiles and recent attempts use the same retained records and route filters.
-Recording switches, retention and permissions are unchanged.
+route (public, authenticated or unknown), not the visitor's login state.
+The separate `file_category` filter accepts `all`, `pdf`, `docx` or `unknown`
+and applies with the route filter to counts, rates, charts, durations and recent
+attempts in HTML and JSON. Pagination and printed selected-filter text retain
+both filters. The category breakdown covers the selected route across all
+categories; the labeled all-route breakdown still covers all retained rows.
+
+The new field records only the attempted category from a recognized filename
+extension; it does not validate file contents. Even rejected public DOCX uploads
+can be categorized as DOCX; this does not enable public Word support. Missing,
+multiple, aborted, unsupported-extension and disabled attempts are Unknown when
+no single category was established. No extra upload parsing is done for telemetry.
+Migration 0158 leaves every historical record Unknown, including format-specific
+failures: neither outcome codes nor routes are used to infer a past category.
+Names, arbitrary extensions and MIME values are never stored. Recording switches,
+retention and permissions are unchanged.
 
 Recording is separately default-off via
 `PDF_READABILITY_ATTEMPT_RECORDING_ENABLED=false`, including disabled POSTs.
@@ -252,7 +262,7 @@ uses the same support path as the unavailable page: the user's agency grants
 policy office, then the NOFO Builder Feedback Form.
 
 When outcome recording is enabled, the notice also describes the content-free
-usage/error records and their retention: no automatic expiration by default, or
+usage/error records, including the attempted PDF/DOCX/unknown category, and their retention: no automatic expiration by default, or
 the configured number of days if a future expiration policy is introduced.
 
 The notice deliberately does not state a data classification, say that

@@ -488,7 +488,9 @@ class SourceDashboardTests(TestCase):
             ]
         )
         page = self.client.get(self.url, {"source": "authenticated"})
-        self.assertContains(page, "?source=authenticated&amp;page=2")
+        self.assertContains(
+            page, "?source=authenticated&amp;file_category=all&amp;page=2"
+        )
         data = self.client.get(
             self.url,
             {"source": "authenticated", "page": 2},
