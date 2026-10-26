@@ -43,9 +43,19 @@ scroll rounding, immediate link/pipe synchronization, and mobile close behavior.
 - All 61 JavaScript unit tests pass, including four new navigation regressions.
 - Chrome confirms the before/after mismatch, keyboard jump, and manual scroll reset.
 - `git diff --check` passes.
-- `make test` on this upstream base stops before executing its 2,845 discovered
-  tests: conflicting `nofos` migration leaves `0154_design_pilot_candidate` and
-  `0155_backfill_document_audit_index`. This PR does not modify migrations.
+- The upstream base initially blocked all Django tests with conflicting migration
+  leaves `0154_design_pilot_candidate` and `0155_backfill_document_audit_index`.
+  The added empty `0156_merge_design_pilot_history_index` joins both branches
+  without changing existing migrations or restoring the retired backfill.
+- The full Django suite passes: 2,845 tests, with 3 existing skips.
+- All 24 focused history/navigation tests pass with the final migration graph.
+  The partial-rollout test now temporarily clears descendant migration records
+  too, preserving a valid historical graph before replaying 0155.
+- Verified upgrades from each original leaf independently in fresh in-memory
+  SQLite databases: both table sets remain present, the graph has one NOFO leaf,
+  and 0155 plus the merge have no operations.
+- `makemigrations --check --dry-run` detects no model changes. Formatting checks
+  pass for both changed Python files.
 - Repository-wide formatting checks also find existing upstream failures:
   isort flags `test_policy_language.py`; Black flags `policy_language.py`,
   `test_metrics.py`, and `test_policy_language.py`. These files are unchanged.

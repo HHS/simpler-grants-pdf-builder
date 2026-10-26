@@ -17,6 +17,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.db import OperationalError, ProgrammingError, connection
+from django.db.migrations.loader import MigrationLoader
 from django.db.migrations.recorder import MigrationRecorder
 from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
@@ -332,7 +333,18 @@ class DocumentAuditMissingSchemaTests(TransactionTestCase):
         DocumentAuditEvent.objects.all().delete()
         original = list(CRUDEvent.objects.values())
         recorder = MigrationRecorder(connection)
-        recorder.record_unapplied("nofos", "0155_backfill_document_audit_index")
+        applied = recorder.applied_migrations()
+        # A partial rollout cannot have applied descendants of the missing
+        # migration, including the no-op merge joining the two NOFO branches.
+        pending = [
+            key
+            for key in MigrationLoader(connection).graph.backwards_plan(
+                ("nofos", "0155_backfill_document_audit_index")
+            )
+            if key in applied
+        ]
+        for key in pending:
+            recorder.record_unapplied(*key)
         try:
             call_command(
                 "migrate", "nofos", "0155_backfill_document_audit_index", verbosity=0
@@ -343,7 +355,8 @@ class DocumentAuditMissingSchemaTests(TransactionTestCase):
             self.assertTrue(DocumentAuditEvent.objects.filter(event=event).exists())
             call_command("backfill_document_audit_index", check=True, stdout=StringIO())
         finally:
-            recorder.record_applied("nofos", "0155_backfill_document_audit_index")
+            for key in reversed(pending):
+                recorder.record_applied(*key)
 
     def test_real_missing_projection_table_preserves_original_audit_insert(self):
         content_type = ContentType.objects.get_for_model(Nofo)
