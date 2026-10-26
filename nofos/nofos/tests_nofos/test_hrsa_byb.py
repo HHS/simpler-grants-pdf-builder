@@ -70,7 +70,7 @@ class HrsaBeforeYouBeginTests(TestCase):
                 form = NofoThemeOptionsForm(instance=nofo, user=self.user)
                 self.assertEqual(
                     [v for v, _ in form.fields["cover"].choices],
-                    ["nofo--cover-page--text"],
+                    ["nofo--cover-page--medium", "nofo--cover-page--text"],
                 )
 
     def test_non_hrsa_import_keeps_existing_defaults_and_cover_choices(self):
@@ -124,7 +124,7 @@ class HrsaBeforeYouBeginTests(TestCase):
                 self.assertEqual(nofo.cover, f"nofo--cover-page--{cover}")
                 self.assertEqual(nofo.cover_image, image)
 
-    def test_hrsa_cover_validation_preserves_only_current_legacy_selection(self):
+    def test_hrsa_cover_validation_allows_standard_image_and_current_legacy_cover(self):
         for cover in ["text", "hero", "medium"]:
             nofo = Nofo.objects.create(
                 title="Existing HRSA",
@@ -146,7 +146,9 @@ class HrsaBeforeYouBeginTests(TestCase):
                         user=self.user,
                     )
                     self.assertEqual(
-                        form.is_valid(), submitted in ["text", cover], form.errors
+                        form.is_valid(),
+                        submitted in ["text", "medium", cover],
+                        form.errors,
                     )
 
     def test_get_never_writes_and_post_can_preserve_legacy_cover(self):
