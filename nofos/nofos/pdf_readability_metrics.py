@@ -44,7 +44,9 @@ OUTCOME_LABELS = {
 }
 
 
-def record_attempt(outcome, http_status, started, source="public"):
+def record_attempt(
+    outcome, http_status, started, source="public", file_category="unknown"
+):
     # Called after analyze_uploaded_pdf returns/raises and releases its slot.
     # Savepoint isolation also keeps a failed write from poisoning a caller's
     # transaction. Deliberately omit exception text and traceback from logs.
@@ -65,6 +67,9 @@ def record_attempt(outcome, http_status, started, source="public"):
                 http_status=http_status,
                 duration_ms=max(0, round((time.monotonic() - started) * 1000)),
                 source=source if source in {"public", "authenticated"} else "unknown",
+                file_category=(
+                    file_category if file_category in ("pdf", "docx") else "unknown"
+                ),
             )
     except Exception:
         logger.warning("PDF readability outcome could not be recorded.")
@@ -90,6 +95,14 @@ class PdfReadabilityMetricsView(MetricsViewerRequiredMixin, TemplateView):
         attempts = all_attempts
         if selected_source != "all":
             attempts = attempts.filter(source=selected_source)
+        category_counts = dict(
+            attempts.values_list("file_category").annotate(count=Count("pk")).order_by()
+        )
+        selected_category = request.GET.get("file_category", "all")
+        if selected_category not in {"all", "pdf", "docx", "unknown"}:
+            selected_category = "all"
+        if selected_category != "all":
+            attempts = attempts.filter(file_category=selected_category)
         source_counts = dict(
             all_attempts.values_list("source").annotate(count=Count("pk")).order_by()
         )
@@ -150,6 +163,16 @@ class PdfReadabilityMetricsView(MetricsViewerRequiredMixin, TemplateView):
         page = Paginator(attempts, 50).get_page(request.GET.get("page"))
         data = {
             "source": selected_source,
+            "file_category": selected_category,
+            "file_category_label": dict(
+                PdfReadabilityAttempt._meta.get_field("file_category").choices
+            ).get(selected_category, "All"),
+            "file_categories": [
+                {"code": code, "label": label, "attempts": category_counts.get(code, 0)}
+                for code, label in PdfReadabilityAttempt._meta.get_field(
+                    "file_category"
+                ).choices
+            ],
             "sources": [
                 {"code": code, "label": label, "attempts": source_counts.get(code, 0)}
                 for code, label in PdfReadabilityAttempt._meta.get_field(
@@ -194,7 +217,12 @@ class PdfReadabilityMetricsView(MetricsViewerRequiredMixin, TemplateView):
             "p95_duration_ms": percentile(0.95),
             "recent_attempts": list(
                 page.object_list.values(
-                    "created_at", "source", "outcome", "http_status", "duration_ms"
+                    "created_at",
+                    "source",
+                    "file_category",
+                    "outcome",
+                    "http_status",
+                    "duration_ms",
                 )
             ),
             "page": page.number,

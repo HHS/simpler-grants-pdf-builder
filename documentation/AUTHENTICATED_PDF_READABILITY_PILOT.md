@@ -84,7 +84,10 @@ The existing `/nofos/metrics/readability-pilot` page offers All, Authenticated,
 Public and Unknown filters in HTML and JSON. Selected source survives pagination
 and is visible in printed output. Its labeled source breakdown covers all
 retained rows. Other counts, rates, outcomes, daily/weekly totals, percentiles and
-recent attempts use the selected source.
+recent attempts use the selected source and file-category filter. File categories
+are PDF, DOCX or Unknown, derived from a single completed upload's recognized
+extension rather than verified contents. Historical rows remain Unknown.
+The category breakdown covers the selected route before applying category filtering.
 
 The dashboard leads with attempts, reports returned and unsuccessful uploads.
 Daily and weekly charts cover the last 30 days and 12 weeks, including the current
@@ -107,7 +110,8 @@ rejections are not counted. Operational monitoring must cover those. Duration is
 workflow processing time, including form parsing and rendering, not pure parser
 execution. Recording failure does not prevent a report from being returned.
 
-Stored facts are timestamp, source, fixed outcome code, HTTP status and duration.
+Stored facts are timestamp, source, attempted file category (PDF/DOCX/unknown),
+fixed outcome code, HTTP status and duration.
 There is no filename, document text, metric value, IP, account/session ID or raw
 exception. Internal/staging participant activity is included without changing
 the main Builder dashboard's OpDiv eligibility or denominators. Both upload

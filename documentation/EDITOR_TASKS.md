@@ -888,7 +888,8 @@ If access is denied or the page is unavailable, contact the pilot operator.
 
 This upload does not create a NOFO or save report history. When usage recording
 is enabled, **How we handle your document** explains that content-free usage/error
-records are kept without automatic expiration by default; they exclude your
+records include the attempted file category (PDF, DOCX or unknown) and are kept
+without automatic expiration by default; they exclude your
 identity, filename, document text and scores. Remove template
 instructions and unused options from the copy you upload when they should not
 count. Keep instructions applicants need. An in-progress draft can be checked

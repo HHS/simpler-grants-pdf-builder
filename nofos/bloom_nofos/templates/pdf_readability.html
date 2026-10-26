@@ -110,7 +110,7 @@
           <div id="readability-privacy-details" class="usa-prose">
             <ul class="usa-list">
               <li>Your document isn’t sent to any outside service or added to NOFO Builder.</li>
-              {% if outcome_recording_enabled %}<li>We record when an upload is attempted, whether it succeeds, its error code and processing time. These records do not include your identity, filename, document text or scores. {% if outcome_retention_days %}Usage and error records are retained for {{ outcome_retention_days }} days.{% else %}Usage and error records are kept without automatic expiration.{% endif %}</li>{% endif %}
+              {% if outcome_recording_enabled %}<li>We record when an upload is attempted, its file category (PDF, DOCX or unknown), whether it succeeds, its error code and processing time. These records do not include your identity, filename, document text or scores. {% if outcome_retention_days %}Usage and error records are retained for {{ outcome_retention_days }} days.{% else %}Usage and error records are kept without automatic expiration.{% endif %}</li>{% endif %}
             </ul>
             <p>Follow your agency’s rules for sharing pre-decisional NOFO content.</p>
             <p>Read the <a class="usa-link usa-link--external" href="https://www.hhs.gov/privacy/privacy-policy/index.html" target="_blank" rel="noopener noreferrer">HHS Privacy Policy<span class="usa-sr-only"> (opens in a new tab)</span></a>.</p>
