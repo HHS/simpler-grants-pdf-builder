@@ -120,6 +120,18 @@ is needed, contact the SimplerNOFOs team.
 - Consecutive Word bullets at the same numbering level import as one list even
   when their internal list IDs differ, avoiding extra gaps between bullet groups.
   Paragraphs still separate lists; numbered-list restarts remain separate.
+- Import also repairs clear groups of typed `•` bullets (at least two items).
+  Following `o` lines become nested bullets when their parent bullet ends in a
+  colon. Standalone `o` lines, isolated bullets, existing lists, and table content
+  stay as supplied. Check the nesting after import; other ambiguous marker styles
+  need correction in the source. This applies on import/reimport only.
+- Empty **Appendix**, **Endnotes**, and **Footnotes** headings at Heading 1 or
+  Heading 2 are omitted when they form an unused run at the end of the document.
+  Capitalization and a trailing colon do not matter. Text, images, tables, lists,
+  child headings, and referenced bookmarks preserve the heading. You can add an
+  Appendix or Endnotes section afterward using the existing NOFO actions.
+  This cleanup applies on new import and reimport; it does not remove sections
+  from already saved NOFOs automatically.
 - For an existing NOFO, reimport replaces sections and subsections and can lose
   manual edits. It is not a way to apply import repairs to saved edits in place.
   Reimport preserves saved theme, cover and introductory ownership choices.
@@ -615,12 +627,14 @@ internal links and are not requested over the network.
 
 **Steps**
 
-1. On the NOFO edit page, look for endnote warnings under
+1. On the NOFO edit page, open **Check endnotes** under
    **Before publishing, address the following**.
 2. Follow the affected subsection or section link and locate the reference
    and its matching citation entry.
 3. Check that each reference has an entry and each entry has a reference;
    identify missing or repeated numbers and broken destinations.
+   For a content-format warning, use the quoted block to locate content that
+   is not recognized as a citation. Keep valid citation continuation content.
 4. If the correction is unclear, contact your grants policy office first.
    If additional help is needed, contact the SimplerNOFOs team.
 
@@ -629,6 +643,11 @@ internal links and are not requested over the network.
 - Builder supports native Word notes and unambiguous manually bracketed notes.
   Do not recommend adding or removing an Endnotes heading without identifying
   the source authoring workflow.
+- Supported Word cross-references reuse a native citation with a unique link ID
+  and a return link for each occurrence. Typed superscripts have no relationship
+  to recover; replace them with actual Word endnotes or cross-references.
+  Import repairs unambiguous duplicate native IDs and extracts a standalone
+  References title from the first note. See the [Windows Word FAQ](endnote-import.md#faq-for-authors-using-microsoft-word-on-windows).
 - Explicit URLs and DOI identifiers in eligible imported citations are linked
   automatically; incomplete references are not guessed. A native note's isolated
   return arrow is moved inline only when it matches the narrow import rule.
@@ -716,6 +735,11 @@ where the link goes.
 2. Choose the **Theme**, **Cover style**, or **Icon style**.
 3. Select **Save theme options**.
 
+For HRSA NOFOs, **Cover style** offers **Text only** and **Standard image**.
+An existing **Full coverage with image** cover can also be retained as a legacy
+value. New HRSA imports start with **Text only**; choose **Standard image** here
+to use an image cover.
+
 **Notes**
 
 - New ACL imports can select **ACL (Default)** from the OpDiv even with a blank
@@ -774,6 +798,24 @@ structured field instead.
 
 ## Checking your work
 
+<a id="task-history-review"></a>
+
+### TASK-HISTORY-REVIEW — Review a NOFO's updates
+
+1. On the NOFO edit page, select **See all updates** beside **Last updated**.
+2. Review the latest events. Select **Load More Events** for the next batch.
+3. Follow an available comparison link to inspect a subsection's changes.
+
+An administrator enables the indexed history reader separately after deployment,
+backfill and a successful completeness check: in **Django admin → Constance →
+Config**, check `DOCUMENT_HISTORY_INDEX_ENABLED` and save. No further deployment
+or worker restart is required. Uncheck and save to return to the legacy reader.
+Until that cutover, the existing reader can still be slow. With indexed reads,
+events use exact timestamp order, then event ID for ties; deleted objects retain
+history descriptions but have no live comparison link. Concurrent new edits can
+shift offset-based batches. Report a timeout rather than repeatedly reloading.
+See [history rollout and limitations](DOCUMENT_HISTORY.md).
+
 <a id="task-preview"></a>
 
 ### TASK-PREVIEW — Preview the PDF after making changes
@@ -831,7 +873,9 @@ If access is denied or the page is unavailable, contact the pilot operator.
    **How we handle your document**. Use only documents authorized for this pilot.
 2. Choose one supported text-based HHS NOFO PDF or unlocked Word `.docx`, then
    select **Analyze document**. Legacy `.doc` and macro-enabled formats are not
-   supported.
+   supported. For PDFs, keep genuine NOFO identifiers in the first five pages;
+   recognition needs two distinct signal types, such as an agency name and an
+   opportunity number. Blank templates may not be recognized.
 3. Wait for analysis. If an error appears, follow its guidance and submit again.
 4. Read **Measurement scope**, reliability information and any **Calculation
    notes**. For Word, **Why “Estimated”?** under Measurement scope explains the
@@ -842,9 +886,16 @@ If access is denied or the page is unavailable, contact the pilot operator.
 5. Select **Copy metrics** or **Print / Save as PDF** before leaving the report.
    Use **Analyze another document** for another upload.
 
-This upload does not create a NOFO or save report history. Remove template
+This upload does not create a NOFO or save report history. When usage recording
+is enabled, **How we handle your document** explains that content-free usage/error
+records include the attempted file category (PDF, DOCX or unknown) and are kept
+without automatic expiration by default; they exclude your
+identity, filename, document text and scores. Remove template
 instructions and unused options from the copy you upload when they should not
-count. Word, PDF and saved-Builder scores can differ; use the same format and
+count. Keep instructions applicants need. An in-progress draft can be checked
+before publication design, but favorable scores do not establish publication
+readiness. Compare drafts with the same content scope.
+Word, PDF and saved-Builder scores can differ; use the same format and
 analysis method when tracking revisions. The separate public `/readability/`
 route remains PDF-only and has its own availability controls.
 See [authenticated readability pilot](AUTHENTICATED_PDF_READABILITY_PILOT.md).
@@ -919,6 +970,73 @@ production transfer and discard are not implemented in this slice. The human
 login is not an agent credential. Do not use ordinary editor tasks to bypass the
 local profile's restrictions. Stopping the server does not erase the scratch
 database or the source documents it contains.
+
+<a id="task-design-pilot-access"></a>
+
+### TASK-DESIGN-PILOT-ACCESS: Manage access to one synthetic candidate
+
+**Starting point:** **Review synthetic candidate** on the isolated local pilot,
+signed in as that candidate's owner. Use invented information only. This action
+does not configure or start an agent runtime.
+
+**Steps**
+
+1. Under **Candidate-only agent access**, select **Create agent access** (or
+   **Create or replace agent access** when a key is already active).
+2. On **Candidate access created**, copy the key only into the approved local
+   client. Keep it out of screenshots, URLs, chats, issues and logs. Do not share
+   your Builder cookie or give the client broad host/database access.
+3. Select **Return to current candidate**. The key is not shown there again;
+   the page shows **Active**, the latest expiry and request count instead.
+4. To stop access early, select **Revoke agent access** on that candidate.
+5. For a lost key, select **Create or replace agent access**. After **Expired**
+   or **Request limit reached** appears, select **Create new agent access** to
+   reconnect the client. Creating access immediately invalidates the previous key.
+
+The status updates when you load or refresh the review page. **No active access**
+means no key has been issued, or access was revoked. **Revoke agent access** is
+disabled when access is no longer active. The server enforces expiry and request
+limits on every client request even while an older review page remains open.
+
+Access ends after 20 minutes or 100 admitted requests. The client can read this
+candidate and request theme/table-width changes only. It cannot accept, transfer,
+publish or discard a design. See the [interface protocol and limits](DESIGN_CANDIDATE_INTERFACE.md).
+
+<a id="task-design-pilot-findings"></a>
+
+### TASK-DESIGN-PILOT-FINDINGS: Review findings on a synthetic candidate
+
+**Starting point:** **Review synthetic candidate** in the isolated local pilot,
+signed in as the candidate owner. Invented information only. Acceptance, rejection
+and deletion are not available in this slice.
+
+**Steps**
+
+1. Read the **Ready for review** alert and its counts.
+   Import processing is complete, but this is not a production NOFO or acceptance.
+2. Read each finding's evidence and next step. **Review affected section**
+   opens the relevant read-only imported text. The retained Word conversion
+   output is also available below the sections.
+3. For a nonblocking **Word conversion** warning only, compare the relevant
+   source and enter **Why can this warning be acknowledged?** Then select
+   **Acknowledge warning**. Confirm the recorded person, time and reason.
+4. For blocking findings, follow their next step. Acknowledgment cannot clear
+   them. Correct missing information, wording or structure in the source and
+   import a fresh synthetic copy; never guess the intended value.
+5. Use the existing theme/table-width controls for presentation corrections.
+   Changes invalidate old review evidence. Optionally select **View current HTML
+   (opens a new tab)**; **PDF unavailable** is expected and not a blocker.
+6. If **Warning not acknowledged** appears, review the refreshed findings.
+   An unchanged warning keeps your explanation in its form; submit it again only
+   after checking the current candidate. If the warning changed or is no longer
+   available, the old explanation appears separately for copying and is not
+   automatically reused. If **Request not saved** appears instead, copy your
+   explanation from the read-only field, select **Return to current candidate**,
+   and review the latest checks before retrying. These unsaved drafts remain
+   only in the returned page; copy them before leaving or refreshing if needed.
+
+See [review scope and limits](DESIGN_CANDIDATE_REVIEW.md). A clean diagnostic
+report is not complete source/content/asset verification or design acceptance.
 
 ## Maintaining this page
 

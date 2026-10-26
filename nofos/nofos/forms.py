@@ -161,7 +161,7 @@ NIH_ALLOWED_CHOICES = {
     "icon_style": frozenset(["nofo--icons--solid"]),
 }
 
-HRSA_ALLOWED_COVERS = frozenset(["nofo--cover-page--text"])
+HRSA_ALLOWED_COVERS = frozenset(["nofo--cover-page--text", "nofo--cover-page--medium"])
 
 
 class NofoThemeOptionsForm(forms.ModelForm):

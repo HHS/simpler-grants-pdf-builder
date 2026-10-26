@@ -1413,6 +1413,13 @@ class PdfReadabilityAttempt(models.Model):
     outcome = models.CharField(max_length=32)
     http_status = models.PositiveSmallIntegerField()
     duration_ms = models.PositiveIntegerField()
+    file_category = models.CharField(
+        max_length=7,
+        choices=[("pdf", "PDF"), ("docx", "DOCX"), ("unknown", "Unknown")],
+        default="unknown",
+        db_index=True,
+        help_text="Attempted upload category from its recognized extension, not verified content.",
+    )
     source = models.CharField(
         max_length=16,
         choices=[
@@ -1735,6 +1742,58 @@ class ExternalSourceHandoffResult(models.Model):
         raise ValidationError("Handoff results cannot be deleted through the ORM.")
 
 
+class AuditObjectDocument(models.Model):
+    """Durable document ownership, including objects removed by a reimport."""
+
+    content_type = models.ForeignKey(
+        "contenttypes.ContentType", on_delete=models.CASCADE, related_name="+"
+    )
+    object_id = models.UUIDField()
+    document_content_type = models.ForeignKey(
+        "contenttypes.ContentType", on_delete=models.CASCADE, related_name="+"
+    )
+    document_id = models.UUIDField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["content_type", "object_id"],
+                name="audit_object_document_unique",
+            )
+        ]
+
+
+class DocumentAuditEvent(models.Model):
+    """Small indexed projection; original audit content remains in CRUDEvent."""
+
+    event = models.OneToOneField(
+        "easyaudit.CRUDEvent",
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name="document_index",
+    )
+    document_content_type = models.ForeignKey(
+        "contenttypes.ContentType", on_delete=models.CASCADE, related_name="+"
+    )
+    document_id = models.UUIDField()
+    datetime = models.DateTimeField()
+    visible = models.BooleanField()
+
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=[
+                    "document_content_type",
+                    "document_id",
+                    "-datetime",
+                    "-event",
+                ],
+                condition=models.Q(visible=True),
+                name="document_audit_page_idx",
+            )
+        ]
+
+
 class ExternalSourceHandoffCurrent(models.Model):
     """The sole mutable current-result selector for a receipt."""
 
@@ -1784,11 +1843,38 @@ class DesignPilotCandidate(models.Model):
     sequence = models.PositiveIntegerField(default=0)
     revision = models.CharField(max_length=64)
     warnings = models.JSONField(default=list)
+    tool_token_digest = models.CharField(
+        max_length=64, null=True, unique=True, editable=False
+    )
+    tool_expires_at = models.DateTimeField(null=True, editable=False)
+    tool_requests = models.PositiveIntegerField(default=0, editable=False)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
                 fields=["owner", "source_sha256"], name="design_pilot_owner_source_once"
+            )
+        ]
+
+
+class DesignPilotReviewDecision(models.Model):
+    """An attributable warning acknowledgment, never design acceptance."""
+
+    candidate = models.ForeignKey(
+        DesignPilotCandidate, on_delete=models.CASCADE, related_name="review_decisions"
+    )
+    revision = models.CharField(max_length=64)
+    finding_id = models.CharField(max_length=80)
+    finding_digest = models.CharField(max_length=64)
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    reason = models.CharField(max_length=500)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["candidate", "revision", "finding_id", "finding_digest"],
+                name="design_review_decision_once",
             )
         ]
