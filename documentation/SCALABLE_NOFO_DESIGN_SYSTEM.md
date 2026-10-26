@@ -134,7 +134,8 @@ to distinguish a document correction from a shared defect or missing capability.
 
 The GPLE office owns long-term design-quality oversight; SGM is responsible for
 implementation within SGM. The responsibilities below apply that working division.
-Detailed decision rights and operating arrangements still need agreement.
+GPLE and SGM should agree on review practices, quality criteria, and coordination
+arrangements as the work develops.
 
 | Responsibility | Working ownership |
 | --- | --- |
@@ -146,8 +147,7 @@ Detailed decision rights and operating arrangements still need agreement.
 For a defective release, SGM should notify GPLE, assess affected outputs and consider
 pausing further adoption. SGM should coordinate correction or recovery with GPLE,
 notify affected program offices and preserve the identity of outputs already
-routed, cleared or published. Confirm escalation contacts, decision rights and
-response timeframes before operational adoption. Urgent accessibility or substantive
+routed, cleared or published. Urgent accessibility or substantive
 correctness defects need an explicit disposition with relevant authorities;
 neither silent redesign nor indefinite preservation should be assumed.
 
@@ -332,13 +332,6 @@ branding, fonts/assets or rendering dependencies change. Compare intermediate
 meaning/links as well as visual pages; text extraction alone can misread tables
 or columns. Establish who reviews exceptions and unresolved manual checks.
 
-For the bounded proof, propose a matrix crossing component, OpDiv variation,
-exception, long/missing content and clearance state. Record severity, expected
-results, actual findings and unresolved manual checks against each candidate
-output. Responsible reviewers should confirm acceptance thresholds and disposition
-of failures before treating the proof as successful. A passing automated scan alone
-is insufficient.
-
 An authoring preview may omit transformations or use different layout rules.
 State its scope and validate the generated PDF separately. Builder's live table
 preview is not identical to saved-content/PDF processing (E2). Its PDF/UA-1 request
@@ -359,9 +352,8 @@ does not change that pilot's acceptance flow or introduce a new clearance gate.
 
 ## 5. Recommended sequence and follow-through
 
-GPLE and SGM must agree detailed operating responsibilities with participating teams.
-The investigations below inform
-decisions; they do not authorize implementation, a new service or a general archive.
+The investigations below inform decisions; they do not authorize implementation,
+a new service or a general archive.
 Use the [contribution workflow](CONTRIBUTION_WORKFLOW.md) to scope later work.
 
 ### 1. Foundational decisions: establish the boundaries
@@ -377,39 +369,23 @@ Use the [contribution workflow](CONTRIBUTION_WORKFLOW.md) to scope later work.
 and remaining questions. Record significant implementation selections in an ADR
 when made; detailed technology choices can remain open during initial investigation.
 
-### 2. Bounded proof: demonstrate one shared change
+### 2. Optional investigation: use a representative example
 
-Use a shared callout change against a small synthetic set: two OpDiv variants,
-one document-specific override, an older content example and a NOFO representing
-clearance in progress. Show the intended changes and failures, including long
-content, missing information and a deliberately defective update. Real examples
-require an agreed scope and appropriate access.
+A small representative example could help assess how shared design changes affect
+component meaning, OpDiv variations, existing NOFOs, and PDF quality.
 
-Demonstrate preservation of meaning/content, intended update applicability,
-reviewed-design stability until explicit acceptance, identifiable old/new outputs,
-PDF validation findings and containment/recovery. Compare a shared implementation,
-adaptation and implementation within SGM before recommending an integration approach.
-
-Coordinate with [#1107](https://github.com/HHS/simpler-grants-pdf-builder/issues/1107)
-on the contract and [#1197](https://github.com/HHS/simpler-grants-pdf-builder/issues/1197)
-on shared-change impact, exceptions and effective render inputs. The latter compares
-manual inspection, an on-demand report and a minimal render-input record; it does
-not settle clearance policy or implement redesign. The expanded proof described
-here is a proposal beyond those issues' existing scope: confirm its owner and
-capture uncovered work separately. Reuse #980 for PDF validation investigation.
-
-**Expected result:** a worked example, evidence, limitations and a recommendation
-to proceed, revise or stop, with estimated implementation and maintenance effort.
-Collect baselines for shared-fix propagation time, author rework, defects and
-exceptions. Research should assess applicant tasks such as finding eligibility
-or understanding scoring. These are candidate measures, not demonstrated savings
-or benefits; production and applicant evidence require separate evaluation.
+If useful, coordinate with [#1107](https://github.com/HHS/simpler-grants-pdf-builder/issues/1107)
+on the content contract, [#1197](https://github.com/HHS/simpler-grants-pdf-builder/issues/1197)
+on shared-change impact and render-input traceability, and
+[#980](https://github.com/HHS/simpler-grants-pdf-builder/issues/980) on PDF validation.
+This is an optional investigation approach, not a required next step or an
+expansion of those issues' existing scope.
 
 ### 3. Future capabilities: expand where evidence supports investment
 
 Prioritize broader component/OpDiv coverage, affected-document visibility,
 user-facing design acceptance, automated regression comparisons and supported
-recovery according to the proof's findings. Each needs a demonstrated need,
+recovery according to available evidence. Each needs a demonstrated need,
 responsible owner, scoped effort and acceptance criteria.
 
 Before promising historical reproduction, modernization architecture/engineering,
