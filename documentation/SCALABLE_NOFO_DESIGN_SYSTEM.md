@@ -130,24 +130,24 @@ research. Neither an available theme nor a reviewer preference establishes appli
 benefit. Use the existing [quality review and triage process](QUALITY_REVIEW_AND_TRIAGE.md)
 to distinguish a document correction from a shared defect or missing capability.
 
-### Proposed accountability and escalation
+### Working responsibilities for design quality
 
-Assign a shared design-system owner accountable for coordinating shared releases,
-impact assessment, communication and resolution of shared defects. Its organizational
-home and mandate need confirmation; a list of participants alone is insufficient.
+The GPLE office owns long-term design-quality oversight; SGM is responsible for
+implementation within SGM. The responsibilities below apply that working division.
+Detailed decision rights and operating arrangements still need agreement.
 
-| Proposed role | Decision or responsibility to confirm |
+| Responsibility | Working ownership |
 | --- | --- |
-| Shared design-system owner | Coordinate shared-change review, release disposition, affected-team notification and defect resolution. |
-| Application owner | Control application adoption and implement containment or recovery. |
-| Program office or designated NOFO owner | Decide whether to accept an available redesign, subject to applicable clearance requirements. |
-| Designated HHS grants governance sponsor | Resolve cross-OpDiv disagreements or risks beyond the other owners' authority. |
+| Maintain design-quality expectations, review practices and expertise | GPLE |
+| Implement and maintain design-quality capabilities within SGM | SGM |
+| Produce implementation evidence and address identified defects | SGM, coordinating with GPLE |
+| Assess design and accessibility quality against agreed criteria | GPLE, with appropriate specialists |
 
-For a defective release, application teams should notify the shared owner, assess
-affected outputs and consider pausing further adoption. Agree on correction or
-recovery, notify affected program offices and preserve the identity of outputs
-already routed, cleared or published. Confirm escalation contacts and response
-timeframes before operational adoption. Urgent accessibility or substantive
+For a defective release, SGM should notify GPLE, assess affected outputs and consider
+pausing further adoption. SGM should coordinate correction or recovery with GPLE,
+notify affected program offices and preserve the identity of outputs already
+routed, cleared or published. Confirm escalation contacts, decision rights and
+response timeframes before operational adoption. Urgent accessibility or substantive
 correctness defects need an explicit disposition with relevant authorities;
 neither silent redesign nor indefinite preservation should be assumed.
 
@@ -359,7 +359,8 @@ does not change that pilot's acceptance flow or introduce a new clearance gate.
 
 ## 5. Recommended sequence and follow-through
 
-The proposed roles must confirm responsibilities. The investigations below inform
+GPLE and SGM must agree detailed operating responsibilities with participating teams.
+The investigations below inform
 decisions; they do not authorize implementation, a new service or a general archive.
 Use the [contribution workflow](CONTRIBUTION_WORKFLOW.md) to scope later work.
 
