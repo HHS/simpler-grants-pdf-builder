@@ -873,7 +873,9 @@ If access is denied or the page is unavailable, contact the pilot operator.
    **How we handle your document**. Use only documents authorized for this pilot.
 2. Choose one supported text-based HHS NOFO PDF or unlocked Word `.docx`, then
    select **Analyze document**. Legacy `.doc` and macro-enabled formats are not
-   supported.
+   supported. For PDFs, keep genuine NOFO identifiers in the first five pages;
+   recognition needs two distinct signal types, such as an agency name and an
+   opportunity number. Blank templates may not be recognized.
 3. Wait for analysis. If an error appears, follow its guidance and submit again.
 4. Read **Measurement scope**, reliability information and any **Calculation
    notes**. For Word, **Why “Estimated”?** under Measurement scope explains the
@@ -889,7 +891,10 @@ is enabled, **How we handle your document** explains that content-free usage/err
 records are kept without automatic expiration by default; they exclude your
 identity, filename, document text and scores. Remove template
 instructions and unused options from the copy you upload when they should not
-count. Word, PDF and saved-Builder scores can differ; use the same format and
+count. Keep instructions applicants need. An in-progress draft can be checked
+before publication design, but favorable scores do not establish publication
+readiness. Compare drafts with the same content scope.
+Word, PDF and saved-Builder scores can differ; use the same format and
 analysis method when tracking revisions. The separate public `/readability/`
 route remains PDF-only and has its own availability controls.
 See [authenticated readability pilot](AUTHENTICATED_PDF_READABILITY_PILOT.md).

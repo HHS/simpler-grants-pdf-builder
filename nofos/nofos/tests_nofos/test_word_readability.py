@@ -121,7 +121,17 @@ class WordReadabilityTests(SimpleTestCase):
         )
         self.path.write_bytes(synthetic_docx(text))
         self.assertGreater(analyze_word(self.path)["metrics"]["word_count"]["value"], 0)
-        self.assertEqual(recognize_nofo({}, text).status, "unsupported")
+        # PDFs now accept an agency in page text plus Grants.gov. Word keeps
+        # its existing compound agency/title rule rather than counting both.
+        pdf_decision = recognize_nofo({}, text)
+        self.assertEqual(pdf_decision.status, "supported")
+        self.assertEqual(
+            pdf_decision.signal_ids, ("hhs_agency_page_text", "grants_gov")
+        )
+        self.assertEqual(
+            recognize_word_nofo(text).signal_ids,
+            ("grants_gov", "hhs_nofo_template_context"),
+        )
         self.assertEqual(
             recognize_word_nofo(
                 "HHS-wide NOFO Master Template. See Grants.gov."
