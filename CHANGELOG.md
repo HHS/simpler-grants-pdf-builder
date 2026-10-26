@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.53.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.53.0...nofos-v3.53.1) (2026-10-25)
+
+
+### Bug Fixes
+
+* keep consecutive Word bullets together across list IDs ([#1201](https://github.com/HHS/simpler-grants-pdf-builder/issues/1201)) ([2683103](https://github.com/HHS/simpler-grants-pdf-builder/commit/2683103c994c0b97bb5387c82ec096159b925b38))
+* omit empty optional tail headings on import ([#1209](https://github.com/HHS/simpler-grants-pdf-builder/issues/1209)) ([4664953](https://github.com/HHS/simpler-grants-pdf-builder/commit/4664953b72aaef7548c0aaebad485524b8d86caf))
+* point first side nav link to Basic information ([31c8637](https://github.com/HHS/simpler-grants-pdf-builder/commit/31c8637786798a0a1a402aa6abc5ec251c10631b))
+* preserve adjacent mixed list boundaries in Markdown ([#1204](https://github.com/HHS/simpler-grants-pdf-builder/issues/1204)) ([032dc6a](https://github.com/HHS/simpler-grants-pdf-builder/commit/032dc6a822ab9b24a962160309a3f33c9f6e410a))
+* preserve native Word endnote cross-references on import ([#1211](https://github.com/HHS/simpler-grants-pdf-builder/issues/1211)) ([dc59aec](https://github.com/HHS/simpler-grants-pdf-builder/commit/dc59aec39a9eae6dfa958ceec99f0f23bd64f08c))
+* preserve Word line breaks inside emphasized text ([#1202](https://github.com/HHS/simpler-grants-pdf-builder/issues/1202)) ([72dc5aa](https://github.com/HHS/simpler-grants-pdf-builder/commit/72dc5aaf1da9ffb3a7c1db46c7fb944f4f6989e6))
+* repair literal bullet groups during NOFO import ([c7ae30e](https://github.com/HHS/simpler-grants-pdf-builder/commit/c7ae30e2b9da0e7964c841dc97d3cbb560cb9ae4))
+
+
+### Documentation
+
+* renumber duplicate import rule IDs ([c7ae30e](https://github.com/HHS/simpler-grants-pdf-builder/commit/c7ae30e2b9da0e7964c841dc97d3cbb560cb9ae4))
+
+
+### Miscellaneous Chores
+
+* **deps:** update pypdf, virtualenv, filelock for vulnerability scan ([31c8637](https://github.com/HHS/simpler-grants-pdf-builder/commit/31c8637786798a0a1a402aa6abc5ec251c10631b))
+
 ## [3.53.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.52.4...nofos-v3.53.0) (2026-10-23)
 
 
