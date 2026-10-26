@@ -11,8 +11,13 @@ formatting fetched related objects individually, and the page computed full HTML
 comparisons merely to decide whether to show links.
 
 History can use an indexed projection of existing audit events after an explicit
-post-rollout cutover. The default `DOCUMENT_HISTORY_INDEX_ENABLED=False` retains
-the legacy reader until the index has been populated and checked. The original
+post-rollout cutover. The Constance setting `DOCUMENT_HISTORY_INDEX_ENABLED`
+defaults to false and retains the legacy reader until the index has been populated
+and checked.
+Administrators manage it under **Django admin → Constance → Config** in each
+environment. A saved Constance value takes precedence over the same-named
+environment variable, which supplies the default only when no value is saved.
+Changes affect subsequent requests without restarting workers. The original
 `easyaudit.CRUDEvent` records and payloads remain unchanged. The shared NOFO,
 Composer and Writer history view all use this path, without new UI components.
 
@@ -46,7 +51,10 @@ objects disappear. Bulk event inserts bypass signals and require backfill.
 
 ## Migration and deployment
 
-1. Keep `DOCUMENT_HISTORY_INDEX_ENABLED=False` (the default). Apply migrations
+1. Keep `DOCUMENT_HISTORY_INDEX_ENABLED` unchecked in that environment’s
+   **Django admin → Constance → Config** (the default is false). If upgrading
+   from environment-only configuration, verify the value in admin after rollout;
+   a saved value takes precedence over the environment fallback. Apply migrations
    `0154` and `0155`: 0154 creates the small lookup-table schema; 0155 now has
    **no operations**, so deployment never scans the historical audit table.
    The original migration identities and dependencies are retained for databases
@@ -85,17 +93,19 @@ objects disappear. Bulk event inserts bypass signals and require backfill.
    It does not inspect or repair payloads. Do not delete original events or
    ignore unresolved records to make it pass. Old workers or bulk writers can
    invalidate completeness; stop/coordinate them before the final check.
-6. Only after a successful check, set `DOCUMENT_HISTORY_INDEX_ENABLED=True` in
-   that environment and roll application workers. Do not combine initial schema
-   rollout and indexed-read enablement. All workers in this second rollout
-   maintain the projection. No new permission or data access is introduced.
+6. Only after a successful check, open **Django admin → Constance → Config**
+   in that environment, check `DOCUMENT_HISTORY_INDEX_ENABLED`, and save.
+   Subsequent requests use indexed reads without a worker restart or another
+   deployment. Do not combine initial schema rollout and indexed-read enablement.
+   No new permission or data access is introduced.
 7. Validate the production example in #1142: first page and Load More, deleted
    events, access restrictions and the roughly two-second target. Inspect the
    PostgreSQL plan for `document_audit_page_idx`. Local SQLite timings do not
    establish production PostgreSQL performance.
 
-For read-path rollback, set `DOCUMENT_HISTORY_INDEX_ENABLED=False` and roll
-workers. Live index maintenance remains active; the legacy reader returns with
+For read-path rollback, uncheck `DOCUMENT_HISTORY_INDEX_ENABLED` in Constance
+and save. Subsequent requests return to the legacy reader without a worker
+restart. Live index maintenance remains active; the legacy reader returns with
 its old performance/deletion limitations. If rolling application code back to
 #1166, rerun backfill/check before a future cutover, because those old workers
 do not maintain the projection. Added lookup tables can remain
