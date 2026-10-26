@@ -352,9 +352,9 @@ does not change that pilot's acceptance flow or introduce a new clearance gate.
 
 ## 5. Recommended sequence and follow-through
 
-The investigations below inform decisions; they do not authorize implementation,
-a new service or a general archive.
-Use the [contribution workflow](CONTRIBUTION_WORKFLOW.md) to scope later work.
+GPLE and the SGM contract team can use the considerations below to identify
+follow-up work. Implementation should follow the planning, review, and contribution
+practices of the team and repository responsible for the change.
 
 ### 1. Foundational decisions: establish the boundaries
 
