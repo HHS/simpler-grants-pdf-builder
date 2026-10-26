@@ -11,8 +11,9 @@ author-facing authoring convention this module detects.
 import re
 from collections import defaultdict
 from copy import copy
+from urllib.parse import urlsplit
 
-from bs4 import NavigableString
+from bs4 import Comment, NavigableString
 
 MARKER = re.compile(r"\[([1-9][0-9]{0,8})\]")
 HEADING = re.compile(r"^(?:endnotes?|footnotes?)\s*:?$", re.I)
@@ -20,6 +21,188 @@ BLOCK_NAMES = ["p", "li", "td", "th"]
 NATIVE_REFERENCE_ID = re.compile(r"^(?:footnote|endnote)-ref-(?!manual-)")
 NATIVE_TARGET_HREF = re.compile(r"^#(?:footnote|endnote)-(?!manual-)")
 NATIVE_TARGET_ID = re.compile(r"^(?:footnote|endnote)-(?!ref-|manual-)")
+# Citation text may include HTML blocks beyond the note-marker scan's blocks.
+CITATION_BLOCK_NAMES = BLOCK_NAMES + [
+    "address",
+    "article",
+    "aside",
+    "blockquote",
+    "dd",
+    "details",
+    "div",
+    "dl",
+    "dt",
+    "fieldset",
+    "figcaption",
+    "figure",
+    "footer",
+    "form",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "header",
+    "hgroup",
+    "main",
+    "nav",
+    "ol",
+    "section",
+    "summary",
+    "table",
+    "tbody",
+    "tfoot",
+    "thead",
+    "tr",
+    "ul",
+]
+CITATION_TARGET_ID = re.compile(
+    r"^(?:footnote|endnote)-(?:manual-)?[1-9][0-9]*(?:-[0-9]+)?$"
+)
+CITATION_ADDRESS = re.compile(
+    r"(?<![\w@/])(?:https?://|www\.|doi:\s*10\.[0-9]{4,9}/)[^\s<>\"'“”‘’]+",
+    re.I,
+)
+
+
+def _citation_destination(label):
+    """Trim citation delimiters without dropping balanced DOI parentheses."""
+    while label:
+        if label[-1] in ".,;:!?":
+            label = label[:-1]
+        elif label[-1] in ")]}":
+            closer = label[-1]
+            opener = {")": "(", "]": "[", "}": "{"}[closer]
+            if label.count(closer) <= label.count(opener):
+                break
+            label = label[:-1]
+        else:
+            break
+    if label.lower().startswith("doi:"):
+        destination = "https://doi.org/" + label[4:].lstrip()
+    elif label.lower().startswith("www."):
+        destination = "https://" + label
+    else:
+        destination = label
+    try:
+        parsed = urlsplit(destination)
+        if (
+            parsed.scheme.lower() not in {"http", "https"}
+            or not parsed.hostname
+            or "." not in parsed.hostname
+            or parsed.username is not None
+            or parsed.password is not None
+        ):
+            return None
+    except ValueError:
+        return None
+    # A duplicated resolver is a separate source defect, not a missing link.
+    if parsed.hostname.lower() in {"doi.org", "dx.doi.org"} and not re.fullmatch(
+        r"/10\.[0-9]{4,9}/[^\s]+", parsed.path, re.I
+    ):
+        return None
+    return label, destination
+
+
+def linkify_endnote_citations(soup):
+    """Link explicit destinations only inside recognized imported citations.
+
+    Reuse the note-marker range wrapper to retain formatting across Word runs.
+    Mask existing anchors, excluded content and block boundaries while matching;
+    their text/attributes are never interpreted or rewritten. Import-only caller
+    placement keeps existing saved records unchanged on view and export.
+    """
+    for citation in soup.find_all(id=CITATION_TARGET_ID):
+        if citation.name not in BLOCK_NAMES or citation.find_parent(["pre", "code"]):
+            continue
+        blocks = [citation] + citation.find_all(CITATION_BLOCK_NAMES)
+        for block in blocks:
+            masked = "".join(
+                (
+                    " " * len(node)
+                    if isinstance(node, Comment)
+                    or node.find_parent(CITATION_BLOCK_NAMES) is not block
+                    or node.find_parent(
+                        ["a", "code", "pre", "script", "style", "textarea"]
+                    )
+                    else str(node)
+                )
+                for node in block.find_all(string=True)
+            )
+            position = 0
+            boundaries = [0]
+            for node in block.descendants:
+                if isinstance(node, NavigableString):
+                    position += len(node)
+                elif node.name in {*CITATION_BLOCK_NAMES, "br", "hr", "img", "wbr"}:
+                    boundaries.append(position)
+            boundaries.append(len(masked))
+            matches = [
+                (start + match.start(), match[0])
+                for start, end in zip(boundaries, boundaries[1:])
+                for match in CITATION_ADDRESS.finditer(masked[start:end])
+            ]
+            for start, text in reversed(matches):
+                result = _citation_destination(text)
+                if result is None:
+                    continue
+                label, destination = result
+                anchor = soup.new_tag("a", href=destination)
+                _wrap_range(soup, block, start, start + len(label), anchor)
+
+
+def inline_native_note_return_links(soup):
+    """Move an isolated native-note backlink into the preceding citation paragraph.
+
+    Match only numeric Mammoth note IDs and a final, attribute-free paragraph
+    containing one plain-text up-arrow link to that same note's reference.
+    Inspect the original shape before generic cleanup can erase extra content.
+    """
+    moved = 0
+    for note in soup.find_all("li", id=re.compile(r"^(?:endnote|footnote)-[0-9]+$")):
+        if note.find_parent(["pre", "code"]):
+            continue
+
+        def meaningful_children(tag):
+            return [
+                child
+                for child in tag.contents
+                if not isinstance(child, NavigableString)
+                or isinstance(child, Comment)
+                or child.strip()
+            ]
+
+        children = meaningful_children(note)
+        if len(children) < 2:
+            continue
+        previous, final = children[-2:]
+        if (
+            previous.name != "p"
+            or final.name != "p"
+            or final.attrs
+            or not previous.get_text(strip=True)
+        ):
+            continue
+        contents = meaningful_children(final)
+        if len(contents) != 1 or contents[0].name != "a":
+            continue
+        link = contents[0]
+        kind, number = note["id"].split("-", 1)
+        if (
+            link.get("href") != f"#{kind}-ref-{number}"
+            or link.get_text(strip=True) != "↑"
+            or any(
+                not isinstance(child, NavigableString) or isinstance(child, Comment)
+                for child in link.contents
+            )
+        ):
+            continue
+        previous.append(NavigableString(" "))
+        previous.append(link.extract())
+        final.decompose()
+        moved += 1
+    return moved
 
 
 def _heading(tag):
@@ -99,6 +282,66 @@ def remove_duplicate_native_note_custom_marks(soup):
         removed += 1
 
     return removed
+
+
+def normalize_repeated_native_note_links(soup):
+    """Give explicit references to one native note unique IDs and return links.
+
+    IMPORT-072. Never infer a relationship from unlinked superscript numbers.
+    Ambiguous destinations, conflicting labels, and unrelated ID collisions
+    remain untouched for the read-only validator to report.
+    """
+    groups = defaultdict(list)
+    for anchor in soup.find_all("a", href=NATIVE_TARGET_HREF):
+        if anchor.find_parent(["pre", "code"]) or anchor.find_parent(
+            id=NATIVE_TARGET_ID
+        ):
+            continue
+        if re.fullmatch(r"\[?\d{1,9}\]?", anchor.get_text(strip=True)):
+            groups[anchor["href"][1:]].append(anchor)
+    for target_id, anchors in groups.items():
+        targets = soup.find_all(id=target_id)
+        if len(targets) != 1 or targets[0].name != "li":
+            continue
+        target = targets[0]
+        native = [a for a in anchors if NATIVE_REFERENCE_ID.match(a.get("id", ""))]
+        if not native:
+            continue
+        label = native[0].get_text(strip=True)
+        if any(a.get_text(strip=True) != label for a in native):
+            continue
+        if any(
+            a.get("id")
+            and any(other not in anchors for other in soup.find_all(id=a["id"]))
+            for a in anchors
+        ):
+            continue
+        base = target_id.replace("-", "-ref-", 1)
+        used = set()
+        for anchor in anchors:
+            reference_id = anchor.get("id")
+            if not reference_id or reference_id in used:
+                reference_id = base
+                suffix = 2
+                while soup.find(id=reference_id) is not None or reference_id in used:
+                    reference_id = f"{base}-repeat-{suffix}"
+                    suffix += 1
+                anchor["id"] = reference_id
+            used.add(reference_id)
+            anchor.string = label
+            if anchor.parent.name != "sup":
+                anchor.wrap(soup.new_tag("sup"))
+            if not target.find("a", href=f"#{reference_id}"):
+                back = soup.new_tag("a", href=f"#{reference_id}")
+                back["aria-label"] = (
+                    f"Return to endnote {label.strip('[]')} reference {len(used)}"
+                )
+                back.string = "↑"
+                # Keep the citation's paragraph structure valid.
+                container = target.find_all("p", recursive=False)
+                container = container[-1] if container else target
+                container.append(" ")
+                container.append(back)
 
 
 def _scan(soup):
@@ -240,11 +483,22 @@ def _inspect(soup):
                 "destination",
             )
     for number, anchors in native_refs.items():
-        if len(anchors) > 1:
+        if len(anchors) > 1 and len({a["href"] for a in anchors}) > 1:
             warn(
                 anchors[0],
                 f"[{number}] is used more than once in linked endnotes.",
                 "duplicate",
+            )
+    target_labels = defaultdict(set)
+    for number, anchors in native_refs.items():
+        for anchor in anchors:
+            target_labels[anchor["href"]].add(number)
+    for href, labels in target_labels.items():
+        if len(labels) > 1:
+            warn(
+                soup.find("a", href=href),
+                "References to the same endnote have conflicting numbers.",
+                "conflict",
             )
     for target in soup.find_all(id=re.compile(r"^(?:endnote|footnote)-(?!ref-).+")):
         if not soup.find("a", href=f'#{target["id"]}'):
@@ -332,7 +586,21 @@ def _inspect(soup):
                 if id(anchor) not in section
             ]
         )
-        combined_sequence = [n for _, n in combined_events]
+        # Repeated explicit native references reuse a citation, not a new number.
+        seen_native = set()
+        combined_sequence = []
+        native_positions = {
+            text_start(a): a["href"]
+            for anchors in native_refs.values()
+            for a in anchors
+        }
+        for position, number in combined_events:
+            destination = native_positions.get(position)
+            if destination and destination in seen_native:
+                continue
+            if destination:
+                seen_native.add(destination)
+            combined_sequence.append(number)
         if sequence and combined_sequence != list(range(1, len(combined_sequence) + 1)):
             warn(
                 refs[sequence[0]][0][0],
@@ -371,9 +639,79 @@ def _inspect(soup):
     return issues, invalid, (headings, section, blocks, refs, citations, entries)
 
 
-def analyze_endnotes(soup):
+def _unstructured_endnote_content(soup):
+    """Find content outside recognized citations within hierarchical note scopes.
+
+    This saved-content review is separate from import matching: nested headings
+    stay in scope, and legacy/manual citations may have continuation blocks.
+    Existing relationship diagnostics still check their destinations separately.
+    """
+    scope = None
+    continuation = False
+    covered = set()
+    issues = []
+    for tag in soup.find_all(True):
+        if id(tag) in covered:
+            continue
+        if _heading(tag):
+            covered.update(id(child) for child in tag.find_all(True))
+            level = int(tag.name[1]) if re.fullmatch(r"h[1-7]", tag.name) else 7
+            if scope is not None and level <= scope:
+                scope = None
+            if is_endnotes_heading(tag.get_text(strip=True)):
+                scope = level
+            continuation = False
+            continue
+        if scope is None:
+            continue
+        if (
+            tag.name in {"ol", "ul", "div", "section", "article"}
+            and tag.find(True)
+            and not any(
+                isinstance(child, NavigableString) and child.strip()
+                for child in tag.contents
+            )
+        ):
+            continue
+        # Inline elements belong to their containing block, not separate entries.
+        if tag.find_parent(BLOCK_NAMES + ["pre", "blockquote", "table"]):
+            continue
+        text = tag.get_text(" ", strip=True)
+        if not text:
+            continue
+        covered.update(id(child) for child in tag.find_all(True))
+        native = (
+            tag.name == "li"
+            and tag.parent.name == "ol"
+            and (
+                NATIVE_TARGET_ID.match(tag.get("id", ""))
+                or CITATION_TARGET_ID.fullmatch(tag.get("id", ""))
+            )
+            and tag.find("a", href=re.compile(r"^#(?:endnote|footnote)-ref-"))
+        )
+        # Google Docs stored citations start with a linked [N] return marker;
+        # generated manual notes have the same visible bracket convention.
+        manual = bool(MARKER.match(tag.get_text().lstrip()))
+        if native or manual:
+            continuation = bool(manual and not native)
+        elif not continuation:
+            issues.append(
+                {
+                    "tag": tag,
+                    "message": "Content under Endnotes is not formatted as an endnote citation.",
+                    "code": "content-format",
+                    "excerpt": text[:180] + ("…" if len(text) > 180 else ""),
+                }
+            )
+    return issues
+
+
+def analyze_endnotes(soup, *, check_content=False):
     """Return actionable issues with their source Tag, without changing HTML."""
-    return _inspect(soup)[0]
+    issues = _inspect(soup)[0]
+    if check_content:
+        issues.extend(_unstructured_endnote_content(soup))
+    return issues
 
 
 def _wrap_range(soup, block, start, end, wrapper):
@@ -386,7 +724,7 @@ def _wrap_range(soup, block, start, end, wrapper):
             a, b = position, position + len(node)
             position = b
             return [
-                NavigableString(str(node)[max(0, low - a) : max(0, min(b, high) - a)])
+                type(node)(str(node)[max(0, low - a) : max(0, min(b, high) - a)])
                 for low, high in ((0, start), (start, end), (end, b))
             ]
         if not node.contents:

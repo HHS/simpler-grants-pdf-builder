@@ -3,12 +3,14 @@ from martor.fields import MartorFormField
 from users.models import BloomUser
 
 from .models import (
+    RETIRED_THEME_CHOICES,
     STATUS_CHOICES,
     THEME_CHOICES,
     Nofo,
     Section,
     Subsection,
 )
+from .subsection_conflicts import version_token
 from .utils import get_icon_path_choices, user_is_nih_group
 
 
@@ -161,13 +163,6 @@ NIH_ALLOWED_CHOICES = {
 
 HRSA_ALLOWED_COVERS = frozenset(["nofo--cover-page--text"])
 
-# Keep legacy theme values valid on stored NOFOs, but do not offer them for new selection.
-RETIRED_THEME_CHOICES = {
-    "portrait-hrsa-blue": "HRSA (Default, legacy)",
-    "landscape-cdc-blue": "CDC Landscape (Default, legacy)",
-    "landscape-cdc-white": "CDC Landscape (Light, legacy)",
-}
-
 
 class NofoThemeOptionsForm(forms.ModelForm):
     class Meta:
@@ -318,6 +313,13 @@ class NofoMetadataForm(forms.ModelForm):
 # body needs a custom field and a custom widget so don't use the factory function
 class SubsectionEditForm(forms.ModelForm):
     body = MartorFormField(required=False)
+    edit_version = forms.CharField(widget=forms.HiddenInput, required=False)
+    recovery = forms.CharField(widget=forms.HiddenInput, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.is_bound and self.instance.pk:
+            self.initial["edit_version"] = version_token(self.instance)
 
     class Meta:
         model = Subsection
@@ -336,6 +338,17 @@ class SubsectionEditForm(forms.ModelForm):
 
         if tag and not name:
             self.add_error("name", "Subsection name can’t be empty.")
+
+        if (
+            self.instance.pk
+            and self.instance.section_id
+            and self.instance.section.is_introduction
+            and not self.instance.tag
+        ):
+            if name or tag or cleaned_data.get("callout_box"):
+                raise forms.ValidationError(
+                    "The introductory heading is fixed. Leave this body's title and heading level blank, and edit its content below."
+                )
 
         return cleaned_data
 

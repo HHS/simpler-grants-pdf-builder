@@ -397,6 +397,16 @@ footer .usa-footer__primary-link:visited {
   max-width: 80ex;
 }
 
+/* Use existing points markers in the saved-content editor preview. */
+table th.col--points,
+table td.col--points {
+  width: 1%;
+}
+
+table td.col--points {
+  white-space: nowrap;
+}
+
 @media (min-width: 64em) {
   /* Make sure header is evenly spaced */
   .usa-logo {
@@ -1687,6 +1697,13 @@ main .back-link a::before,
 
 .subsection_edit .usa-legend + .usa-hint {
   margin-bottom: 1rem;
+}
+
+/* Keep the recovery editor usable in a half-width column and on phones. */
+.subsection-recovery .martor-toolbar,
+.subsection-recovery .martor-toolbar .btn-group {
+  max-width: 100%;
+  flex-wrap: wrap;
 }
 
 /* Styling the martor editing window */

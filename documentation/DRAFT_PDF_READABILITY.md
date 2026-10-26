@@ -52,8 +52,9 @@ the per-user permission check and disabled public route.
 
 ## Evidence limits and remaining investigation
 
-Validation found two gaps. Recognition and direct table-cell continuity are
-repaired in this slice, with metrics package 0.5.5:
+The October 7 validation found two gaps. This branch repairs recognition;
+the direct table-cell continuity repair was first adopted with metrics 0.5.5
+and is retained through current main’s 0.6.0 dependency:
 
 - **Cross-page table-cell sentence scope.** With package 0.5.4, the same reference
   prose tagged as table cells loses its four-word opening fragment when a
@@ -88,13 +89,26 @@ reading-order accuracy. These observations informed synthetic coverage, but do
 not establish metric accuracy for the source documents.
 
 The initial experiments used metrics package 0.5.4 and tagged adapter 0.1.6.
-Builder now pins 0.5.5 with tagged adapter 0.1.7; tagged profile 0.5.0 and generic
-profile 0.4.0 are unchanged. Representative source
-pages were inspected privately. No source files, identifying details, or source
+The October 7 follow-up used 0.5.5 with tagged adapter 0.1.7. After integration
+with current main, Builder retains metrics 0.6.0, tagged adapter 0.1.7, tagged
+profile `hhs-nofo-fy27-pdf-estimate@0.6.0`, and generic profile
+`hhs-nofo-fy27-generic-pdf-estimate@0.5.0`. The 0.5.5 table repair is already
+included in 0.6.0. Corrected passive profiles from #1123 remain selected; this
+branch does not revert their behavior. Representative source pages were
+inspected privately. No source files, identifying details, or source
 scores are committed here.
 
 Issue #1059 remains open for independently checked extraction from real conversion
 paths, equivalent-prose Word exports, multipage paragraphs and lists, confirmed
 Announcement Module provenance, and applicable FY27 clearance guidance. No
 recognition thresholds, formulas, authorization controls, or deployment flags
-change in this slice. Do not describe this as complete draft-format validation.
+change relative to current main in this slice. Do not describe this as complete
+draft-format validation.
+
+Authenticated Word uploads from #1112 and the Word scope/reliability guidance
+from #1170 remain available. The PDF-specific preparation notice appears only
+on PDF reports; the draft-readiness notice applies to both formats. Existing
+Word guidance, absent-rating behavior, copy/print controls, and public PDF-only
+restrictions are preserved. Direct Word support does not establish parity with
+Word-to-PDF exports. Browser captures below the review-evidence directory are
+historical October 7 evidence, not new verification of the integrated branch.

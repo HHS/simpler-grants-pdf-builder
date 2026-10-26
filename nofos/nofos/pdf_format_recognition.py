@@ -120,6 +120,8 @@ def recognize_nofo(
     metadata: Mapping | None,
     first_pages_text: str,
     policy: RecognitionPolicy = DEFAULT_POLICY,
+    *,
+    allow_agency_page_text: bool = True,
 ) -> Recognition:
     """Recognize a likely HHS NOFO from distinct, intentionally loose signals."""
     validate_policy(policy)
@@ -132,7 +134,7 @@ def recognize_nofo(
     signal_ids = []
     if _HHS_AGENCY_RE.search(descriptive_metadata):
         signal_ids.append("hhs_agency_metadata")
-    elif _HHS_AGENCY_RE.search(page_text):
+    elif allow_agency_page_text and _HHS_AGENCY_RE.search(page_text):
         # Print-to-PDF often drops descriptive agency metadata. Count page text
         # as an alternative location for the same signal, never a second vote.
         signal_ids.append("hhs_agency_page_text")
@@ -149,3 +151,28 @@ def recognize_nofo(
     if not page_text:
         return Recognition("indeterminate", "first_pages_text_unavailable", signals)
     return Recognition("unsupported", "insufficient_nofo_signals", signals)
+
+
+def recognize_word_nofo(text: str) -> Recognition:
+    """Reuse loose signals, allowing HHS NOFO templates without filled IDs.
+
+    The compound agency/title context adds one signal, not two. A distinct
+    existing signal (such as Grants.gov) is still required. The PDF-only agency
+    page-text alternative must not add another vote to Word template context.
+    """
+    text = _normalize(text)
+    decision = recognize_nofo({}, text, allow_agency_page_text=False)
+    if decision.status == "supported":
+        return decision
+    agency_context = _HHS_AGENCY_RE.search(text) or re.search(
+        r"\bHHS-wide\b", text, re.IGNORECASE
+    )
+    if agency_context and re.search(
+        r"\b(?:notice\s+of\s+funding\s+opportunity|nofo\s+(?:master\s+)?template)\b",
+        text,
+        re.IGNORECASE,
+    ):
+        signals = (*decision.signal_ids, "hhs_nofo_template_context")
+        if len(signals) >= DEFAULT_POLICY.minimum_signals:
+            return Recognition("supported", "minimum_signals_met", signals)
+    return decision

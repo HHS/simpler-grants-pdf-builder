@@ -1,4 +1,5 @@
 import re
+from unittest.mock import patch
 
 from bs4 import BeautifulSoup, Tag
 from django.contrib.staticfiles import finders
@@ -7,6 +8,7 @@ from django.utils.safestring import SafeString
 from martor.utils import markdownify
 
 from nofos.models import Nofo, Section, Subsection
+from nofos.nofo_markdown import md
 from nofos.templatetags.add_classes_to_links import add_classes_to_broken_links
 from nofos.templatetags.add_classes_to_tables import add_classes_to_tables
 from nofos.templatetags.replace_unicode_with_icon import (
@@ -87,7 +89,8 @@ class ReplaceUnicodeWithIconTests(TestCase):
 
         self.assertIn("usa-icon__td--link", td.get("class", []))
         self.assertNotIn("usa-icon__td--multi-block", td.get("class", []))
-        self.assertEqual(self.direct_tag_names(td.div), ["img", "a"])
+        self.assertEqual(self.direct_tag_names(td.div), ["img", "span"])
+        self.assertEqual(td.div.span.a["href"], "https://example.com")
         self.assertIsNone(td.find(class_="usa-icon__line"))
 
     def test_linked_checkbox_paragraph_gets_hanging_alignment(self):
@@ -99,8 +102,94 @@ class ReplaceUnicodeWithIconTests(TestCase):
         self.assertIn("usa-icon__td--link", td.get("class", []))
         self.assertNotIn("usa-icon__td--multi-block", td.get("class", []))
         self.assertIn("usa-icon__line", td.div.p.get("class", []))
-        self.assertEqual(self.direct_tag_names(td.div.p), ["img", "a"])
+        self.assertEqual(self.direct_tag_names(td.div.p), ["img", "span"])
         self.assertEqual(td.div.p.a["href"], "https://example.com")
+
+    def test_inline_labels_share_one_container_without_losing_spacing(self):
+        labels = [
+            ' Budget form (see <a href="#budget">instructions</a> for correct form)',
+            ' <a href="#budget">Budget form</a> is required',
+            ' Read the <a href="#budget">Budget form</a>',
+            ' Read <a href="#one">one</a> and <a href="#two">two</a>',
+            ' <strong>Budget form</strong> (<em>see</em> <a href="#budget">instructions</a>)',
+            ' A long label with many words that should wrap naturally around the inline <a href="#budget">instructions for completing the budget</a> without separating the sentence',
+        ]
+        for label in labels:
+            for paragraph in (False, True):
+                with self.subTest(label=label, paragraph=paragraph):
+                    source = f"◻{label}"
+                    td = self.render_cell(f"<p>{source}</p>" if paragraph else source)
+                    line = td.div.p if paragraph else td.div
+                    self.assertEqual(self.direct_tag_names(line), ["img", "span"])
+                    content = line.find(
+                        "span", class_="usa-icon__content", recursive=False
+                    )
+                    self.assertEqual(str(content.decode_contents()), label)
+                    self.assertEqual(line.img["alt"], "")
+
+    def test_multiple_checkbox_blocks_and_nested_list_keep_inline_links(self):
+        td = self.render_cell(
+            '<p>◻ First <a href="#one">linked</a> label</p>'
+            "<p>◻ Second <em>choice</em></p>"
+            '<ul><li>◻ Nested <a href="#two">link</a> text'
+            '<ul><li>◻ Deeper <a href="#three">link</a></li></ul></li></ul>'
+        )
+        self.assertEqual(self.direct_tag_names(td.div), ["p", "p", "ul"])
+        for paragraph in td.div.find_all("p", recursive=False):
+            self.assertEqual(self.direct_tag_names(paragraph), ["img", "span"])
+        self.assertEqual(
+            [a["href"] for a in td.find_all("a")], ["#one", "#two", "#three"]
+        )
+        self.assertEqual(len(td.find_all("ul")), 2)
+        self.assertIn("linked label", td.get_text())
+
+    def test_markdown_budget_form_keeps_link_inline_and_neighbor_unchanged(self):
+        source = (
+            "| Form | Required? |\n| --- | --- |\n"
+            "| ◻ Budget form (see [instructions](#budget) for correct form) | All applications |"
+        )
+        soup = BeautifulSoup(
+            replace_unicode_with_icon(markdownify(source)), "html.parser"
+        )
+        cells = soup.find_all("td")
+        self.assertEqual(
+            cells[0].div.span.get_text(),
+            " Budget form (see instructions for correct form)",
+        )
+        self.assertEqual(cells[0].div.span.a["href"], "#budget")
+        self.assertEqual(cells[1].get_text(), "All applications")
+        self.assertIsNone(cells[1].find("div"))
+
+    def test_nested_formatting_and_rerender_preserve_links_and_text(self):
+        source = '<table><tr><td><p><strong><span>◻</span> Read <a href="#budget">instructions</a> carefully</strong></p></td></tr></table>'
+        result = replace_unicode_with_icon(source)
+        soup = BeautifulSoup(result, "html.parser")
+        self.assertEqual(soup.td.get_text(), " Read instructions carefully")
+        self.assertEqual(soup.a["href"], "#budget")
+        self.assertEqual(replace_unicode_with_icon(result), result)
+
+    def test_emphasized_checkbox_label_and_following_link_share_flex_item(self):
+        td = self.render_cell(
+            '<p><strong>◻ Budget form</strong> (see <a href="#budget">instructions</a> for correct form)</p>'
+        )
+        self.assertEqual(self.direct_tag_names(td.div.p), ["img", "span"])
+        self.assertEqual(
+            td.div.p.span.get_text(), " Budget form (see instructions for correct form)"
+        )
+        self.assertEqual(td.strong.get_text(), " Budget form")
+
+    def test_multiple_inline_icons_preserve_original_labels(self):
+        td = self.render_cell(
+            '<p><span>◻ One <a href="#one">link</a></span> <span>◻ Two <a href="#two">link</a></span></p>'
+        )
+        self.assertEqual(len(td.find_all("img")), 2)
+        self.assertEqual(td.get_text(), " One link  Two link")
+        self.assertEqual([a["href"] for a in td.find_all("a")], ["#one", "#two"])
+
+    def test_arrow_only_rendering_is_not_given_checkbox_container(self):
+        td = self.render_cell('↑ Trend <a href="#details">details</a>')
+        self.assertEqual(td.img["alt"], "Report upward trend")
+        self.assertIsNone(td.find(class_="usa-icon__content"))
 
     def test_single_checkbox_list_keeps_normal_list_layout(self):
         td = self.render_cell("<ul><li>◻ Item one</li><li>Item two</li></ul>")
@@ -150,10 +239,11 @@ class ReplaceUnicodeWithIconTests(TestCase):
         self.assertEqual(checkbox_line.name, "p")
         self.assertIn("usa-icon__line", checkbox_line.get("class", []))
         self.assertIsNotNone(
-            checkbox_line.find("strong").find(
-                "img", class_="usa-icon--check_box_outline_blank"
+            checkbox_line.find(
+                "img", class_="usa-icon--check_box_outline_blank", recursive=False
             )
         )
+        self.assertEqual(checkbox_line.find("strong").get_text(), " Nested label")
 
     def test_arrow_wrapped_cell_still_marks_checkbox_line(self):
         td = self.render_cell("<p>↑ Trend</p><p>◻ Confirm result</p><p>More detail</p>")
@@ -1100,6 +1190,28 @@ class AddClassToPointsColumnsTests(TestCase):
             "| Relevant experience. | 10 points |"
         )
         self.assertEqual(soup.find_all(class_="col--points"), [])
+
+    def test_import_marks_points_and_removing_marker_disables_styling(self):
+        html = (
+            "<table><tr><th>Reviewers will evaluate how well the applicant provides:</th>"
+            "<th>Point value</th></tr>"
+            "<tr><td>Relevant management, administrative, and technical experience and capacity to carry out the activities and achieve the project outcomes.</td><td>10 points</td></tr>"
+            "<tr><td>A staffing plan that is sufficient to achieve the project outcomes and clearly defines staff roles.</td><td>10 points</td></tr>"
+            "<tr><td>Collaborations that support the applicant’s capacity or add value to the project.</td><td>10 points</td></tr>"
+            "<tr><td>An organizational chart that supports the program approach.</td><td>5 points</td></tr></table>"
+        )
+        imported = md(html)
+        self.assertEqual(imported.count("{: .col--points }"), 1)
+        self.assertEqual(
+            self._get_points_cell_texts(self._render(imported)),
+            ["Point value", "10 points", "10 points", "10 points", "5 points"],
+        )
+        without_marker = imported.replace("{: .col--points }", "")
+        with patch("nofos.templatetags.utils.get_points_column_indexes") as detector:
+            rendered = self._render(without_marker)
+            self.assertEqual(self._get_points_cell_texts(rendered), [])
+            self.assertEqual(add_classes_to_tables(str(rendered)), str(rendered))
+            detector.assert_not_called()
 
     def test_user_width_class_wins(self):
         soup = self._render(

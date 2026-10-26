@@ -117,6 +117,31 @@ The deployment pipeline:
    - Running database migrations
    - Deploying the release to the target environment
 
+### Subsection conflict protection rollout
+
+**For the first deployment of subsection save-conflict protection (#1075 / PR
+#1076), deploy outside 9:00 a.m.–5:00 p.m. Eastern Time (`America/New_York`).**
+This reduces interruptions for users with subsection edit forms open. Eastern
+Time follows daylight-saving changes; the schedule is not a fixed UTC offset.
+
+The change needs no database migration or existing-NOFO content rewrite. Open
+pages are not automatically refreshed. A subsection form opened before the
+deployment lacks the new hidden token: its next valid save is blocked, preserves
+its submitted fields, and offers explicit review against the latest saved
+version. The main NOFO edit page remains usable; opening a subsection loads the
+new form. Do not bypass missing-token checks to accommodate old tabs or ask users
+to refresh before preserving their work.
+
+If old and new application instances overlap during rollout, old instances can
+still accept unprotected saves. Protection is complete once the old instances
+have been drained. After deployment, verify a normal save, a two-tab conflict,
+and recovery of a form opened before deployment using a test NOFO. Confirm that
+review does not save and that the eventual combined save checks again.
+
+The [UI pattern](documentation/UI_PATTERNS.md#subsection-save-conflicts) describes
+the recovery flow, and the [screenshot gallery](documentation/review-evidence/subsection-conflicts-1075/README.md)
+shows its desktop and mobile states.
+
 ### Environments
 
 | Environment | URL | Purpose | Notes |
@@ -200,6 +225,21 @@ poetry run pre-commit install
 The following are excluded from formatting: static files, migration files, SVGs, and `.crt` files.
 
 ---
+
+## Document history index rollout (#1142)
+
+Keep `DOCUMENT_HISTORY_INDEX_ENABLED=False` for initial rollout. Migration 0154
+adds lookup tables; 0155 retains its identity but no longer runs a data backfill.
+Do not fake/reverse migrations from the earlier deployment. After the rollout
+has completed and all old workers have stopped, separately run
+`poetry run python manage.py backfill_document_audit_index --chunk-size 100`
+from `nofos/` in that environment. Measure load/duration on dev first; run only
+one job at a time. Investigate unresolved ownership, then require a successful
+`backfill_document_audit_index --check` before setting
+`DOCUMENT_HISTORY_INDEX_ENABLED=True` and rolling workers. Until then the
+existing reader remains active, not an incomplete indexed history. Validate
+first-page and Load More timing on the affected NOFO before sign-off. See
+[document history deployment and rollback](documentation/DOCUMENT_HISTORY.md#migration-and-deployment).
 
 ## Hotfixes
 

@@ -1,4 +1,4 @@
-"""Bounded, non-persisting entry point for the anonymous PDF pilot."""
+"""Bounded, non-persisting PDF/Word pilot entry point (legacy API names retained)."""
 
 from __future__ import annotations
 
@@ -20,11 +20,34 @@ _ADVISORY_LOCK_ID = 0x50444652454144  # "PDFREAD", distinct from app data locks.
 _LOCAL_LOCK_PATH = Path(tempfile.gettempdir()) / "builder-pdf-readability.lock"
 
 _ERRORS = {
+    "unsupported_file": (
+        "Choose a PDF or Word (.docx) file. Legacy .doc and macro-enabled files are not supported.",
+        400,
+    ),
+    "invalid_word": (
+        "We could not read this Word document. Save an unlocked .docx copy and try again.",
+        400,
+    ),
+    "word_no_text": (
+        "This Word document has no extractable text. Choose a document containing text, not just images.",
+        400,
+    ),
+    "word_expanded_limit": (
+        "This Word document is too complex or contains too much expanded data. Try a smaller .docx file.",
+        400,
+    ),
+    "word_format_unsupported": (
+        "This Word document does not appear to be an HHS notice of funding opportunity. Include basic NOFO details such as an opportunity number, Assistance Listing number, or Grants.gov reference near the beginning.",
+        400,
+    ),
     "invalid_pdf": (
         "We could not read this PDF. Check that it is a valid PDF and try again.",
         400,
     ),
-    "too_large": ("This PDF is too large. Choose a PDF smaller than 15 MB.", 413),
+    "too_large": (
+        "This file is too large. Choose a PDF or Word document smaller than 15 MB.",
+        413,
+    ),
     "too_many_pages": (
         "This PDF has too many pages. The pilot supports up to 150 pages.",
         400,
@@ -50,12 +73,12 @@ _ERRORS = {
         503,
     ),
     "timeout": (
-        "This PDF took too long to analyze. Try a shorter PDF or try again later.",
+        "This document took too long to analyze. Try a shorter document or try again later.",
         503,
     ),
     "busy": ("The analyzer is busy. Please try again in a moment.", 429),
     "unavailable": (
-        "PDF analysis is temporarily unavailable. Please try again later.",
+        "Document analysis is temporarily unavailable. Please try again later.",
         503,
     ),
 }
@@ -64,8 +87,8 @@ _ERRORS = {
 PDF_READABILITY_OUTCOMES = {
     "success": "A readability report was returned.",
     **{code: message for code, (message, _) in _ERRORS.items()},
-    "disabled": "The PDF readability pilot is disabled.",
-    "internal_error": "PDF analysis failed unexpectedly.",
+    "disabled": "The document readability pilot is disabled.",
+    "internal_error": "Document analysis failed unexpectedly.",
 }
 
 
@@ -81,7 +104,7 @@ class PdfReadabilityError(Exception):
 
 
 class PdfSizeLimitUploadHandler(FileUploadHandler):
-    """Stop receiving the request once a single PDF exceeds the pilot limit."""
+    """Stop receiving the request once an upload exceeds the shared pilot limit."""
 
     def __init__(self, request):
         super().__init__(request)
@@ -149,7 +172,10 @@ def _analyze_uploaded_pdf(upload) -> dict:
 
     with _analysis_slot():
         with tempfile.TemporaryDirectory(prefix="pdf-readability-") as directory:
-            pdf_path = Path(directory) / "input.pdf"
+            suffix = Path(str(getattr(upload, "name", ""))).suffix.lower()
+            if suffix not in {".pdf", ".docx"}:
+                raise PdfReadabilityError("unsupported_file")
+            pdf_path = Path(directory) / f"input{suffix}"
             byte_count = 0
             try:
                 with pdf_path.open("xb") as output:
@@ -160,7 +186,9 @@ def _analyze_uploaded_pdf(upload) -> dict:
                             raise PdfReadabilityError("too_large")
                         output.write(chunk)
                 if byte_count == 0:
-                    raise PdfReadabilityError("invalid_pdf")
+                    raise PdfReadabilityError(
+                        "invalid_word" if suffix == ".docx" else "invalid_pdf"
+                    )
                 command = [
                     sys.executable,
                     "-m",
@@ -215,7 +243,7 @@ def _analyze_uploaded_pdf(upload) -> dict:
 
 
 def analyze_uploaded_pdf(upload) -> dict:
-    """Analyze one Django UploadedFile and return only safe, displayable fields."""
+    """Analyze one PDF/DOCX upload and return safe fields; retain the legacy name."""
     try:
         return _analyze_uploaded_pdf(upload)
     finally:

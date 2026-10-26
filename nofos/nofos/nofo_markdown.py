@@ -1,16 +1,16 @@
 """
 HTML->Markdown conversion rules applied during NOFO import (import rules
-IMPORT-016, IMPORT-017, IMPORT-020, IMPORT-021, IMPORT-027, IMPORT-033 in
+IMPORT-016, IMPORT-017, IMPORT-020, IMPORT-021, IMPORT-027, IMPORT-033, IMPORT-069 in
 documentation/IMPORT_RULES.md). Update that document if you change one of
 NofoMarkdownConverter's conversion rules.
 """
 
 import re
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString
 from markdownify import MarkdownConverter
 
-from .import_transforms import APPLICATION_CHECKLIST_CHILD_CLASS
+from .content_constants import APPLICATION_CHECKLIST_CHILD_CLASS
 from .templatetags.utils import POINTS_COLUMN_CLASS, get_points_column_indexes
 
 # this is copied from __init__.py in markdownify
@@ -19,6 +19,7 @@ re_line_with_content = re.compile(r"^(.*)", flags=re.MULTILINE)
 
 PRESERVE_BOOKMARK_TARGET_ATTR = "data-nofo-preserve-bookmark-target"
 MISSING_ALT_TEXT_ATTR = "data-nofo-missing-alt-text"
+SOURCE_LIST_ATTR = "data-nofo-source-list"
 
 
 def get_width_class(th):
@@ -79,6 +80,15 @@ class NofoMarkdownConverter(MarkdownConverter):
     Leave ULs and OLs TDs as HTML
     """
 
+    def convert_strong(self, el, text, parent_tags):
+        # Nested bold is still one emphasis level. Repeating ** produces ****,
+        # which renders as bold/italic text with visible asterisks.
+        if {"strong", "b"} & parent_tags:
+            return text
+        return super().convert_strong(el, text, parent_tags)
+
+    convert_b = convert_strong
+
     def _remove_classes_recursive(self, container_el):
         if container_el.has_attr("class"):
             del container_el["class"]
@@ -86,6 +96,57 @@ class NofoMarkdownConverter(MarkdownConverter):
         for el in container_el.find_all(True):
             if el.has_attr("class"):
                 del el["class"]
+
+    def _list_requires_html(self, el):
+        """Keep a whole tree when Markdown would lose any source list semantics.
+
+        In particular, converting just the nested Roman list is insufficient:
+        Markdown markers around raw nested blocks do not preserve the tree.
+        A nested explicit decimal type also matters because legacy CSS otherwise
+        selects alpha/Roman markers by depth. Simple standalone decimals/bullets
+        retain the established four-space Markdown representation (IMPORT-021).
+        """
+        root = el
+        for parent in el.parents:
+            if parent.name in ("ol", "ul"):
+                root = parent
+        # Markdown can merge adjacent lists, including different marker kinds
+        # and decimal restarts at 1. Preserve the complete tree if a boundary
+        # would be lost at either the root or a nested sibling list.
+        for listing in [root, *root.find_all(["ol", "ul"])]:
+            for direction in ("previous_sibling", "next_sibling"):
+                sibling = getattr(listing, direction)
+                while isinstance(sibling, NavigableString) and not sibling.strip():
+                    sibling = getattr(sibling, direction)
+                if getattr(sibling, "name", None) in ("ol", "ul"):
+                    return True
+        # Paragraph-bearing (loose) items need their block boundaries retained.
+        # The renderer can otherwise absorb the next marker into a continuation.
+        if root.find("p") is not None:
+            return True
+        for ordered in [root, *root.find_all("ol")]:
+            if ordered.name != "ol":
+                continue
+            marker = ordered.get("type")
+            if marker in ("a", "A", "i", "I"):
+                return True
+            if ordered is not root and marker == "1":
+                return True
+            if ordered.get("start", "1") != "1" or ordered.has_attr("reversed"):
+                return True
+        return bool(root.find("li", attrs={"value": True}))
+
+    def _raw_list(self, el):
+        self._remove_classes_recursive(el)
+        self._strip_source_list_attrs(el)
+        html = str(el)
+        if el.find_parent(["td", "th"]) is not None:
+            html = html.replace("*", "&ast;")
+        return "\n\n" + html + "\n\n"
+
+    def _strip_source_list_attrs(self, el):
+        for tag in [el, *el.find_all(True)]:
+            tag.attrs.pop(SOURCE_LIST_ATTR, None)
 
     def convert_a(self, el, text, parent_tags):
         # Referenced, empty bookmark targets need to remain raw HTML so their
@@ -97,6 +158,7 @@ class NofoMarkdownConverter(MarkdownConverter):
             and not el.get("href")
             and not text.strip()
         ):
+            del el[PRESERVE_BOOKMARK_TARGET_ATTR]
             bookmark_target = BeautifulSoup("", "html.parser").new_tag("a")
             bookmark_target["id"] = el["id"]
             return str(bookmark_target)
@@ -112,6 +174,16 @@ class NofoMarkdownConverter(MarkdownConverter):
             return str(el.parent)
 
         return super().convert_a(el, text, parent_tags)
+
+    def convert_br(self, el, text, parent_tags):
+        # Markdownify strips boundary whitespace from emphasis, including the
+        # two-space/newline representation of a Word soft break. Raw HTML
+        # survives that stripping and the subsequent Markdown render.
+        if "_inline" not in parent_tags and parent_tags.intersection(
+            {"strong", "b", "em", "i"}
+        ):
+            return "<br>"
+        return super().convert_br(el, text, parent_tags)
 
     def convert_div(self, el, text, parent_tags):
         # Output raw HTML if the div has role="heading" attribute
@@ -136,16 +208,16 @@ class NofoMarkdownConverter(MarkdownConverter):
         return super().convert_img(el, text, parent_tags)
 
     def convert_ol(self, el, text, parent_tags):
+        self._strip_source_list_attrs(el)
         if el.find(id=re.compile(r"^endnote-manual-")):
             return "\n\n" + str(el) + "\n\n"
         # return as HMTL to preserve "start" attribute if anything other than "1"
         start = el.get("start", "1")
         if start and start != "1":
-            self._remove_classes_recursive(el)
-            return str(el)
+            return self._raw_list(el)
 
         for parent in el.parents:
-            if parent.name == "td":
+            if parent.name in ("td", "th"):
                 self._remove_classes_recursive(el)
                 return str(el).replace("*", "&ast;")
 
@@ -158,13 +230,18 @@ class NofoMarkdownConverter(MarkdownConverter):
             [li.attrs.update({"tabindex": "-1"}) for li in el.find_all("li")]
             return str(el.prettify())
 
+        if self._list_requires_html(el):
+            return self._raw_list(el)
         return super().convert_ol(el, text, parent_tags)
 
     def convert_ul(self, el, text, parent_tags):
+        self._strip_source_list_attrs(el)
         if el.find(id=re.compile(r"^endnote-manual-")):
             return "\n\n" + str(el) + "\n\n"
+        if self._list_requires_html(el):
+            return self._raw_list(el)
         for parent in el.parents:
-            if parent.name == "td":
+            if parent.name in ("td", "th"):
                 self._remove_classes_recursive(el)
                 return str(el).replace("*", "&ast;")
 
@@ -270,6 +347,22 @@ class NofoMarkdownConverter(MarkdownConverter):
                 return str(el.prettify()) + "\n"
 
         return super().convert_table(el, text, parent_tags)
+
+    def convert_tr(self, el, text, parent_tags):
+        # markdownify treats any preceding sibling as an earlier table row.
+        # A caption before the first row therefore suppresses the separator
+        # that makes a Markdown table render as a table. Its text has already
+        # been converted separately; exclude only this caption while the
+        # upstream converter decides whether this is the first row.
+        previous = el.find_previous_sibling()
+        if previous is None or previous.name != "caption":
+            return super().convert_tr(el, text, parent_tags)
+
+        previous.extract()
+        try:
+            return super().convert_tr(el, text, parent_tags)
+        finally:
+            el.insert_before(previous)
 
     def convert_th(self, el, text, parent_tags):
         # automatically add width classes to table headers based on number of <th> elements

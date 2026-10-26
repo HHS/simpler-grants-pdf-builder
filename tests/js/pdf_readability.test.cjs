@@ -7,7 +7,7 @@ const { runInNewContext } = require('node:vm');
 const source = readFileSync(join(__dirname,
   '../../nofos/bloom_nofos/static/js/pdf_readability.js'), 'utf8');
 
-function setup({ form = true, error = false, report = false, valid = true,
+function setup({ form = true, error = false, report = false, word = false, valid = true,
   clipboard = true, clipboardRejects = false, notesOpen = true, fileSelected = true } = {}) {
   const listeners = {};
   const submitButton = { disabled: false };
@@ -42,6 +42,7 @@ function setup({ form = true, error = false, report = false, valid = true,
     elements['readability-copy-status'] = copyStatus;
     elements['readability-copy-fallback'] = fallback;
     Object.assign(elements, {
+      'readability-report-source': node(word ? 'Word readability pilot' : 'PDF readability pilot'),
       'readability-file': node('draft <Q>.pdf'),
       'readability-date': node('September 23, 2026'),
       'readability-version': node('0.5.3'),
@@ -51,9 +52,11 @@ function setup({ form = true, error = false, report = false, valid = true,
       'readability-draft-readiness': node('Compare drafts with the same content scope.'),
       'readability-coverage': node('Text recovered from 2 pages.'),
       'readability-word-scope': node('Word count includes all text recovered from the PDF: 23 words.'),
-      'readability-reliability': node('Reliability of these estimates: Low'),
+      'readability-reliability': node(word ? 'This analysis does not check how completely the Word document was converted, so it does not assign a reliability rating.' : 'Reliability of these estimates: Low'),
       'readability-disclaimer': node('Estimates, not a clearance determination.'),
     });
+    if (word) delete elements['readability-draft-scope'];
+    if (word) elements['readability-word-guidance'] = node('Why “Estimated”? These measures describe text recovered from your Word document. Missing or changed text can affect the results.');
   }
   const metrics = [node('Word count 23 words Estimate · Low reliability'),
     node('Flesch-Kincaid Grade Level 8.4 Estimate · Low reliability')];
@@ -85,7 +88,7 @@ test('valid submission announces progress and prevents a duplicate upload', () =
   const state = setup();
   state.listeners['form:submit']();
   assert.equal(state.submitButton.disabled, true);
-  assert.equal(state.status.textContent, 'Analyzing your PDF…');
+  assert.equal(state.status.textContent, 'Analyzing your document…');
   assert.equal(state.horseClasses.has('is-running'), true);
 });
 
@@ -155,6 +158,16 @@ test('copy includes provenance, scope, every metric and note, and disclaimer', a
   assert.match(state.copiedText, /A layout limitation\.[\s\S]*Excluded fragments\./);
   assert.match(state.copiedText, /Estimates, not a clearance determination/);
   assert.equal(state.copyStatus.textContent, 'Metrics copied to clipboard.');
+});
+
+test('copy identifies Word reports without a PDF source label', async () => {
+  const state = setup({ form: false, report: true, word: true });
+  await state.listeners['copy:click']();
+  assert.match(state.copiedText, /^HHS NOFO Builder: Word readability pilot report/);
+  assert.doesNotMatch(state.copiedText, /Writer instructions and placeholders may be included/);
+  assert.match(state.copiedText, /Compare drafts with the same content scope/);
+  assert.match(state.copiedText, /Why “Estimated”\? These measures describe text recovered from your Word document/);
+  assert.match(state.copiedText, /does not check how completely the Word document was converted/);
 });
 
 for (const mode of ['unavailable', 'denied']) {

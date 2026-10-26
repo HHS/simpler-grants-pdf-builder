@@ -1,16 +1,16 @@
 {% extends "pdf_readability_base.html" %}
 {% load static %}
 
-{% block title %}PDF readability report | NOFO Builder{% endblock %}
+{% block title %}Document readability report | NOFO Builder{% endblock %}
 
 {% block content %}
   <div class="readability-page">
     {% if report %}
       <article aria-labelledby="report-title">
         <div class="readability-report-heading">
-          <p class="text-base margin-bottom-1">PDF readability pilot</p>
+          <p class="text-base margin-bottom-1" id="readability-report-source">{% if source_word %}Word{% else %}PDF{% endif %} readability pilot</p>
           <h1 id="report-title" class="font-heading-xl margin-y-0">Readability report</h1>
-          <p class="usa-intro margin-top-2">Estimates for text recovered from your PDF</p>
+          <p class="usa-intro margin-top-2">Estimates for text recovered from your {% if source_word %}Word document{% else %}PDF{% endif %}</p>
         </div>
 
         <dl class="readability-report-meta">
@@ -22,32 +22,47 @@
         <div class="usa-alert usa-alert--info margin-y-3" role="note">
           <div class="usa-alert__body">
             <h2 class="usa-alert__heading">How to read these results</h2>
-            <p class="usa-alert__text" id="readability-disclaimer">These are estimates, not a compliance, accessibility, or clearance determination. NOFO Builder measures its own drafts from structured HTML; this report measures text extracted from a PDF. Scores can differ even for the same document.</p>
+            <div id="readability-disclaimer">
+              <p class="usa-alert__text">These metrics can help you identify opportunities to improve your document’s readability. They are not a compliance, accessibility, or clearance determination.</p>
+              <p class="usa-alert__text">The tool uses shared metric formulas for Word documents, PDFs, and Builder drafts. Scores can differ because each format can preserve different text, sentence boundaries, and paragraph structure. When tracking revisions, use the same format and analysis method for a more consistent comparison.</p>
+            </div>
           </div>
         </div>
 
         <section aria-labelledby="scope-title" class="margin-top-4">
           <h2 id="scope-title" class="font-heading-lg">Measurement scope</h2>
           <p id="readability-scope-pages">
+            {% if source_word %}Word documents do not have a fixed page count in this report.{% else %}
             {{ report.pages_analyzed }} of {{ report.pages_total }} page{{ report.pages_total|pluralize }} processed.
+            {% endif %}
           </p>
-          <p id="readability-scope-method">{% if report.profile == 'generic' %}Text was reconstructed from page layout because usable PDF tags were unavailable.{% else %}Text was extracted using the PDF’s usable structure tags.{% endif %}</p>
+          <p id="readability-scope-method">{% if source_word %}Word body text was converted to HTML and measured with the existing HTML readability profile. Template instructions and draft options that convert to text are included. This is not a saved Builder import or a PDF conversion.{% elif report.profile == 'generic' %}Text was reconstructed from page layout because usable PDF tags were unavailable.{% else %}Text was extracted using the PDF’s usable structure tags.{% endif %}</p>
+          {% if not source_word %}
           <p id="readability-draft-scope">Writer instructions and placeholders left in your PDF may be included in these measures. The checker does not automatically separate them from applicant-facing content. For a check of applicant-facing writing, remove writer-only notes and template prompts from a copy before exporting it. Keep instructions that applicants need.</p>
+          {% endif %}
           <p id="readability-draft-readiness">A short or incomplete draft is not necessarily ready for publication, even if its readability scores meet your target. Compare drafts with the same content scope.</p>
           {% if report.coverage %}<p id="readability-coverage">{{ report.coverage }}</p>{% endif %}
           {% if report.scope.recovered_word_count or report.scope.recovered_word_count == 0 %}
-            <p id="readability-word-scope">Word count includes all text recovered from the PDF: {{ report.scope.recovered_word_count }} words.
+            <p id="readability-word-scope">Word count includes all text recovered from the {% if source_word %}Word conversion{% else %}PDF{% endif %}: {{ report.scope.recovered_word_count }} words.
               {% if report.scope.sentence_word_count or report.scope.sentence_word_count == 0 %}{% if report.scope.complete_sentence_count or report.scope.complete_sentence_count == 0 %}{% if report.scope.excluded_word_count or report.scope.excluded_word_count == 0 %}
                 Sentence-based formulas use {{ report.scope.sentence_word_count }} words in {{ report.scope.complete_sentence_count }} complete sentences. The remaining {{ report.scope.excluded_word_count }} words{% if report.scope.excluded_word_percentage or report.scope.excluded_word_percentage == 0 %} ({{ report.scope.excluded_word_percentage }}%){% endif %} are in text that does not form complete sentences, such as some headings, labels, list items, table cells, and other fragments, so sentence-based scores exclude them.
               {% endif %}{% endif %}{% endif %}
             </p>
           {% endif %}
-          <div class="usa-alert usa-alert--warning readability-reliability" role="note" id="readability-reliability">
+          {% if source_word %}
+            <p id="readability-word-guidance"><strong>Why “Estimated”?</strong> These measures describe text recovered from your Word document. Missing or changed text can affect the results. The tool may miss text in text boxes, headers, and footers, and cannot read text in images. Keep important text in the main document body. Remove template instructions and unused draft options from the copy you upload so they aren’t counted as part of your NOFO.</p>
+          {% endif %}
+          {% if source_word and not report.reliability %}
+            <p id="readability-reliability">This analysis does not check how completely the Word document was converted, so it does not assign a reliability rating. This does not mean a problem was detected in your upload. Any conversion warnings appear in Calculation notes.</p>
+          {% else %}
+          <div class="usa-alert usa-alert--{% if report.reliability == 'low' %}warning{% else %}info{% endif %} readability-reliability" role="note" id="readability-reliability">
             <div class="usa-alert__body">
-              <h3 class="usa-alert__heading">Reliability of these estimates: {{ report.reliability|capfirst }}</h3>
-              <p class="usa-alert__text">{% if report.profile == 'generic' %}PDF tags were unavailable, so the text order was inferred from page layout. Treat every value as a low-reliability estimate.{% else %}Usable PDF tags helped recover text order, but extraction can still omit or rearrange content. Review the source PDF when interpreting these estimates.{% endif %}</p>
+              <h3 class="usa-alert__heading">{% if report.reliability %}Reliability of these estimates: {{ report.reliability|capfirst }}{% else %}What this report includes{% endif %}</h3>
+              <p class="usa-alert__text">{% if source_word %}A reliability rating does not verify that all Word content was converted.{% elif report.profile == 'generic' %}The tool could not reliably determine the order of text in this PDF, so the scores may be less reliable. {% if word_uploads_allowed %}For your next upload, try uploading the original Word document instead. If you need to use a PDF, save it from Word using “Save as PDF” rather than “Print to PDF.”{% else %}For your next upload, save the original document from Word using “Save as PDF” rather than “Print to PDF.”{% endif %}{% else %}PDF structure tags helped the tool read the text in order, but some text may still be missed or read out of order, especially in columns and tables. These scores describe the text the tool recovered and may not reflect the entire PDF.{% endif %}</p>
+              {% if not report.reliability %}<p class="usa-alert__text">Reliability has not been assessed for these estimates.</p>{% endif %}
             </div>
           </div>
+          {% endif %}
         </section>
 
         <section aria-labelledby="metrics-title" class="margin-top-4">
@@ -58,7 +73,7 @@
                 <h3 class="font-heading-md margin-y-0">{{ metric.label }}</h3>
                 <p class="readability-metric-value margin-y-1">{{ metric.value }}</p>
                 <p class="margin-y-0">{{ metric.explanation }}</p>
-                <p class="text-base margin-bottom-0">{{ metric.status|capfirst }}{% if metric.status != 'Unavailable' %} · {{ metric.reliability|capfirst }} reliability{% endif %}</p>
+                <p class="text-base margin-bottom-0">{{ metric.status|capfirst }}{% if metric.status != 'Unavailable' %}{% if metric.reliability != 'unknown' %} · {{ metric.reliability|capfirst }} reliability{% elif not source_word or report.reliability %} · Reliability not assessed{% endif %}{% endif %}</p>
               </div>
             {% endfor %}
           </div>
@@ -73,43 +88,44 @@
           </details>
         {% endif %}
 
-        <p class="margin-top-4">Your PDF was processed temporarily on HHS-operated systems to calculate these estimates. It was not added to NOFO Builder, and no report history is retained. Save or copy your results before leaving this page; they cannot be recovered later.</p>
+        <p class="margin-top-4">Your document was processed temporarily on HHS-operated systems to calculate these estimates. It was not added to NOFO Builder, and no report history is retained. Save or copy your results before leaving this page; they cannot be recovered later.</p>
         <div class="readability-actions no-print">
           <button class="usa-button" type="button" id="print-readability-report">Print / Save as PDF</button>
           <button class="usa-button usa-button--outline" type="button" id="copy-readability-report">Copy metrics</button>
-          <a class="usa-link text-bold" href="{% url pilot_url_name %}">Analyze another PDF</a>
+          <a class="usa-link text-bold" href="{% url pilot_url_name %}">Analyze another document</a>
         </div>
         <p id="readability-copy-status" role="status" aria-live="polite" class="no-print"></p>
         <textarea id="readability-copy-fallback" class="readability-copy-fallback no-print" aria-label="Report text to copy manually" readonly hidden></textarea>
       </article>
     {% else %}
-      <h1 class="font-heading-xl">Check a PDF’s readability</h1>
-      <p class="usa-intro">Upload an HHS notice of funding opportunity to get readability estimates.</p>
+      <h1 class="font-heading-xl">Check a document’s readability</h1>
+      <p class="usa-intro">Upload an HHS notice of funding opportunity{% if word_uploads_allowed %} as a PDF or Word (.docx) document{% else %} as a PDF{% endif %} to get readability estimates.</p>
 
       <form method="post" enctype="multipart/form-data" class="usa-form readability-form" id="pdf-readability-form">
         {% csrf_token %}
-        {% include "includes/file_input.html" with id="pdf" label="Choose a PDF" hint=upload_hint accept=".pdf,application/pdf" error=error only %}
-        <p class="margin-top-2" id="readability-privacy-notice">Only upload documents you’re authorized to share. Your PDF is processed temporarily on HHS-operated systems; no report history is kept.</p>
+        {% include "includes/file_input.html" with id="pdf" label=file_label hint=upload_hint accept=file_accept error=error only %}
+        <p class="margin-top-2" id="readability-privacy-notice">Only upload documents you’re authorized to share. Your document is processed temporarily on HHS-operated systems; no report history is kept.</p>
         <details class="readability-additional-info margin-top-2">
-          <summary><span>How we handle your PDF</span></summary>
+          <summary><span>How we handle your document</span></summary>
           <div id="readability-privacy-details" class="usa-prose">
             <ul class="usa-list">
-              <li>Your PDF isn’t sent to any outside service or added to NOFO Builder.</li>
+              <li>Your document isn’t sent to any outside service or added to NOFO Builder.</li>
               {% if outcome_recording_enabled %}<li>We record when an upload is attempted, whether it succeeds, its error code and processing time. These records do not include your identity, filename, document text or scores.</li>{% endif %}
             </ul>
             <p>Follow your agency’s rules for sharing pre-decisional NOFO content.</p>
             <p>Read the <a class="usa-link usa-link--external" href="https://www.hhs.gov/privacy/privacy-policy/index.html" target="_blank" rel="noopener noreferrer">HHS Privacy Policy<span class="usa-sr-only"> (opens in a new tab)</span></a>.</p>
           </div>
         </details>
-        <button type="submit" class="usa-button margin-top-3" id="analyze-pdf-button">Analyze PDF</button>
+        <button type="submit" class="usa-button margin-top-3" id="analyze-pdf-button">Analyze document</button>
         <p id="pdf-submit-status" role="status" aria-live="polite" class="margin-top-2"></p>
       </form>
       <details class="readability-additional-info margin-top-3 readability-form">
-          <summary><span>PDF requirements</span></summary>
+          <summary><span>Document requirements</span></summary>
           <div id="readability-pdf-requirements" class="usa-prose">
           <p>Use a text-based HHS NOFO PDF. Keep the agency name, opportunity number, Assistance Listing number, and Grants.gov reference in the first five pages when possible.</p>
           <p>You can check an in-progress draft; it does not need to be designed for publication. Export a copy containing the writing you want to measure. Writer-only notes and template prompts may affect the results. Blank templates without identifying details may not be recognized.</p>
           <p>Scanned or image-only pages need OCR before analysis. Untagged PDFs can receive a report, but their estimates have lower reliability.</p>
+          {% if word_uploads_allowed %}<p>For Word, use an unlocked .docx file with NOFO details near the beginning. HHS NOFO templates can use placeholder identifiers if they identify the agency, identify themselves as a NOFO template or notice of funding opportunity, and reference Grants.gov. Legacy .doc and macro-enabled files are not supported. Word conversion can omit headers, footers, text boxes and images; template instructions and draft options may be counted.</p>{% endif %}
         </div>
         </details>
       <p class="margin-top-3"><strong>Need help?</strong> Contact your agency’s grants policy office first, or submit a request through the <a class="usa-link usa-link--external" href="https://forms.office.com/r/KH4icQuZ0S" target="_blank" rel="nofollow noopener noreferrer">NOFO Builder Feedback Form<span class="usa-sr-only"> (opens in a new tab)</span></a>.</p>
@@ -119,7 +135,7 @@
       <div class="usa-modal" id="readability-progress-modal" aria-labelledby="readability-progress-heading" aria-describedby="readability-progress-body" data-force-action>
         <div class="usa-modal__content">
           <div class="usa-modal__main">
-            <h2 class="usa-modal__heading" id="readability-progress-heading">Analyzing your PDF…</h2>
+            <h2 class="usa-modal__heading" id="readability-progress-heading">Analyzing your document…</h2>
             <div class="usa-prose" id="readability-progress-body">
               {% if report %}
               <p>Your report is ready.</p>

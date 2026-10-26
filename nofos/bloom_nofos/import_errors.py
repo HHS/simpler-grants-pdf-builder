@@ -36,6 +36,21 @@ DOCUMENT_STRUCTURE_RECOVERY_STEPS = (
 
 
 IMPORT_ERROR_CATALOG = {
+    "IMPORT-INTRODUCTION-STRUCTURE": {
+        "title": "Check the introductory section before importing",
+        "summary": "Builder could not safely map this document's introductory text to editable content. No content was saved or replaced. Any existing NOFO is unchanged.",
+        "status": 422,
+        "recovery_steps": (
+            "If the details identify content before the introduction, remove template guidance from your import copy or move applicant-facing content into the appropriate section.",
+            "Automatic instruction-box removal applies to supported Word text boxes with a solid pale-blue fill (DCEAF7). Changing a table's background color does not make it eligible for that removal.",
+            "Keep one Before You Begin or Before You Get Started heading before Step 1, with its introductory text beneath it.",
+            "If the details identify a heading-level problem, in Word, open Home > Styles. Use the same main heading level for the introduction and Step 1 (Heading 1 or Heading 2).",
+            "For a heading-level problem, keep every heading between the introductory heading and Step 1 at a lower level (a larger heading number). For example, use Heading 2 for Get registered beneath a Heading 1 introduction, and Heading 3 for headings within Get registered.",
+            "Save the document, then import it again.",
+        ),
+        "when": "An editable-introduction record is reimported without a unique populated introduction, or a positively recognized new structure has unmappable prelude content or heading levels.",
+        "support": "The import stops before overwriting or archiving saved content. Check the details for content before the introduction (including template-guidance tables), missing or repeated introductory headings, empty content, or mixed heading levels. The preceding-content check does not imply incorrect heading styles. Pale-blue table shading is not Word text-box cleanup eligibility.",
+    },
     "IMPORT-NO-FILE": {
         "title": "Select a document to import",
         "summary": (

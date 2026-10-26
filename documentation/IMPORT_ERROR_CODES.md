@@ -9,6 +9,10 @@ which is the single source of truth - this page describes those entries, it
 doesn't define them. `nofos/nofos/tests_nofos/test_import_error_catalog.py`
 fails if a code exists in one place and not the other.
 
+For investigating recurring errors or unclear recovery instructions and deciding
+whether to propose a product change, see
+[quality review and triage](QUALITY_REVIEW_AND_TRIAGE.md#review-triage).
+
 ## Adding a new code
 
 1. Add an entry to `IMPORT_ERROR_CATALOG` with a title, a summary, recovery
@@ -47,6 +51,50 @@ Retry controls are bold navigation links because they open the relevant form;
 they do not automatically retry an upload.
 
 ## The codes
+
+### `IMPORT-INTRODUCTION-STRUCTURE`
+
+**HTTP status:** 422
+
+**When it fires:** An editable-introduction record cannot safely map its replacement introduction, or a recognized new FY27 source has unsafe introductory heading levels or unmappable prelude content. These sources stop before source cleanup, saving, overwrite or archival.
+
+**What the user sees**
+
+> **Check the introductory section before importing**
+>
+> Builder could not safely map this document's introductory text to editable content. No content was saved or replaced. Any existing NOFO is unchanged.
+
+The **What we found** detail distinguishes two cases:
+
+- **Content before the introduction:** names the introductory heading and shows
+  the first unassigned content in document order, with whitespace normalized and
+  an excerpt of at most 160 characters. Images or empty headings get a readable
+  fallback. Recognized Metadata and empty/bookmark-only paragraphs are excluded.
+  The detail explicitly says this check does not mean heading styles are incorrect.
+- **Unsafe heading levels:** names the offending heading, its detected heading
+  level, the introductory heading and Step 1. For example, “Get registered” at
+  Heading 1 beneath a Heading 1 introduction is rejected instead of silently
+  replaced with generated content.
+
+The recovery steps cover both cases, with heading-level changes conditional on
+the details reporting a heading-level problem:
+
+1. If the details identify content before the introduction, remove template guidance from your import copy or move applicant-facing content into the appropriate section.
+2. Automatic instruction-box removal applies to supported Word text boxes with a solid pale-blue fill (DCEAF7). Changing a table's background color does not make it eligible for that removal.
+3. Keep one Before You Begin or Before You Get Started heading before Step 1, with its introductory text beneath it.
+4. If the details identify a heading-level problem, in Word, open Home > Styles. Use the same main heading level for the introduction and Step 1 (Heading 1 or Heading 2).
+5. For a heading-level problem, keep every heading between the introductory heading and Step 1 at a lower level (a larger heading number). For example, use Heading 2 for Get registered beneath a Heading 1 introduction, and Heading 3 for headings within Get registered.
+6. Save the document, then import it again.
+
+**What support should say:** Start with the content or headings identified in the
+details. A General instructions table before a correctly styled introduction can
+trigger this error, including when the table is shaded DCEAF7. Do not tell users
+to restyle valid headings or recolor the table to fix that case. For a heading
+problem, review Word Styles rather than visual size. Missing/repeated headings
+and empty or unsafe replacements are blocked for editable-introduction records;
+unrecognized new sources retain their existing fallback. The existing rejection,
+cleanup order, error code, HTTP status and saved-content protection are unchanged.
+See [instruction-container requirements](EDITABLE_INTRODUCTION.md#template-guidance-before-the-introduction).
 
 ### `IMPORT-NO-FILE`
 

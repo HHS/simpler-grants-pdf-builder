@@ -39,3 +39,40 @@ grade 1.2, and 33.3% passive sentences. Sentence scope contains 17 words and
 three sentences. This fixture uses direct cell tags; nested semantic blocks
 remain a documented limitation. Earlier screenshots identify their older
 measurement version and are retained as prior evidence.
+
+## Integration with main — October 26, 2026
+
+Integrated main at `b3e23b2f33515fe28482108cff9a2016f9a88ca6` without
+rewriting the PR history. The dependency, lockfile and PDF worker match main:
+metrics 0.6.0, corrected passive profiles, and tagged adapter 0.1.7. The former
+0.5.5 adoption is historical evidence; it is already included in 0.6.0.
+
+The current authenticated Word upload support and Word scope/reliability
+presentation remain intact. PDF preparation guidance is conditional on PDF
+reports, while draft readiness applies to both formats. Copy behavior follows
+the displayed guidance. Regression assertions exercise real PDF and DOCX
+uploads using measurement version 0.6.0, the Word absent-rating explanation,
+and disabled public access. Word recognition explicitly retains its prior
+compound-context rule instead of inheriting the new PDF agency page-text vote.
+
+The fetched main has two migration leaves, `0154_design_pilot_candidate` and
+`0155_backfill_document_audit_index`. An empty merge migration joins them with
+no database operations, allowing normal migration loading and test setup.
+The prior-rollout test now temporarily removes and restores recorded descendant
+migrations too, so the simulated older history remains consistent.
+
+Validation on the integrated branch:
+
+- Full Python suite: 2,862 tests completed successfully, with three existing
+  skips, using Django’s four-process test runner.
+- 136 focused Python checks passed, including real-worker fixtures, Word/PDF
+  uploads, recognition boundaries, stored metrics, permissions and report scope.
+- All 18 document-history checks passed, including the older-rollout simulation.
+- All 57 JavaScript tests passed, including PDF/Word copied guidance.
+- Poetry lock validation, touched-file pre-commit checks and whitespace checks
+  passed. Migration drift check reports no changes.
+
+The October 7 browser captures above were not recreated in this update. No
+private-source extraction or conversion matrix was rerun. The remaining
+accuracy, provenance and clearance limitations in the durable guide still apply.
+No public pilot setting or deployment was changed.

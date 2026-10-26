@@ -59,6 +59,21 @@ REPORT = {
 
 
 class PdfReadabilityPageTests(TestCase):
+    @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
+    def test_public_route_remains_pdf_only_even_when_enabled(self):
+        from nofos.tests_nofos.test_word_readability import synthetic_docx
+
+        with patch("bloom_nofos.views.analyze_uploaded_pdf") as analyze:
+            response = self.client.post(
+                reverse("pdf_readability"),
+                {"pdf": SimpleUploadedFile("synthetic.docx", synthetic_docx())},
+            )
+        analyze.assert_not_called()
+        self.assertContains(response, "Choose one PDF file", status_code=400)
+        self.assertNotContains(response, "Readability measures", status_code=400)
+        self.assertNotContains(response, 'accept=".pdf,.docx', status_code=400)
+        self.assertIn("no-store", response["Cache-Control"])
+
     def setUp(self):
         self.url = reverse("pdf_readability")
 
@@ -115,7 +130,7 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, 'for="pdf"')
         self.assertContains(response, "usa-file-input__input")
         self.assertContains(response, 'name="csrfmiddlewaretoken"')
-        self.assertContains(response, "One PDF, up to 15 MB")
+        self.assertContains(response, "One PDF file, up to 15 MB")
         self.assertContains(response, "Upload an HHS notice of funding opportunity")
         self.assertNotContains(response, "Upload one draft NOFO PDF")
         self.assertContains(
@@ -136,14 +151,14 @@ class PdfReadabilityPageTests(TestCase):
         response = self.client.get(self.url)
         content = response.content.decode()
         self.assertContains(response, 'id="readability-privacy-notice"')
-        self.assertContains(response, "How we handle your PDF")
+        self.assertContains(response, "How we handle your document")
         self.assertContains(response, "optical character recognition (OCR)")
         self.assertContains(
-            response, "<summary><span>PDF requirements</span></summary>", html=True
+            response, "<summary><span>Document requirements</span></summary>", html=True
         )
         self.assertContains(
             response,
-            "<summary><span>How we handle your PDF</span></summary>",
+            "<summary><span>How we handle your document</span></summary>",
             html=True,
         )
         self.assertLess(
@@ -155,12 +170,12 @@ class PdfReadabilityPageTests(TestCase):
         )
         self.assertContains(
             response,
-            "Your PDF is processed temporarily on HHS-operated systems; "
+            "Your document is processed temporarily on HHS-operated systems; "
             "no report history is kept.",
         )
         self.assertContains(
             response,
-            "Your PDF isn’t sent to any outside service or added to NOFO Builder.",
+            "Your document isn’t sent to any outside service or added to NOFO Builder.",
         )
         self.assertContains(
             response,
@@ -216,6 +231,38 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "Choose one PDF", status_code=400)
 
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
+    def test_reliability_alert_matches_estimate_confidence(self):
+        for level, alert_type in (
+            ("high", "info"),
+            ("moderate", "info"),
+            ("low", "warning"),
+        ):
+            with self.subTest(reliability=level):
+                report = {**REPORT, "profile": "tagged", "reliability": level}
+                with patch(
+                    "bloom_nofos.views.analyze_uploaded_pdf", return_value=report
+                ):
+                    response = self.client.post(self.url, {"pdf": sample_pdf()})
+                self.assertContains(
+                    response,
+                    f'class="usa-alert usa-alert--{alert_type} readability-reliability"',
+                )
+                self.assertContains(
+                    response, f"Reliability of these estimates: {level.capitalize()}"
+                )
+                self.assertContains(response, "especially in columns and tables")
+                self.assertContains(response, "may not reflect the entire PDF")
+
+    @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
+    def test_public_pdf_recovery_advice_matches_supported_uploads(self):
+        with patch("bloom_nofos.views.analyze_uploaded_pdf", return_value=REPORT):
+            response = self.client.post(self.url, {"pdf": sample_pdf()})
+        self.assertContains(response, "The tool could not reliably determine the order")
+        self.assertContains(response, "Save as PDF")
+        self.assertContains(response, "Print to PDF")
+        self.assertNotContains(response, "try uploading the original Word document")
+
+    @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
     @patch("bloom_nofos.views.analyze_uploaded_pdf", return_value=REPORT)
     def test_report_is_immediate_printable_and_escaped(self, analyze):
         response = self.client.post(
@@ -234,11 +281,11 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "Not available")
         self.assertNotContains(response, "Unavailable · Low reliability")
         self.assertContains(response, "Unavailable")
-        self.assertContains(response, "low-reliability estimate")
+        self.assertContains(response, "the scores may be less reliable")
         self.assertContains(response, "Copy metrics")
         self.assertContains(
             response,
-            '<a class="usa-link text-bold" href="/readability/">Analyze another PDF</a>',
+            '<a class="usa-link text-bold" href="/readability/">Analyze another document</a>',
             html=True,
         )
         self.assertNotContains(

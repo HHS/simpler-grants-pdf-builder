@@ -2,6 +2,7 @@ import uuid
 
 import cssutils
 from bloom_nofos.middleware import get_current_user
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator
@@ -11,6 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateformat import format
 from martor.models import MartorField
+from martor.utils import markdownify
 
 from .utils import add_html_id_to_subsection
 
@@ -106,6 +108,14 @@ THEME_CHOICES = [
     ("portrait-samhsa-white", "SAMHSA (Light)"),
     ("portrait-nih-white", "NIH (Light)"),
 ]
+
+
+# Keep legacy theme values valid on stored NOFOs, but do not offer them for new selection.
+RETIRED_THEME_CHOICES = {
+    "portrait-hrsa-blue": "HRSA (Default, legacy)",
+    "landscape-cdc-blue": "CDC Landscape (Default, legacy)",
+    "landscape-cdc-white": "CDC Landscape (Light, legacy)",
+}
 
 
 class BaseNofo(models.Model):
@@ -480,6 +490,45 @@ class Nofo(BaseNofo):
         ),
     )
 
+    introductory_page_family = models.CharField(
+        max_length=20,
+        choices=[
+            ("", "Legacy (not identified by an import)"),
+            ("legacy", "Before you begin"),
+            ("get_started", "Before you get started"),
+        ],
+        default="",
+        blank=True,
+        editable=False,
+    )
+
+    introductory_content_mode = models.CharField(
+        max_length=20,
+        choices=[
+            ("generated", "Generated template"),
+            ("imported", "Editable imported content"),
+        ],
+        default="generated",
+        editable=False,
+    )
+
+    @property
+    def has_imported_introduction(self):
+        return self.introductory_content_mode == "imported"
+
+    def get_first_subsection(self):
+        section = self.sections.exclude(role="introduction").order_by("order").first()
+        return section.subsections.order_by("order").first() if section else None
+
+    @property
+    def introductory_page_title(self):
+        return (
+            "Before you get started"
+            if self.has_imported_introduction
+            or self.introductory_page_family == "get_started"
+            else "Before you begin"
+        )
+
     @property
     def designer_display(self):
         """Human-readable designer label.
@@ -655,6 +704,97 @@ class Section(BaseSection):
     class Meta:
         ordering = ["order"]
         unique_together = ("nofo", "order")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["nofo"],
+                condition=models.Q(role="introduction"),
+                name="one_imported_introduction_per_nofo",
+            )
+        ]
+
+    role = models.CharField(
+        max_length=20,
+        default="",
+        blank=True,
+        editable=False,
+        choices=[("", "Ordinary section"), ("introduction", "Editable introduction")],
+    )
+
+    @property
+    def is_introduction(self):
+        return self.role == "introduction"
+
+    @property
+    def step_number(self):
+        return self.order
+
+    @property
+    def is_first_main_section(self):
+        return not self.is_introduction and self.order == 1
+
+    @property
+    def needs_navigation_help(self):
+        if not self.is_introduction:
+            return False
+        # Match what readers see, not Markdown delimiters or link destinations.
+        visible = []
+        for subsection in self.subsections.all():
+            html = BeautifulSoup(markdownify(subsection.body), "html.parser")
+            # Separate blocks/line breaks without splitting formatted words.
+            for tag in html.find_all(
+                [
+                    "p",
+                    "div",
+                    "li",
+                    "br",
+                    "td",
+                    "th",
+                    "blockquote",
+                    "h1",
+                    "h2",
+                    "h3",
+                    "h4",
+                    "h5",
+                    "h6",
+                ]
+            ):
+                tag.insert_before(" ")
+                tag.insert_after(" ")
+            visible.append(html.get_text())
+        text = " ".join(" ".join(visible).split()).casefold()
+        return not (
+            "adobe reader" in text
+            and any(
+                phrase in text for phrase in ("left arrow", "left-arrow", "keyboard")
+            )
+        )
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            original = type(self).objects.filter(pk=self.pk).first()
+            if (
+                original
+                and original.is_introduction
+                and (
+                    self.role != original.role
+                    or self.name != original.name
+                    or self.order != original.order
+                )
+            ):
+                raise ValidationError(
+                    "The introductory heading and its position are fixed. Edit its subsections instead."
+                )
+        if self.is_introduction:
+            self.name = "Before you get started"
+            self.order = 0
+            self.html_id = "section--before-you-begin"
+            self.has_section_page = False
+            # BaseSection treats zero as an omitted order; avoid that fallback
+            # for this explicit NOFO-only role without changing shared models.
+            models.Model.save(self, *args, **kwargs)
+            self.nofo.touch_updated()
+            return
+        super().save(*args, **kwargs)
 
     nofo = models.ForeignKey(
         "nofos.Nofo",
@@ -1223,7 +1363,7 @@ class NofoReadabilityScore(models.Model):
 class NofoReadabilityCheckpoint(models.Model):
     """An explicit review checkpoint referencing an unchanged calculation."""
 
-    score = models.OneToOneField(
+    score = models.ForeignKey(
         NofoReadabilityScore, on_delete=models.CASCADE, related_name="checkpoint"
     )
     saved_at = models.DateTimeField(auto_now_add=True)
@@ -1252,13 +1392,18 @@ class NofoReadabilityCheckpoint(models.Model):
         default=TRIGGER_MANUAL,
         help_text=(
             "What created this checkpoint. Imports, re-imports and finished PDF "
-            "downloads save one automatically when the NOFO has changed, so "
+            "downloads each save once per NOFO version and trigger, so "
             "every NOFO has a starting point and a record of what was produced."
         ),
     )
 
     class Meta:
         ordering = ["-saved_at", "-pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["score", "trigger"], name="unique_readability_score_trigger"
+            )
+        ]
 
 
 class PdfReadabilityAttempt(models.Model):
@@ -1590,6 +1735,58 @@ class ExternalSourceHandoffResult(models.Model):
         raise ValidationError("Handoff results cannot be deleted through the ORM.")
 
 
+class AuditObjectDocument(models.Model):
+    """Durable document ownership, including objects removed by a reimport."""
+
+    content_type = models.ForeignKey(
+        "contenttypes.ContentType", on_delete=models.CASCADE, related_name="+"
+    )
+    object_id = models.UUIDField()
+    document_content_type = models.ForeignKey(
+        "contenttypes.ContentType", on_delete=models.CASCADE, related_name="+"
+    )
+    document_id = models.UUIDField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["content_type", "object_id"],
+                name="audit_object_document_unique",
+            )
+        ]
+
+
+class DocumentAuditEvent(models.Model):
+    """Small indexed projection; original audit content remains in CRUDEvent."""
+
+    event = models.OneToOneField(
+        "easyaudit.CRUDEvent",
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name="document_index",
+    )
+    document_content_type = models.ForeignKey(
+        "contenttypes.ContentType", on_delete=models.CASCADE, related_name="+"
+    )
+    document_id = models.UUIDField()
+    datetime = models.DateTimeField()
+    visible = models.BooleanField()
+
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=[
+                    "document_content_type",
+                    "document_id",
+                    "-datetime",
+                    "-event",
+                ],
+                condition=models.Q(visible=True),
+                name="document_audit_page_idx",
+            )
+        ]
+
+
 class ExternalSourceHandoffCurrent(models.Model):
     """The sole mutable current-result selector for a receipt."""
 
@@ -1620,3 +1817,30 @@ class ExternalSourceHandoffCurrent(models.Model):
         raise ValidationError(
             "A current-result selection cannot be deleted through the ORM."
         )
+
+
+class DesignPilotCandidate(models.Model):
+    """Synthetic local run state; never a production acceptance record."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    owner_group = models.CharField(max_length=32)
+    nofo = models.OneToOneField(Nofo, on_delete=models.CASCADE)
+    source_sha256 = models.CharField(max_length=64)
+    source_bytes = models.BinaryField()
+    source_name = models.CharField(max_length=200)
+    conversion_html = models.TextField()
+    content_json = models.TextField()
+    presentation_json = models.TextField()
+    changes_json = models.TextField(default="[]")
+    sequence = models.PositiveIntegerField(default=0)
+    revision = models.CharField(max_length=64)
+    warnings = models.JSONField(default=list)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["owner", "source_sha256"], name="design_pilot_owner_source_once"
+            )
+        ]

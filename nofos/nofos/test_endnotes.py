@@ -5,11 +5,71 @@ from bs4 import BeautifulSoup
 from .endnotes import (
     analyze_endnotes,
     convert_bracketed_endnotes,
+    normalize_repeated_native_note_links,
     remove_duplicate_native_note_custom_marks,
 )
 
 
 class BracketedEndnotesTests(TestCase):
+    def test_repeated_native_links_do_not_disrupt_mixed_manual_numbering(self):
+        soup = self.soup(
+            '<p><a id="endnote-ref-2" href="#endnote-2">[1]</a> then '
+            '<a href="#endnote-2">1</a> then [2]</p>'
+            '<h1>Endnotes</h1><ol><li id="endnote-2">Native '
+            '<a href="#endnote-ref-2">↑</a></li></ol><p>[2] Manual</p>'
+        )
+        normalize_repeated_native_note_links(soup)
+        self.assertEqual(convert_bracketed_endnotes(soup), [])
+        self.assertEqual(analyze_endnotes(soup), [])
+
+    def test_native_repair_leaves_ambiguous_targets_labels_and_id_collisions(self):
+        for extra, second in (
+            ('<li id="endnote-2">Duplicate target</li>', "[1]"),
+            ("", "[2]"),
+            ('<p id="endnote-ref-2">Unrelated bookmark</p>', "[1]"),
+        ):
+            with self.subTest(extra=extra, second=second):
+                soup = self.soup(
+                    '<p><a id="endnote-ref-2" href="#endnote-2">[1]</a>'
+                    f'<a id="endnote-ref-2" href="#endnote-2">{second}</a></p>'
+                    f'<ol><li id="endnote-2">Citation</li>{extra}</ol>'
+                )
+                before = str(soup)
+                normalize_repeated_native_note_links(soup)
+                self.assertEqual(str(soup), before)
+                self.assertTrue(analyze_endnotes(soup))
+
+    def test_explicit_repeated_native_links_get_unique_returns_and_survive_markdown(
+        self,
+    ):
+        import markdown
+
+        from .nofo_markdown import md
+
+        soup = self.soup(
+            '<h1>Program</h1><p><a id="endnote-ref-2" href="#endnote-2">[1]</a>'
+            ' then <a id="endnote-ref-2" href="#endnote-2">[1]</a>'
+            ' then <a href="#endnote-2">1</a> and <sup>1,2</sup>.</p>'
+            '<h1>Endnotes</h1><ol><li id="endnote-2"><p>Citation '
+            '<a href="#endnote-ref-2">↑</a></p></li></ol>'
+        )
+        normalize_repeated_native_note_links(soup)
+        before = str(soup)
+        self.assertIn("<sup>1,2</sup>", before)
+        normalize_repeated_native_note_links(soup)
+        self.assertEqual(str(soup), before)
+        rendered = self.soup(markdown.markdown(md(str(soup)), extensions=["extra"]))
+        refs = rendered.select('a[href="#endnote-2"]')
+        self.assertEqual(len(refs), 3)
+        self.assertEqual(len({a["id"] for a in refs}), 3)
+        for anchor in refs:
+            self.assertEqual(anchor.parent.name, "sup")
+            self.assertIsNotNone(
+                rendered.find(id="endnote-2").find("a", href="#" + anchor["id"])
+            )
+        self.assertIn("1,2", rendered.get_text())
+        self.assertEqual(analyze_endnotes(rendered), [])
+
     def test_duplicate_word_custom_mark_is_removed_only_from_nested_superscript(self):
         soup = self.soup(
             '<p><sup><sup><a href="#endnote-2" id="endnote-ref-2">[1]</a>'

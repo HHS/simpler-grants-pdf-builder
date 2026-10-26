@@ -434,6 +434,8 @@ class ComposerImportView(ComposerAdminRequiredMixin, BaseNofoImportView):
     """
 
     template_name = "composer/composer_import.html"
+    # Keep guidance available to the existing extraction/reattachment workflow.
+    remove_word_instruction_boxes = False
     redirect_url_name = "composer:composer_import"
 
     def add_instructions_to_subsections(self, *, sections, instructions_tables) -> None:

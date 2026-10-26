@@ -47,12 +47,17 @@ from martor.utils import markdownify
 from nofos.nofo_compare import extract_new_diff, extract_old_diff
 
 from .audits import (
+    audit_event_formatting_options,
     deduplicate_audit_events_by_day_and_object,
     format_audit_event,
     get_audit_event_by_id,
-    get_audit_events_for_document,
     get_audit_events_for_nofo,
+    get_audit_events_page,
     safe_get_changed_fields,
+)
+from .document_processing import (
+    get_sections_and_subsections_from_soup,
+    process_document_content,
 )
 from .forms import (
     NIH_ALLOWED_CHOICES,
@@ -120,10 +125,10 @@ from .nofo import (
     add_headings_to_document,
     add_line_breaks_to_key_dates_values,
     add_page_breaks_to_headings,
+    builder_import_content,
     count_page_breaks_nofo,
     count_page_breaks_subsection,
     create_nofo,
-    decompose_before_you_begin_section,
     extract_page_break_context,
     find_broken_links,
     find_endnote_issues,
@@ -135,21 +140,16 @@ from .nofo import (
     find_subsections_with_nofo_field_value,
     get_cover_image,
     get_nofo_action_links,
-    get_sections_from_soup,
     get_side_nav_links,
     get_subsection_action_availability,
-    get_subsections_from_sections,
     modifications_update_announcement_text,
     nofo_has_appendix_section,
     nofo_has_end_notes_section,
     overwrite_nofo,
     parse_uploaded_file_as_html_string,
     preserve_subsection_metadata,
-    process_nofo_html,
     remove_cover_image_from_s3,
     remove_page_breaks_from_subsection,
-    replace_chars,
-    replace_links,
     replace_value_in_subsections,
     resolve_section_heading_level,
     restore_subsection_metadata,
@@ -175,6 +175,14 @@ from .readability import (
     save_automatic_checkpoint,
 )
 from .readability_history import checkpoint_rows
+from .subsection_conflicts import (
+    EDIT_FIELDS,
+    matches_version,
+    read_version,
+    recovery_token,
+    recovery_values,
+    saved_values,
+)
 from .utils import create_nofo_audit_event, create_subsection_html_id, user_is_nih_group
 
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(Nofo)
@@ -215,6 +223,7 @@ def duplicate_nofo(original_nofo, is_successor=False, duplicated_by=None):
         new_sections = [
             Section(
                 **model_to_dict(original_section, exclude=["id", "nofo"]),
+                role=original_section.role,
                 nofo=new_nofo,
             )
             for original_section in original_sections
@@ -375,6 +384,9 @@ class NOFOsExportView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        if self.object.introductory_page_family:
+            context.update(get_nofo_document_context(self.object))
 
         context["policy_export_enabled"] = config.HHS_NOFO_POLICY_EXPORT_ENABLED
         context["strip_policy_language"] = (
@@ -547,6 +559,19 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         )
         context["broken_links"] = find_broken_links(self.object)
         context["external_links"] = find_external_links(self.object, with_status=False)
+        context["missing_destination_links"] = [
+            {
+                **link,
+                "location_html_id": (
+                    link["subsection"].html_id
+                    if link["subsection"].name != "Basic information"
+                    and link["subsection"].html_id
+                    else link["section"].html_id
+                ),
+            }
+            for link in context["external_links"]
+            if link.get("invalid_destination")
+        ]
         context["heading_errors"] = find_same_or_higher_heading_levels_consecutive(
             self.object
         ) + find_incorrectly_nested_heading_levels(self.object)
@@ -581,6 +606,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         # booleans to show/hide our various warning messages
         context["has_missing_metadata"] = len(context["missing_metadata_fields"])
         context["has_broken_links"] = len(context["broken_links"])
+        context["has_missing_destinations"] = len(context["missing_destination_links"])
         context["has_heading_errors"] = len(context["heading_errors"])
         context["has_unconverted_footnotes"] = len(context["unconverted_footnotes"])
         context["has_external_links"] = len(
@@ -589,6 +615,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         context["has_warnings"] = (
             context["has_missing_metadata"]
             or context["has_broken_links"]
+            or context["has_missing_destinations"]
             or context["has_heading_errors"]
             or context["has_unconverted_footnotes"]
             or context["has_external_links"]
@@ -652,6 +679,7 @@ SHARED_PARSE_VALIDATION_ERROR_CODES = {
 # carry their own COMPOSER-* / COMPARE-* codes, so naming a document problem
 # for them is separate work.
 BUILDER_PARSE_VALIDATION_ERROR_CODES = {
+    "introductory_content_unsafe": "IMPORT-INTRODUCTION-STRUCTURE",
     "no_file": "IMPORT-NO-FILE",
     "unsupported_file_type": "IMPORT-FILE-TYPE",
     "no_sections": "IMPORT-NO-SECTIONS",
@@ -661,6 +689,7 @@ BUILDER_PARSE_VALIDATION_ERROR_CODES = {
 # log line for the metrics trail, but they are not defects, so they don't page
 # anyone at error level. IMPORT-DOCX-CONVERSION stays at error level, as before.
 WARNING_LEVEL_IMPORT_ERROR_CODES = {
+    "IMPORT-INTRODUCTION-STRUCTURE",
     "IMPORT-AMBIGUOUS-HEADINGS",
     "IMPORT-NO-FILE",
     "IMPORT-FILE-TYPE",
@@ -718,6 +747,12 @@ def parse_error_details(error, error_code, uploaded_file=None):
             )
         return details
 
+    if error_code == "IMPORT-INTRODUCTION-STRUCTURE":
+        return [
+            {"label": "What we found", "value": message}
+            for message in getattr(error, "messages", [])[:5]
+        ]
+
     if error_code == "IMPORT-FILE-TYPE":
         details = []
         filename = getattr(uploaded_file, "name", "")
@@ -771,6 +806,8 @@ class BaseNofoImportView(View):
     # as a reimport (and tied to the NOFO being reimported), not as a failed
     # new import.
     is_reimport = False
+    remove_word_instruction_boxes = False
+    extract_scoped_tagline = False
 
     def get_template_name(self):
         """
@@ -817,27 +854,51 @@ class BaseNofoImportView(View):
         attempt_filename = getattr(uploaded_file, "name", "") or ""
         try:
             # 2. Parse string to HTML
+            review_warnings = []
+            list_review_warnings = []
             file_content, warning_count = parse_uploaded_file_as_html_string(
-                uploaded_file
+                uploaded_file,
+                omit_leading_title=self.track_import_metrics,
+                remove_instruction_boxes=self.remove_word_instruction_boxes,
+                review_warnings=review_warnings,
+                list_review_warnings=list_review_warnings,
+                preserve_empty_paragraphs=self.extract_scoped_tagline,
             )
+            for warning in review_warnings:
+                messages.warning(request, warning, extra_tags="word-import-review")
+            for warning in list_review_warnings:
+                messages.warning(request, warning, extra_tags="word-list-review")
 
-            # 3. Clean/transform HTML
-            cleaned_content = replace_links(replace_chars(file_content))
-            soup = BeautifulSoup(cleaned_content, "html.parser")
-            # Remove this known redundant section before it can affect which
-            # heading level Builder treats as the document's main sections.
-            decompose_before_you_begin_section(soup)
-            top_heading_level = resolve_section_heading_level(soup)
-            soup, instructions_tables = process_nofo_html(soup, top_heading_level)
-
-            # 4. Build sections and subsections as python dicts
-            sections = self.get_sections_and_subsections_from_soup(
-                soup, top_heading_level
+            # 3–4. Shared content processing, independent of the uploaded file.
+            content = process_document_content(
+                file_content,
+                section_parser=self.get_sections_and_subsections_from_soup,
+                builder_import=isinstance(
+                    self, (NofosImportNewView, NofosImportOverwriteView)
+                ),
+                extract_scoped_tagline=self.extract_scoped_tagline,
+                editable_intro=(
+                    "required"
+                    if self.is_reimport
+                    and getattr(
+                        getattr(self, "nofo", None), "has_imported_introduction", False
+                    )
+                    else (
+                        "detect"
+                        if isinstance(self, NofosImportNewView)
+                        and getattr(uploaded_file, "content_type", "")
+                        == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        else "generated"
+                    )
+                ),
             )
+            soup = content.soup
+            sections = content.sections
+            imported_tagline = content.imported_tagline
 
             # 5. Add instructions to subsections (only implemented in Composer)
             self.add_instructions_to_subsections(
-                sections=sections, instructions_tables=instructions_tables
+                sections=sections, instructions_tables=content.instructions_tables
             )
 
         except ValidationError as e:
@@ -930,21 +991,24 @@ class BaseNofoImportView(View):
             filename,
             *args,
             warning_count=warning_count,
+            imported_tagline=imported_tagline,
             **kwargs,
         )
 
     @staticmethod
-    def get_sections_and_subsections_from_soup(soup, top_heading_level):
+    def get_sections_and_subsections_from_soup(
+        soup, top_heading_level, *, consume_scoped_tagline=False, consume_metadata=False
+    ):
         """
         Parse a soup object to extract sections and subsections.
         Raise ValidationError if no sections are found.
         """
-        sections = get_sections_from_soup(soup, top_heading_level)
-        if not len(sections):
-            raise ValidationError(
-                "That file does not contain a NOFO.", code="no_sections"
-            )
-        return get_subsections_from_sections(sections, top_heading_level)
+        return get_sections_and_subsections_from_soup(
+            soup,
+            top_heading_level,
+            consume_scoped_tagline=consume_scoped_tagline,
+            consume_metadata=consume_metadata,
+        )
 
     def add_instructions_to_subsections(self, *, sections, instructions_tables) -> None:
         """
@@ -968,6 +1032,8 @@ class NofosImportNewView(BaseNofoImportView):
     """
 
     track_import_metrics = True
+    remove_word_instruction_boxes = True
+    extract_scoped_tagline = True
 
     def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
         """
@@ -979,12 +1045,19 @@ class NofosImportNewView(BaseNofoImportView):
             opdiv = suggest_nofo_opdiv(soup)
 
             nofo = create_nofo(nofo_title, sections, opdiv, group=request.user.group)
-            add_headings_to_document(nofo)
+            imported_tagline = add_headings_to_document(
+                nofo, extra_link_text=kwargs.get("imported_tagline")
+            )
             add_page_breaks_to_headings(nofo)
             # group must be set before suggest_all_nofo_fields() so it can key
             # group-specific defaults (e.g. the NIH "before you begin" page) off it
             nofo.group = request.user.group
-            suggest_all_nofo_fields(nofo, soup, first_time_import=True)
+            suggest_all_nofo_fields(
+                nofo,
+                soup,
+                first_time_import=True,
+                imported_tagline=imported_tagline,
+            )
             nofo.filename = filename
             nofo.designer = (request.user.full_name or "").strip()
             nofo.save()
@@ -1081,7 +1154,9 @@ class NofosImportOverwriteView(
     redirect_url_name = "nofos:nofo_import_overwrite"
     archived_error_message = "Can’t reimport an archived NOFO."
     track_import_metrics = True
+    remove_word_instruction_boxes = True
     is_reimport = True
+    extract_scoped_tagline = True
 
     def dispatch(self, request, *args, **kwargs):
         """
@@ -1134,6 +1209,7 @@ class NofosImportOverwriteView(
                 "new_opportunity_number": new_opportunity_number,
                 "if_preserve_page_breaks": if_preserve_page_breaks,
                 "warning_count": warning_count,
+                "imported_tagline": kwargs.get("imported_tagline"),
             }
             return redirect("nofos:nofo_import_confirm_overwrite", pk=nofo.id)
 
@@ -1146,6 +1222,7 @@ class NofosImportOverwriteView(
             filename,
             if_preserve_page_breaks,
             warning_count,
+            imported_tagline=kwargs.get("imported_tagline"),
         )
 
     @staticmethod
@@ -1157,6 +1234,8 @@ class NofosImportOverwriteView(
         filename,
         if_preserve_page_breaks,
         warning_count=0,
+        *,
+        imported_tagline=None,
     ):
         """
         Handles the actual reimport logic, allowing external calls without requiring an instance.
@@ -1176,9 +1255,16 @@ class NofosImportOverwriteView(
                 if if_preserve_page_breaks and page_breaks:
                     nofo = restore_subsection_metadata(nofo, page_breaks)
 
-                add_headings_to_document(nofo)
+                imported_tagline = add_headings_to_document(
+                    nofo, extra_link_text=imported_tagline
+                )
                 add_page_breaks_to_headings(nofo)
-                suggest_all_nofo_fields(nofo, soup, first_time_import=False)
+                suggest_all_nofo_fields(
+                    nofo,
+                    soup,
+                    first_time_import=False,
+                    imported_tagline=imported_tagline,
+                )
                 nofo.filename = filename
                 nofo.save()
 
@@ -1307,10 +1393,10 @@ class NofosConfirmReimportView(GroupAccessObjectMixin, View):
             return redirect("nofos:nofo_import_overwrite", pk=nofo.id)
 
         soup = BeautifulSoup(reimport_data["soup"], "html.parser")
-        top_heading_level = resolve_section_heading_level(soup)
+        top_heading_level = resolve_section_heading_level(builder_import_content(soup))
 
         sections = BaseNofoImportView.get_sections_and_subsections_from_soup(
-            soup, top_heading_level
+            soup, top_heading_level, consume_scoped_tagline=True, consume_metadata=True
         )
 
         filename = reimport_data["filename"]
@@ -1325,6 +1411,7 @@ class NofosConfirmReimportView(GroupAccessObjectMixin, View):
             filename,
             if_preserve_page_breaks,
             warning_count,
+            imported_tagline=reimport_data.get("imported_tagline"),
         )
 
 
@@ -1777,6 +1864,14 @@ class NofoEditBeforeYouBeginPageView(BaseNofoEditView):
     form_class = NofoBeforeYouBeginForm
     template_name = "nofos/nofo_edit_byb.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        nofo = get_object_or_404(Nofo, pk=kwargs.get("pk"))
+        if nofo.has_imported_introduction:
+            raise PermissionDenied(
+                "This NOFO uses editable introductory content. Edit its subsections instead of selecting a template."
+            )
+        return super().dispatch(request, *args, **kwargs)
+
 
 class NofoEditThemeOptionsView(BaseNofoEditView):
     form_class = NofoThemeOptionsForm
@@ -1908,24 +2003,24 @@ class BaseNofoHistoryView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        offset = int(self.request.GET.get("offset", 0))
+        try:
+            offset = max(0, int(self.request.GET.get("offset", 0)))
+        except (TypeError, ValueError):
+            offset = 0
+        if offset > 2**31 - 1:
+            offset = 0
         limit = self.events_per_page
         self.document = self.object
 
         # Get audit events for this document
-        events = get_audit_events_for_document(
-            self.document,
-            document_model=self.get_document_model_name(),
-            section_model=self.get_section_model_name(),
-            subsection_model=self.get_subsection_model_name(),
+        page = get_audit_events_page(self.document, offset=offset, limit=limit)
+        formatting_options = audit_event_formatting_options(
+            page[:limit], self.get_event_formatting_options()
         )
-        # add one extra audit event for detecting has_more
-        page = events[offset : offset + limit + 1]
 
         # Slice the results for pagination
         context["audit_events"] = [
-            format_audit_event(e, self.get_event_formatting_options())
-            for e in page[:limit]
+            format_audit_event(e, formatting_options) for e in page[:limit]
         ]
         context["has_more"] = len(page) > limit
         context["next_offset"] = offset + limit
@@ -1976,16 +2071,15 @@ class NofoHistoryView(
         if "body" not in changed_fields:
             return event
 
-        old_body, new_body = changed_fields.get("body")
-        event_has_diff = has_diff(
-            html_diff(
-                markdownify(old_body),
-                markdownify(new_body),
-            )
-        )
-        # If the event is for 'subsection', the 'body' was changed, and there is a displayable diff,
-        # then there should be a link to the diff view
-        if event_has_diff:
+        bodies = changed_fields.get("body")
+        # A comparison belongs on the comparison page, not on every history row.
+        # Deleted subsections retain history but have no live comparison destination.
+        if (
+            event.get("object_exists")
+            and isinstance(bodies, (list, tuple))
+            and len(bodies) == 2
+            and bodies[0] != bodies[1]
+        ):
             event["should_link_to_diff"] = True
         return event
 
@@ -2429,7 +2523,8 @@ class PrintNofoAsPDFView(GroupAccessObjectMixin, DetailView):
 
             # Download PDF (a finished, non-watermarked attachment) also keeps a
             # readability snapshot. Preview PDF does not. Only a successful
-            # download saves, and an unchanged NOFO reuses its snapshot.
+            # download saves. An unchanged NOFO reuses its calculation, while
+            # retaining separate import, manual and PDF-download checkpoints.
             if mode == "attachment" and not is_test_pdf:
                 checkpoint = save_automatic_checkpoint(
                     request, nofo, NofoReadabilityCheckpoint.TRIGGER_DOWNLOAD
@@ -2472,7 +2567,11 @@ def _order_trailing_sections(nofo):
     Called while the parent NOFO row is locked. Temporary, unused order values
     avoid colliding with the unique (nofo, order) constraint during reordering.
     """
-    sections = list(nofo.sections.select_for_update().order_by("order", "pk"))
+    sections = list(
+        nofo.sections.exclude(role="introduction")
+        .select_for_update()
+        .order_by("order", "pk")
+    )
     tail_ids = ("endnotes", "appendix", "modifications")
 
     def tail_id(section):
@@ -2929,12 +3028,49 @@ class NofoSubsectionEditView(
 
         return super().dispatch(request, *args, **kwargs)
 
+    def post(self, request, *args, **kwargs):
+        if request.POST.get("action") == "review":
+            self.object = self.get_object()
+            preserved = recovery_values(request.POST.get("recovery"), self.object)
+            if preserved is None:
+                return HttpResponseBadRequest(
+                    "Invalid recovery data. Return to the edit page."
+                )
+            # Start with the latest saved fields, never silently rebase stale text.
+            form = self.get_form_class()(
+                instance=self.object,
+                initial={"recovery": request.POST["recovery"]},
+            )
+            return self.render_to_response(self.get_context_data(form=form))
+        return super().post(request, *args, **kwargs)
+
     def form_valid(self, form):
-        self.object = form.save(commit=False)
-        self.object.html_class = form.cleaned_data.get(
-            "html_class", ""
-        )  # "" or "page-break-before"
-        self.object.save()
+        with transaction.atomic():
+            current = get_object_or_404(
+                Subsection.objects.select_for_update(), pk=self.object.pk
+            )
+            submitted = {field: form.cleaned_data[field] for field in EDIT_FIELDS}
+            token = form.cleaned_data.get("edit_version")
+            if read_version(token, current) and submitted == saved_values(current):
+                # Retrying an already-saved form cannot discard any saved changes.
+                return redirect(self.get_return_url(current))
+            if not matches_version(token, current):
+                context = self.get_context_data(form=form)
+                context.update(
+                    conflict=True,
+                    missing_version=not token,
+                    unsaved=submitted,
+                    latest=saved_values(current),
+                    recovery=recovery_token(current, submitted),
+                    return_url=self.get_return_url(current),
+                )
+                return self.render_to_response(context, status=409)
+
+            # Use the freshly locked instance, preserving non-form fields.
+            for field, value in submitted.items():
+                setattr(current, field, value)
+            current.save(update_fields=[*EDIT_FIELDS, "html_id"])
+            self.object = current
 
         messages.add_message(
             self.request,
@@ -2947,11 +3083,19 @@ class NofoSubsectionEditView(
         url = reverse_lazy("nofos:nofo_edit", kwargs={"pk": self.nofo.id})
         return redirect("{}#{}".format(url, self.object.html_id))
 
+    def get_return_url(self, subsection):
+        url = reverse("nofos:nofo_edit", kwargs={"pk": self.nofo.pk})
+        return "{}#{}".format(url, subsection.html_id)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["nofo"] = self.nofo
         context.update(get_subsection_action_availability(self.nofo))
         form = context["form"]
+        context["preserved_unsaved"] = recovery_values(
+            form["recovery"].value(), self.object
+        )
+        context["return_url"] = self.get_return_url(self.object)
         threshold = settings.CALLOUT_WORD_WARNING_THRESHOLD
         context["callout_word_warning_threshold"] = threshold
         name = (form["name"].value() or "").strip()

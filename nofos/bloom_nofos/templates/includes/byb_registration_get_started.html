@@ -1,0 +1,24 @@
+<h3 class="section--before-you-begin--psuedo-header">Get registered</h3>
+<h4>SAM.gov</h4>
+<p>Your organization must have an active account with SAM.gov to apply unless you are exempt under 2 CFR 25. SAM.gov registration can take <strong>several weeks</strong>.</p>
+<p>To register:</p>
+<ul>
+  <li>Go to <a href="https://sam.gov/content/entity-registration">SAM.gov Entity Registration</a> and select Get Started. On the same page, you can also find the Entity Registration Checklist for the information you will need to register.</li>
+  <li>Your organization must agree to the <a href="https://www.hhs.gov/sites/default/files/financial-assistance-general-certification-representations.pdf">financial assistance general certifications and representations</a> specifically. The certifications for contracts are different.</li>
+</ul>
+<p>When you register, your organization will also receive its required Unique Entity Identifier (UEI).</p>
+<p>Once you register:</p>
+<ul>
+  <li>Your organization will have to maintain its registration throughout the life of any award.</li>
+  <li>If your organization has multiple UEIs, use the one associated with your physical location.</li>
+</ul>
+{% if nofo.before_you_begin != 'sole_source' %}
+<h4>Grants.gov</h4>
+<p>To apply for this opportunity, your organization and the people who will work on your application must have an active account with <a href="https://grants.gov/applicants/applicant-registration">Grants.gov</a>. You can follow the step-by-step instructions at the Grants.gov <a href="http://www.grants.gov/quick-start-guide/applicants">Quick Start Guide for Applicants</a>.</p>
+<p>We recommend that you register and set up your organization’s account <strong>at least four weeks</strong> before the application deadline.</p>
+{% endif %}
+{% if nofo.before_you_begin == 'era' %}
+<h4 class="before-you-begin--era-start">eRA Commons</h4>
+<p>To apply for this opportunity, your organization must register in <a href="https://public.era.nih.gov/commonsplus/public/login.era?TARGET=https%3A%2F%2Fpublic.era.nih.gov%3A443%2Fcommons">eRA Commons</a>. Your senior and key personnel must also register and affiliate their accounts with your organization’s account.</p>
+<p>We recommend that you register and set up your organization’s account <strong>at least four weeks</strong> before the application deadline.</p>
+{% endif %}

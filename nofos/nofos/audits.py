@@ -1,11 +1,14 @@
 import json
 import re
+import uuid
 from collections import OrderedDict
 
+from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from easyaudit.models import CRUDEvent
 
-from .models import Subsection
+from .models import DocumentAuditEvent, Subsection
 
 
 def deduplicate_audit_events_by_day_and_object(events):
@@ -73,10 +76,19 @@ def format_audit_event(event, formatting_options=None):
 
     # Improve object description for subsection edits
     if event.content_type.model.endswith("subsection"):
+        event_details["object_exists"] = False
         try:
-            subsection = SubsectionModel.objects.get(id=event.object_id)
+            if "subsections" in formatting_options:
+                subsection = formatting_options["subsections"].get(event.object_id)
+                if subsection is None:
+                    raise SubsectionModel.DoesNotExist
+            else:
+                subsection = SubsectionModel.objects.select_related("section").get(
+                    id=event.object_id
+                )
             name = subsection.name or "#{}".format(subsection.order)
             event_details["object_description"] = f"{subsection.section.name} - {name}"
+            event_details["object_exists"] = True
         except SubsectionModel.DoesNotExist:
             pass
 
@@ -131,7 +143,7 @@ def get_audit_events_for_nofo(nofo, reverse=True):
     )
 
 
-def get_audit_events_for_document(
+def _legacy_audit_events_for_document(
     document, document_model, section_model, subsection_model, reverse=True
 ):
     """
@@ -198,9 +210,13 @@ def get_audit_events_for_document(
     for section_id in section_ids:
         subsection_filter |= Q(object_json_repr__contains=str(section_id))
 
-    subsection_events = CRUDEvent.objects.filter(
-        content_type__model=subsection_model
-    ).filter(subsection_filter)
+    subsection_events = (
+        CRUDEvent.objects.filter(content_type__model=subsection_model).filter(
+            subsection_filter
+        )
+        if section_ids
+        else CRUDEvent.objects.none()
+    )
 
     subsection_events = _filter_events(subsection_events)
 
@@ -243,6 +259,94 @@ def get_audit_events_for_document(
     return sorted(combined_events, key=sort_key, reverse=reverse)
 
 
+def document_audit_entries(document, reverse=True):
+    """Indexed, payload-free scope shared by paginated and full-history consumers."""
+    content_type = ContentType.objects.get_for_model(document)
+    ordering = ("-datetime", "-event_id") if reverse else ("datetime", "event_id")
+    return DocumentAuditEvent.objects.filter(
+        document_content_type=content_type, document_id=document.pk, visible=True
+    ).order_by(*ordering)
+
+
+def _load_audit_events(event_ids):
+    events = CRUDEvent.objects.select_related("content_type", "user").in_bulk(event_ids)
+    return [events[event_id] for event_id in event_ids if event_id in events]
+
+
+def get_audit_events_page(document, offset=0, limit=25):
+    """Use bounded indexed reads after cutover; retain legacy reads until then."""
+    if not settings.DOCUMENT_HISTORY_INDEX_ENABLED:
+        names = {
+            "nofo": ("nofo", "section", "subsection"),
+            "contentguide": (
+                "contentguide",
+                "contentguidesection",
+                "contentguidesubsection",
+            ),
+            "contentguideinstance": (
+                "contentguideinstance",
+                "contentguidesection",
+                "contentguidesubsection",
+            ),
+        }
+        return _legacy_audit_events_for_document(
+            document, *names[document._meta.model_name]
+        )[offset : offset + limit + 1]
+    ids = list(
+        document_audit_entries(document).values_list("event_id", flat=True)[
+            offset : offset + limit + 1
+        ]
+    )
+    return _load_audit_events(ids)
+
+
+def get_audit_events_for_document(
+    document, document_model, section_model, subsection_model, reverse=True
+):
+    """Full history for explicit full-history consumers, without global JSON searches.
+
+    Model-name arguments remain for compatibility. The actual document content type
+    scopes ownership, including the separate Composer and Writer document families.
+    Interactive history pages must use get_audit_events_page instead.
+    """
+    if not settings.DOCUMENT_HISTORY_INDEX_ENABLED:
+        return _legacy_audit_events_for_document(
+            document, document_model, section_model, subsection_model, reverse=reverse
+        )
+    return _load_audit_events(
+        list(
+            document_audit_entries(document, reverse=reverse).values_list(
+                "event_id", flat=True
+            )
+        )
+    )
+
+
+def audit_event_formatting_options(events, options=None):
+    """Batch live subsection labels; deleted objects retain their audit description."""
+    options = dict(options or {})
+    subsection_model = options.get("SubsectionModel", Subsection)
+    ids = [
+        event.object_id
+        for event in events
+        if event.content_type.model == subsection_model._meta.model_name
+    ]
+    # Audit object IDs are strings. Invalid historical IDs must not break the page.
+    valid_ids = []
+    for object_id in ids:
+        try:
+            valid_ids.append(uuid.UUID(object_id))
+        except (ValueError, TypeError, AttributeError):
+            continue
+    options["subsections"] = {
+        str(subsection.pk): subsection
+        for subsection in subsection_model.objects.select_related("section").filter(
+            pk__in=valid_ids
+        )
+    }
+    return options
+
+
 def get_audit_event_by_id(event_id):
     """
     Retrieve a CRUDEvent by its ID.
@@ -260,6 +364,7 @@ def safe_get_changed_fields(event):
     Returns an empty dict if parsing fails.
     """
     try:
-        return json.loads(event.changed_fields) if event.changed_fields else {}
+        changed = json.loads(event.changed_fields) if event.changed_fields else {}
+        return changed if isinstance(changed, dict) else {}
     except Exception:
         return {}

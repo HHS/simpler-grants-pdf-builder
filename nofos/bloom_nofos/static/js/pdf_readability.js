@@ -13,7 +13,7 @@
       // Start the horse from the left edge when the modal opens, like Word export.
       document.getElementById("readability-progress-horse")?.classList.add("is-running");
       document.getElementById("analyze-pdf-button").disabled = true;
-      document.getElementById("pdf-submit-status").textContent = "Analyzing your PDF…";
+      document.getElementById("pdf-submit-status").textContent = "Analyzing your document…";
     });
   }
 
@@ -67,7 +67,7 @@
   if (copyButton) copyButton.addEventListener("click", async () => {
     const text = (id) => document.getElementById(id)?.textContent.trim() || "";
     const lines = [
-      "HHS NOFO Builder — PDF readability report",
+      `HHS NOFO Builder: ${text("readability-report-source")} report`,
       `File: ${text("readability-file")}`,
       `Analyzed: ${text("readability-date")}`,
       `Measurement version: ${text("readability-version")}`,
@@ -79,6 +79,7 @@
       text("readability-draft-readiness"),
       text("readability-coverage"),
       text("readability-word-scope"),
+      text("readability-word-guidance"),
       text("readability-reliability"),
       "",
       "Readability measures",

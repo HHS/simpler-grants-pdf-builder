@@ -156,7 +156,7 @@ class ReadabilityImportCheckpointTests(TestCase):
         latest = NofoReadabilityCheckpoint.objects.filter(score__nofo=nofo).first()
         self.assertEqual(latest.trigger, NofoReadabilityCheckpoint.TRIGGER_MANUAL)
 
-    def test_saving_unchanged_nofo_reports_the_automatic_checkpoint(self):
+    def test_saving_unchanged_nofo_keeps_a_separate_manual_checkpoint(self):
         nofo = self.import_nofo()
 
         response = self.client.post(
@@ -164,9 +164,9 @@ class ReadabilityImportCheckpointTests(TestCase):
         )
 
         payload = response.json()
-        self.assertTrue(payload["already_saved"])
-        self.assertEqual(payload["checkpoint"]["trigger"], "import")
-        self.assertEqual(NofoReadabilityCheckpoint.objects.count(), 1)
+        self.assertFalse(payload["already_saved"])
+        self.assertEqual(payload["checkpoint"]["trigger"], "manual")
+        self.assertEqual(NofoReadabilityCheckpoint.objects.count(), 2)
 
     def test_edit_panel_describes_the_latest_save_and_explains_automatic_saves(self):
         nofo = self.import_nofo()
