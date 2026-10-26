@@ -54,3 +54,51 @@ Source-to-import and complete asset/link fidelity remain explicitly not assessed
 Passing diagnostics do not prove accessibility or design completion. Historical
 render archives and attribution for earlier presentation edits are not implemented.
 The full #1148 walkthrough and acceptance criteria remain open.
+
+## October 26 review follow-up
+
+Resolved the branch's conflicts with current main, preserving the candidate-access
+status UI, outside-edit recovery and HRSA cover policy. Migration 0158 joins the
+review-decision branch with main's tool-access/history migration branch. An
+isolated scratch SQLite upgrade from main's migration 0157 through the new review
+table and merge migration succeeded; the drift check reports no changes.
+
+The import-to-review regression test constructs a real synthetic DOCX with an
+unmapped paragraph style. The installed converter emits a formatting warning;
+the normal upload/import path retains its source and content, exposes a
+nonblocking review finding, and allows an owner acknowledgment with actor, time
+and reason. No warning or converter output is injected or mocked. Acknowledging
+that warning leaves the blocking findings unchanged. Strict import rejection is
+disabled only for this test so it exercises the nonblocking import path.
+
+Rejected acknowledgment forms now retain the explanation. A current form is
+prefilled only when the exact warning ID and evidence are unchanged and still
+unacknowledged. Changed/removed/already-acknowledged warnings retain the old text
+separately for copying. Render/database errors retain it on the recovery page.
+No decision is recorded until an explicit valid submission. Drafts exist only
+in the returned response and are escaped; they are not saved in a session or
+decision record. The guide and Editor Task describe recovery and refresh limits.
+
+- Final full Django suite after syncing main: 2,901 tests passed, three existing
+  skips. Focused review/transport/host/kernel suite: 65 tests passed.
+- JavaScript suite: 61 tests passed.
+- Changed Python files pass Black/isort; diff and commit hooks pass.
+- Recovery tests cover stale design revisions with fresh form fields, explicit
+  resubmission, changed warning evidence, escaped text and render/database errors.
+- Chrome checked actual Django-rendered recovery responses with synthetic warning
+  text at 1440 and 390 pixels: no horizontal overflow. These captures use local
+  static assets and remove CSRF input values; no keys or cookies are captured.
+  They verify rendered responses, not a live-agent run or a real-document review.
+- Findings/Theme/Cover headings match at 21.44 pixels and weight 700. The new
+  alert uses the existing 23.36-pixel, weight-700 style. Chrome confirms the actual
+  rendered Merriweather and Source Sans Pro web fonts.
+
+Stale-form explanation and current warning form:
+
+![Explanation retained after a stale submission](stale-review-explanation.jpg)
+
+![Unchanged warning retains the explanation for explicit resubmission](retained-warning-form.jpg)
+
+Changed warning retains the old explanation separately at 390 pixels:
+
+![Changed warning with a separate unsaved draft](changed-warning-draft-narrow.jpg)
