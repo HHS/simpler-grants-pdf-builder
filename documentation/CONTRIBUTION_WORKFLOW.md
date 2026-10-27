@@ -72,6 +72,29 @@ flowchart TD
 | Changelog and releases | [`DEPLOYMENT.md` § Releases](../DEPLOYMENT.md#releases) and [`release-please-config.json`](../release-please-config.json) (which title prefixes go in which changelog section) |
 | Urgent production fix | [`DEPLOYMENT.md` § Hotfixes](../DEPLOYMENT.md#hotfixes) |
 
+## Issue labels
+
+Before creating or relabeling an issue, inspect the repository's current labels in GitHub or run:
+
+```bash
+gh label list --repo HHS/simpler-grants-pdf-builder --limit 100
+```
+
+Reuse exact existing names, including capitalization and emoji. The established labels include:
+
+- `Bug 🐛` for reported defects, rather than `bug`.
+- `Feature request` for new features or improvements, rather than `enhancement`.
+- `documentation` for documentation changes; the feature-request template also fits these requests.
+- `Spike` for an experimental investigation rather than a committed feature change.
+- `Priority: high`, `Priority: medium` and `Priority: low` for proposed priority, with rationale
+  following [quality review and triage](QUALITY_REVIEW_AND_TRIAGE.md#review-priority).
+
+Choose labels that fit the issue; not every issue needs every category. For documentation-only
+requests, replace the feature template's default label with `documentation` when appropriate.
+Do not create new labels or synonyms unless explicitly requested. When updating an issue,
+preserve unrelated labels, assignees and other metadata. Recheck the live label list if a
+name in this guide or a template no longer matches the repository.
+
 ## Always squash and merge
 
 Merge every PR with **Squash and merge**.

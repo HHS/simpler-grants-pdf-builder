@@ -6,6 +6,13 @@ Follow the workflow in [`documentation/CONTRIBUTION_WORKFLOW.md`](documentation/
 issue, branch, PR with a Conventional Commit title, CI, then squash and merge. It links to what to
 read at each step and lists the rules that apply only to agents.
 
+## Reuse existing issue labels
+
+Before creating or relabeling an issue, inspect the repository's current labels and use their
+exact names, including capitalization and emoji. Do not create a new label or a synonym unless
+the user explicitly requests it. Preserve unrelated labels when updating an existing issue.
+See [issue labels](documentation/CONTRIBUTION_WORKFLOW.md#issue-labels) for the current conventions.
+
 ## PR titles must follow Conventional Commits
 
 Every PR title must start with a type prefix — `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`,
