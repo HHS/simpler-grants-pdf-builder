@@ -185,7 +185,8 @@ Rough engineering ranges, excluding deployment and policy turnaround:
 - **Persisted-model migration:** a separate estimate after inventorying real
   note shapes and host requirements; not included in either range.
 
-First test the two flows with representative users: add a new citation, cite the
+Use the [short user walkthrough](spikes/endnotes-1186/USER_WALKTHROUGH.md) to test
+the two flows: add a new citation, cite the
 same source again, place within a dense paragraph, and repair a reference after
 editing text. Ask whether paragraph-end placement suffices and how often they
 make these edits after import. Keep changes in the source Word/AM document when
