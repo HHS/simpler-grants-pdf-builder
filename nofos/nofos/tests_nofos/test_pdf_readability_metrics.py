@@ -249,12 +249,12 @@ class MetricsTests(TestCase):
     def test_file_neutral_copy_and_route_help(self):
         self.login_viewer()
         page = self.client.get(self.url)
-        self.assertContains(page, "<title>Readability Calculator usage", html=False)
-        self.assertContains(page, "Readability Calculator usage")
+        self.assertContains(page, "<title>Readability Checker usage", html=False)
+        self.assertContains(page, "Readability Checker usage")
         self.assertNotContains(page, "PDF readability pilot usage")
         self.assertContains(
             page,
-            "These metrics include recorded attempts from the Readability Calculator.",
+            "These metrics include recorded attempts from the Readability Checker.",
         )
         self.assertContains(
             page,
@@ -273,7 +273,7 @@ class MetricsTests(TestCase):
         self.assertContains(page, "No recorded attempts.")
         main = self.client.get(reverse("nofos:builder_metrics"))
         self.assertContains(
-            main, f'<a href="{self.url}">Readability Calculator usage</a>', html=True
+            main, f'<a href="{self.url}">Readability Checker usage</a>', html=True
         )
         self.assertNotContains(main, "PDF readability pilot usage")
 

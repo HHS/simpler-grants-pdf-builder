@@ -50,7 +50,7 @@ urlpatterns = [
     path("users/", include("users.urls")),
     path("uploads/", include("uploads.urls")),
     path("admin/", admin.site.urls),
-    path("readability-calculator/", views.pdf_readability, name="pdf_readability"),
+    path("readability-checker/", views.pdf_readability, name="pdf_readability"),
     path(
         "readability/",
         views.readability_redirect,

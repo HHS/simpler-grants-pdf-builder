@@ -15,7 +15,7 @@ urlpatterns = [
         {"route_name": "nofos:authenticated_pdf_readability"},
     ),
     path(
-        "readability-calculator/",
+        "readability-checker/",
         authenticated_pdf_readability,
         name="authenticated_pdf_readability",
     ),

@@ -433,7 +433,7 @@ enable that pilot or its outcome recording.
 Saved checkpoints, per-NOFO history, and the saved-results overview belong only
 to the authenticated Builder readability feature (#1009, implemented in #1014).
 They are outside the anonymous PDF pilot release epic (#968) and must not be
-exposed through `/readability-calculator/` or counted toward that epic's acceptance criteria.
+exposed through `/readability-checker/` or counted toward that epic's acceptance criteria.
 The pilot's content-free usage monitoring is separate from saved metric results.
 See [the pilot runbook](PDF_READABILITY_PILOT.md) for its scope and release gates.
 

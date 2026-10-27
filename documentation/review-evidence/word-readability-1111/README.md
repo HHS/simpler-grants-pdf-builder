@@ -1,13 +1,13 @@
 # Word readability uploads (#1111)
 
-URL references below use the current `readability-calculator/` paths. The original
+URL references below use the current `readability-checker/` paths. The original
 checks used the previous `readability/` paths, which remain supported by redirects.
 
 Synthetic local checks, October 15, 2026. No real NOFO content is included.
 
 ## Design and reuse
 
-Add DOCX input to the existing authenticated `/nofos/readability-calculator/` workflow, not a new
+Add DOCX input to the existing authenticated `/nofos/readability-checker/` workflow, not a new
 screen/service or a saved Builder import. Keep the legacy Python function names,
 form field and flag/permission names to avoid unrelated compatibility churn.
 The existing isolated worker, time/resource limits, global slot, error boundary,
@@ -15,7 +15,7 @@ content-free accounting and report/copy/print controls are reused. PDF formulas
 and processing remain unchanged. Word uses installed Mammoth, the existing pure
 Word transform and XML declaration guard, existing loose recognition, and the
 existing HTML measurement profile. No package or dependency was added. The public
-`/readability-calculator/` route remains PDF-only, with its existing gates unchanged.
+`/readability-checker/` route remains PDF-only, with its existing gates unchanged.
 
 Word recognition reuses the existing two-distinct-signal gate. For templates
 without filled identifiers, HHS agency context plus an explicit NOFO title or
@@ -63,8 +63,8 @@ no shared environment flag changed. A local test user had the existing
 `nofos.use_pdf_readability_pilot` permission.
 
 Read-only deployed checks on October 15 confirmed that both dev and production
-redirect signed-out requests for `/nofos/readability-calculator/` to login (302), while
-`/readability-calculator/` returns 503. These checks do not establish signed-in deployed
+redirect signed-out requests for `/nofos/readability-checker/` to login (302), while
+`/readability-checker/` returns 503. These checks do not establish signed-in deployed
 permission behavior; the signed-in allowed/denied matrix is covered locally.
 
 ## Independent review

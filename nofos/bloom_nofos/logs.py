@@ -11,8 +11,8 @@ def is_pdf_readability_request(request):
     return request.path_info.rstrip("/") in {
         "/readability",
         "/nofos/readability",
-        "/readability-calculator",
-        "/nofos/readability-calculator",
+        "/readability-checker",
+        "/nofos/readability-checker",
     }
 
 
