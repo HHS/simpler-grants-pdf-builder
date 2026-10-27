@@ -77,6 +77,34 @@ class PdfReadabilityPageTests(TestCase):
     def setUp(self):
         self.url = reverse("pdf_readability")
 
+    def test_checker_urls_and_legacy_redirects_preserve_uploads(self):
+        from users.models import BloomUser
+
+        self.client.force_login(
+            BloomUser.objects.create_user(
+                email="redirect@example.com",
+                password=None,
+                group="bloom",
+                force_password_reset=False,
+            )
+        )
+        self.assertEqual(self.url, "/readability-checker/")
+        self.assertEqual(
+            reverse("nofos:authenticated_pdf_readability"),
+            "/nofos/readability-checker/",
+        )
+        for old_url, new_url in (
+            ("/readability/", self.url),
+            ("/nofos/readability/", reverse("nofos:authenticated_pdf_readability")),
+        ):
+            for method in ("get", "post"):
+                with self.subTest(url=old_url, method=method):
+                    response = getattr(self.client, method)(old_url)
+                    self.assertEqual(response.status_code, 308)
+                    self.assertEqual(response["Location"], new_url)
+                    self.assertEqual(response["Cache-Control"], "no-store")
+                    self.assertIn("noindex", response["X-Robots-Tag"])
+
     def test_print_styles_hide_banner_and_footer(self):
         css_path = finders.find("pdf_readability.css")
         self.assertIsNotNone(css_path)
@@ -119,6 +147,8 @@ class PdfReadabilityPageTests(TestCase):
     def test_signed_out_form_has_csrf_file_label_and_no_login_link(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Readability Checker", count=2)
+        self.assertContains(response, "Check a document’s readability")
         self.assertContains(response, "pdf_readability.css")
         self.assertContains(response, "styles.css")
         self.assertNotContains(response, "theme-base.css")
@@ -271,6 +301,8 @@ class PdfReadabilityPageTests(TestCase):
         self.assertEqual(response.status_code, 200)
         analyze.assert_called_once()
         self.assertContains(response, "Readability report")
+        self.assertContains(response, "Readability Checker", count=2)
+        self.assertNotContains(response, "PDF readability pilot")
         self.assertContains(response, "How to read these results")
         self.assertContains(
             response, "not a compliance, accessibility, or clearance determination"
@@ -285,12 +317,12 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "Copy metrics")
         self.assertContains(
             response,
-            '<a class="usa-link text-bold" href="/readability/">Analyze another document</a>',
+            '<a class="usa-link text-bold" href="/readability-checker/">Analyze another document</a>',
             html=True,
         )
         self.assertNotContains(
             response,
-            'class="usa-button usa-button--outline" href="/readability/"',
+            'class="usa-button usa-button--outline" href="/readability-checker/"',
         )
         self.assertContains(response, "NOFO Builder")
         self.assertContains(response, "Calculation notes (1)")

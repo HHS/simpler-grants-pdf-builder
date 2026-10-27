@@ -1,4 +1,7 @@
-# Readability Calculator usage copy (#1119)
+# Readability Checker usage copy (#1119)
+
+Tool-name references use the current **Readability Checker** name. Screenshots
+from the original review predate the rename.
 
 October 16, 2026. Local-only synthetic verification. No deployment, pilot
 enablement, new telemetry, migration or calculation changes.
@@ -51,7 +54,7 @@ No real uploads, credentials, session cookies or production data are included.
 
 ## October 26 wording update
 
-Visible dashboard wording now uses **Readability Calculator usage**, **Upload
+Visible dashboard wording now uses **Readability Checker usage**, **Upload
 route**, **Selected route** and **Calculator availability and usage recording**.
 The disabled outcome label uses **Calculator disabled**. Internal routes and
 settings retain their existing names. The screenshots above are historical

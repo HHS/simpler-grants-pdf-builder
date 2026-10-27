@@ -1,6 +1,6 @@
 # PDF readability pilot
 
-This pilot provides an unlinked `/readability/` route: upload one PDF, receive an
+This pilot provides an unlinked `/readability-checker/` route: upload one PDF, receive an
 immediate readability report, and use the browser's **Print / save as PDF** dialog
 to keep a copy. It does not create a NOFO or saved report history. An unlinked URL
 is still public; direct distribution is not access control.
@@ -9,14 +9,14 @@ Saved readability checkpoints, per-NOFO history, and the saved-results overview
 (#1009 / #1014) belong only to the authenticated Builder feature documented in
 [Readability metrics](READABILITY_METRICS.md#saved-review-checkpoints). They are
 outside this pilot and its release epic (#968), must not be exposed through
-`/readability/`, and do not satisfy the pilot's release acceptance criteria.
+`/readability-checker/`, and do not satisfy the pilot's release acceptance criteria.
 Content-free pilot usage monitoring does not store metric results or report
 history. Browser **Print / save as PDF** saves a local copy, not server-side history.
 
 ## Word uploads (#1111)
 
-Only the authorized `/nofos/readability/` route also accepts unlocked `.docx`
-files. The existing public `/readability/` route remains PDF-only, even when its
+Only the authorized `/nofos/readability-checker/` route also accepts unlocked `.docx`
+files. The existing public `/readability-checker/` route remains PDF-only, even when its
 independent flag is enabled. Existing flag and permission names retain `PDF` for compatibility;
 their values and access checks are unchanged. This addition does not enable a
 route or authorize a new deployment/document classification. Legacy `.doc`,
@@ -77,7 +77,7 @@ safeguards below still apply and are not replaced by ZIP validation.
 
 ### Content-free outcome monitoring (#985)
 
-Metrics viewers can open **Readability Calculator usage** at
+Metrics viewers can open **Readability Checker usage** at
 `/nofos/metrics/readability-pilot` from **Other metrics**
 on `/nofos/metrics`, including while the pilot is disabled. The page shows the
 stored pilot flag, recording state, retained daily/weekly attempts, all-attempt
@@ -87,8 +87,8 @@ No OpDiv or user attribution is possible. It is a support trend source, not an
 infrastructure alarm or evidence that #970's safeguards are deployed.
 
 Totals combine recorded attempts unless filtered by upload route or file category.
-The authenticated `/nofos/readability/` tool supports PDF and Word (.docx);
-public `/readability/` remains PDF-only. The source filter selects the upload
+The authenticated `/nofos/readability-checker/` tool supports PDF and Word (.docx);
+public `/readability-checker/` remains PDF-only. The source filter selects the upload
 route (public, authenticated or unknown), not the visitor's login state.
 The separate `file_category` filter accepts `all`, `pdf`, `docx` or `unknown`
 and applies with the route filter to counts, rates, charts, durations and recent

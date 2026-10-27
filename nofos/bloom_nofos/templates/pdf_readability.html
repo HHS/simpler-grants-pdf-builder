@@ -1,14 +1,14 @@
 {% extends "pdf_readability_base.html" %}
 {% load static %}
 
-{% block title %}Document readability report | NOFO Builder{% endblock %}
+{% block title %}{% if report %}Readability report | {% endif %}Readability Checker | NOFO Builder{% endblock %}
 
 {% block content %}
   <div class="readability-page">
     {% if report %}
       <article aria-labelledby="report-title">
         <div class="readability-report-heading">
-          <p class="text-base margin-bottom-1" id="readability-report-source">{% if source_word %}Word{% else %}PDF{% endif %} readability pilot</p>
+          <p class="text-base margin-bottom-1" id="readability-report-source">Readability Checker</p>
           <h1 id="report-title" class="font-heading-xl margin-y-0">Readability report</h1>
           <p class="usa-intro margin-top-2">Estimates for text recovered from your {% if source_word %}Word document{% else %}PDF{% endif %}</p>
         </div>
@@ -98,7 +98,8 @@
         <textarea id="readability-copy-fallback" class="readability-copy-fallback no-print" aria-label="Report text to copy manually" readonly hidden></textarea>
       </article>
     {% else %}
-      <h1 class="font-heading-xl">Check a document’s readability</h1>
+      <p class="text-base margin-bottom-1">Readability Checker</p>
+      <h1 class="font-heading-xl margin-top-0">Check a document’s readability</h1>
       <p class="usa-intro">Upload an HHS notice of funding opportunity{% if word_uploads_allowed %} as a PDF or Word (.docx) document{% else %} as a PDF{% endif %} to get readability estimates.</p>
 
       <form method="post" enctype="multipart/form-data" class="usa-form readability-form" id="pdf-readability-form">

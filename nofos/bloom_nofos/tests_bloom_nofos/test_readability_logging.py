@@ -55,7 +55,7 @@ class ReadabilityLoggingTests(SimpleTestCase):
     def test_authenticated_pilot_logs_never_link_upload_to_user(self):
         from types import SimpleNamespace
 
-        request = self.request("/nofos/readability/")
+        request = self.request("/nofos/readability-checker/")
         request.user = SimpleNamespace(is_authenticated=True, id="secret-user-id")
         with override_settings(is_prod=True), self.assertLogs(
             "django.request", level="INFO"
@@ -78,7 +78,7 @@ class ReadabilityLoggingTests(SimpleTestCase):
             (),
             (RuntimeError, RuntimeError("secret"), None),
         )
-        record.request = self.request("/nofos/readability/")
+        record.request = self.request("/nofos/readability-checker/")
         ReadabilityRequestFilter().filter(record)
         self.assert_safe(record)
         self.assertIsNone(record.exc_info)
@@ -90,6 +90,10 @@ class ReadabilityLoggingTests(SimpleTestCase):
                 "/readability",
                 "/nofos/readability/",
                 "/nofos/readability",
+                "/readability-checker/",
+                "/readability-checker",
+                "/nofos/readability-checker/",
+                "/nofos/readability-checker",
             ):
                 for status in (200, 400, 503):
                     with self.subTest(prod=prod, path=path, status=status):

@@ -79,6 +79,7 @@ class AuthenticatedPilotTests(TestCase):
         self.login()
         self.assertEqual(self.client.get(self.public_url).status_code, 503)
         response = self.client.get(self.url)
+        self.assertContains(response, "Readability Checker", count=2)
         self.assertContains(response, "How we handle your document")
         self.assertContains(response, "do not include your identity")
         self.assertEqual(response["Cache-Control"], "no-store")
@@ -103,6 +104,8 @@ class AuthenticatedPilotTests(TestCase):
         with patch("bloom_nofos.views.analyze_uploaded_pdf", return_value=REPORT):
             response = self.client.post(self.url, {"pdf": self.upload()})
         self.assertContains(response, "Readability report")
+        self.assertContains(response, "Readability Checker", count=2)
+        self.assertNotContains(response, "PDF readability pilot")
         self.assertContains(
             response, "try uploading the original Word document instead"
         )
@@ -160,7 +163,8 @@ class AuthenticatedPilotTests(TestCase):
             self.url, {"pdf": SimpleUploadedFile("SECRET-WORD.docx", synthetic_docx())}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Word readability pilot")
+        self.assertContains(response, "Readability Checker")
+        self.assertNotContains(response, "Word readability pilot")
         self.assertEqual(response.context["report"]["version"], "0.6.0")
         self.assertNotContains(response, 'id="readability-draft-scope"')
         self.assertNotContains(response, "before exporting it")

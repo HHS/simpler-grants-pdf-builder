@@ -3,11 +3,15 @@
 Issue #1033 adds a restricted validation route. It reuses the existing PDF
 analyzer, temporary files, recognition rules, report, copy action and browser
 print/save action. It does not create a NOFO, save metric scores, add report
-history or enable public `/readability/` uploads.
+history or enable public `/readability-checker/` uploads.
+
+The tool is named **Readability Checker** on the upload page and report.
+The previous `/nofos/readability/` and `/readability/` URLs permanently redirect
+to their corresponding `readability-checker/` routes, preserving POST uploads.
 
 ## Accounts, permissions and switches
 
-Share `/nofos/readability/` directly. It has no navigation link. Both GET and POST
+Share `/nofos/readability-checker/` directly. It has no navigation link. Both GET and POST
 require an active Builder account and `nofos.use_pdf_readability_pilot`.
 Administrators grant this permission through the **PDF readability pilot
 participants** group created by migration 0150. Provision accounts through the
@@ -38,7 +42,7 @@ handler is installed before the nested CSRF check reads the body.
 ## Supported documents and processing
 
 The same authorized form also accepts Word `.docx` documents under #1111.
-Word support is restricted to this route. Public `/readability/` remains PDF-only
+Word support is restricted to this route. Public `/readability-checker/` remains PDF-only
 and keeps its independent access switch; #1111 does not broaden access.
 Permissions, participant groups, feature switches and content-free recording
 settings keep their existing names and behavior. Word handling, archive bounds,

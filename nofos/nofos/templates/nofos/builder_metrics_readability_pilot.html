@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Readability Calculator usage{% endblock %}
+{% block title %}Readability Checker usage{% endblock %}
 {% block css %}
 <style>
   .pilot-table, .metrics-data-table { width: 100%; border-collapse: collapse; }
@@ -20,8 +20,8 @@
 {% endblock %}
 {% block content %}
 {% url 'nofos:builder_metrics' as metrics_href %}
-{% include "includes/page_heading.html" with title="Readability Calculator usage" back_text="Back to usage &amp; quality metrics" back_href=metrics_href only %}
-<p>These metrics include recorded attempts from the Readability Calculator. Authenticated uploads support PDF and Word (.docx); public uploads support PDF only. File categories describe the submitted extension, not verified contents. Historical and unclassified attempts are Unknown.</p>
+{% include "includes/page_heading.html" with title="Readability Checker usage" back_text="Back to usage &amp; quality metrics" back_href=metrics_href only %}
+<p>These metrics include recorded attempts from the Readability Checker. Authenticated uploads support PDF and Word (.docx); public uploads support PDF only. File categories describe the submitted extension, not verified contents. Historical and unclassified attempts are Unknown.</p>
 <details class="margin-top-2 margin-bottom-3 border-1px border-base-lighter radius-md padding-2">
   <summary class="text-bold">About these metrics</summary>
   <div class="usa-prose">
