@@ -1016,7 +1016,10 @@ and deletion are not available in this slice.
    Import processing is complete, but this is not a production NOFO or acceptance.
 2. Read each finding's evidence and next step. **Review affected section**
    opens the relevant read-only imported text. The retained Word conversion
-   output is also available below the sections.
+   output is also available below the sections. Converted-content comparisons
+   are bounded observations, not proof of Word fidelity. Unmatched elements may
+   reflect documented import/render changes; reconcile them rather than assume
+   they are defects. See [fidelity evidence limits](DESIGN_FIDELITY_EVIDENCE.md).
 3. For a nonblocking **Word conversion** warning only, compare the relevant
    source and enter **Why can this warning be acknowledged?** Then select
    **Acknowledge warning**. Confirm the recorded person, time and reason.
