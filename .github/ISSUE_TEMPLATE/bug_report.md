@@ -2,7 +2,7 @@
 name: Bug report
 about: Something in NOFO Builder isn't working as it should
 title: ""
-labels: bug
+labels: "Bug 🐛"
 ---
 
 ## What happened
