@@ -403,6 +403,12 @@ investigation.
 
 ### 2. Optional investigation: use a representative example
 
+The [#1197 traceability investigation](DESIGN_CHANGE_TRACEABILITY.md) inventories
+current render inputs and gaps, demonstrates a synthetic shared callout change
+with an override and legacy theme, and compares smaller follow-up options. Its
+separate source baseline and HTML-only limits do not replace this guide's pinned
+evidence or establish a historical rendering capability.
+
 A small representative example could help assess how shared design changes affect
 component meaning, OpDiv variations, existing NOFOs, and PDF quality.
 
