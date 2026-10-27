@@ -50,7 +50,12 @@ urlpatterns = [
     path("users/", include("users.urls")),
     path("uploads/", include("uploads.urls")),
     path("admin/", admin.site.urls),
-    path("readability/", views.pdf_readability, name="pdf_readability"),
+    path("readability-calculator/", views.pdf_readability, name="pdf_readability"),
+    path(
+        "readability/",
+        views.readability_redirect,
+        {"route_name": "pdf_readability"},
+    ),
     path("", views.index, name="index"),
     path("404/", views.page_not_found),
     path("", health_api.urls),  # Mount health check at root

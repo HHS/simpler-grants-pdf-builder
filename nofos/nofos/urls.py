@@ -1,4 +1,4 @@
-from bloom_nofos.views import authenticated_pdf_readability
+from bloom_nofos.views import authenticated_pdf_readability, readability_redirect
 from django.urls import path
 
 from . import views
@@ -11,6 +11,11 @@ app_name = "nofos"
 urlpatterns = [
     path(
         "readability/",
+        readability_redirect,
+        {"route_name": "nofos:authenticated_pdf_readability"},
+    ),
+    path(
+        "readability-calculator/",
         authenticated_pdf_readability,
         name="authenticated_pdf_readability",
     ),

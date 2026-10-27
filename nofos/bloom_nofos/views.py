@@ -108,6 +108,12 @@ def _metric_rows(report):
     return rows
 
 
+@csrf_exempt
+def readability_redirect(request, route_name):
+    """Keep shared links and pending uploads usable after the tool rename."""
+    return redirect(route_name, permanent=True, preserve_request=True)
+
+
 @never_cache
 @require_http_methods(["GET", "POST"])
 @csrf_exempt

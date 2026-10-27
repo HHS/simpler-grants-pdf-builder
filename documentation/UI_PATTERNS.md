@@ -333,8 +333,8 @@ Each source explanation stays in one paragraph:
 
 **PDF without usable tags (public PDF-only route):** “The tool could not reliably determine the order of text in this PDF, so the scores may be less reliable. For your next upload, save the original document from Word using “Save as PDF” rather than “Print to PDF.””
 
-Word is supported only on authenticated `/nofos/readability/`; public
-`/readability/` accepts PDFs only. The public variant therefore does not recommend
+Word is supported only on authenticated `/nofos/readability-calculator/`; public
+`/readability-calculator/` accepts PDFs only. The public variant therefore does not recommend
 a Word upload. These suggestions do not guarantee accurate scores. The source
 explanation is one paragraph. When overall reliability is not assessed, the alert
 also includes the separate sentence: “Reliability has not been assessed for these

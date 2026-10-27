@@ -862,14 +862,15 @@ succeed even if metrics could not be saved. See [readability metrics](READABILIT
 
 ### TASK-READABILITY-UPLOAD — Check Word or PDF readability without creating a NOFO
 
-**Starting point:** the direct `/nofos/readability/` URL on your Builder environment.
+**Starting point:** **Readability Calculator** at the direct
+`/nofos/readability-calculator/` URL on your Builder environment.
 There is no navigation link. This restricted pilot requires an active account,
 pilot permission and an enabled feature; signing in alone does not grant access.
 If access is denied or the page is unavailable, contact the pilot operator.
 
 **Steps**
 
-1. Open `/nofos/readability/` and review **Document requirements** and
+1. Open `/nofos/readability-calculator/` and review **Document requirements** and
    **How we handle your document**. Use only documents authorized for this pilot.
 2. Choose one supported text-based HHS NOFO PDF or unlocked Word `.docx`, then
    select **Analyze document**. Legacy `.doc` and macro-enabled formats are not
@@ -896,7 +897,7 @@ count. Keep instructions applicants need. An in-progress draft can be checked
 before publication design, but favorable scores do not establish publication
 readiness. Compare drafts with the same content scope.
 Word, PDF and saved-Builder scores can differ; use the same format and
-analysis method when tracking revisions. The separate public `/readability/`
+analysis method when tracking revisions. The separate public `/readability-calculator/`
 route remains PDF-only and has its own availability controls.
 See [authenticated readability pilot](AUTHENTICATED_PDF_READABILITY_PILOT.md).
 
