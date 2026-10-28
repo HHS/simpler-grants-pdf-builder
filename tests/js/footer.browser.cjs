@@ -15,7 +15,7 @@ const root = resolve(__dirname, '../..');
     return url.pathname.startsWith('/static/') && existsSync(path)
       ? route.fulfill({path}) : route.abort();
   });
-  const output = resolve(root, 'documentation/review-evidence/hhs-footer');
+  const output = resolve(root, 'documentation/review-evidence/footer-two-columns');
   mkdirSync(output, {recursive:true});
   for (const {template, authenticated} of [
     {template: 'base.html', authenticated: true},
@@ -28,12 +28,35 @@ const root = resolve(__dirname, '../..');
     const html = result.slice(result.indexOf('<!DOCTYPE html>')).replace('<head>', '<head><base href="http://local.test/">');
     await page.setContent(html);
     await page.evaluate(() => document.fonts.ready);
-    for (const width of [320,375,480,768,1280]) {
+    for (const width of [320,375,480,576,768,1023,1024,1280]) {
       await page.setViewportSize({width,height:700});
       const dimensions = await page.evaluate(() => ({width:innerWidth, scroll:document.documentElement.scrollWidth}));
       console.log({template, authenticated, ...dimensions});
       assert.equal(dimensions.scroll, width);
       assert.equal(await page.locator('footer nav a').count(), authenticated ? 4 : 3);
+      const items = await page.locator('footer nav li').evaluateAll(items =>
+        items.map(item => {
+          const {x, y, width} = item.getBoundingClientRect();
+          return {x, y, width};
+        }));
+      if (width < 1024) {
+        assert.equal(items[0].y, items[1].y);
+        assert.ok(items[2].y > items[0].y);
+        if (authenticated) {
+          assert.equal(items[2].y, items[3].y);
+          assert.equal(items[0].x, items[2].x);
+          assert.equal(items[1].x, items[3].x);
+        }
+      } else {
+        assert.ok(items.every(item => item.y === items[0].y));
+      }
+      const labels = await page.locator('footer nav a').evaluateAll(links =>
+        links.map(link => link.textContent.trim().replace(/\s+/g, ' ')));
+      assert.deepEqual(labels, [
+        ...(authenticated ? ['Submit a support ticket'] : []),
+        'Latest updates', 'Privacy policy (opens in a new window)', 'Back to top',
+      ]);
+      assert.ok(items[0].x < items[1].x);
       const identifier = page.getByRole('region', {name: 'Agency identifier'});
       assert.equal(await identifier.count(), 1);
       const agencyLink = identifier.getByRole('link', {name: 'U.S. Department of Health and Human Services'});
