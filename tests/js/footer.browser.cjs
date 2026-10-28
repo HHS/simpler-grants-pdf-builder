@@ -50,6 +50,13 @@ const root = resolve(__dirname, '../..');
       } else {
         assert.ok(items.every(item => item.y === items[0].y));
       }
+      const labels = await page.locator('footer nav a').evaluateAll(links =>
+        links.map(link => link.textContent.trim().replace(/\s+/g, ' ')));
+      assert.deepEqual(labels, [
+        ...(authenticated ? ['Submit a support ticket'] : []),
+        'Latest updates', 'Privacy policy (opens in a new window)', 'Back to top',
+      ]);
+      assert.ok(items[0].x < items[1].x);
       const identifier = page.getByRole('region', {name: 'Agency identifier'});
       assert.equal(await identifier.count(), 1);
       const agencyLink = identifier.getByRole('link', {name: 'U.S. Department of Health and Human Services'});

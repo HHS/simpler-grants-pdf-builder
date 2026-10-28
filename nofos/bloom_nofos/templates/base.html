@@ -105,8 +105,21 @@
   <footer class="usa-footer">
     {% include "includes/hhs_identifier.html" %}
     <div class="usa-footer__primary-section">
-      <nav class="usa-footer__nav usa-footer__nav--reverse" aria-label="Footer navigation">
+      <nav class="usa-footer__nav" aria-label="Footer navigation">
         <ul class="grid-row grid-gap">
+          {% if user.is_authenticated %}
+            <li class="grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
+              {% include "includes/feedback_link.html" with html_class="usa-footer__primary-link usa-link--external" link_text="Submit a support ticket" only %}
+            </li>
+          {% endif %}
+          <li class="grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
+            <a class="usa-footer__primary-link usa-link--external" href="https://github.com/HHS/simpler-grants-pdf-builder/blob/main/CHANGELOG.md" target="_blank">
+              Latest updates
+            </a>
+          </li>
+          <li class="grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
+            <a class="usa-footer__primary-link usa-link--external" href="https://www.hhs.gov/privacy/privacy-policy/index.html" target="_blank" rel="noopener noreferrer">Privacy policy<span class="usa-sr-only"> (opens in a new window)</span></a>
+          </li>
           <li
             class="
               grid-col-6
@@ -118,19 +131,6 @@
               >Back to top</a
             >
           </li>
-          <li class="grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
-            <a class="usa-footer__primary-link usa-link--external" href="https://www.hhs.gov/privacy/privacy-policy/index.html" target="_blank" rel="noopener noreferrer">Privacy policy<span class="usa-sr-only"> (opens in a new window)</span></a>
-          </li>
-          <li class="grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
-            <a class="usa-footer__primary-link usa-link--external" href="https://github.com/HHS/simpler-grants-pdf-builder/blob/main/CHANGELOG.md" target="_blank">
-              Latest updates
-            </a>
-          </li>
-          {% if user.is_authenticated %}
-            <li class="grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
-              {% include "includes/feedback_link.html" with html_class="usa-footer__primary-link usa-link--external" link_text="Submit a support ticket" only %}
-            </li>
-          {% endif %}
         </ul>
       </nav>
     </div>
