@@ -50,13 +50,30 @@ effective boolean, never an arbitrary settings dump. If effectively true, stop
 and arrange an authorized correction; this plan does not change flags itself.
 Repeat the check at the end. The existing inspection does not read Constance.
 
-Check the canonical signed-out GET and empty POST `/readability/`: expect the
+Check the canonical signed-out GET and empty POST `/readability-checker/`: expect the
 disabled 503, no upload form, no-store and noindex headers. Record both exact
-route forms (`/readability` and `/readability/`) without automatically following
-redirects. A slashless request may have Django redirect/error behavior: record
+current route forms (`/readability-checker` and `/readability-checker/`) and
+legacy forms (`/readability` and `/readability/`) without automatically following
+redirects. The legacy route redirects to the renamed checker, and a slashless
+request may have Django redirect/error behavior: record
 it; do not mistake it for WAF enforcement or assume both forms return 503.
 Confirm `/health` responds normally. If the baseline is unexpected, stop before
 rate/block testing and investigate.
+
+### Preflight finding: renamed route coverage
+
+On October 28, signed-out GET `/health` returned 200 and GET
+`/readability-checker/` returned 503 without an upload control, with no-store and
+noindex headers. GET `/readability/` returned 308 and the authenticated checker
+redirected signed-out access to login. No POST or upload was sent during this
+finding. These HTTP observations do not read the stored Constance value.
+
+The reviewed Simpler Grants WAF source still matches only `^/readability/?$`.
+That does not cover the renamed public checker directly. Update the two rule
+scopes to include current and legacy paths, with tests, through a reviewed
+infrastructure change before claiming protection or running the enforcement
+card. Keep Count mode and the public application flag unchanged while correcting
+scope. Testing only the old redirect would give incomplete coverage.
 
 ## 2. WAF test card: synthetic empty requests, no file uploads
 
@@ -67,18 +84,18 @@ Do not enable production rules as part of dev testing.
 
 | Phase | Requests and ceiling | Passing evidence |
 | --- | --- | --- |
-| Baseline / Count | One GET and one empty POST for each exact route form, plus one GET `/health` (5 total). | Baseline responses recorded, unrelated route available, matching Count signals inspected where available. |
-| Rate block only | Set rate action to Block, keep emergency off. Up to 60 empty POSTs across the two exact forms from one stable source, at most one every two seconds. Also one GET per exact form and one GET `/health` (63 total). Stop sending POSTs once sufficient interception evidence is obtained. | Verified effective configuration; WAF rate-rule blocks and 429 responses for both forms where observed; GET and unrelated route unaffected. A 429 alone cannot identify which component generated it. |
-| Rate recovery | Stop the burst. At most one empty POST per minute, at most 10 probes, plus one GET per exact form (12 total). | Eventually returns to the disabled application's baseline; no analysis enabled. |
-| Emergency block | With the reviewed emergency setting active, one GET and one empty POST per exact form and one GET `/health` (5 total). | Both forms/methods intercepted with 403, corresponding emergency-rule block evidence, unrelated route available. |
-| Restoration | Restore emergency false and rate Count, verify through inspection, then repeat the five baseline requests (5 total). | Original WAF modes restored, canonical disabled responses/headers and unrelated-route availability restored. |
+| Baseline / Count | One GET and one empty POST for each of the four exact current/legacy forms, plus one GET `/health` (9 total). | Baseline responses recorded, unrelated route available, matching Count signals inspected where available. |
+| Rate block only | Set rate action to Block, keep emergency off. Up to 44 empty POSTs across the four exact forms from one stable source, at most one every two seconds. Also one GET per exact form and one GET `/health` (49 total). Stop sending POSTs once sufficient interception evidence is obtained. | Verified effective configuration; WAF rate-rule blocks and 429 responses for all four forms where observed; GET and unrelated route unaffected. A 429 alone cannot identify which component generated it. |
+| Rate recovery | Stop the burst. At most one empty POST per minute, at most 10 probes, plus one GET per exact form (14 total). | Eventually returns to the disabled application's baseline; no analysis enabled. |
+| Emergency block | With the reviewed emergency setting active, one GET and one empty POST per exact form and one GET `/health` (9 total). | All four forms/methods intercepted with 403, corresponding emergency-rule block evidence, unrelated route available. |
+| Restoration | Restore emergency false and rate Count, verify through inspection, then repeat the nine baseline requests (9 total). | Original WAF modes restored, canonical disabled responses/headers and unrelated-route availability restored. |
 
 **Whole-card ceiling: 90 HTTP requests, no automatic retries.** Request timeout
 is at most 10 seconds; each active rate/recovery phase has a 10-minute wall-clock
 ceiling excluding infrastructure deployment time. Stop early on unexpected
 impact, upload enablement, configuration mismatch, repeated 5xx outside the
 known disabled baseline, or a request/time ceiling. Do not increase traffic to
-force a result. If only one form is verified, mark the other unverified.
+force a result. Mark each unverified form explicitly; a redirect is not protection of its target.
 
 Rate evaluation is approximate, not a guarantee that request eleven blocks.
 Allow configuration propagation and record actual timings. No observed block
