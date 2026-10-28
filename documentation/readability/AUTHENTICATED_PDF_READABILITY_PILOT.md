@@ -9,6 +9,16 @@ The tool is named **Readability Checker** on the upload page and report.
 The previous `/nofos/readability/` and `/readability/` URLs permanently redirect
 to their corresponding `readability-checker/` routes, preserving POST uploads.
 
+## Measurement profiles
+
+The application chooses profiles automatically; users do not select a profile.
+With package 0.7.0, Word uploads use HTML profile `0.6.0`, tagged PDFs use profile
+`0.7.0`, and untagged PDFs use generic profile `0.6.0`. “Opt-in” in package notes
+describes application-level selection, not a user setting. The rule excludes
+“as defined by” alone as passive evidence while preserving other passive clauses.
+Existing differences from Word remain. See
+[measurement version 0.7.0](READABILITY_METRICS.md#measurement-version-070).
+
 ## Accounts, permissions and switches
 
 Share `/nofos/readability-checker/` directly. It has no navigation link. Both GET and POST

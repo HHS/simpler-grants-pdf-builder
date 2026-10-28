@@ -2,7 +2,7 @@
 
 NOFO Builder has a contained integration boundary for the standalone
 [`hhs-nofo-metrics`](https://github.com/agilesix/hhs-nofo-metrics) package.
-The package is pinned to the Agile Six `v0.6.0` release. The feature remains
+The package is pinned to the Agile Six `v0.7.0` release. The feature remains
 disabled by default so environments can opt into the provisional metrics UI
 independently.
 
@@ -19,19 +19,53 @@ forms, CSRF tokens, and other application shell content from the source hash.
 
 The caller selects:
 
-- profile `hhs-nofo-fy27-html@0.5.0`;
+- profile `hhs-nofo-fy27-html@0.6.0`;
 - adapter root `download_target`;
 - production path `nofo_builder_export_html`;
 - the NOFO UUID as `document_id`; and
 - `Nofo.updated` as the Builder revision.
 
-This profile explicitly selects passive classifier `0.4.0-provisional`. It
+This profile explicitly selects passive classifier `0.5.0-provisional`. It
 recognizes unambiguous contracted be auxiliaries and avoids treating `need` or
 `indeed` as participles. Ambiguous pronoun `'s` forms, such as “it's required,”
 remain a known limitation. The sentence denominator, other metric formulas and
 configured targets are unchanged. Earlier stored results retain their original
 package/profile identities and remain available in history; they are not reused
 as current calculations under the new measurement contract.
+
+## Measurement version 0.7.0
+
+The saved Builder panel and standalone Word checker use HTML profile `0.6.0`.
+PDF uploads select tagged profile `0.7.0` or generic profile `0.6.0` automatically,
+and tagged support inspection uses adapter `0.1.8`. Users do not choose a
+measurement profile. “Opt-in” in package notes describes application configuration;
+this upgrade makes that choice for Builder's paths.
+
+The passive classifier no longer treats “as defined by” alone as a passive match.
+It retains finite passives such as “The award is defined by the agreement” and
+other passive clauses in the same sentence. Sentence scope and other formulas
+are unchanged for a fixed inventory. PDF extraction can also change because
+0.7.0 includes a separate nested-table repair; it does not join distinct source
+objects simply because their text appears to continue across pages.
+
+The [package release](https://github.com/agilesix/hhs-nofo-metrics/releases/tag/v0.7.0)
+and [investigation summary](https://github.com/agilesix/hhs-nofo-metrics/pull/25)
+describe evidence and limits. The broader real-document package gate was explicitly
+deferred, not passed. Synthetic integration checks do not establish Word parity
+or clearance approval.
+
+No data migration or new operational switch is required. Existing Constance
+availability controls remain in effect. New package/profile identities prevent
+reuse of older results as current measurements; history remains available.
+Calculate or upload again after deployment to obtain 0.7.0 results. Compare
+content revisions using the same measurement version and input format.
+
+To roll back, deploy the preceding Builder commit, restoring the 0.6.0 package
+and its prior profile/adapter references together. Do not rewrite history.
+Verify the report version and a fresh Builder calculation after rollout or rollback.
+
+[Consumer-upgrade validation and deployment handoff](../review-evidence/1231/README.md)
+record the synthetic checks and operator steps.
 
 ## Endpoint
 

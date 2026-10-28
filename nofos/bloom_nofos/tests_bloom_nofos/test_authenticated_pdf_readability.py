@@ -145,7 +145,7 @@ class AuthenticatedPilotTests(TestCase):
             },
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context["report"]["version"], "0.6.0")
+        self.assertEqual(response.context["report"]["version"], "0.7.0")
         self.assertEqual(response.context["report"]["scope"]["sentence_word_count"], 17)
         self.assertEqual(
             response.context["report"]["scope"]["complete_sentence_count"], 3
@@ -165,7 +165,7 @@ class AuthenticatedPilotTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Readability Checker")
         self.assertNotContains(response, "Word readability pilot")
-        self.assertEqual(response.context["report"]["version"], "0.6.0")
+        self.assertEqual(response.context["report"]["version"], "0.7.0")
         self.assertNotContains(response, 'id="readability-draft-scope"')
         self.assertNotContains(response, "before exporting it")
         self.assertContains(response, "Compare drafts with the same content scope.")

@@ -13,7 +13,7 @@ from django.template.loader import render_to_string
 
 METRICS_MODULE = "hhs_nofo_metrics"
 METRICS_DISTRIBUTION = "hhs-nofo-metrics"
-PROFILE_REFERENCE = "hhs-nofo-fy27-html@0.5.0"
+PROFILE_REFERENCE = "hhs-nofo-fy27-html@0.6.0"
 EXPORT_ROOT_ID = "download_target"
 PRODUCTION_PATH = "nofo_builder_export_html"
 # Bump when Builder changes what it renders for measurement, independently of

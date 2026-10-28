@@ -10,7 +10,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import SimpleTestCase
 
 from nofos.pdf_readability import PdfReadabilityError, analyze_uploaded_pdf
-from nofos.pdf_readability_worker import analyze_word
+from nofos.pdf_readability_worker import WORD_PROFILE, analyze_word
 from nofos.word_readability import DOCX_CONTENT_TYPE, word_html
 
 
@@ -209,7 +209,7 @@ class WordReadabilityTests(SimpleTestCase):
         self.assertIn("synthetic supporting note", soup.get_text())
         expected = metrics.analyze(
             metrics.SourceBundle.from_html(html.encode()),
-            profile="hhs-nofo-fy27-html@0.5.0",
+            profile=WORD_PROFILE,
         ).to_dict()
         report = analyze_word(self.path)
         for metric_id in report["metrics"]:
@@ -247,7 +247,7 @@ class WordReadabilityTests(SimpleTestCase):
         )
         self.assertEqual(after.method.version, "0.4.0-provisional")
         report = analyze_word(self.path)
-        self.assertEqual(report["version"], "0.6.0")
+        self.assertEqual(report["version"], "0.7.0")
         self.assertEqual(
             report["metrics"]["passive_sentence_percentage"]["value"], after.value
         )
@@ -266,6 +266,41 @@ class WordReadabilityTests(SimpleTestCase):
             with self.assertRaisesRegex(ValueError, "word_expanded_limit"):
                 word_html(self.path)
         convert.assert_not_called()
+
+    def test_definition_modifier_exception_retains_finite_passives_and_scope(self):
+        import hhs_nofo_metrics as metrics
+
+        from nofos.readability import PROFILE_REFERENCE
+
+        self.assertEqual(WORD_PROFILE, PROFILE_REFERENCE)
+        self.path.write_bytes(
+            synthetic_docx(
+                "Opportunity number: HRSA-26-106. Assistance listing: 93.123. "
+                "An eligible entity as defined by the charter. "
+                "Applications are reviewed by the board. "
+                "An entity as defined by the charter is selected. "
+                "Applicants submit forms."
+            )
+        )
+        html, _ = word_html(self.path)
+        source = metrics.SourceBundle.from_html(html.encode())
+        old = metrics.analyze(source, profile="hhs-nofo-fy27-html@0.5.0")
+        new = metrics.analyze(source, profile=WORD_PROFILE)
+        before = old.metrics["passive_sentence_percentage"]
+        after = new.metrics["passive_sentence_percentage"]
+        self.assertEqual(before.components["sentence_count"], 6)
+        self.assertEqual(after.components["sentence_count"], 6)
+        self.assertEqual(before.components["passive_sentence_count"], 3)
+        self.assertEqual(after.components["passive_sentence_count"], 2)
+        self.assertEqual(after.method.version, "0.5.0-provisional")
+        for key in old.metrics:
+            if key != "passive_sentence_percentage":
+                self.assertEqual(old.metrics[key].to_dict(), new.metrics[key].to_dict())
+        report = analyze_word(self.path)
+        self.assertEqual(report["version"], "0.7.0")
+        self.assertEqual(
+            report["metrics"]["passive_sentence_percentage"]["value"], after.value
+        )
 
     def test_entry_limit_and_duplicate_names_are_rejected(self):
         self.path.write_bytes(synthetic_docx())

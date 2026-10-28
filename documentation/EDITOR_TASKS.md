@@ -887,6 +887,11 @@ If access is denied or the page is unavailable, contact the pilot operator.
 5. Select **Copy metrics** or **Print / Save as PDF** before leaving the report.
    Use **Analyze another document** for another upload.
 
+Profiles are selected automatically; there is no profile setting to choose.
+Check the report's **Measurement version** when comparing results. Version 0.7.0
+changes passive treatment of “as defined by” modifiers; use the same version and
+format to compare content revisions.
+
 This upload does not create a NOFO or save report history. When usage recording
 is enabled, **How we handle your document** explains that content-free usage/error
 records include the attempted file category (PDF, DOCX or unknown) and are kept
