@@ -80,7 +80,7 @@ def synthetic_nofo_pdf():
     )
 
 
-def synthetic_tagged_pdf(headings):
+def synthetic_tagged_pdf(headings, *, role="H1"):
     """A one-page tagged PDF with genuine MCID-backed heading groups."""
     writer = PdfWriter()
     page = writer.add_blank_page(width=612, height=792)
@@ -105,7 +105,7 @@ def synthetic_tagged_pdf(headings):
                 DictionaryObject(
                     {
                         NameObject("/Type"): NameObject("/StructElem"),
-                        NameObject("/S"): NameObject("/H1"),
+                        NameObject("/S"): NameObject(f"/{role}"),
                         NameObject("/Pg"): page.indirect_reference,
                         NameObject("/K"): NumberObject(index),
                     }
@@ -113,7 +113,7 @@ def synthetic_tagged_pdf(headings):
             )
         )
         content.append(
-            f"/H1 <</MCID {index}>> BDC BT /F1 12 Tf 72 {700-index*24} Td ({heading}) Tj ET EMC".encode()
+            f"/{role} <</MCID {index}>> BDC BT /F1 12 Tf 72 {700-index*24} Td ({heading}) Tj ET EMC".encode()
         )
     root = writer._add_object(
         DictionaryObject(
@@ -137,6 +137,58 @@ class PdfReadabilityTests(SimpleTestCase):
         from hhs_nofo_metrics.adapters.tagged_pdf import ADAPTER_VERSION
 
         self.assertEqual(TAGGED_ADAPTER, f"hhs-tagged-pdf-adapter@{ADAPTER_VERSION}")
+
+    def test_real_pdf_profiles_apply_definition_modifier_exception(self):
+        import hhs_nofo_metrics as metrics
+
+        sentences = (
+            "An eligible entity as defined by the charter.",
+            "Applications are reviewed by the board.",
+            "An entity as defined by the charter is selected.",
+            "Applicants submit forms.",
+        )
+        identification = "Opportunity number: HRSA-26-106 Assistance listing: 93.123"
+        with tempfile.TemporaryDirectory() as directory:
+            for tagged in (True, False):
+                with self.subTest(tagged=tagged):
+                    path = Path(directory) / "invented.pdf"
+                    if tagged:
+                        path.write_bytes(
+                            synthetic_tagged_pdf((identification, *sentences), role="P")
+                        )
+                    else:
+                        path.write_bytes(
+                            synthetic_text_pdf(
+                                contents=tuple(
+                                    text.encode()
+                                    for text in (identification, *sentences)
+                                )
+                            )
+                        )
+                    previous_profile = (
+                        "hhs-nofo-fy27-pdf-estimate@0.6.0"
+                        if tagged
+                        else "hhs-nofo-fy27-generic-pdf-estimate@0.5.0"
+                    )
+                    previous = metrics.analyze(path, profile=previous_profile)
+                    before = previous.metrics["passive_sentence_percentage"]
+                    self.assertEqual(before.components["sentence_count"], 4)
+                    self.assertEqual(before.components["passive_sentence_count"], 3)
+                    report = analyze(path, 10)
+                    self.assertEqual(report["version"], "0.7.0")
+                    self.assertEqual(
+                        report["profile"], "tagged" if tagged else "generic"
+                    )
+                    self.assertEqual(report["scope"]["complete_sentence_count"], 4)
+                    self.assertEqual(
+                        report["metrics"]["passive_sentence_percentage"]["value"], 50
+                    )
+                    for key in previous.metrics:
+                        if key != "passive_sentence_percentage":
+                            self.assertEqual(
+                                report["metrics"][key]["value"],
+                                previous.metrics[key].value,
+                            )
 
     def test_recognition_accepts_two_distinct_loose_signals(self):
         cases = (

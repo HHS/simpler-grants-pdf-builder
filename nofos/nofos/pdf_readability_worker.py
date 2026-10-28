@@ -16,9 +16,10 @@ from nofos.pdf_format_recognition import (
     validate_policy,
 )
 
-TAGGED_PROFILE = "hhs-nofo-fy27-pdf-estimate@0.6.0"
-GENERIC_PROFILE = "hhs-nofo-fy27-generic-pdf-estimate@0.5.0"
-TAGGED_ADAPTER = "hhs-tagged-pdf-adapter@0.1.7"
+TAGGED_PROFILE = "hhs-nofo-fy27-pdf-estimate@0.7.0"
+GENERIC_PROFILE = "hhs-nofo-fy27-generic-pdf-estimate@0.6.0"
+TAGGED_ADAPTER = "hhs-tagged-pdf-adapter@0.1.8"
+WORD_PROFILE = "hhs-nofo-fy27-html@0.6.0"
 METRIC_IDS = (
     "word_count",
     "words_per_sentence",
@@ -238,7 +239,7 @@ def analyze_word(path: Path) -> dict:
     try:
         result = metrics.analyze(
             metrics.SourceBundle.from_html(html.encode("utf-8")),
-            profile="hhs-nofo-fy27-html@0.5.0",
+            profile=WORD_PROFILE,
             production_path="word_readability_pilot",
         )
     except metrics.NofoMetricsError:
