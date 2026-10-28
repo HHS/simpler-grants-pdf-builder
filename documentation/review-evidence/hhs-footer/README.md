@@ -1,7 +1,7 @@
 # HHS footer identifier validation
 
-The shared application footer now includes the existing HHS seal in white on
-Builder's dark blue (`#00345e`), “HHS.gov,” and the official-website statement
+Above the existing utility links, the shared application footer includes the existing HHS seal in white on
+Builder's dark blue (`#00345e`), with a 48px crest and 4px vertical margins, “HHS.gov,” and the official-website statement
 linking to HHS. This follows the identifier masthead at
 https://simpler.grants.gov/ without copying its green palette.
 
@@ -37,3 +37,7 @@ Validation results:
   Besides the admin breadcrumb failure, these concern the local readability
   dependency versions (installed tagged adapter 0.1.6 versus expected 0.1.7
   and missing requested metrics profiles). Footer-specific tests pass.
+
+The revised identifier sits above the utility links. Browser checks also verify
+its position, 48px crest size, 4px top/bottom crest margins, and the revised
+keyboard order. Cropped previews: [desktop](footer-1280.png), [mobile](footer-320.png).

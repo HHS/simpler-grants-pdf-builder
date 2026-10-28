@@ -41,11 +41,22 @@ const root = resolve(__dirname, '../..');
       assert.equal(await identifier.locator('svg').count(), 1);
       assert.equal(await identifier.locator('svg').evaluate(el => getComputedStyle(el).fill), 'rgb(255, 255, 255)');
       assert.equal(await page.locator('.builder-identifier').evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(0, 52, 94)');
-      await page.locator('footer nav a').last().focus();
-      await page.keyboard.press('Tab');
+      const identifierBounds = await identifier.boundingBox();
+      const navBounds = await page.locator('footer nav').boundingBox();
+      assert.ok(identifierBounds.y + identifierBounds.height <= navBounds.y);
+      const logo = identifier.locator('svg');
+      assert.equal(await logo.evaluate(el => el.getBoundingClientRect().height), 48);
+      assert.equal(await logo.evaluate(el => getComputedStyle(el).marginTop), '4px');
+      assert.equal(await logo.evaluate(el => getComputedStyle(el).marginBottom), '4px');
+      await page.locator('footer nav a').first().focus();
+      await page.keyboard.press('Shift+Tab');
       assert.equal(await agencyLink.evaluate(el => el === document.activeElement), true);
       assert.notEqual(await agencyLink.evaluate(el => getComputedStyle(el).outlineStyle), 'none');
-      if(authenticated && [320,1280].includes(width)) await page.screenshot({path:resolve(output,`after-${width}.png`),fullPage:true});
+      if(authenticated && [320,1280].includes(width)) {
+        await page.screenshot({path:resolve(output,`after-${width}.png`),fullPage:true});
+        await agencyLink.blur();
+        await page.locator('footer').screenshot({path:resolve(output,`footer-${width}.png`)});
+      }
     }
   }
   await browser.close();

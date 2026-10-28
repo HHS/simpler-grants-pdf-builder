@@ -541,9 +541,9 @@ References:
 
 Application pages extending `base.html` or `pdf_readability_base.html` use the shared
 [`hhs_identifier.html`](../nofos/bloom_nofos/templates/includes/hhs_identifier.html)
-under the existing footer navigation. Reuse the bundled USWDS identifier masthead,
+above the existing footer navigation. Reuse the bundled USWDS identifier masthead,
 the existing HHS SVG, and Builder's `--color--dark-blue` background with a white
-logo. The agency name links to `https://www.hhs.gov/` in the same tab. The logo is
+logo, sized to 3rem with 0.25rem vertical margins around the crest. The agency name links to `https://www.hhs.gov/` in the same tab. The logo is
 decorative because the adjacent text identifies the agency. Give its SVG title a
 footer-specific ID so it does not collide with other uses of the logo.
 

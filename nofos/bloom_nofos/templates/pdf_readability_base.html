@@ -50,6 +50,7 @@
 
 {% block footer %}
   <footer class="usa-footer">
+    {% include "includes/hhs_identifier.html" %}
     <div class="usa-footer__primary-section">
       <nav class="usa-footer__nav usa-footer__nav--reverse" aria-label="Footer navigation">
         <ul class="grid-row grid-gap">
@@ -65,7 +66,6 @@
         </ul>
       </nav>
     </div>
-    {% include "includes/hhs_identifier.html" %}
   </footer>
 {% endblock %}
 
