@@ -17,9 +17,10 @@ a candidate-specific capability adapter. Do not give it the operator's browser
 session, shell, database credentials or production API credentials.
 
 This is option 2 below, operated locally for the first synthetic proof, not a
-proposal to provision a second shared platform. The adapter and trusted
-acceptance path do not exist yet. Running the existing app alone does not
-enforce the proposed agent boundary.
+proposal to provision a second shared platform. The
+[candidate-only adapter](../design-pilot/DESIGN_CANDIDATE_INTERFACE.md) now exists
+for synthetic local use. The trusted acceptance path remains unimplemented.
+Running the existing app alone does not enforce the proposed agent boundary.
 
 The synthetic launch profile must fail closed: load only explicit test settings,
 not the checkout's normal `.env` files or ambient provider/AWS credentials. Do
@@ -232,10 +233,10 @@ image, token or renderer limit.
   [application adapter](../../nofos/nofos/document_processing.py).
 - [PDF service](../../nofos/nofos/pdf_service.py), retained for configured
   environments with caller-owned authorization and trusted base-URL responsibilities.
-- [Handoff identity](../WORD_HANDOFF_IDENTITY.md) and
-  [lifecycle](../WORD_HANDOFF_LIFECYCLE.md); neither is a ready-made ingress or
+- [Handoff identity](../integrations/announcement-services/WORD_HANDOFF_IDENTITY.md) and
+  [lifecycle](../integrations/announcement-services/WORD_HANDOFF_LIFECYCLE.md); neither is a ready-made ingress or
   promotion boundary.
-- [Pilot design rules and baseline plan](../AGENT_DESIGN_PILOT.md).
+- [Pilot design rules and baseline plan](../design-pilot/AGENT_DESIGN_PILOT.md).
 - Assess `duplicate_nofo` and its tests for existing graph-copy and introductory
   section-role behavior before building transfer logic. It is not a cross-instance
   promotion API: shared asset references and its field changes need explicit

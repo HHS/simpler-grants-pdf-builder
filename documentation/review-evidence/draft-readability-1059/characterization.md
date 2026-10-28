@@ -1,29 +1,11 @@
-# Readability checks during drafting
+# Draft readability characterization and limitations
 
-The PDF checker can process a text-based HHS NOFO draft before publication design.
-That means the file can receive estimates, not that every Word-to-PDF export has
-been validated or that the draft satisfies clearance guidance. The authenticated
-pilot remains restricted to approved users. Public-pilot activation is separate.
-
-## Choose the content to measure
-
-The direct PDF path measures recovered text. It does not run Builder's Word import
-cleanup or automatically distinguish writer-only notes from applicant-facing
-instructions. Complete sentences in writer notes, including tagged table cells,
-can affect sentence-based scores. Placeholders and other fragments can increase
-word count even when they do not contribute to sentence-based calculations.
-
-For an applicant-facing check, export a working copy without writer-only notes or
-template prompts. Preserve instructions applicants need. Compare versions with
-the same measurement scope. Shorter or incomplete drafts are not necessarily
-closer to publication readiness. Review the reported reliability and denominators.
-
-Recognition currently checks distinct NOFO identification signals on the first
-five pages and in descriptive metadata. An agency name in opening-page text can
-replace agency metadata lost in print exports, but never counts twice. A blank content guide can lack those
-signals. A rejection is not a finding that it is unrelated to HHS, and OCR does
-not supply missing identifiers. Use an identifiable draft with genuine available
-details; do not invent identifiers to obtain a report.
+Historical investigation and integration evidence for [#1059](https://github.com/HHS/simpler-grants-pdf-builder/issues/1059)
+and [PR #1060](https://github.com/HHS/simpler-grants-pdf-builder/pull/1060).
+Experiments were performed in October 2026; the integrated source baseline was
+`0ef39ee7`. This record preserves the reported results, rather than claiming a new
+validation run. See the [capture record](README.md) and
+[current drafting guidance](../../readability/DRAFT_PDF_READABILITY.md).
 
 ## Characterization tests
 
@@ -98,8 +80,10 @@ branch does not revert their behavior. Representative source pages were
 inspected privately. No source files, identifying details, or source
 scores are committed here.
 
-Issue #1059 remains open for independently checked extraction from real conversion
-paths, equivalent-prose Word exports, and multipage paragraphs and lists.
+Issue #1059 was closed on October 26, 2026 after acceptance of the delivered
+scope and documented limitations. Independently checked real-source extraction,
+equivalent-prose Word-to-PDF comparisons, and broader multipage coverage remain
+unverified; closure did not establish completion of those checks.
 FY27 clearance-guidance verification is outside scope and is not a tracked
 follow-up. Announcement Module provenance is handled manually by the team and
 is outside the tracked follow-ups for this work. No

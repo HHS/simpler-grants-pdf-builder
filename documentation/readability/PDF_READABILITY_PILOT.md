@@ -61,7 +61,7 @@ ratings and the generic PDF adapter's explicit low-confidence policy remain.
 
 The complete current alert-copy catalog, report headings, metric labels, rating
 selection rule and authenticated/public variants are documented in
-[UI patterns — Readability estimate reliability alerts](UI_PATTERNS.md#readability-estimate-reliability-alerts).
+[UI patterns — Readability estimate reliability alerts](../UI_PATTERNS.md#readability-estimate-reliability-alerts).
 That catalog also distinguishes an unavailable metric from unassessed reliability.
 Source explanations stay in one paragraph; only the authenticated tool suggests
 uploading Word instead of a PDF. Historical screenshots may predate copy changes.

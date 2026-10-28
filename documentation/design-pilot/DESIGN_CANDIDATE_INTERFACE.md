@@ -98,6 +98,7 @@ request may fail closed and need a sequential retry. These tests do not validate
 other database engines, a reverse proxy, a real agent runtime or production use.
 
 HTML filtering retains the existing host's declared fidelity limitations. It is
-not PDF pagination evidence or a completed readiness review. Human decision
-attribution, historical render archives, findings/readiness, comprehensive resource
-limits, acceptance/transfer and confirmed discard remain separate work.
+not PDF pagination evidence or a completed readiness review. The [review slice](DESIGN_CANDIDATE_REVIEW.md) now supplies findings and
+attributable warning acknowledgments. Full readiness/fidelity checks, historical
+render archives, comprehensive resource limits, acceptance/transfer and confirmed
+discard remain separate work.

@@ -6,7 +6,7 @@ October 20, 2026. Synthetic local account and invented Word text only.
 
 The pinned 0.6.0 package's HTML pipeline intentionally omits PDF-estimate
 reliability. The absent rating does not mean a check failed, and #1120 is not a
-dependency. See [the source-linked investigation](../../WORD_READABILITY_RELIABILITY.md).
+dependency. See [the source-linked investigation](../../readability/WORD_READABILITY_RELIABILITY.md).
 Ordinary Word reports now use plain Measurement scope guidance, one explanation
 of absent conversion-completeness assessment and Estimated metric labels.
 Specific converter warnings remain in Calculation notes. PDF notices and

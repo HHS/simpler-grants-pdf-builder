@@ -98,11 +98,11 @@ importer defect. No source content, heading level or policy wording was changed.
 
 Evidence (HTML and control state, **not PDF**):
 
-- [Routine HTML preview](design-pilot-1146/routine-html.jpg).
-- [Table HTML preview before the width toggle](design-pilot-1146/tables-html.jpg).
-- [Persisted full-width control](design-pilot-1146/table-width-control.jpg).
-- [Judgment-case HTML preview](design-pilot-1146/judgment-html.jpg).
-- [Invalid-hierarchy rejection](design-pilot-1146/invalid-hierarchy.jpg).
+- [Routine HTML preview](routine-html.jpg).
+- [Table HTML preview before the width toggle](tables-html.jpg).
+- [Persisted full-width control](table-width-control.jpg).
+- [Judgment-case HTML preview](judgment-html.jpg).
+- [Invalid-hierarchy rejection](invalid-hierarchy.jpg).
 
 The regression test also checks all ten table rows, cell values and ordered list
 items in the existing HTML view. It does not infer fidelity from a screenshot.

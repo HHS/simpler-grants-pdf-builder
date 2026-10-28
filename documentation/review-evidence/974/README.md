@@ -1,12 +1,18 @@
 # Word import drift: code-review findings
 
+Historical source investigation delivered September 24, 2026 in
+[PR #977](https://github.com/HHS/simpler-grants-pdf-builder/pull/977), with later
+list-semantics updates through #1125 (`223a6339`). The record was relocated October 28, 2026
+without rerunning the investigation. Current behavior is owned by the linked
+import-rule and topic guides; the priorities below are not production frequency data.
+
 This document records likely sources of drift between what an author sees in a
 Word document and what NOFO Builder produces after import. It is the initial
 code-review deliverable for [issue #974](https://github.com/HHS/simpler-grants-pdf-builder/issues/974).
 
 The findings are grounded in the import pipeline, its tests and fixtures, the
-automatic transformations in [`IMPORT_RULES.md`](IMPORT_RULES.md), the blocking
-failures in [`IMPORT_ERROR_CODES.md`](IMPORT_ERROR_CODES.md), and the history of
+automatic transformations in [`IMPORT_RULES.md`](../../IMPORT_RULES.md), the blocking
+failures in [`IMPORT_ERROR_CODES.md`](../../IMPORT_ERROR_CODES.md), and the history of
 import-related fixes.
 
 ## Important limitation
@@ -16,7 +22,7 @@ measurement of production frequency. Existing code can show where Builder has
 needed repairs, warnings, and special cases. It cannot establish how often an
 author encounters each pattern or how much time they spend correcting it.
 
-The existing [usage and quality metrics](BUILDER_METRICS.md) can provide context
+The existing [usage and quality metrics](../../BUILDER_METRICS.md) can provide context
 about blocking import errors, warning volume, and time to first live PDF. They
 do not identify the cause of an ordinary correction made after import.
 
@@ -132,7 +138,7 @@ styles, typed characters, or indentation. Builder repairs several known forms:
 Supported native decimal, bullet, letter and Roman numbering is now captured
 before Mammoth discards its format and start information. Complete mixed trees
 remain semantic HTML when Markdown cannot represent them. Simple lists retain
-the established Markdown representation. See [Word list import](WORD_LIST_IMPORT.md)
+the established Markdown representation. See [Word list import](../../WORD_LIST_IMPORT.md)
 for editing examples and limitations.
 
 Typed bullets, manually entered numbers, unsupported custom/compound markers
