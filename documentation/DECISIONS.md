@@ -2,6 +2,10 @@
 
 This file records significant architectural, product, and implementation decisions made on the NOFO Builder project. Entries are ordered newest-first.
 
+Use this log for brief product and implementation decisions. Record substantial
+architectural choices, alternatives and rationale in [ADRs](adr/README.md), using
+the shared [ADR template](template.md), and link the record here when relevant.
+
 ---
 
 ## 2026-10-11 — State three HHS style guide points in the style guide

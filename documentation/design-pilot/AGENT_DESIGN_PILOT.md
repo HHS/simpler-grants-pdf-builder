@@ -2,7 +2,7 @@
 
 Proposed analysis for #902/#1146, based on main at `5fe16ad6`. This is not an
 implemented skill, completed manual baseline or release approval. Environment
-choices and the accepted synthetic-proof direction are in the [ADR](adr/2026-10-20-agent-design-pilot-boundary.md).
+choices and the accepted synthetic-proof direction are in the [ADR](../adr/2026-10-20-agent-design-pilot-boundary.md).
 
 ## Keep the first slice small
 
@@ -17,14 +17,14 @@ their current authority and limitations.
 
 | Stable pilot rule | Classification | Allowed action / exit evidence | Existing source |
 | --- | --- | --- | --- |
-| DESIGN-001: establish imported baseline | Escalate unexplained differences | Account for source-to-import differences with applicable import rules; unexpected loss blocks acceptance | [IMPORT_RULES](IMPORT_RULES.md), [DOCUMENT_PROCESSING](DOCUMENT_PROCESSING.md) |
-| DESIGN-002: theme and cover | Presentation when supplied preference is unambiguous; otherwise confirm suggestion | Use declared theme/cover choices; never invent branding or a cover image. Record rendered-cover evidence for validation; user preview choice follows DESIGN-008 | [TASK-THEME](EDITOR_TASKS.md#task-theme) |
-| DESIGN-003: pagination | Presentation with rendered evidence | Set subsection breaks only in the first slice. Suggest in-body markers to a human; do not edit body text automatically. Record target subsections and intended breaks, then refresh HTML; final PDF pagination is not verified locally | [FAQ page breaks](NOFO_BUILDER_FAQ.md#when-should-i-add-a-manual-page-break) |
-| DESIGN-004: table width | Presentation | Existing section-level full-width control; review every table affected, not just the target table | [TASK-TABLE-FULL-WIDTH](EDITOR_TASKS.md#task-table-full-width), [TABLES](TABLES.md) |
-| DESIGN-005: custom CSS | Confirm suggestion in first slice | No automatic CSS writes. Require demonstrated defect, native-control attempts and refreshed HTML evidence; do not claim local PDF validation | [UI patterns](UI_PATTERNS.md), existing theme controls |
-| DESIGN-006: semantic structure | Escalate ambiguity | Flag heading jumps, ambiguous table headers, list damage and missing alt text. Do not rewrite headings, invent alt text or delete content autonomously | [DESIGN_STANDARDS](DESIGN_STANDARDS.md), [EDITOR_TASKS](EDITOR_TASKS.md) |
-| DESIGN-007: substance and policy | Forbidden autonomous change | Preserve all wording, dates, amounts, eligibility, links and policy even when policy tags are missing/disabled | #902; [IMPORT_RULES](IMPORT_RULES.md) only explains import-stage changes |
-| DESIGN-008: final review | Human decision | Explicit acceptance of the current candidate from the Builder review page; local HTML viewing is optional; PDF preview/download stay disabled locally, with no mandatory inspection action; unresolved blockers prevent acceptance | [Review and acceptance contract](adr/2026-10-20-agent-design-pilot-boundary.md#review-acceptance-and-discard) |
+| DESIGN-001: establish imported baseline | Escalate unexplained differences | Account for source-to-import differences with applicable import rules; unexpected loss blocks acceptance | [IMPORT_RULES](../IMPORT_RULES.md), [DOCUMENT_PROCESSING](../DOCUMENT_PROCESSING.md) |
+| DESIGN-002: theme and cover | Presentation when supplied preference is unambiguous; otherwise confirm suggestion | Use declared theme/cover choices; never invent branding or a cover image. Record rendered-cover evidence for validation; user preview choice follows DESIGN-008 | [TASK-THEME](../EDITOR_TASKS.md#task-theme) |
+| DESIGN-003: pagination | Presentation with rendered evidence | Set subsection breaks only in the first slice. Suggest in-body markers to a human; do not edit body text automatically. Record target subsections and intended breaks, then refresh HTML; final PDF pagination is not verified locally | [FAQ page breaks](../NOFO_BUILDER_FAQ.md#when-should-i-add-a-manual-page-break) |
+| DESIGN-004: table width | Presentation | Existing section-level full-width control; review every table affected, not just the target table | [TASK-TABLE-FULL-WIDTH](../EDITOR_TASKS.md#task-table-full-width), [TABLES](../TABLES.md) |
+| DESIGN-005: custom CSS | Confirm suggestion in first slice | No automatic CSS writes. Require demonstrated defect, native-control attempts and refreshed HTML evidence; do not claim local PDF validation | [UI patterns](../UI_PATTERNS.md), existing theme controls |
+| DESIGN-006: semantic structure | Escalate ambiguity | Flag heading jumps, ambiguous table headers, list damage and missing alt text. Do not rewrite headings, invent alt text or delete content autonomously | [DESIGN_STANDARDS](../DESIGN_STANDARDS.md), [EDITOR_TASKS](../EDITOR_TASKS.md) |
+| DESIGN-007: substance and policy | Forbidden autonomous change | Preserve all wording, dates, amounts, eligibility, links and policy even when policy tags are missing/disabled | #902; [IMPORT_RULES](../IMPORT_RULES.md) only explains import-stage changes |
+| DESIGN-008: final review | Human decision | Explicit acceptance of the current candidate from the Builder review page; local HTML viewing is optional; PDF preview/download stay disabled locally, with no mandatory inspection action; unresolved blockers prevent acceptance | [Review and acceptance contract](../adr/2026-10-20-agent-design-pilot-boundary.md#review-acceptance-and-discard) |
 
 There are no allowlisted autonomous content fixes in the first slice. The
 classification remains available for later, individually specified fixes with

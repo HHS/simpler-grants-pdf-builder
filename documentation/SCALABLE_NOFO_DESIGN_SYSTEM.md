@@ -68,7 +68,7 @@ detailed sections to investigate specific questions as they arise.
   for heading levels, links, PDF metadata and endnotes, external-link checking,
   and PDF preview/download. The [quality dashboard](BUILDER_METRICS.md) supports
   monitoring usage, blocking import errors and warning counts. The
-  [readability panel and saved history](READABILITY_METRICS.md) support review of
+  [readability panel and saved history](readability/READABILITY_METRICS.md) support review of
   writing metrics where enabled. [Quality review and triage](QUALITY_REVIEW_AND_TRIAGE.md)
   explains how to investigate findings and follow through on improvements.
 
@@ -403,7 +403,7 @@ investigation.
 
 ### 2. Optional investigation: use a representative example
 
-The [#1197 traceability investigation](DESIGN_CHANGE_TRACEABILITY.md) inventories
+The [#1197 traceability investigation](review-evidence/1197/README.md) inventories
 current render inputs and gaps, demonstrates a synthetic shared callout change
 with an override and legacy theme, and compares smaller follow-up options. Its
 separate source baseline and HTML-only limits do not replace this guide's pinned

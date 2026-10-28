@@ -856,7 +856,7 @@ checkpoint once per unchanged measurement. Calculation alone does not save a
 manual checkpoint. Historical results remain available after measurement-version
 changes; compare version/profile information before treating a score difference
 as a content change. Automatic saves are best effort: an import or download can
-succeed even if metrics could not be saved. See [readability metrics](READABILITY_METRICS.md).
+succeed even if metrics could not be saved. See [readability metrics](readability/READABILITY_METRICS.md).
 
 <a id="task-readability-upload"></a>
 
@@ -899,7 +899,7 @@ readiness. Compare drafts with the same content scope.
 Word, PDF and saved-Builder scores can differ; use the same format and
 analysis method when tracking revisions. The separate public `/readability-checker/`
 route remains PDF-only and has its own availability controls.
-See [authenticated readability pilot](AUTHENTICATED_PDF_READABILITY_PILOT.md).
+See [authenticated readability pilot](readability/AUTHENTICATED_PDF_READABILITY_PILOT.md).
 
 ---
 
@@ -911,7 +911,7 @@ did not generate or verify PDFs.
 
 These tasks apply only to the isolated synthetic profile, not a deployed Builder
 or an ordinary NOFO. They were checked in local Chrome on October 20, 2026.
-See [local host setup and limitations](DESIGN_PILOT_LOCAL_HOST.md).
+See [local host setup and limitations](design-pilot/DESIGN_PILOT_LOCAL_HOST.md).
 
 <a id="task-design-pilot-import"></a>
 
@@ -961,7 +961,7 @@ This route is unavailable under normal settings. Do not upload real documents.
    link must also be reopened from the current candidate.
 
 If the error says the candidate's content changed outside the pilot, ask the
-developer running it to follow [targeted recovery](DESIGN_PILOT_LOCAL_HOST.md#recover-a-candidate-after-an-outside-content-edit).
+developer running it to follow [targeted recovery](design-pilot/DESIGN_PILOT_LOCAL_HOST.md#recover-a-candidate-after-an-outside-content-edit).
 Returning to the candidate or uploading the same file will not repair it. The
 developer must remove the affected candidate and its associated NOFO before you
 upload the original file again; this removes that candidate's saved changes.
@@ -1001,7 +1001,7 @@ limits on every client request even while an older review page remains open.
 
 Access ends after 20 minutes or 100 admitted requests. The client can read this
 candidate and request theme/table-width changes only. It cannot accept, transfer,
-publish or discard a design. See the [interface protocol and limits](DESIGN_CANDIDATE_INTERFACE.md).
+publish or discard a design. See the [interface protocol and limits](design-pilot/DESIGN_CANDIDATE_INTERFACE.md).
 
 <a id="task-design-pilot-findings"></a>
 
@@ -1036,7 +1036,7 @@ and deletion are not available in this slice.
    and review the latest checks before retrying. These unsaved drafts remain
    only in the returned page; copy them before leaving or refreshing if needed.
 
-See [review scope and limits](DESIGN_CANDIDATE_REVIEW.md). A clean diagnostic
+See [review scope and limits](design-pilot/DESIGN_CANDIDATE_REVIEW.md). A clean diagnostic
 report is not complete source/content/asset verification or design acceptance.
 
 ## Maintaining this page
@@ -1046,7 +1046,7 @@ matching task in the same pull request.
 
 | UI area | Source |
 | --- | --- |
-| Synthetic local candidate upload, changes and HTML review | `nofos/nofos/templates/nofos/design_pilot_*.html`; `nofos/nofos/design_pilot_views.py`; [local profile guide](DESIGN_PILOT_LOCAL_HOST.md) |
+| Synthetic local candidate upload, changes and HTML review | `nofos/nofos/templates/nofos/design_pilot_*.html`; `nofos/nofos/design_pilot_views.py`; [local profile guide](design-pilot/DESIGN_PILOT_LOCAL_HOST.md) |
 | NOFO edit page, section tables, warning tabs | `nofos/nofos/templates/nofos/nofo_edit.html` |
 | **NOFO actions** menu | `get_nofo_action_links()` in `nofos/nofos/nofo.py` |
 | Subsection edit page, conflict recovery, **Other actions** | `nofos/nofos/templates/nofos/subsection_edit.html`; `NofoSubsectionEditView` in `nofos/nofos/views.py` |
@@ -1054,8 +1054,8 @@ matching task in the same pull request.
 | Blocking import errors and retry/support labels | `nofos/bloom_nofos/templates/import_error.html`; `nofos/bloom_nofos/import_errors.py` |
 | Editable introductory content and restrictions | `nofos/nofos/templates/nofos/nofo_edit.html`; `SubsectionEditForm` in `nofos/nofos/forms.py`; `documentation/EDITABLE_INTRODUCTION.md` |
 | Deadline matching/replacement | `nofos/nofos/templates/nofos/nofo_edit_application_deadline.html`; `NofoEditApplicationDeadlineView` in `nofos/nofos/views.py` |
-| Readability panel and saved checkpoints | `nofos/nofos/templates/nofos/includes/readability_metrics_panel.html`; `nofos/nofos/templates/nofos/includes/readability_saved_snapshots.html`; `documentation/READABILITY_METRICS.md` |
-| Standalone Word/PDF upload and report | `nofos/bloom_nofos/templates/pdf_readability.html`; `documentation/AUTHENTICATED_PDF_READABILITY_PILOT.md` |
+| Readability panel and saved checkpoints | `nofos/nofos/templates/nofos/includes/readability_metrics_panel.html`; `nofos/nofos/templates/nofos/includes/readability_saved_snapshots.html`; `documentation/readability/READABILITY_METRICS.md` |
+| Standalone Word/PDF upload and report | `nofos/bloom_nofos/templates/pdf_readability.html`; `documentation/readability/AUTHENTICATED_PDF_READABILITY_PILOT.md` |
 | Delete confirmation | `nofos/nofos/templates/nofos/subsection_confirm_delete.html` |
 | **Configure section** page | `nofos/nofos/templates/nofos/section_detail.html` |
 | **Preview PDF** / **Download PDF** | `nofos/bloom_nofos/templates/includes/print_button.html` |

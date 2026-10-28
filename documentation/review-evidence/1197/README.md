@@ -5,7 +5,7 @@ October 27, 2026. Source baseline:
 `be2d551e3a6527447c6c5ddc7b1f3f514e0388ce`. This is source inspection and an
 invented-input experiment, not a production inventory, approved design policy or
 historical rendering service. It follows the
-[design-system architecture guide](SCALABLE_NOFO_DESIGN_SYSTEM.md).
+[design-system architecture guide](../../SCALABLE_NOFO_DESIGN_SYSTEM.md).
 
 ## Recommendation
 
@@ -33,10 +33,10 @@ existence does not establish its production use, current deployed value or appro
 | Resolved document context | [get_nofo_document_context](https://github.com/HHS/simpler-grants-pdf-builder/blob/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce/nofos/nofos/nofo_document_context.py) splits the theme into orientation, OpDiv and color; resolves cover and Step 2; reads assistance-listing Constance switches | Stored theme and runtime switches jointly affect output. Do not infer runtime values from defaults. Theme's OpDiv segment drives these styles, not an independent assumption based on the document's agency text. |
 | Shared HTML and CSS | [base_barebones.html](https://github.com/HHS/simpler-grants-pdf-builder/blob/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce/nofos/bloom_nofos/templates/base_barebones.html), [nofo_view.html](https://github.com/HHS/simpler-grants-pdf-builder/blob/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce/nofos/nofos/templates/nofos/nofo_view.html) and [nofo_pdf.html](https://github.com/HHS/simpler-grants-pdf-builder/blob/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce/nofos/nofos/templates/nofos/nofo_pdf.html) | Base styles precede orientation, OpDiv and selected theme styles, followed by document inline CSS. PDF omits the application header. Shared templates can affect multiple themes without any document save. |
 | Callout meaning and placement | [callout_box.html](https://github.com/HHS/simpler-grants-pdf-builder/blob/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce/nofos/bloom_nofos/templates/includes/callout_box.html), [nofo_view.html](https://github.com/HHS/simpler-grants-pdf-builder/blob/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce/nofos/nofos/templates/nofos/nofo_view.html), [floating-callout filter](https://github.com/HHS/simpler-grants-pdf-builder/blob/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce/nofos/nofos/templatetags/get_floating_callout_boxes_from_section.py) | Explicit callout flags are useful candidates, not a complete inventory of every `.callout-box`: templates also generate cover/introduction callouts. Portrait placement depends on first-main-section status, recognized content and combined word count; some icons depend on body text and icon style. |
-| Stored markup and processing | [template filters](https://github.com/HHS/simpler-grants-pdf-builder/blob/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce/nofos/nofos/templatetags/utils/__init__.py), [table rules](TABLES.md) and [import rules](IMPORT_RULES.md) | Existing markers can drive current styling. An import repair does not necessarily apply to old stored bodies until reimport; a render-time rule can. Text search alone cannot determine whether all resulting selectors match. Do not reimport to apply a CSS-only change. |
+| Stored markup and processing | [template filters](https://github.com/HHS/simpler-grants-pdf-builder/blob/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce/nofos/nofos/templatetags/utils/__init__.py), [table rules](../../TABLES.md) and [import rules](../../IMPORT_RULES.md) | Existing markers can drive current styling. An import repair does not necessarily apply to old stored bodies until reimport; a render-time rule can. Text search alone cannot determine whether all resulting selectors match. Do not reimport to apply a CSS-only change. |
 | Fonts, logos and images | The base template links Google Fonts CSS (Lexend/Open Sans); [theme-base.css](https://github.com/HHS/simpler-grants-pdf-builder/blob/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce/nofos/bloom_nofos/static/theme-base.css) and [HRSA CSS](https://github.com/HHS/simpler-grants-pdf-builder/blob/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce/nofos/bloom_nofos/static/theme-opdiv-hrsa.css) load local font files. Document template includes OpDiv/HHS logos and icons. [get_cover_image](https://github.com/HHS/simpler-grants-pdf-builder/blob/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce/nofos/nofos/nofo.py) resolves S3, external and static/default cover paths | A URL/path is not an immutable asset identity. Source inspection does not establish fetched bytes, font availability or fallback behavior in a particular output. Presigned URLs are not durable evidence to publish. |
 | PDF request and runtime | [pdf_service.py](https://github.com/HHS/simpler-grants-pdf-builder/blob/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce/nofos/nofos/pdf_service.py) renders shared context and submits HTML, pipeline 11, JavaScript false, print media, PDF/UA-1 request and caller-supplied base URL. [Print view](https://github.com/HHS/simpler-grants-pdf-builder/blob/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce/nofos/nofos/views.py) resolves live/test mode from Constance, with query override | The base URL affects relative assets/links. Requested pipeline/profile is not a recorded exact vendor renderer binary, asset receipt or accessibility result. Credentials are excluded from any proposed evidence. |
-| Build and change history | [Base HTML metadata](https://github.com/HHS/simpler-grants-pdf-builder/blob/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce/nofos/bloom_nofos/templates/base_barebones.html) includes version/Git SHA. [create_nofo_audit_event](https://github.com/HHS/simpler-grants-pdf-builder/blob/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce/nofos/nofos/utils.py) stores a root-document snapshot, time, action and print mode; [history projection](DOCUMENT_HISTORY.md) relates events to documents | Useful change evidence, not a complete render snapshot. Print event does not retain the submitted HTML, fetched asset bytes, generated PDF digest or complete ordered child-content snapshot. A build SHA alone cannot recover external dependencies or saved/runtime state. History ownership/coverage limits remain separate. |
+| Build and change history | [Base HTML metadata](https://github.com/HHS/simpler-grants-pdf-builder/blob/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce/nofos/bloom_nofos/templates/base_barebones.html) includes version/Git SHA. [create_nofo_audit_event](https://github.com/HHS/simpler-grants-pdf-builder/blob/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce/nofos/nofos/utils.py) stores a root-document snapshot, time, action and print mode; [history projection](../../DOCUMENT_HISTORY.md) relates events to documents | Useful change evidence, not a complete render snapshot. Print event does not retain the submitted HTML, fetched asset bytes, generated PDF digest or complete ordered child-content snapshot. A build SHA alone cannot recover external dependencies or saved/runtime state. History ownership/coverage limits remain separate. |
 
 Style loading order is not an unconditional precedence rule. Selector specificity,
 `!important`, inheritance, media conditions and custom properties still govern
@@ -75,7 +75,7 @@ PDF equivalence. Do not create a second pilot acceptance flow for this question.
 
 ## Reproducible synthetic shared-change example
 
-[check_example.py](spikes/design-traceability-1197/check_example.py) uses Django's
+[check_example.py](check_example.py) uses Django's
 template engine and Builder's actual shared callout/heading/Markdown filters.
 It creates no models and reads no project settings or `.env` file. The proposed
 change is deliberately small: change `.callout-box { border-radius: 10px; }`
@@ -97,7 +97,7 @@ conflicting exact rule in the selected layers; it is not a general CSS resolver.
 Run from the repository root using Builder's locked Python environment:
 
 ```sh
-python documentation/spikes/design-traceability-1197/check_example.py
+python documentation/review-evidence/1197/check_example.py
 ```
 
 Optional browser inspection can use the script's `--html current before` output;
@@ -155,6 +155,6 @@ happens when a font/asset/renderer is unavailable. Those are separate decisions,
 not prerequisites for completing this source/synthetic investigation.
 
 No editor behavior, import rule or operational switch changes. The existing
-[editor tasks](EDITOR_TASKS.md) were reviewed; no instruction update is needed.
+[editor tasks](../../EDITOR_TASKS.md) were reviewed; no instruction update is needed.
 Portable content contracts (#1107), pilot acceptance (#1149) and accessibility
 scanning (#980) retain their own scope.

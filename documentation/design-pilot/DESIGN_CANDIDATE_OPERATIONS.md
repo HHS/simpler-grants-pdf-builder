@@ -1,5 +1,10 @@
 # Synthetic design-candidate operation rules
 
+Original component slice for #1147. Status reviewed October 28, 2026: the
+[local host](DESIGN_PILOT_LOCAL_HOST.md), [candidate interface](DESIGN_CANDIDATE_INTERFACE.md)
+and [review slice](DESIGN_CANDIDATE_REVIEW.md) now provide integration described
+separately. The limitations below describe this in-memory component alone.
+
 First implementation slice for #1147. This is a pure in-memory rules component,
 not a running agent pilot, authentication layer, persistence adapter or security
 sandbox. It creates no NOFO record and changes no existing import/editor route.
@@ -88,21 +93,25 @@ not supported. Document instructions remain opaque content, not permission.
   render HTML, inspect PDFs, contact a model or enforce process/network isolation.
   It makes no database, file or network calls. Its operation tests do not prove
   that an agent runtime cannot escape a future host.
-- HTML review is honestly declared unsupported by this slice until host
-  integration exists. DocRaptor remains disabled in all lower environments.
+- This in-memory component does not render HTML. The separate local host now
+  provides revision-bound HTML review. DocRaptor remains disabled in all lower environments.
   Do not add a local renderer, broker or tunnel. Missing local PDF capability
   is not a pilot blocker or an acceptance/transfer prerequisite.
 
-## Next integration work
+## Integration status and remaining work
 
-Connect a trusted, isolated synthetic host to existing Word import and HTML
-rendering. Preserve immutable source/import baselines and render-input identity;
-map validated presentation settings onto candidate-only storage. Enforce current
-authorization, authoritative revision replacement, retry identity and controlled
-assets. Then add revision-bound HTML review references and demonstrate negative
-tests with another candidate and blocked credential/network/production access.
-The broader #1147 acceptance criteria remain open. Human review, trusted transfer
-and confirmed discard belong to #1148, #1149 and #1150, not agent operations.
+The [local host](DESIGN_PILOT_LOCAL_HOST.md) connects synthetic Word import,
+candidate persistence and revision-bound HTML review. The [candidate-only
+interface](DESIGN_CANDIDATE_INTERFACE.md) adds scoped transport access, and the
+[review slice](DESIGN_CANDIDATE_REVIEW.md) adds findings and warning acknowledgments.
+These contracts own their current capabilities and limits; the pure operation
+component alone does not establish them.
+
+#1147 is closed. Closure does not establish a model runtime, proven runtime
+isolation or production authorization. Complete source fidelity, runtime isolation,
+trusted acceptance/transfer and confirmed discard remain separate capabilities;
+follow the [boundary ADR](../adr/2026-10-20-agent-design-pilot-boundary.md) and the
+current slice guides rather than the original component's future-work list.
 
 ## Checks
 

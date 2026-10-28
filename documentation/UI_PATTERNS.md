@@ -263,7 +263,7 @@ explanation of absent conversion-completeness assessment in
 `readability-reliability`. Metric cards say **Estimated** without repeating
 “Reliability not assessed.” Actual converter warnings remain in **Calculation
 notes**. Copy and print retain the same explanation. No supplied rating is
-discarded. See [the investigation and decision](WORD_READABILITY_RELIABILITY.md).
+discarded. See [the investigation and decision](readability/WORD_READABILITY_RELIABILITY.md).
 The tables and absent-rating alert wording below apply to PDF reports; assessed
 Word results retain their supplied-rating notice.
 

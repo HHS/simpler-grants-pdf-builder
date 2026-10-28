@@ -34,10 +34,20 @@ title convention.
 
 ## Documentation belongs in `documentation/`
 
-Put repository documentation in the top-level `documentation/` directory. Do not create a
-top-level `docs/` directory. Add durable guides to `documentation/README.md`; use
-`documentation/adr/` for architecture decision records and `documentation/review-evidence/` only
-for PR-specific screenshots and validation notes.
+Follow [documentation placement and maintenance](documentation/README.md#where-documentation-belongs).
+Update an existing guide before adding a file. Put reusable guidance in a guide or
+established topic folder, architectural decisions in `documentation/adr/`, and
+issue/PR-specific investigations, experiments, screenshots and validation records
+in `documentation/review-evidence/`, with a README and supporting files together.
+Split dated results from current guidance and link both ways. Link durable guides
+or topic indexes from `documentation/README.md`; individual evidence records do
+not need separate entries there. Never create a top-level `docs/` directory.
+
+Keep the reusable ADR template at `documentation/template.md`; discover it through
+the documentation and ADR indexes. Reconcile proposal/status notes as implementation
+lands, preserve historical evidence, and name a replacement before archiving a guide.
+Before opening a PR and after review changes, check placement, reuse, indexes and
+links, including path-dependent scripts affected by moves.
 
 ## Keep editor tasks current
 

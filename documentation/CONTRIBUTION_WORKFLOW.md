@@ -35,18 +35,19 @@ flowchart TD
     E3a --> F
 
     F[Write the code and tests] --> G{Does it change documented<br/>behavior, or need new docs?}
-    G -- Yes --> G1[Update documentation/ in the same PR<br/>and link new pages from documentation/README.md]
+    G -- Yes --> G1[Update the owning guide or topic index<br/>file dated results under review-evidence/]
     G -- No --> H
     G1 --> H
 
     H[Run checks locally<br/>make format, make lint, make test] --> H1[Review EDITOR_TASKS.md<br/>update affected tasks or explain no update]
-    H1 --> I[Open a PR targeting main]
+    H1 --> H2[Check documentation placement,<br/>reuse, indexes and moved links]
+    H2 --> I[Open a PR targeting main]
     I --> I1[Conventional Commit title<br/>feat: / fix: / docs: / chore: ...]
     I1 --> I2[Fill in the PR template<br/>Summary, Test plan, Checklist,<br/>and link the issue]
     I2 --> J[Wait for CI<br/>ci is required, PR title lint is advisory]
     J --> K{CI green?}
     K -- No --> L[Fix the cause and push] --> J
-    K -- Yes --> K1[Recheck Editor Tasks against final behavior<br/>including review changes]
+    K -- Yes --> K1[Recheck Editor Tasks and documentation placement<br/>against final review changes]
     K1 --> M[Squash and merge<br/>the PR title becomes the commit message]
     M --> N[release-please updates the release PR<br/>and groups the change in CHANGELOG.md]
     N --> O([Release PR merged: tag and release])
@@ -63,7 +64,7 @@ flowchart TD
 | Changing import behavior | [`IMPORT_RULES.md`](IMPORT_RULES.md), [`DOCUMENT_PROCESSING.md`](DOCUMENT_PROCESSING.md) for the shared processing boundary, and [`DEPLOYMENT.md` § Updating Import Rules](../DEPLOYMENT.md#updating-import-rules) |
 | Changing user-facing import errors | [`IMPORT_ERROR_CODES.md`](IMPORT_ERROR_CODES.md), and the "Copy rules" at the top of [`nofos/bloom_nofos/import_errors.py`](../nofos/bloom_nofos/import_errors.py) |
 | Adding or changing UI | [`UI_PATTERNS.md`](UI_PATTERNS.md): check this growing catalog for a relevant pattern and reuse its shared component. It is not a complete inventory of the site's UI; extend it when introducing another verified pattern. |
-| Updating docs | [`documentation/README.md`](README.md): docs go in `documentation/`, never a top-level `docs/`; ADRs go in [`adr/`](adr/README.md); PR screenshots go in `review-evidence/` |
+| Updating docs | Follow [placement and maintenance](README.md#where-documentation-belongs): reuse a guide or topic folder, put issue-specific investigations/experiments/validation in `review-evidence/`, and index durable guides or topic indexes. Use the [ADR template](template.md) for architectural decisions. Check placement and moved links before opening the PR and after review changes. |
 | Editor task changes | [`AGENTS.md` § Keep editor tasks current](../AGENTS.md#keep-editor-tasks-current) defines when to update [`EDITOR_TASKS.md`](EDITOR_TASKS.md). Applies to people and agents; preserve existing task IDs and anchors. |
 | Run checks locally | [`DEPLOYMENT.md` § Before You Push](../DEPLOYMENT.md#before-you-push) |
 | Open the PR | [`DEPLOYMENT.md` § 2. Open a pull request](../DEPLOYMENT.md#2-open-a-pull-request), [Conventional Commits](https://www.conventionalcommits.org/), and the [PR template](../.github/pull_request_template.md). Complete the Editor Tasks check: update affected instructions in the same PR or explain why no update is needed. |

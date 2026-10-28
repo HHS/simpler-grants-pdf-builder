@@ -43,7 +43,7 @@ Once a NOFO is reviewed and approved, our workflow is:
 7. Done!
 
 The provisional source-native readability integration is documented in
-[Source-native readability metrics](documentation/READABILITY_METRICS.md).
+[Source-native readability metrics](documentation/readability/READABILITY_METRICS.md).
 
 ## Contributing
 
