@@ -35,6 +35,7 @@ decision records belong in `adr/`; PR-specific screenshots and validation notes 
 - [endnote-import.md](endnote-import.md) — Windows Word author FAQ, native note/cross-reference import fallbacks, and manually bracketed reference conventions
 - [DOCUMENT_PROCESSING.md](DOCUMENT_PROCESSING.md) — Shared content-processing boundary, application responsibilities and remaining portability limits
 - [NOFO_BUILDER_FAQ.md](NOFO_BUILDER_FAQ.md) — Answers to common questions about designing a NOFO in NOFO Builder: importing, Markdown, tables, page layout, endnotes, appendices, metadata, and status; links to the editor tasks for step-by-step instructions
+- [READABILITY_CALCULATOR_READINESS.md](READABILITY_CALCULATOR_READINESS.md) — Overall dev verification, production alert setup and launch readiness plan; public uploads stay disabled pending separate approval
 - [READABILITY_METRICS.md](READABILITY_METRICS.md) — The `hhs-nofo-metrics` integration and source contract; when readability snapshots are saved (by a person, or automatically on import, re-import and Download PDF); saved readability history, deletion, archiving, and duplication behavior
 - [UI_PATTERNS.md](UI_PATTERNS.md) — Reusable interface patterns, including alert text and spacing, shared file-upload error states, loading progress modals, readability reliability alerts, and subsection save-conflict recovery
 - [DESIGN_CANDIDATE_REVIEW.md](DESIGN_CANDIDATE_REVIEW.md) — Synthetic local findings report, revision-bound human warning acknowledgments and remaining acceptance/fidelity work
