@@ -32,3 +32,8 @@ Validation results:
   breadcrumbs and two authenticated readability upload tests). Running the
   same tests from an unmodified archive of upstream `8cac8f60` reproduces all
   three failures.
+- Full Django suite: 2,913 tests, 5 failures, 22 errors, 3 skips. All 27
+  failing/erroring tests reproduced against unchanged upstream `8cac8f60`.
+  Besides the admin breadcrumb failure, these concern the local readability
+  dependency versions (installed tagged adapter 0.1.6 versus expected 0.1.7
+  and missing requested metrics profiles). Footer-specific tests pass.
