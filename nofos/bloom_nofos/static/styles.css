@@ -1998,6 +1998,23 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   margin-bottom: -0.5rem;
 }
 
+/* HHS agency identifier uses Builder's existing blue palette. */
+.builder-identifier {
+  background-color: var(--color--dark-blue);
+  padding-bottom: 0;
+}
+
+.builder-identifier .usa-identifier__logos svg {
+  display: block;
+  width: 4rem;
+  height: 4rem;
+  fill: var(--color--white);
+}
+
+.builder-identifier .usa-identifier__identity-domain {
+  color: var(--color--white);
+}
+
 .usa-footer__not-actually-a-link {
   color: var(--color--med-grey);
   font-weight: 400;

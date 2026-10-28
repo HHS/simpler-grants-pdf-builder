@@ -536,3 +536,18 @@ References:
 - [Signed edit and recovery tokens](../nofos/nofos/subsection_conflicts.py),
   [save handler](../nofos/nofos/views.py), and [regression tests](../nofos/nofos/tests_nofos/test_subsection_edit.py)
 - [Deployment considerations](../DEPLOYMENT.md#subsection-conflict-protection-rollout)
+
+## HHS footer identifier
+
+Application pages extending `base.html` or `pdf_readability_base.html` use the shared
+[`hhs_identifier.html`](../nofos/bloom_nofos/templates/includes/hhs_identifier.html)
+under the existing footer navigation. Reuse the bundled USWDS identifier masthead,
+the existing HHS SVG, and Builder's `--color--dark-blue` background with a white
+logo. The agency name links to `https://www.hhs.gov/` in the same tab. The logo is
+decorative because the adjacent text identifies the agency. Give its SVG title a
+footer-specific ID so it does not collide with other uses of the logo.
+
+Keep the identifier in the application shell; NOFO document and PDF templates
+continue to use their own branding. Verify signed-in and signed-out layouts,
+keyboard focus, and wrapping at mobile and desktop widths with
+`tests/js/footer.browser.cjs`.
