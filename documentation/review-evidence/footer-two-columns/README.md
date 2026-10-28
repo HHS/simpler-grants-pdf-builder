@@ -7,6 +7,8 @@ Link destinations, visibility and ordering are unchanged.
 
 Uses existing USWDS `grid-col-6 desktop:grid-col-auto` utilities.
 
+- [Before at 576px](before-footer-576.png) and [after at 576px](footer-576.png),
+  rendered from upstream `963ff90c` and this branch with the same synthetic account.
 - [Mobile preview](footer-320.png)
 - [Desktop preview](footer-1280.png)
 
