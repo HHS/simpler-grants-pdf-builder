@@ -23,7 +23,8 @@
     class="usa-input border-2px{% if error %} border-secondary-dark{% endif %}"
     id="{{ id }}"
     name="{{ id }}"
-    type="{% if input_type == 'PasswordInput' %}password{% else %}text{% endif %}"
+    type="{% if input_type == 'PasswordInput' %}password{% elif input_type == 'NumberInput' %}number{% else %}text{% endif %}"
+    {% if input_type == 'NumberInput' %}min="{{ min_value }}" max="{{ max_value }}" step="{{ step|default:'any' }}"{% endif %}
     aria-describedby="{% if hint %}{{ id }}--hint-1 {% endif %}{% if hint2 %}{{ id }}--hint-2{% endif %}{% if error %} {{ id }}--error{% endif %}"
     {% if error %}aria-invalid="true"{% endif %}
     {% if disabled == "disabled" %}disabled{% endif %}

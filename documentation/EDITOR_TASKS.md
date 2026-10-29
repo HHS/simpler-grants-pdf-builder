@@ -1078,7 +1078,8 @@ matching task in the same pull request.
 
 1. Complete [TASK-READABILITY-UPLOAD](#task-readability-upload) with a Word file.
 2. On the report, enter **Microsoft Word for Windows passive sentences (%)** for
-   that same whole-document copy. Enter zero if its displayed percentage is zero.
+   that same whole-document copy. Type the percentage or use the number field’s
+   increment/decrement controls. Enter zero if its displayed percentage is zero.
 3. Select **Save comparison** within 30 minutes. This retains the Readability Checker
    result and entered percentage. The report reloads with a **Comparison saved**
    confirmation; there is no next entry page and nothing is saved while typing.

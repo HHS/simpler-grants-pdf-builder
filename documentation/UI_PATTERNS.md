@@ -602,8 +602,12 @@ on the completed Readability Checker report. Follow the existing short-name edit
 form's shared text-field rendering:
 [form_macro.html](../nofos/bloom_nofos/templates/includes/form_macro.html) /
 [_text_input.html](../nofos/bloom_nofos/templates/includes/_text_input.html).
-The comparison uses the text-field include directly for its one small field,
+The comparison uses the text-field include's NumberInput variant directly for
+its one small field, with native increment/decrement controls in 0.1-point steps,
 including label, hint, red inline error and invalid-field association.
+The field has 0–100 bounds; the form uses novalidate so server validation can
+render the shared red error rather than competing browser validation tooltips.
+Server validation remains authoritative and allows any finite percentage in range.
 Like upload errors, the error receives keyboard focus and remains correctable.
 
 Saving is a normal server-rendered form POST and full document reload, not

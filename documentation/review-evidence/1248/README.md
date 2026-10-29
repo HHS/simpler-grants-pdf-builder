@@ -99,3 +99,13 @@ and no repeat analysis-ready modal. No save request is intercepted with AJAX.
 
 After this review, 73 affected Django tests, 6 shared-form tests and 61 JavaScript
 tests pass. The full-suite result above predates this small UI component review.
+
+
+## Numeric-control follow-up
+
+The percentage entry now uses the shared field component's native NumberInput
+variant, with increment/decrement controls in 0.1-point steps. Server validation
+and shared success feedback remain unchanged. Fifteen comparison/shared-form
+tests pass. Browser capture verified ArrowUp changes 3.3 to 3.4 and ArrowDown
+returns to 3.3, followed by a successful submission. Full-page entry/error/saved
+captures were refreshed; the populated-entry capture shows the hovered control.

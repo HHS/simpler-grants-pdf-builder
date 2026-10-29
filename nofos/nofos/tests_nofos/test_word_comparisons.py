@@ -52,6 +52,7 @@ class ComparisonTests(TestCase):
         self.assertContains(
             response, "Microsoft Word for Windows passive sentences (%)"
         )
+        self.assertContains(response, 'type="number"')
         self.assertEqual(WordComparison.objects.count(), count)
         return response.context["comparison_run"]
 

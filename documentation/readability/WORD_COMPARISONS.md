@@ -8,7 +8,7 @@ ordinary usage records or portfolio scores.
 
 On a completed Word-upload report, an authorized user enters one value:
 **Microsoft Word for Windows passive sentences (%)** for the same whole-document
-copy. **Save comparison** explicitly retains the completed Readability Checker
+copy, using the compact number field with increment/decrement controls. **Save comparison** explicitly retains the completed Readability Checker
 result and entered percentage, then reloads the report with the shared Builder success message.
 Nothing is saved while typing. Invalid values show the shared text-field's red
 inline error; correct the value and submit again.

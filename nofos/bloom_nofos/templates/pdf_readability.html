@@ -93,10 +93,10 @@
         <section class="margin-top-3 border-1px border-base-lighter padding-2" aria-labelledby="comparison-heading">
           <h2 id="comparison-heading" class="font-heading-md">Compare with Microsoft Word for Windows</h2>
           <p>This saves these results to the internal comparison tracker. Metrics viewers can see the document name. The uploaded document and sentence text are not retained.</p>
-          <form method="post" action="{% url 'nofos:word_comparison_save' %}">
+          <form method="post" action="{% url 'nofos:word_comparison_save' %}" novalidate>
             {% csrf_token %}<input type="hidden" name="run" value="{{ comparison_run }}">
             <div class="readability-comparison-entry">
-              {% include "includes/_text_input.html" with id="passive" id_for_label="comparison-passive-label" label=comparison_form.passive.label hint=comparison_form.passive.help_text value=comparison_form.passive.value error=comparison_form.passive.errors.0 only %}
+              {% include "includes/_text_input.html" with id="passive" id_for_label="comparison-passive-label" label=comparison_form.passive.label hint=comparison_form.passive.help_text value=comparison_form.passive.value error=comparison_form.passive.errors.0 input_type="NumberInput" min_value=0 max_value=100 step="0.1" only %}
             </div>
             <button class="usa-button margin-top-2" type="submit">Save comparison</button>
           </form>
