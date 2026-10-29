@@ -117,6 +117,10 @@ class WordResultsForm(forms.Form):
         label="Microsoft Word for Windows passive sentences (%)",
         min_value=0,
         max_value=100,
+        error_messages={
+            "min_value": "Make sure the percentage is %(limit_value)s or more.",
+            "max_value": "Make sure the percentage is %(limit_value)s or less.",
+        },
         widget=forms.NumberInput(attrs={"step": "0.1"}),
         help_text="Enter the passive sentences percentage for this same whole-document copy in Microsoft Word for Windows.",
     )
