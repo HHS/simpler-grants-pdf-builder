@@ -663,8 +663,8 @@ its one small field, with native increment/decrement controls in 0.1-point steps
 Chrome may hide these arrows while the field is idle; it is still the same
 number input. Capture the field hovered consistently when illustrating the
 control across states, rather than implying a second field type.
-The shared rendering retains
-including label, hint, red inline error and invalid-field association.
+The shared rendering retains the label, hint, red inline error and
+invalid-field association.
 The field has 0–100 bounds; the form uses novalidate so server validation can
 render the shared red error rather than competing browser validation tooltips.
 Server validation remains authoritative and allows any finite percentage in range.
