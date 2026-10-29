@@ -598,9 +598,21 @@ those identities are available; do not invent them for uploaded Readability Chec
 ### Inline passive-percentage entry and trend
 
 The comparison MVP keeps the single Microsoft Word for Windows percentage field
-on the completed Readability Checker report. Use the standard small usa-input,
-associated label, field errors and existing success-alert component. After saving,
-render confirmation on the report rather than navigating to a new entry page.
+on the completed Readability Checker report. Follow the existing short-name edit
+form's shared text-field rendering:
+[form_macro.html](../nofos/bloom_nofos/templates/includes/form_macro.html) /
+[_text_input.html](../nofos/bloom_nofos/templates/includes/_text_input.html).
+The comparison uses the text-field include directly for its one small field,
+including label, hint, red inline error and invalid-field association.
+Like upload errors, the error receives keyboard focus and remains correctable.
+
+Saving is a normal server-rendered form POST and full document reload, not
+background saving or autosave. Reuse Django success messages and
+[includes/alerts.html](../nofos/bloom_nofos/templates/includes/alerts.html), as on
+the NOFO index/edit screens. Render its non-fixed success variant on the report;
+do not introduce a custom success banner or a new entry page. The alert remains
+visible rather than auto-dismissing. Comparison responses must not reopen the
+upload-analysis progress/ready modal.
 
 Use the metrics chart card treatment for **Difference over time**: signed
 percentage-point differences, a clearly labelled zero reference, native SVG

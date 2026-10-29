@@ -1080,8 +1080,10 @@ matching task in the same pull request.
 2. On the report, enter **Microsoft Word for Windows passive sentences (%)** for
    that same whole-document copy. Enter zero if its displayed percentage is zero.
 3. Select **Save comparison** within 30 minutes. This retains the Readability Checker
-   result and entered percentage. A **Comparison saved** confirmation appears on
-   the same report; there is no next entry page.
+   result and entered percentage. The report reloads with a **Comparison saved**
+   confirmation; there is no next entry page and nothing is saved while typing.
+   If a red field error appears, correct the percentage and select **Save
+   comparison** again.
 4. Metrics viewers can follow **View passive sentence comparisons**. The table is
    newest first. Expand **View details** in **Calculation version** for profile and
    input-processing identities. Use **View chart data** for exact plotted values.

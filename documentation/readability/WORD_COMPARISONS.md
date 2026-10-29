@@ -9,7 +9,9 @@ ordinary usage records or portfolio scores.
 On a completed Word-upload report, an authorized user enters one value:
 **Microsoft Word for Windows passive sentences (%)** for the same whole-document
 copy. **Save comparison** explicitly retains the completed Readability Checker
-result and entered percentage, then confirms success on the same report page.
+result and entered percentage, then reloads the report with the shared Builder success message.
+Nothing is saved while typing. Invalid values show the shared text-field's red
+inline error; correct the value and submit again.
 No separate entry or investigation page is required. The percentage is required,
 including an explicit zero when appropriate, and must be between 0 and 100.
 

@@ -9,21 +9,24 @@ This evidence update changes documentation only.
 1. A reviewer analyzes a Word upload in the Readability Checker.
 2. On that report, they enter only **Microsoft Word for Windows passive sentences (%)**
    for the same whole-document copy, then select **Save comparison**.
-3. A success alert appears on the same report. There is no next entry page.
+3. A full form submission reloads the same report with Builder's shared success
+   message. This is not asynchronous saving. There is no next entry page.
 4. Authorized metrics viewers can open the saved comparisons and difference chart.
 
 | Capture | Caption |
 | --- | --- |
 | [Before Readability Checker report](before-checker-report.png) | Original ephemeral report without comparison entry. |
 | [After full report](after-checker-save-action.png) | Completed report with the inline comparison section and retention notice. |
-| [Inline percentage entry](after-inline-percentage-entry.png) | The single field populated with an invented 3.3% value, ready to save. |
-| [Inline confirmation](after-inline-saved-confirmation.png) | Saved percentage and signed difference shown in a standard success alert. |
+| [Populated percentage entry](after-inline-percentage-entry.png) | Full report with an invented 3.3% value, ready to submit. |
+| [Invalid percentage](after-percentage-validation-error.png) | Full report after entering 101: red inline field error, preserved report and retry action. |
+| [Saved confirmation](after-inline-saved-confirmation.png) | Full report with the shared Builder success message after a normal POST/reload. |
 | [Full report after saving](after-saved-confirmation.png) | Same report after saving; no separate investigation page. |
 | [Before usage overview](before-usage-overview.png) | Existing usage page before peer navigation. |
 | [After usage overview](after-usage-overview.png) | Default usage reporting with shared metrics text-link navigation. |
 | [Difference over time](after-difference-over-time.png) | Individual signed differences, zero reference and accessible chart-data disclosure. |
 | [Populated comparison page](after-populated-comparisons.png) | Chart and newest-first table with full product names, calculation versions and unavailable values. |
-| [Expanded calculation version](after-calculation-version-details.png) | Shared Metrics v[number] / View details disclosure. |
+| [Expanded calculation version](after-calculation-version-details.png) | Full comparison page with the shared Metrics v[number] / View details disclosure open. |
+| [Expanded chart data](after-chart-data-expanded.png) | Full comparison page with View chart data open, showing all plotted values. |
 | [Narrow comparison page](after-comparisons-mobile.png) | Responsive navigation/chart and focusable scrolling table. |
 
 ## Synthetic setup
@@ -44,8 +47,9 @@ measurements do not validate classifier accuracy or Microsoft Word for Windows.
 Before images render the unchanged baseline templates with a controlled report
 context. After images use the implemented templates, models, forms and routes.
 Chrome viewport: 1440 × 1080 CSS pixels, device scale 1; narrow capture: 390 × 844.
-Full-page PNGs are complemented by focused captures of the entry, success alert
-and chart. No real document text, credentials, cookies or desktop content appears.
+The current PR embeds full-page PNGs for entry, error, saved confirmation,
+the populated comparison page and both expanded disclosures. A standalone chart
+crop remains available as supplementary evidence, not the PR's main chart image. No real document text, credentials, cookies or desktop content appears.
 
 ## Validation
 
@@ -58,7 +62,7 @@ and chart. No real document text, credentials, cookies or desktop content appear
 - Migration drift and formatting/import hooks pass.
 - Desktop and narrow renders checked. Title typography matches existing metrics:
   Merriweather Web, 31.2px, weight 700. Navigation receives keyboard focus;
-  fields have labels, confirmation uses role=status, tables have scoped headers,
+  fields have labels, the shared success component uses role=alert, tables have scoped headers,
   the SVG has a title/description and exact values in View chart data.
   The narrow document has no horizontal overflow outside its table container.
 - Full local run: 2,923 tests, 3 skipped, one failure: the Constance admin
@@ -82,3 +86,15 @@ superseded by the inline-entry and inline-confirmation captures above.
 indefinite retention, deletion and rollback.
 [TASK-WORD-COMPARISON](../../EDITOR_TASKS.md#task-word-comparison) documents the
 current user workflow. No import transformation or metric formula changes apply.
+
+
+## Form-pattern review
+
+Compared the import/upload error pattern, the NOFO short-name form, and shared
+success notifications on the NOFO index/edit pages. The final form directly
+reuses _text_input.html and includes/alerts.html. The browser capture verifies
+a full page navigation on invalid and successful POSTs, red error focus/recovery,
+and no repeat analysis-ready modal. No save request is intercepted with AJAX.
+
+After this review, 73 affected Django tests, 6 shared-form tests and 61 JavaScript
+tests pass. The full-suite result above predates this small UI component review.

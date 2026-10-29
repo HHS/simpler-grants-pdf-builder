@@ -7,6 +7,7 @@
   <div class="readability-page">
     {% if report %}
       <article aria-labelledby="report-title">
+        {% if comparison_submission %}<span id="comparison-save-response" hidden></span>{% endif %}
         <div class="readability-report-heading">
           <p class="text-base margin-bottom-1" id="readability-report-source">Readability Checker</p>
           <h1 id="report-title" class="font-heading-xl margin-y-0">Readability report</h1>
@@ -94,25 +95,17 @@
           <p>This saves these results to the internal comparison tracker. Metrics viewers can see the document name. The uploaded document and sentence text are not retained.</p>
           <form method="post" action="{% url 'nofos:word_comparison_save' %}">
             {% csrf_token %}<input type="hidden" name="run" value="{{ comparison_run }}">
-            <p id="comparison-copy-hint">Enter the passive sentences percentage for this same whole-document copy in Microsoft Word for Windows.</p>
-            <label class="usa-label" for="{{ comparison_form.passive.id_for_label }}">{{ comparison_form.passive.label }}</label>
-            {{ comparison_form.passive.errors }}{{ comparison_form.passive }}
+            <div class="readability-comparison-entry">
+              {% include "includes/_text_input.html" with id="passive" id_for_label="comparison-passive-label" label=comparison_form.passive.label hint=comparison_form.passive.help_text value=comparison_form.passive.value error=comparison_form.passive.errors.0 only %}
+            </div>
             <button class="usa-button margin-top-2" type="submit">Save comparison</button>
           </form>
           <p>Enter the percentage and save within 30 minutes.</p>
         </section>
         {% endif %}
         {% if comparison_saved %}
-        <div class="usa-alert usa-alert--success margin-top-3" role="status">
-          <div class="usa-alert__body">
-            <h2 class="usa-alert__heading">Comparison saved</h2>
-            <p class="usa-alert__text">Microsoft Word for Windows: {{ comparison_saved.word_passive|floatformat:1 }}%.
-              {% if comparison_saved.difference != None %}Readability Checker minus Microsoft Word for Windows:
-              {% if comparison_saved.difference > 0 %}+{% endif %}{{ comparison_saved.difference|floatformat:1 }} percentage points.{% endif %}
-              {% if perms.nofos.view_builder_metrics %}<a href="{% url 'nofos:word_comparisons' %}">View passive sentence comparisons</a>{% endif %}
-            </p>
-          </div>
-        </div>
+        {% include "includes/alerts.html" with messages=messages success_heading="Comparison saved" only %}
+        {% if perms.nofos.view_builder_metrics %}<p><a href="{% url 'nofos:word_comparisons' %}">View passive sentence comparisons</a></p>{% endif %}
         {% endif %}
         <p class="margin-top-4">Your document was processed temporarily on HHS-operated systems to calculate these estimates. It was not added to NOFO Builder, and ordinary unsaved reports have no retained history. For an unsaved report, save or copy your results before leaving this page; the report cannot be recovered later.</p>
         <div class="readability-actions no-print">

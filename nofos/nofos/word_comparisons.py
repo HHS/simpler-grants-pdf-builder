@@ -6,6 +6,7 @@ from importlib.metadata import version as package_version
 
 from constance import config
 from django import forms
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core import signing
 from django.core.paginator import Paginator
@@ -82,6 +83,14 @@ def save(request):
                 pk=run,
                 defaults={**snapshot, "word_passive": form.cleaned_data["passive"]},
             )
+    if record:
+        message = f"Microsoft Word for Windows: {record.word_passive:.1f}%."
+        if record.difference is not None:
+            message += (
+                " Readability Checker minus Microsoft Word for Windows: "
+                f"{record.difference:+.1f} percentage points."
+            )
+        messages.success(request, message)
     from bloom_nofos.views import _metric_rows
 
     report = snapshot["checker"]
@@ -102,6 +111,7 @@ def save(request):
             "comparison_run": request.POST["run"] if record is None else None,
             "comparison_form": form,
             "comparison_saved": record,
+            "comparison_submission": True,
         },
         status=200 if record else 400,
     )
@@ -112,13 +122,8 @@ class WordResultsForm(forms.Form):
         label="Microsoft Word for Windows passive sentences (%)",
         min_value=0,
         max_value=100,
-        widget=forms.NumberInput(
-            attrs={
-                "class": "usa-input usa-input--sm",
-                "step": "any",
-                "aria-describedby": "comparison-copy-hint",
-            }
-        ),
+        widget=forms.TextInput(),
+        help_text="Enter the passive sentences percentage for this same whole-document copy in Microsoft Word for Windows.",
     )
 
 
