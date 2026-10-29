@@ -1,6 +1,7 @@
 # #1248 — Passive sentence comparison MVP
 
-Tested implementation: b976df33cfb20009f0caa62fb71e8dc70fe7ce99.
+Tested MVP implementation: b976df33cfb20009f0caa62fb71e8dc70fe7ce99.
+Tested shared-form UI and full-page interaction captures: b09834c2.
 Before baseline: db661721 (upstream main).
 This evidence update changes documentation only.
 
