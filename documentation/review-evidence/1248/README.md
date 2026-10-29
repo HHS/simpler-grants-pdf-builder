@@ -150,3 +150,12 @@ capture checks type=number before and after validation and verifies keyboard
 increment/decrement behavior. The populated-field image is captured before the
 invalid-submission variation, so it does not show a stale validation error.
 No application behavior changed in this screenshot follow-up.
+
+
+## Sentence-case follow-up
+
+The comparison H1 and navigation link use **Passive sentence comparisons**.
+The back link reads **Back to Readability Checker usage**: the product name
+retains its capitals, while “usage” is lowercase. Comparison-page captures and
+the full usage-page capture were refreshed; the PR displays the latter directly
+so the single comparison navigation link is visible without opening a gallery.

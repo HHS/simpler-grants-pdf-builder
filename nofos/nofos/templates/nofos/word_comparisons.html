@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Passive Sentence Comparisons{% endblock %}
+{% block title %}Passive sentence comparisons{% endblock %}
 {% block content %}
 {% url 'nofos:builder_metrics_readability_pilot' as usage_href %}
-{% include "includes/page_heading.html" with title="Passive Sentence Comparisons" back_text="Back to Readability Checker Usage" back_href=usage_href only %}
+{% include "includes/page_heading.html" with title="Passive sentence comparisons" back_text="Back to Readability Checker usage" back_href=usage_href only %}
 <p>Saved comparisons of passive sentence percentages from the Readability Checker and Microsoft Word for Windows. Differences are Readability Checker minus Microsoft Word for Windows, in percentage points.</p>
 {% include "nofos/includes/word_comparison_trend.html" %}
 <div style="overflow-x:auto" tabindex="0" role="region" aria-label="Saved passive sentence comparisons table">

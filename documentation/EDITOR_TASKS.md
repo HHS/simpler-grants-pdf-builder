@@ -1088,7 +1088,7 @@ matching task in the same pull request.
 4. Metrics viewers can follow **View passive sentence comparisons**. The table is
    newest first. Expand **View details** in **Calculation version** for profile and
    input-processing identities. Use **View chart data** for exact plotted values.
-   **Back to Readability Checker Usage** returns to the usage page.
+   **Back to Readability Checker usage** returns to the usage page.
 
 The trend plots Readability Checker minus Microsoft Word for Windows in percentage
 points by save date; positive values mean the Readability Checker percentage is

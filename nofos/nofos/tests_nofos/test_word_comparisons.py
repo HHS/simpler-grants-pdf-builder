@@ -132,7 +132,7 @@ class ComparisonTests(TestCase):
             "nav.metrics-other-pages"
         )
         self.assertEqual(len(nav.find_all("a")), 1)
-        self.assertEqual(nav.a.get_text(strip=True), "Passive Sentence Comparisons")
+        self.assertEqual(nav.a.get_text(strip=True), "Passive sentence comparisons")
         self.assertEqual(nav.a["href"], reverse("nofos:word_comparisons"))
         with override_config(HHS_NOFO_WORD_COMPARISONS_ENABLED=False):
             self.assertEqual(self.save(token).status_code, 404)
@@ -192,10 +192,10 @@ class ComparisonTests(TestCase):
         from bs4 import BeautifulSoup
 
         soup = BeautifulSoup(response.content, "html.parser")
-        self.assertEqual(soup.h1.get_text(strip=True), "Passive Sentence Comparisons")
+        self.assertEqual(soup.h1.get_text(strip=True), "Passive sentence comparisons")
         back_link = soup.select_one(".back-link a")
         self.assertEqual(
-            back_link.get_text(strip=True), "Back to Readability Checker Usage"
+            back_link.get_text(strip=True), "Back to Readability Checker usage"
         )
         self.assertEqual(
             back_link["href"], reverse("nofos:builder_metrics_readability_pilot")

@@ -624,11 +624,11 @@ spacing and page-title typography. Use a named destination rather than browser
 history so direct links behave consistently.
 
 The Readability Checker usage page links back to **Usage & quality metrics**.
-Below its heading, show one bold text navigation link, **Passive Sentence
-Comparisons**, using
+Below its heading, show one bold text navigation link, **Passive sentence
+comparisons**, using
 [nofos/includes/metrics_navigation.html](../nofos/nofos/templates/nofos/includes/metrics_navigation.html).
-The comparison page is a child page: its H1 is **Passive Sentence Comparisons**
-and its shared back-arrow reads **Back to Readability Checker Usage**. It does
+The comparison page is a child page: its H1 is **Passive sentence comparisons**
+and its shared back-arrow reads **Back to Readability Checker usage**. It does
 not repeat the usage/comparison links as peer tabs.
 
 Pass the title, back_text and back_href to the shared include with **only**.
