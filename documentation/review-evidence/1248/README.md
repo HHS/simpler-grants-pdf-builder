@@ -42,8 +42,9 @@ uses 390 × 844. No debug overlay is present.
 
 ## Validation
 
-- 85 focused Django tests passed before the final admin toggle; the final expanded
-  focused run also includes metrics/pilot user-admin regressions (see PR results).
+- 95 focused Django tests passed, including metrics/pilot user-admin regressions.
+  The worker report-contract tests were rechecked after updating the expected
+  safe scope fields to include the actual passive numerator.
 - 61 JavaScript tests passed.
 - Migration drift check and commit formatting/import hooks passed.
 - Feature tests cover signature tampering, owner isolation, expiration, CSRF,
@@ -55,7 +56,9 @@ uses 390 × 844. No debug overlay is present.
   keyboard focus; labels are associated with inputs, column headers have scope,
   current navigation uses aria-current, and saved confirmation uses role=status.
   The narrow document has no horizontal overflow outside the table container.
-- The full local suite encounters a Constance admin breadcrumb failure.
+- The full local run completed 2,921 tests (3 skipped). It found a Constance
+  admin breadcrumb failure plus an old worker-scope expected-field assertion;
+  the latter was updated for the added passive numerator and rechecked.
   The identical test fails on unchanged upstream db661721 in the same environment;
   this is not a green full-suite claim. See PR for full-run results.
 
