@@ -83,3 +83,10 @@ metrics; detail returns to Passive sentence comparisons. Refreshed after capture
 show the implemented shared navigation. Eight comparison tests pass after this
 template change. The pattern is recorded in UI_PATTERNS and return navigation
 is included in TASK-WORD-COMPARISON.
+
+
+The final navigation review also replaces button-style peer navigation with the
+metrics landing page's bold text links and decorative separator. The landing
+page and Checker views share metrics_navigation.html and its styling.
+The after screenshots were recaptured for this implementation; PR image links
+must point to the refreshed evidence commit.

@@ -2777,3 +2777,8 @@ hr.usa-prose:not([size]) {
 .styled-subsection-body--full {
   color: var(--color--green-dark);
 }
+
+
+/* Shared metrics page navigation: links between peer reporting views. */
+.metrics-other-pages a { font-weight: 700; text-decoration: none; }
+.metrics-other-pages a:hover { text-decoration: underline; }

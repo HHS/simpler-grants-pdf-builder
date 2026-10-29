@@ -569,7 +569,11 @@ The Readability Checker usage overview and comparison list link back to
 **Usage & quality metrics**. A comparison detail links back to
 **Passive sentence comparisons**. Keep the overview/comparison tabs below the
 shared heading; they navigate between peer views rather than replacing the
-parent back link. Do not introduce an additional breadcrumb trail or a separately
+parent back link. Render this peer navigation with the shared
+[nofos/includes/metrics_navigation.html](../nofos/nofos/templates/nofos/includes/metrics_navigation.html)
+component, also used by the metrics landing page: bold blue text links separated
+by a decorative vertical bar, with aria-current on the current Checker view.
+Do not style these navigation links as buttons. Do not introduce an additional breadcrumb trail or a separately
 styled plain back link for these pages.
 
 Pass the title, back_text and back_href to the shared include with **only**.
