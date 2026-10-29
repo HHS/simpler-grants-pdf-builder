@@ -1,5 +1,6 @@
 from constance import config
 from django.conf import settings
+from django.core.exceptions import DisallowedHost
 from django.utils.functional import SimpleLazyObject
 
 from .changelog_banner import CHANGELOG_URL, get_active_release
@@ -12,9 +13,14 @@ def template_context(request):
     Provides specific settings variables to all templates.
     Only passes the exact settings needed rather than the entire settings object.
     """
-    grabzit_word_export_enabled = bool(
-        request and is_grabzit_word_export_enabled(request.get_host())
-    )
+    try:
+        grabzit_word_export_enabled = bool(
+            request and is_grabzit_word_export_enabled(request.get_host())
+        )
+    except DisallowedHost:
+        # Error pages also run context processors. Keep export disabled without
+        # re-raising the invalid host that Django is already rejecting.
+        grabzit_word_export_enabled = False
 
     return {
         "GITHUB_SHA": settings.GITHUB_SHA,
