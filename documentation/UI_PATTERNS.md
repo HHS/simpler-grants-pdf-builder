@@ -659,7 +659,11 @@ form's shared text-field rendering:
 [form_macro.html](../nofos/bloom_nofos/templates/includes/form_macro.html) /
 [_text_input.html](../nofos/bloom_nofos/templates/includes/_text_input.html).
 The comparison uses the text-field include's NumberInput variant directly for
-its one small field, with native increment/decrement controls in 0.1-point steps,
+its one small field, with native increment/decrement controls in 0.1-point steps.
+Chrome may hide these arrows while the field is idle; it is still the same
+number input. Capture the field hovered consistently when illustrating the
+control across states, rather than implying a second field type.
+The shared rendering retains
 including label, hint, red inline error and invalid-field association.
 The field has 0–100 bounds; the form uses novalidate so server validation can
 render the shared red error rather than competing browser validation tooltips.

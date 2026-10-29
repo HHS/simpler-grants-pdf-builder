@@ -138,3 +138,15 @@ related-page link, **Passive Sentence Comparisons**; the former peer navigation
 is removed. Full-page default and expanded-state captures reflect this hierarchy. All 32
 affected comparison/usage/metrics tests pass, including the H1, back-link target
 and single-link navigation assertions.
+
+
+## Consistent numeric-control captures
+
+The initial, populated and invalid entry states all render the same native
+type=number input (0–100, arrow steps of 0.1). Chrome can hide the arrows when the
+pointer leaves the field, making an idle number input look like a text box.
+These full-page captures now show the hovered control consistently. The browser
+capture checks type=number before and after validation and verifies keyboard
+increment/decrement behavior. The populated-field image is captured before the
+invalid-submission variation, so it does not show a stale validation error.
+No application behavior changed in this screenshot follow-up.
