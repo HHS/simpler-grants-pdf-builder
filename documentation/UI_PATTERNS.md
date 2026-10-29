@@ -580,3 +580,17 @@ Pass the title, back_text and back_href to the shared include with **only**.
 For example, resolve nofos:builder_metrics into metrics_href and use
 back_text="Back to usage &amp; quality metrics". Check the arrow, link focus,
 title spacing and wrapping on desktop and narrow layouts.
+
+## Saved readability tables
+
+Use the saved NOFO readability history as the reference for saved-result tables.
+Keep a caption describing the order (for comparisons, **Saved results, newest
+first**), standard usa-table styling, a focusable horizontal-scroll region,
+and pagination links only when there is more than one page.
+These tables do not need filters or an Apply button.
+
+Show **Calculation version** in the row as **Metrics v[number]**, followed by a
+native **View details** disclosure for profile and input-processing identities.
+Reuse [readability_calculation_version.html](../nofos/nofos/templates/nofos/includes/readability_calculation_version.html),
+shared by NOFO history and Word comparisons. Show schema/result basis only when
+those identities are available; do not invent them for uploaded Checker runs.

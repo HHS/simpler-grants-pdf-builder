@@ -1087,7 +1087,8 @@ the separate comparison-management permission.
 4. Select **Save Word measurements**. You can return to this URL later without
    reuploading. Corrections add history entries; the Checker measurement stays fixed.
 5. Metrics viewers can open **Readability Checker Usage → Passive sentence
-   comparisons**, filter results and sort by largest absolute difference.
+   comparisons** to see saved results, newest first. Expand **View details** in
+   **Calculation version** to inspect the saved metrics profile and input processing.
    A positive difference means Checker measured a higher passive percentage.
    Use **Back to passive sentence comparisons** from a detail page, or
    **Back to usage & quality metrics** from the comparison list, to return.

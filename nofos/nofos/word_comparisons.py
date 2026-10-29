@@ -2,7 +2,6 @@
 
 import uuid
 from importlib.metadata import version as package_version
-from urllib.parse import urlencode
 
 from constance import config
 from django import forms
@@ -10,8 +9,6 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core import signing
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
-from django.db.models import F, OuterRef, Subquery
-from django.db.models.functions import Abs
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -187,56 +184,11 @@ def detail(request, pk):
 @never_cache
 def comparison_list(request):
     require_enabled()
-    latest = WordComparisonRevision.objects.filter(comparison=OuterRef("pk")).order_by(
-        "-created_at", "-pk"
+    records = WordComparison.objects.prefetch_related("revisions").order_by(
+        "-analyzed_at", "-pk"
     )
-    records = (
-        WordComparison.objects.annotate(
-            word_passive=Subquery(latest.values("passive")[:1]),
-            agency_value=Subquery(latest.values("agency")[:1]),
-            reviewed_value=Subquery(latest.values("reviewed")[:1]),
-        )
-        .prefetch_related("revisions")
-        .order_by("-analyzed_at", "-pk")
-    )
-    agency = request.GET.get("agency", "").strip()
-    status = request.GET.get("status", "")
-    version = request.GET.get("version", "")
-    if agency:
-        records = records.filter(agency_value__icontains=agency)
-    if version:
-        records = records.filter(version=version)
-    if status == "Awaiting Word results":
-        records = records.filter(word_passive__isnull=True)
-    elif status == "Ready for review":
-        records = records.filter(word_passive__isnull=False, reviewed_value=False)
-    elif status == "Reviewed":
-        records = records.filter(word_passive__isnull=False, reviewed_value=True)
-    if request.GET.get("sort") == "difference":
-        records = records.annotate(
-            absolute_difference=Abs(F("passive") - F("word_passive"))
-        ).order_by(
-            F("absolute_difference").desc(nulls_last=True), "-analyzed_at", "-pk"
-        )
     page = Paginator(records, 25).get_page(request.GET.get("page"))
-    filters = {
-        key: request.GET[key]
-        for key in ("agency", "status", "version", "sort")
-        if key in request.GET
-    }
-    return render(
-        request,
-        "nofos/word_comparisons.html",
-        {
-            "page": page,
-            "filters": filters,
-            "query": urlencode(filters),
-            "versions": WordComparison.objects.values_list(
-                "version", flat=True
-            ).distinct(),
-            "statuses": ["Awaiting Word results", "Ready for review", "Reviewed"],
-        },
-    )
+    return render(request, "nofos/word_comparisons.html", {"page": page})
 
 
 def legacy_redirect(request):

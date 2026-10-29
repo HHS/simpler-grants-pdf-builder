@@ -6,26 +6,18 @@
 {% include "nofos/includes/comparison_tabs.html" %}
 <h2 class="font-heading-lg text-bold">Passive sentence comparisons</h2>
 <p>Deliberately saved Word uploads. Differences are Checker minus Word in percentage points. Reviewed means a reviewer examined the result; it does not mean agreement.</p>
-<form method="get" class="margin-y-3">
-  <div class="grid-row grid-gap">
-    <div class="tablet:grid-col-3"><label class="usa-label" for="agency">Agency</label><input class="usa-input" id="agency" name="agency" value="{{ filters.agency }}"></div>
-    <div class="tablet:grid-col-3"><label class="usa-label" for="status">Review status</label><select class="usa-select" name="status" id="status"><option value="">All statuses</option>{% for status in statuses %}<option {% if filters.status == status %}selected{% endif %}>{{ status }}</option>{% endfor %}</select></div>
-    <div class="tablet:grid-col-3"><label class="usa-label" for="version">Checker version</label><select class="usa-select" name="version" id="version"><option value="">All versions</option>{% for version in versions %}<option {% if filters.version == version %}selected{% endif %}>{{ version }}</option>{% endfor %}</select></div>
-    <div class="tablet:grid-col-3"><label class="usa-label" for="sort">Sort by</label><select class="usa-select" name="sort" id="sort"><option value="">Newest first</option><option value="difference" {% if filters.sort == "difference" %}selected{% endif %}>Largest absolute difference</option></select></div>
-  </div>
-  <button class="usa-button margin-top-2">Apply filters</button>
-</form>
-<div style="overflow-x:auto">
-<table class="usa-table usa-table--striped" style="width:100%">
-<caption>Saved passive sentence comparisons</caption>
-<thead><tr><th scope="col">Document</th><th scope="col">Date tested</th><th scope="col">Word passive</th><th scope="col">Checker passive</th><th scope="col">Difference</th><th scope="col">Status</th></tr></thead>
+<div style="overflow-x:auto" tabindex="0" role="region" aria-label="Saved passive sentence comparisons table">
+<table class="usa-table" style="width:100%">
+<caption>Saved results, newest first</caption>
+<thead><tr><th scope="col">Document</th><th scope="col">Date tested</th><th scope="col">Word passive</th><th scope="col">Checker passive</th><th scope="col">Difference</th><th scope="col">Status</th><th scope="col">Calculation version</th></tr></thead>
 <tbody>{% for record in page %}<tr>
 <th scope="row"><a href="{% url 'nofos:word_comparison_detail' record.pk %}">{{ record.filename }}</a></th>
 <td>{{ record.analyzed_at|date:"M j, Y" }}</td>
 <td>{% if record.latest.passive != None %}{{ record.latest.passive|floatformat:1 }}%{% else %}—{% endif %}</td>
 <td>{% if record.passive != None %}{{ record.passive|floatformat:1 }}%{% else %}—{% endif %}</td>
 <td>{% if record.difference != None %}{% if record.difference > 0 %}+{% endif %}{{ record.difference|floatformat:1 }} points{% else %}—{% endif %}</td>
-<td>{{ record.status }}</td></tr>{% empty %}<tr><td colspan="6">No saved comparisons match these filters.</td></tr>{% endfor %}</tbody>
+<td>{{ record.status }}</td>
+<td>{% include "nofos/includes/readability_calculation_version.html" with version=record.version profile=record.checker.profile_id|default:record.checker.profile input_processing=record.checker.input_processing only %}</td></tr>{% empty %}<tr><td colspan="7">No saved comparisons yet.</td></tr>{% endfor %}</tbody>
 </table></div>
-<nav aria-label="Comparison pages">{% if page.has_previous %}<a href="?{{ query }}&amp;page={{ page.previous_page_number }}">Previous</a>{% endif %} Page {{ page.number }} of {{ page.paginator.num_pages }} {% if page.has_next %}<a href="?{{ query }}&amp;page={{ page.next_page_number }}">Next</a>{% endif %}</nav>
+{% if page.has_other_pages %}<nav class="margin-top-2" aria-label="Comparison pages">{% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">Previous</a>{% endif %} Page {{ page.number }} of {{ page.paginator.num_pages }} {% if page.has_next %}<a href="?page={{ page.next_page_number }}">Next</a>{% endif %}</nav>{% endif %}
 {% endblock %}

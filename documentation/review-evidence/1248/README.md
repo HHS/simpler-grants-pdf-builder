@@ -13,9 +13,9 @@ Before baseline: db661721 (upstream main).
 | [Saved confirmation](after-saved-confirmation.png) | The save action navigates to the retained record URL; status confirmation and manual Word entry are visible. |
 | [Before usage overview](before-usage-overview.png) | Existing Readability Checker Usage page before tabs. |
 | [After usage overview](after-usage-overview.png) | Default usage reporting with independent comparison navigation. |
-| [Populated comparisons](after-populated-comparisons.png) | Filters, both tabs, three review states, signed nonzero differences and missing values. |
+| [Populated comparisons](after-populated-comparisons.png) | Newest-first saved results, calculation version, both views, three review states, signed differences and missing values. |
 | [Word measurements and history](after-word-measurements-and-history.png) | Word percentage field, separate sentence counts, same-copy confirmation, immutable Checker details and investigation notes. |
-| [Narrow comparison layout](after-comparisons-mobile.png) | Filters stack; the data table scrolls within its container. |
+| [Narrow comparison layout](after-comparisons-mobile.png) | Saved-result navigation wraps; the table scrolls within its container. |
 
 ## Controlled synthetic capture
 
@@ -49,8 +49,8 @@ uses 390 × 844. No debug overlay is present.
 - Migration drift check and commit formatting/import hooks passed.
 - Feature tests cover signature tampering, owner isolation, expiration, CSRF,
   disabled access, explicit write permission, immutable repeated saves, distinct
-  runs, correction history, missing/zero values, validation, filters, database
-  sorting, pagination, audit exclusion and legacy query-preserving redirects.
+  runs, correction history, missing/zero values, validation, newest-first ordering, calculation-version details,
+  pagination, audit exclusion and legacy query-preserving redirects.
 - Desktop and narrow rendering rechecked after the navigation review. The comparison
   pages now reuse includes/page_heading.html, matching existing metrics subpages.
   Titles on the metrics landing page, usage overview and comparison list all
@@ -90,3 +90,14 @@ metrics landing page's bold text links and decorative separator. The landing
 page and Checker views share metrics_navigation.html and its styling.
 The after screenshots were recaptured for this implementation; PR image links
 must point to the refreshed evidence commit.
+
+
+## Simplified saved-results table
+
+Following review, the comparison list mirrors saved NOFO readability history:
+no filters, search field, Apply button or sort controls. Results appear newest
+first with a Calculation version column. The shared Metrics v[number] / View
+details component exposes the saved profile and input-processing identities.
+The original issue proposed filters; this review supersedes that proposal.
+[Expanded calculation version](after-calculation-version-details.png) shows
+the actual native disclosure in the implemented table.

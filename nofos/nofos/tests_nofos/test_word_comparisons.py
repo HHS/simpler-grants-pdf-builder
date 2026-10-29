@@ -125,19 +125,18 @@ class ComparisonTests(TestCase):
             fetch_redirect_response=False,
         )
 
-    def test_filters_and_read_only(self):
+    def test_list_version_details_and_read_only(self):
         self.save(self.stage())
         url = reverse("nofos:word_comparisons")
         self.assertContains(self.client.get(url), "Synthetic.docx")
-        self.assertNotContains(
-            self.client.get(url, {"agency": "unknown"}), "Synthetic.docx"
-        )
-        self.assertNotContains(
-            self.client.get(url, {"version": "other"}), "Synthetic.docx"
-        )
-        self.assertNotContains(
-            self.client.get(url, {"status": "Reviewed"}), "Synthetic.docx"
-        )
+        response = self.client.get(url)
+        self.assertContains(response, "Saved results, newest first")
+        self.assertContains(response, "Calculation version")
+        self.assertContains(response, "Metrics vsynthetic-1")
+        self.assertContains(response, "View details")
+        self.assertNotContains(response, "Apply filters")
+        self.assertNotContains(response, "<form")
+        self.assertNotContains(response, 'aria-label="Comparison pages"')
         record = WordComparison.objects.get()
         self.user.user_permissions.remove(
             Permission.objects.get(codename="manage_word_comparisons")
@@ -184,13 +183,12 @@ class ComparisonTests(TestCase):
         )
         self.assertFalse(should_audit(WordComparison()))
 
-    def test_unavailable_and_sorting_pagination(self):
+    def test_unavailable_and_newest_first_pagination(self):
         from django.utils import timezone
 
         from nofos.models import WordComparisonRevision
 
         self.save(self.stage())
-        base = WordComparison.objects.get()
         for i in range(26):
             record = WordComparison.objects.create(
                 filename=f"Synthetic {i}.docx",
@@ -209,17 +207,13 @@ class ComparisonTests(TestCase):
                 same_copy=True,
                 measured_on="2026-10-29",
             )
-        response = self.client.get(
-            reverse("nofos:word_comparisons"),
-            {"sort": "difference", "version": "other-version"},
-        )
-        self.assertEqual(response.context["page"].paginator.count, 26)
-        self.assertEqual(response.context["page"][0].passive, 24)
-        response = self.client.get(
-            reverse("nofos:word_comparisons"),
-            {"sort": "difference", "version": "other-version", "page": 2},
-        )
-        self.assertIsNone(response.context["page"][-1].difference)
+        response = self.client.get(reverse("nofos:word_comparisons"))
+        self.assertEqual(response.context["page"].paginator.count, 27)
+        self.assertEqual(response.context["page"][0].filename, "Synthetic 25.docx")
+        self.assertIsNone(response.context["page"][0].difference)
+        self.assertContains(response, "?page=2")
+        response = self.client.get(reverse("nofos:word_comparisons"), {"page": 2})
+        self.assertEqual(response.context["page"][-1].filename, "Synthetic.docx")
 
     def test_admin_comparison_toggle_is_independent(self):
         from django.contrib.auth.models import Permission
