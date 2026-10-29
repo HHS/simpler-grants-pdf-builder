@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.56.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.55.0...nofos-v3.56.0) (2026-10-29)
+
+
+### Features
+
+* add Word passive sentence comparisons to Readability Checker metrics ([#1249](https://github.com/HHS/simpler-grants-pdf-builder/issues/1249)) ([74e7479](https://github.com/HHS/simpler-grants-pdf-builder/commit/74e7479d1cf1f8c39e77bc3752298c8e096c989c))
+
+
+### Bug Fixes
+
+* arrange small-screen footer links in two columns ([#1246](https://github.com/HHS/simpler-grants-pdf-builder/issues/1246)) ([db66172](https://github.com/HHS/simpler-grants-pdf-builder/commit/db661721a883c0d63ada784644f21c5ef610b2b1))
+* distinguish disabled public readability from service failures ([#1250](https://github.com/HHS/simpler-grants-pdf-builder/issues/1250)) ([6e57ed9](https://github.com/HHS/simpler-grants-pdf-builder/commit/6e57ed9f1e0923d1360f76532a83f9478fef80a0))
+* render error pages safely for invalid hosts ([#1252](https://github.com/HHS/simpler-grants-pdf-builder/issues/1252)) ([a5077ba](https://github.com/HHS/simpler-grants-pdf-builder/commit/a5077ba3954803a3a9d3a2d1fdd059bee683276b))
+* space comparison confirmation below calculation notes ([#1253](https://github.com/HHS/simpler-grants-pdf-builder/issues/1253)) ([ef30a00](https://github.com/HHS/simpler-grants-pdf-builder/commit/ef30a0004b6cbe3c41d6420e75c200c742be82fe))
+
 ## [3.55.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.54.0...nofos-v3.55.0) (2026-10-28)
 
 
