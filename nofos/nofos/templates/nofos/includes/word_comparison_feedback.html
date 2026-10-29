@@ -1,2 +1,4 @@
+<div class="margin-top-3">
 {% include "includes/alerts.html" with messages=feedback_messages success_heading="Comparison saved" slim=True fragment=True only %}
 {% if perms.nofos.view_builder_metrics %}<p><a href="{% url 'nofos:word_comparisons' %}">View passive sentence comparisons</a></p>{% endif %}
+</div>
