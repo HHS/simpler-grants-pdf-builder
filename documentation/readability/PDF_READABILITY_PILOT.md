@@ -227,7 +227,7 @@ Release gates before enabling the anonymous route (merge is not approval to enab
 - Confirm the *stored* Constance value of `HHS_NOFO_PDF_METRICS_PILOT_ENABLED` is
   off in every deployment environment; an existing database value overrides the
   environment default. Name the owner who can disable it, test the route-level
-  infrastructure backstop, and provide a unavailable page (GET 200, POST 403) without an upload form
+  infrastructure backstop, and provide an unavailable page (GET 200, POST 403) without an upload form
   for disabled GET and POST. Preserve `no-store` and noindex; use `Retry-After`
   only with a credible restoration time. Name a support path.
 - Align the public report with the authenticated readability panel: scope counts,
