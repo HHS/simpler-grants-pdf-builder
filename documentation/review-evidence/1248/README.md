@@ -61,9 +61,10 @@ and chart. No real document text, credentials, cookies or desktop content appear
   fields have labels, confirmation uses role=status, tables have scoped headers,
   the SVG has a title/description and exact values in View chart data.
   The narrow document has no horizontal overflow outside its table container.
-- The full local suite has the known Constance breadcrumb failure previously
-  reproduced on unchanged upstream db661721 in the same environment. See the PR
-  for the full-run outcome; this is not a full-suite-green claim.
+- Full local run: 2,923 tests, 3 skipped, one failure: the Constance admin
+  breadcrumb test previously reproduced on unchanged upstream db661721 in this
+  environment. No other failure occurred. The final focused run includes two
+  additional permission tests. This is not a full-suite-green claim.
 
 ## Scope after review
 
