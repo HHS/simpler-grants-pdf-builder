@@ -1071,29 +1071,24 @@ matching task in the same pull request.
 
 <a id="task-word-comparison"></a>
 
-### TASK-WORD-COMPARISON — Save a Checker upload and compare Windows Word
+### TASK-WORD-COMPARISON — Compare passive sentence percentages
 
-**Before you start:** the operator must enable Word comparisons and grant you
-the separate comparison-management permission.
+**Before you start:** an operator must enable comparisons and grant you
+**Can save passive sentence comparisons** in addition to Readability Checker access.
 
 1. Complete [TASK-READABILITY-UPLOAD](#task-readability-upload) with a Word file.
-2. Select **Save for Word comparison** within 30 minutes. The adjacent notice
-   explains that the internal tracker retains these results and document name.
-   Ordinary unsaved reports remain temporary.
-3. On the saved detail page, enter **Word passive sentences (%)**, the displayed
-   whole-document sentence count, and measurement date. Confirm that you measured
-   the same saved copy in Windows Word. Record Word version/build and any control
-   removal or edits in preparation notes.
-4. Select **Save Word measurements**. You can return to this URL later without
-   reuploading. Corrections add history entries; the Checker measurement stays fixed.
-5. Metrics viewers can open **Readability Checker Usage → Passive sentence
-   comparisons** to see saved results, newest first. Expand **View details** in
-   **Calculation version** to inspect the saved metrics profile and input processing.
-   A positive difference means Checker measured a higher passive percentage.
-   Use **Back to passive sentence comparisons** from a detail page, or
-   **Back to usage & quality metrics** from the comparison list, to return.
+2. On the report, enter **Microsoft Word for Windows passive sentences (%)** for
+   that same whole-document copy. Enter zero if its displayed percentage is zero.
+3. Select **Save comparison** within 30 minutes. This retains the Readability Checker
+   result and entered percentage. A **Comparison saved** confirmation appears on
+   the same report; there is no next entry page.
+4. Metrics viewers can follow **View passive sentence comparisons**. The table is
+   newest first. Expand **View details** in **Calculation version** for profile and
+   input-processing identities. Use **View chart data** for exact plotted values.
 
-Missing results appear as unavailable, never zero. Word and Checker sentence
-counts have separate denominators. **Reviewed** means someone examined the result,
-not that the measurements agree. See the [operator guide](readability/WORD_COMPARISONS.md)
-for permissions, retention and deletion.
+The trend plots Readability Checker minus Microsoft Word for Windows in percentage
+points by save date; positive values mean the Readability Checker percentage is
+higher. Different documents and calculation versions can affect the trend.
+There is no correction or investigation workflow in this MVP; analyze and save a
+new run for a new comparison. See the [operator guide](readability/WORD_COMPARISONS.md)
+for permissions, retention, deletion and deferred enhancements.

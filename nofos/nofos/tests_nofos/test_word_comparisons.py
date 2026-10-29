@@ -1,14 +1,16 @@
+from datetime import timedelta
 from unittest.mock import patch
 
 from constance.test import override_config
 from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.urls import reverse
+from django.utils import timezone
 from users.models import BloomUser
 
 from nofos.models import WordComparison
-from nofos.word_comparisons import WordResultsForm
+from nofos.word_comparisons import WordResultsForm, difference_trend
 
 REPORT = {
     "profile": "word",
@@ -40,50 +42,56 @@ class ComparisonTests(TestCase):
         self.client.force_login(self.user)
 
     def stage(self):
-        before = WordComparison.objects.count()
+        count = WordComparison.objects.count()
         with patch("bloom_nofos.views.analyze_uploaded_pdf", return_value=REPORT):
             response = self.client.post(
                 reverse("nofos:authenticated_pdf_readability"),
                 {"pdf": SimpleUploadedFile("Synthetic.docx", b"synthetic")},
             )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Save for Word comparison")
-        self.assertEqual(WordComparison.objects.count(), before)
+        self.assertContains(
+            response, "Microsoft Word for Windows passive sentences (%)"
+        )
+        self.assertEqual(WordComparison.objects.count(), count)
         return response.context["comparison_run"]
 
-    def save(self, token):
-        return self.client.post(reverse("nofos:word_comparison_save"), {"run": token})
+    def save(self, token, passive=3.3):
+        return self.client.post(
+            reverse("nofos:word_comparison_save"), {"run": token, "passive": passive}
+        )
 
-    def test_exact_run_idempotency_and_history(self):
+    def test_inline_save_exact_run_idempotent_and_distinct(self):
         token = self.stage()
         response = self.save(token)
-        self.assertEqual(response.status_code, 302)
-        self.save(token)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Comparison saved")
+        self.assertContains(response, "Readability report")
+        self.assertContains(response, "View passive sentence comparisons")
+        self.assertNotContains(response, 'name="passive"')
+        self.assertNotContains(response, "sentence count")
+        self.save(token, passive=9)
         self.assertEqual(WordComparison.objects.count(), 1)
         record = WordComparison.objects.get()
-        self.assertEqual(record.checker["scope"]["complete_sentence_count"], 80)
-        self.assertEqual(len(record.fingerprint), 64)
-        self.assertIsNone(record.difference)
-        self.assertEqual(record.status, "Awaiting Word results")
-        data = {
-            "passive": 3.3,
-            "sentence_count": 90,
-            "measured_on": "2026-10-29",
-            "same_copy": "on",
-            "notes": "Synthetic review",
-        }
-        self.client.post(response.url, data)
-        record.refresh_from_db()
         self.assertAlmostEqual(record.difference, 0.5)
-        self.assertEqual(record.status, "Ready for review")
-        self.client.post(response.url, {**data, "passive": 4.5, "reviewed": "on"})
-        self.assertEqual(record.revisions.count(), 2)
-        self.assertAlmostEqual(record.difference, -0.7)
-        self.assertEqual(record.status, "Reviewed")
+        self.assertEqual(record.word_passive, 3.3)
         self.assertEqual(record.passive, 3.8)
-        self.assertContains(self.client.get(response.url), "90")
+        self.assertEqual(record.owner, self.user)
+        self.assertEqual(len(record.fingerprint), 64)
+        self.assertEqual(record.checker["scope"]["complete_sentence_count"], 80)
         self.save(self.stage())
         self.assertEqual(WordComparison.objects.count(), 2)
+
+    def test_invalid_preserves_report_and_does_not_save(self):
+        token = self.stage()
+        for passive in ("", -1, 101, "nan", "inf", "not a number"):
+            response = self.save(token, passive)
+            self.assertEqual(response.status_code, 400)
+            self.assertContains(response, "Readability report", status_code=400)
+            self.assertEqual(response.context["comparison_run"], token)
+        self.assertFalse(WordComparison.objects.exists())
+        self.assertTrue(WordResultsForm({"passive": 0}).is_valid())
+        response = self.save(token, 0)
+        self.assertEqual(response.status_code, 200)
 
     def test_owner_tampering_and_permissions(self):
         token = self.stage()
@@ -107,7 +115,7 @@ class ComparisonTests(TestCase):
         )
         self.assertEqual(self.save(token).status_code, 403)
 
-    def test_disable_and_redirect(self):
+    def test_disable_and_legacy_redirect(self):
         token = self.stage()
         with override_config(HHS_NOFO_WORD_COMPARISONS_ENABLED=False):
             self.assertEqual(self.save(token).status_code, 404)
@@ -125,98 +133,89 @@ class ComparisonTests(TestCase):
             fetch_redirect_response=False,
         )
 
-    def test_list_version_details_and_read_only(self):
-        self.save(self.stage())
-        url = reverse("nofos:word_comparisons")
-        self.assertContains(self.client.get(url), "Synthetic.docx")
-        response = self.client.get(url)
-        self.assertContains(response, "Saved results, newest first")
-        self.assertContains(response, "Calculation version")
-        self.assertContains(response, "Metrics vsynthetic-1")
-        self.assertContains(response, "View details")
-        self.assertNotContains(response, "Apply filters")
-        self.assertNotContains(response, "<form")
-        self.assertNotContains(response, 'aria-label="Comparison pages"')
-        record = WordComparison.objects.get()
-        self.user.user_permissions.remove(
-            Permission.objects.get(codename="manage_word_comparisons")
-        )
-        self.assertEqual(
-            self.client.post(
-                reverse("nofos:word_comparison_detail", args=[record.pk]), {}
-            ).status_code,
-            403,
-        )
-
-    def test_validation_missing_zero_and_denominators(self):
-        self.assertTrue(WordResultsForm({}).is_valid())
-        self.assertFalse(WordResultsForm({"passive": 101}).is_valid())
-        self.assertFalse(WordResultsForm({"passive": 0}).is_valid())
-        self.assertFalse(WordResultsForm({"reviewed": "on"}).is_valid())
-        self.assertTrue(
-            WordResultsForm(
-                {
-                    "passive": 0,
-                    "sentence_count": 10,
-                    "measured_on": "2026-10-29",
-                    "same_copy": "on",
-                }
-            ).is_valid()
-        )
-
     def test_expiration_csrf_and_audit_exclusion(self):
         import time
 
-        from django.test import Client
         from easyaudit.signals.model_signals import should_audit
 
         token = self.stage()
         with patch("django.core.signing.time.time", return_value=time.time() + 1801):
             self.assertEqual(self.save(token).status_code, 404)
-        csrf_client = Client(enforce_csrf_checks=True)
-        csrf_client.force_login(self.user)
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(self.user)
         self.assertEqual(
-            csrf_client.post(
-                reverse("nofos:word_comparison_save"), {"run": token}
+            client.post(
+                reverse("nofos:word_comparison_save"), {"run": token, "passive": 3}
             ).status_code,
             403,
         )
         self.assertFalse(should_audit(WordComparison()))
 
-    def test_unavailable_and_newest_first_pagination(self):
-        from django.utils import timezone
-
-        from nofos.models import WordComparisonRevision
-
-        self.save(self.stage())
-        for i in range(26):
-            record = WordComparison.objects.create(
+    def test_list_version_and_newest_first_pagination(self):
+        for i in range(27):
+            WordComparison.objects.create(
                 filename=f"Synthetic {i}.docx",
                 owner=self.user,
-                fingerprint="b" * 64,
+                fingerprint="a" * 64,
                 analyzed_at=timezone.now(),
-                version="other-version",
+                version="synthetic-1",
                 checker=REPORT,
-                passive=None if i == 25 else i,
-            )
-            WordComparisonRevision.objects.create(
-                comparison=record,
-                reviewer=self.user,
-                passive=0,
-                sentence_count=20,
-                same_copy=True,
-                measured_on="2026-10-29",
+                passive=i,
+                word_passive=2,
             )
         response = self.client.get(reverse("nofos:word_comparisons"))
         self.assertEqual(response.context["page"].paginator.count, 27)
-        self.assertEqual(response.context["page"][0].filename, "Synthetic 25.docx")
-        self.assertIsNone(response.context["page"][0].difference)
+        self.assertEqual(response.context["page"][0].filename, "Synthetic 26.docx")
+        self.assertContains(response, "Saved results, newest first")
+        self.assertContains(response, "Metrics vsynthetic-1")
+        self.assertContains(response, "View details")
+        self.assertNotContains(response, "<form")
+        self.assertNotContains(response, "Status</th>")
+        self.assertEqual(len(response.context["trend"]["points"]), 27)
         self.assertContains(response, "?page=2")
-        response = self.client.get(reverse("nofos:word_comparisons"), {"page": 2})
-        self.assertEqual(response.context["page"][-1].filename, "Synthetic.docx")
+        self.user.user_permissions.remove(
+            Permission.objects.get(codename="view_builder_metrics")
+        )
+        self.assertEqual(
+            self.client.get(reverse("nofos:word_comparisons")).status_code, 403
+        )
 
-    def test_admin_comparison_toggle_is_independent(self):
-        from django.contrib.auth.models import Permission
+    def test_trend_signed_missing_zero_single_and_empty(self):
+        self.assertEqual(difference_trend([]), {"points": []})
+        records = []
+        for i, passive in enumerate((None, 0, 3, 1)):
+            record = WordComparison.objects.create(
+                filename=f"Sample {i}",
+                owner=self.user,
+                fingerprint="b" * 64,
+                analyzed_at=timezone.now(),
+                version="synthetic",
+                checker=REPORT,
+                passive=passive,
+                word_passive=1,
+            )
+            record.saved_at = timezone.now() + timedelta(days=i)
+            records.append(record)
+        trend = difference_trend(reversed(records))
+        self.assertEqual([p["difference"] for p in trend["points"]], [-1, 2, 0])
+        self.assertLess(trend["points"][0]["x"], trend["points"][1]["x"])
+        self.assertGreater(trend["points"][0]["y"], trend["zero_y"])
+        self.assertLess(trend["points"][1]["y"], trend["zero_y"])
+        self.assertEqual(difference_trend([records[3]])["points"][0]["x"], 325)
+
+    def test_save_permission_does_not_grant_metrics_visibility(self):
+        self.user.user_permissions.remove(
+            Permission.objects.get(codename="view_builder_metrics")
+        )
+        response = self.save(self.stage())
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Comparison saved")
+        self.assertNotContains(response, "View passive sentence comparisons")
+        self.assertEqual(
+            self.client.get(reverse("nofos:word_comparisons")).status_code, 403
+        )
+
+    def test_admin_toggle_remains_independent(self):
         from users.forms import BloomUserChangeForm
 
         form = BloomUserChangeForm(instance=self.user)

@@ -83,4 +83,4 @@ folder when it defines an evolving contract; label its status and limitations.
   pointing to the original source. Review references in archived evidence for
   their original context rather than rewriting historical results.
 
-- [Word comparison tracker](readability/WORD_COMPARISONS.md) — Explicit Checker retention, manual Windows Word measurements, permissions, rollout and deletion
+- [Passive sentence comparison tracker](readability/WORD_COMPARISONS.md) — Inline Microsoft Word for Windows percentage entry, Readability Checker difference trend, permissions, rollout and deletion

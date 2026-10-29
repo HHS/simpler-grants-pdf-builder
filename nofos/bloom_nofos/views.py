@@ -257,7 +257,12 @@ def _pdf_readability_form(request):
         else:
             upload = uploads[0]
             try:
-                from nofos.word_comparisons import PERMISSION, enabled, stage_run
+                from nofos.word_comparisons import (
+                    PERMISSION,
+                    WordResultsForm,
+                    enabled,
+                    stage_run,
+                )
 
                 comparison_allowed = (
                     word_uploads_allowed
@@ -291,6 +296,7 @@ def _pdf_readability_form(request):
             else:
                 request.pdf_readability_outcome = "success"
                 if comparison_allowed and report.get("profile") == "word":
+                    context["comparison_form"] = WordResultsForm()
                     context["comparison_run"] = stage_run(
                         request, report, _safe_upload_name(upload.name), fingerprint
                     )

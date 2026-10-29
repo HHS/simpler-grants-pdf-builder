@@ -566,13 +566,12 @@ spacing and page-title typography. Use a named destination rather than browser
 history so direct links behave consistently.
 
 The Readability Checker usage overview and comparison list link back to
-**Usage & quality metrics**. A comparison detail links back to
-**Passive sentence comparisons**. Keep the overview/comparison tabs below the
+**Usage & quality metrics**. Keep the overview/comparison tabs below the
 shared heading; they navigate between peer views rather than replacing the
 parent back link. Render this peer navigation with the shared
 [nofos/includes/metrics_navigation.html](../nofos/nofos/templates/nofos/includes/metrics_navigation.html)
 component, also used by the metrics landing page: bold blue text links separated
-by a decorative vertical bar, with aria-current on the current Checker view.
+by a decorative vertical bar, with aria-current on the current Readability Checker view.
 Do not style these navigation links as buttons. Do not introduce an additional breadcrumb trail or a separately
 styled plain back link for these pages.
 
@@ -593,4 +592,18 @@ Show **Calculation version** in the row as **Metrics v[number]**, followed by a
 native **View details** disclosure for profile and input-processing identities.
 Reuse [readability_calculation_version.html](../nofos/nofos/templates/nofos/includes/readability_calculation_version.html),
 shared by NOFO history and Word comparisons. Show schema/result basis only when
-those identities are available; do not invent them for uploaded Checker runs.
+those identities are available; do not invent them for uploaded Readability Checker runs.
+
+
+### Inline passive-percentage entry and trend
+
+The comparison MVP keeps the single Microsoft Word for Windows percentage field
+on the completed Readability Checker report. Use the standard small usa-input,
+associated label, field errors and existing success-alert component. After saving,
+render confirmation on the report rather than navigating to a new entry page.
+
+Use the metrics chart card treatment for **Difference over time**: signed
+percentage-point differences, a clearly labelled zero reference, native SVG
+title/description, and a native **View chart data** disclosure with exact values.
+Do not add totals, averages or thresholds. Missing differences are omitted;
+a single available pair still renders a point.

@@ -21,11 +21,6 @@ urlpatterns = [
         name="word_comparison_save",
     ),
     path(
-        "readability-checker/comparisons/<uuid:pk>",
-        word_comparisons.detail,
-        name="word_comparison_detail",
-    ),
-    path(
         "readability/",
         readability_redirect,
         {"route_name": "nofos:authenticated_pdf_readability"},

@@ -5,19 +5,19 @@
 {% include "includes/page_heading.html" with title="Readability Checker Usage" back_text="Back to usage &amp; quality metrics" back_href=metrics_href only %}
 {% include "nofos/includes/comparison_tabs.html" %}
 <h2 class="font-heading-lg text-bold">Passive sentence comparisons</h2>
-<p>Deliberately saved Word uploads. Differences are Checker minus Word in percentage points. Reviewed means a reviewer examined the result; it does not mean agreement.</p>
+<p>Saved comparisons of passive sentence percentages from the Readability Checker and Microsoft Word for Windows. Differences are Readability Checker minus Microsoft Word for Windows, in percentage points.</p>
+{% include "nofos/includes/word_comparison_trend.html" %}
 <div style="overflow-x:auto" tabindex="0" role="region" aria-label="Saved passive sentence comparisons table">
 <table class="usa-table" style="width:100%">
 <caption>Saved results, newest first</caption>
-<thead><tr><th scope="col">Document</th><th scope="col">Date tested</th><th scope="col">Word passive</th><th scope="col">Checker passive</th><th scope="col">Difference</th><th scope="col">Status</th><th scope="col">Calculation version</th></tr></thead>
+<thead><tr><th scope="col">Document</th><th scope="col">Saved at</th><th scope="col">Microsoft Word for Windows passive sentences</th><th scope="col">Readability Checker passive sentences</th><th scope="col">Difference</th><th scope="col">Calculation version</th></tr></thead>
 <tbody>{% for record in page %}<tr>
-<th scope="row"><a href="{% url 'nofos:word_comparison_detail' record.pk %}">{{ record.filename }}</a></th>
-<td>{{ record.analyzed_at|date:"M j, Y" }}</td>
-<td>{% if record.latest.passive != None %}{{ record.latest.passive|floatformat:1 }}%{% else %}—{% endif %}</td>
+<th scope="row">{{ record.filename }}</th>
+<td>{{ record.saved_at|date:"M j, Y, g:i a" }}</td>
+<td>{% if record.word_passive != None %}{{ record.word_passive|floatformat:1 }}%{% else %}—{% endif %}</td>
 <td>{% if record.passive != None %}{{ record.passive|floatformat:1 }}%{% else %}—{% endif %}</td>
 <td>{% if record.difference != None %}{% if record.difference > 0 %}+{% endif %}{{ record.difference|floatformat:1 }} points{% else %}—{% endif %}</td>
-<td>{{ record.status }}</td>
-<td>{% include "nofos/includes/readability_calculation_version.html" with version=record.version profile=record.checker.profile_id|default:record.checker.profile input_processing=record.checker.input_processing only %}</td></tr>{% empty %}<tr><td colspan="7">No saved comparisons yet.</td></tr>{% endfor %}</tbody>
+<td>{% include "nofos/includes/readability_calculation_version.html" with version=record.version profile=record.checker.profile_id|default:record.checker.profile input_processing=record.checker.input_processing only %}</td></tr>{% empty %}<tr><td colspan="6">No saved comparisons yet.</td></tr>{% endfor %}</tbody>
 </table></div>
 {% if page.has_other_pages %}<nav class="margin-top-2" aria-label="Comparison pages">{% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">Previous</a>{% endif %} Page {{ page.number }} of {{ page.paginator.num_pages }} {% if page.has_next %}<a href="?page={{ page.next_page_number }}">Next</a>{% endif %}</nav>{% endif %}
 {% endblock %}

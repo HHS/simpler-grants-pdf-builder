@@ -1898,54 +1898,15 @@ class WordComparison(models.Model):
         permissions = [
             (
                 "manage_word_comparisons",
-                "Can save and edit Word readability comparisons",
+                "Can save passive sentence comparisons",
             ),
         ]
 
-    @property
-    def latest(self):
-        if "revisions" in getattr(self, "_prefetched_objects_cache", {}):
-            return max(
-                self.revisions.all(),
-                key=lambda row: (row.created_at, row.pk),
-                default=None,
-            )
-        return self.revisions.order_by("-created_at", "-pk").first()
-
-    @property
-    def status(self):
-        latest = self.latest
-        return latest.status if latest else "Awaiting Word results"
+    word_passive = models.FloatField()
+    saved_at = models.DateTimeField(auto_now_add=True)
 
     @property
     def difference(self):
-        latest = self.latest
-        if self.passive is None or not latest or latest.passive is None:
-            return None
-        return self.passive - latest.passive
-
-
-class WordComparisonRevision(models.Model):
-    comparison = models.ForeignKey(
-        WordComparison, related_name="revisions", on_delete=models.CASCADE
-    )
-    reviewer = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    agency = models.CharField(max_length=100, blank=True)
-    passive = models.FloatField(null=True, blank=True)
-    sentence_count = models.PositiveIntegerField(null=True, blank=True)
-    measured_on = models.DateField(null=True, blank=True)
-    word_version = models.CharField(max_length=120, blank=True)
-    word_count = models.PositiveIntegerField(null=True, blank=True)
-    grade = models.FloatField(null=True, blank=True)
-    same_copy = models.BooleanField(default=False)
-    notes = models.TextField(blank=True)
-    reviewed = models.BooleanField(default=False)
-
-    @property
-    def status(self):
         if self.passive is None:
-            return "Awaiting Word results"
-        return "Reviewed" if self.reviewed else "Ready for review"
+            return None
+        return self.passive - self.word_passive

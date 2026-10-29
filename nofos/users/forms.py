@@ -23,9 +23,9 @@ def validate_user_group_for_superuser(cleaned_data):
 
 class MetricsAccessForm(forms.ModelForm):
     can_manage_word_comparisons = forms.BooleanField(
-        label="Can save and edit Word comparisons",
+        label="Can save passive sentence comparisons",
         required=False,
-        help_text="Grants explicit comparison-management permission. Does not grant Checker or metrics-view access. Superusers have access automatically.",
+        help_text="Grants explicit comparison-management permission. Does not grant Readability Checker or metrics-view access. Superusers have access automatically.",
     )
 
     can_view_metrics = forms.BooleanField(

@@ -1,71 +1,86 @@
-# Word passive sentence comparisons
+# Passive sentence comparisons
 
-This internal tracker explicitly retains completed authenticated Word-upload
-Checker results. It does not change formulas, Builder exclusions, ordinary usage
-records, or portfolio scores. A saved upload can still produce an ordinary,
-content-free usage event.
+The MVP compares passive sentence percentages from the Readability Checker and
+Microsoft Word for Windows. It does not change formulas, Builder exclusions,
+ordinary usage records or portfolio scores.
+
+## User workflow
+
+On a completed Word-upload report, an authorized user enters one value:
+**Microsoft Word for Windows passive sentences (%)** for the same whole-document
+copy. **Save comparison** explicitly retains the completed Readability Checker
+result and entered percentage, then confirms success on the same report page.
+No separate entry or investigation page is required. The percentage is required,
+including an explicit zero when appropriate, and must be between 0 and 100.
+
+The saved run automatically records the user and save date. Its Readability Checker
+measurements, analysis date, calculation version, input-processing identity and
+upload fingerprint remain fixed. Repeated submission for the same run keeps the
+first saved comparison. To compare a corrected measurement, analyze and save a new
+run; the MVP has no correction/editing interface.
+
+Metrics viewers can open **Readability Checker Usage → Passive sentence comparisons**.
+The table shows saved results, newest first, with Calculation version / View details
+matching saved NOFO readability history. There are no filters or sort controls.
+
+## Difference over time
+
+Each plotted point is one saved paired comparison, dated when saved:
+**Readability Checker minus Microsoft Word for Windows**, in percentage points.
+A positive difference means the Readability Checker percentage is higher.
+Zero means the percentages agree. Negative values mean it is lower.
+
+The chart uses all retained paired comparisons, independently of table pagination.
+Unavailable Readability Checker percentages are excluded, never plotted as zero.
+A single pair appears as a point; no pairs show an empty state. Exact values are
+available in **View chart data** for keyboard and screen-reader access.
+The line is not a total, rolling average, quality threshold or proof that the
+measurement method is improving: different documents and calculation versions
+can change the differences. Inspect calculation details before interpreting a trend.
 
 ## Rollout and permissions
 
-1. Apply migration 0160. The Constance flag
-   HHS_NOFO_WORD_COMPARISONS_ENABLED defaults **off**; it takes effect without
-   restarting workers. Existing authenticated Checker enablement remains required.
-2. Select **Can save and edit Word comparisons** on selected users in Django admin
-   to grant nofos.manage_word_comparisons directly. This grants saving/editing, not
-   metrics visibility. Bloom membership neither grants nor blocks this permission.
-3. Grant nofos.view_builder_metrics separately to people who should see the
-   tracker, including its retained document names. Comparison managers can open
-   their own saved records without metrics-view permission.
-4. Confirm the audience is authorized to see document names; use non-sensitive
-   filenames when possible. Enable the flag, then exercise
-   [TASK-WORD-COMPARISON](../EDITOR_TASKS.md#task-word-comparison).
+1. Apply migration 0160. This feature is unmerged; its initial migration reflects
+   the MVP schema. Local reviewers who applied an earlier draft should rebuild
+   their disposable comparison database rather than treating it as deployed data.
+2. **HHS_NOFO_WORD_COMPARISONS_ENABLED** is a default-off Constance flag and takes
+   effect without restarting workers. Authenticated Readability Checker enablement
+   and its separate permission remain required to analyze a Word upload.
+3. In user admin, grant **Can save passive sentence comparisons** to selected reviewers.
+   This grants nofos.manage_word_comparisons, independently of metrics viewing.
+   Bloom membership neither grants nor blocks this permission.
+4. Grant nofos.view_builder_metrics separately to people authorized to see retained
+   document names, scores and the trend chart. Confirm this audience and the
+   backup policy before enabling the feature.
 
-Usage remains the default tab at /nofos/metrics/readability-checker-usage.
-The legacy /nofos/metrics/readability-pilot redirects permanently and preserves
-the query string. The existing Django URL name is retained for compatibility.
+Usage remains the default at /nofos/metrics/readability-checker-usage.
+The legacy /nofos/metrics/readability-pilot redirects with its query string preserved.
 
-## Retention, integrity and deletion
+## Retention and deletion
 
-Saved comparisons and manual revisions have **no automatic expiration**.
-They are intentionally separate from short-lived uploads and content-free attempt
-cleanup. Saved metadata includes the display filename, SHA-256 fingerprint,
-analysis/run identity, package/profile/input-processing identities, scope and
-conversion warnings, available counts and scores, and manual reviewer history.
-No DOCX or extracted sentence text is retained.
+Explicitly saved comparisons have **no automatic expiration**. They are separate
+from temporary uploads and ordinary content-free attempt cleanup. No uploaded
+DOCX or extracted sentence text is retained. Unsaved reports are not persisted:
+a signed, compressed, owner-bound handoff expires after 30 minutes.
 
-The completed report is carried in a signed, compressed, 30-minute handoff bound
-to the analyzing user. Unsaved reports are not written to the database. A forged,
-expired, or different user's handoff cannot be saved. Do not log request bodies:
-they may contain signed report metadata or manual notes. Run UUID uniqueness
-makes concurrent/repeated saves idempotent; each fresh analysis has a new UUID.
+Do not log request bodies; the handoff contains report metadata and document name.
+Superusers can inspect and delete comparisons in Django admin. Comparisons are
+excluded from EasyAudit copying. Database backups have their independent retention;
+deletion does not immediately purge backups. Deleting an account leaves the saved
+comparison with no user identity.
 
-Checker fields have no editing interface. Manual saves append revisions, including
-reviewer and timestamp. Deleting a user preserves historical measurements with a
-missing reviewer identity. Avoid personal or document text in review notes.
+Disable the Constance flag to hide saving and the comparison page while retaining
+data. Keep the migration applied on code rollback; do not use ordinary attempt
+cleanup on deliberately retained comparisons.
 
-Superusers can inspect and delete an entire comparison in Django admin
-(**Word comparisons**); deletion cascades to all its manual revisions.
-This is the supported intentional deletion procedure. These models are excluded
-from EasyAudit copying so deleted names/results are not retained there.
-Database backups follow the deployment's independent backup policy; deletion
-does not immediately purge backups. Do not enable until that policy and the
-metrics-viewer audience are acceptable to the operator.
+## Deferred beyond MVP
 
-## Rollback
+Manual sentence counts, Microsoft Word for Windows build/version, preparation
+notes, same-copy checkboxes, review statuses, correction history and dedicated
+investigation/detail pages can be added later if needed. The MVP deliberately
+asks only for the passive percentage. The inline instruction asks for the same
+whole-document copy; a fingerprint identifies the Readability Checker input but
+cannot independently prove which copy was measured in Microsoft Word for Windows.
 
-Disable the Constance flag to hide save, list, detail and editing routes immediately.
-This preserves retained comparisons for investigation or later re-enablement.
-Revoke comparison-management permission if needed. Keep migration 0160 applied
-during code rollback to avoid deleting review history. Never run ordinary attempt
-cleanup against these tables.
-
-## Interpretation
-
-Differences are signed **Checker minus Word**, in percentage points. No passive
-numerator is inferred from rounded Word percentages. Missing values stay missing.
-The Word sentence count and Checker denominator remain separate. A fingerprint
-identifies the Checker input but cannot independently establish which file the
-reviewer opened in Word. Reviewed is a workflow state, not a quality threshold.
-
-[Implementation screenshots and validation](../review-evidence/1248/README.md)
-use invented names and measurements.
+[Editor task](../EDITOR_TASKS.md#task-word-comparison) ·
+[Synthetic screenshots and validation](../review-evidence/1248/README.md)
