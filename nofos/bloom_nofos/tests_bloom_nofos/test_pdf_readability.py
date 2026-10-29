@@ -7,7 +7,7 @@ from bloom_nofos.views import _metric_rows, _safe_upload_name
 from constance.test import override_config
 from django.contrib.staticfiles import finders
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from nofos.pdf_readability import PdfReadabilityError
@@ -111,35 +111,61 @@ class PdfReadabilityPageTests(TestCase):
         css = Path(css_path).read_text()
         self.assertIn(".usa-banner, .usa-footer { display: none !important; }", css)
 
+    def test_disabled_unsupported_methods_remain_405(self):
+        for method in ("head", "put", "delete", "options"):
+            with self.subTest(method=method):
+                response = getattr(self.client, method)(self.url)
+                self.assertEqual(response.status_code, 405)
+                self.assertIn("no-store", response["Cache-Control"])
+                self.assertIn("noindex", response["X-Robots-Tag"])
+
+    def test_disabled_post_rejects_before_reading_request_body(self):
+        from bloom_nofos.views import pdf_readability
+
+        request = RequestFactory().post(
+            self.url,
+            data=b"malformed synthetic multipart",
+            content_type="multipart/form-data; boundary=missing",
+        )
+        with patch.object(
+            request, "read", side_effect=AssertionError("body read")
+        ), patch(
+            "bloom_nofos.views._pdf_readability_form",
+            side_effect=AssertionError("form called"),
+        ):
+            response = pdf_readability(request)
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(hasattr(request, "_files"))
+
     def test_flag_is_off_by_default_for_get_and_post(self):
-        self.assertEqual(self.client.get(self.url).status_code, 503)
+        self.assertEqual(self.client.get(self.url).status_code, 200)
         response = self.client.post(self.url, {"pdf": sample_pdf()})
-        self.assertEqual(response.status_code, 503)
-        self.assertContains(response, "Service status", status_code=503)
-        self.assertContains(response, "NOFO Builder", status_code=503)
-        self.assertContains(response, "Back to top", status_code=503)
-        self.assertContains(response, "Latest updates", status_code=503)
+        self.assertEqual(response.status_code, 403)
+        self.assertContains(response, "Service status", status_code=403)
+        self.assertContains(response, "NOFO Builder", status_code=403)
+        self.assertContains(response, "Back to top", status_code=403)
+        self.assertContains(response, "Latest updates", status_code=403)
         self.assertContains(
             response,
             "contact your agency's grants policy office first",
-            status_code=503,
+            status_code=403,
         )
-        self.assertContains(response, "NOFO Builder Feedback Form", status_code=503)
+        self.assertContains(response, "NOFO Builder Feedback Form", status_code=403)
         self.assertContains(
             response,
             'href="https://forms.office.com/r/KH4icQuZ0S"',
-            status_code=503,
+            status_code=403,
         )
-        self.assertContains(response, 'target="_blank"', status_code=503)
+        self.assertContains(response, 'target="_blank"', status_code=403)
         self.assertContains(
             response,
             'rel="nofollow noopener noreferrer"',
-            status_code=503,
+            status_code=403,
         )
         self.assertNotContains(
-            response, "the team that provided this link", status_code=503
+            response, "the team that provided this link", status_code=403
         )
-        self.assertNotContains(response, 'type="file"', status_code=503)
+        self.assertNotContains(response, 'type="file"', status_code=403)
         self.assertNotIn("Retry-After", response)
         self.assertIn("no-store", response["Cache-Control"])
 

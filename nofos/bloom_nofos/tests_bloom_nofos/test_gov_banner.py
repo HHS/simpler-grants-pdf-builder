@@ -38,7 +38,7 @@ class GovBannerTests(TestCase):
 
     def test_readability_page_has_banner_whether_pilot_is_on_or_off(self):
         url = reverse("pdf_readability")
-        self.assertBannerAboveHeader(self.client.get(url), status_code=503)
+        self.assertBannerAboveHeader(self.client.get(url), status_code=200)
         with override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True):
             self.assertBannerAboveHeader(self.client.get(url))
 

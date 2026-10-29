@@ -116,7 +116,7 @@ class FileCategoryTests(TestCase):
                 self.client.post(
                     self.public, {"pdf": self.upload("private.pdf")}
                 ).status_code,
-                503,
+                403,
             )
             form.assert_not_called()
         self.assertEqual(PdfReadabilityAttempt.objects.get().file_category, "unknown")
