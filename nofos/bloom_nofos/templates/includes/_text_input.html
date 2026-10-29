@@ -4,9 +4,9 @@
   {{ hint }}
 </div>
 {% endif %}
-{% if error %}
-<div class="usa-error-message" id="{{ id }}--error">
-  Error: {{ error }}
+{% if error or dynamic_errors %}
+<div class="usa-error-message" id="{{ id }}--error" {% if not error %}hidden{% endif %}>
+  {% if error %}Error: {{ error }}{% endif %}
 </div>
 {% endif %}
 {% if input_type == 'Textarea' %}

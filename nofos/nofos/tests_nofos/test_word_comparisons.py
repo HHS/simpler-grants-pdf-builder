@@ -67,8 +67,9 @@ class ComparisonTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Comparison saved")
         self.assertTemplateUsed(response, "includes/alerts.html")
-        self.assertContains(response, "usa-alert--slim")
-        self.assertNotContains(response, '<h4 class="usa-alert__heading')
+        self.assertNotContains(response, "usa-alert--slim")
+        self.assertContains(response, "usa-alert--fixed")
+        self.assertContains(response, '<h4 class="usa-alert__heading')
         self.assertContains(response, "Readability report")
         self.assertContains(response, "View passive sentence comparisons")
         self.assertNotContains(response, 'name="passive"')
@@ -162,7 +163,9 @@ class ComparisonTests(TestCase):
         client.force_login(self.user)
         self.assertEqual(
             client.post(
-                reverse("nofos:word_comparison_save"), {"run": token, "passive": 3}
+                reverse("nofos:word_comparison_save"),
+                {"run": token, "passive": 3},
+                HTTP_ACCEPT="application/json",
             ).status_code,
             403,
         )
@@ -269,4 +272,87 @@ class ComparisonTests(TestCase):
             self.user.user_permissions.filter(
                 codename="manage_word_comparisons"
             ).exists()
+        )
+
+    def test_background_save_validation_idempotency_and_no_flash_leak(self):
+        token = self.stage()
+        url = reverse("nofos:word_comparison_save")
+        invalid = self.client.post(
+            url, {"run": token, "passive": 101}, HTTP_ACCEPT="application/json"
+        )
+        self.assertEqual(invalid.status_code, 400)
+        self.assertIn("Make sure", invalid.json()["errors"]["passive"][0]["message"])
+        self.assertFalse(WordComparison.objects.exists())
+        response = self.client.post(
+            url, {"run": token, "passive": 3.3}, HTTP_ACCEPT="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["saved"])
+        self.assertIn("usa-alert--slim", response.json()["html"])
+        self.assertNotIn("usa-alert--fixed", response.json()["html"])
+        self.assertNotIn("<script", response.json()["html"])
+        self.assertNotIn("run", response.json())
+        self.assertNotIn("filename", response.json())
+        repeat = self.client.post(
+            url, {"run": token, "passive": 9}, HTTP_ACCEPT="application/json"
+        )
+        self.assertEqual(repeat.json()["word_passive"], 3.3)
+        self.assertEqual(WordComparison.objects.count(), 1)
+        from django.contrib.messages import get_messages
+
+        next_page = self.client.get(reverse("nofos:word_comparisons"))
+        self.assertEqual(list(get_messages(next_page.wsgi_request)), [])
+
+    def test_background_save_still_checks_permissions_and_expiry(self):
+        import time
+
+        token = self.stage()
+        url = reverse("nofos:word_comparison_save")
+        with patch("django.core.signing.time.time", return_value=time.time() + 1801):
+            self.assertEqual(
+                self.client.post(
+                    url, {"run": token, "passive": 3}, HTTP_ACCEPT="application/json"
+                ).status_code,
+                404,
+            )
+        with override_config(HHS_NOFO_WORD_COMPARISONS_ENABLED=False):
+            self.assertEqual(
+                self.client.post(
+                    url, {"run": token, "passive": 3}, HTTP_ACCEPT="application/json"
+                ).status_code,
+                404,
+            )
+        self.assertEqual(
+            self.client.post(
+                url,
+                {"run": token + "tamper", "passive": 3},
+                HTTP_ACCEPT="application/json",
+            ).status_code,
+            404,
+        )
+        other = BloomUser.objects.create_user(
+            email="other-async@example.test",
+            password=None,
+            group="bloom",
+            force_password_reset=False,
+        )
+        other.user_permissions.add(
+            Permission.objects.get(codename="manage_word_comparisons")
+        )
+        self.client.force_login(other)
+        self.assertEqual(
+            self.client.post(
+                url, {"run": token, "passive": 3}, HTTP_ACCEPT="application/json"
+            ).status_code,
+            404,
+        )
+        self.client.force_login(self.user)
+        self.user.user_permissions.remove(
+            Permission.objects.get(codename="manage_word_comparisons")
+        )
+        self.assertEqual(
+            self.client.post(
+                url, {"run": token, "passive": 3}, HTTP_ACCEPT="application/json"
+            ).status_code,
+            403,
         )

@@ -1081,10 +1081,13 @@ matching task in the same pull request.
    that same whole-document copy. Type the percentage or use the number field’s
    increment/decrement controls. Enter zero if its displayed percentage is zero.
 3. Select **Save comparison** within 30 minutes. This retains the Readability Checker
-   result and entered percentage. The report reloads with a **Comparison saved**
-   confirmation; there is no next entry page and nothing is saved while typing.
+   result and entered percentage without refreshing the report. The button shows
+   **Saving…**, then **Saved**, and a slim **Comparison saved** message appears.
+   There is no next entry page and nothing is saved while typing.
    If a red field error appears, correct the percentage and select **Save
-   comparison** again.
+   comparison** again. If the connection fails, retry; the same report will not
+   be saved twice. With JavaScript unavailable, the form instead reloads the
+   report and shows the existing larger success alert.
 4. Metrics viewers can follow **View passive sentence comparisons**. The table is
    newest first. Expand **View details** in **Calculation version** for profile and
    input-processing identities. Use **View chart data** for exact plotted values.

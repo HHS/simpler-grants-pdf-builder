@@ -85,60 +85,68 @@ above.
 ## Form save feedback
 
 **Design decision — October 29, 2026, reviewed in [#1249](https://github.com/HHS/simpler-grants-pdf-builder/pull/1249):**
-use the **slim success alert** for a compact confirmation when a user saves form
-information and stays on the current view. This includes both a save that updates
-the page in place and a normal submission that reloads the same view. The visual
-choice does not require changing how the form submits.
+choose feedback according to whether submission updates one step in place or
+completes a form with a page reload/navigation.
 
-### Success
+### One step saved in place, without a page refresh
 
-- Reuse the shared alert component with **slim=True**. Its USWDS class is
-  **usa-alert--slim**; “slim” is the component name, rather than “thin.”
-- Keep the message short, such as **Comparison saved.** Include a small amount of
-  useful context when needed. Omit the separate heading and large alert treatment.
-- Show success only after the server confirms the save. Do not show it while the
-  user is typing or imply autosave when an explicit save action is required.
-- Keep the confirmation near the relevant action/result, in normal document flow,
-  without a floating toast or automatic disappearance. Use the success icon and
-  explicit wording; color alone must not communicate the outcome.
-- For an update without a page reload, announce the changed confirmation through
-  a polite live region (such as role=status) and preserve keyboard focus and
-  unsaved input. A successful update should not reopen a processing modal.
+Use the shared **slim success alert** when a small form saves one part of the
+current page without refreshing it. Its USWDS class is **usa-alert--slim**.
 
-For server-rendered form responses, use Django success messages and the existing
-[alerts.html](../nofos/bloom_nofos/templates/includes/alerts.html) variant:
+- Keep the message short, such as **Comparison saved.**, without a separate
+  heading. Put it next to the relevant action/result, in normal document flow.
+- Confirm success only after the server acknowledges the save. Nothing is saved
+  merely because the user types. Never imply autosave for an explicit save action.
+- Preserve scroll position, entered values and keyboard focus. Announce the
+  confirmation through a polite live region. Do not reopen a processing modal,
+  float the confirmation at the bottom or automatically dismiss it.
+- Prevent concurrent submissions. Keep permission checks and validation on the
+  server. For ambiguous connection failures, allow a safe retry without duplicate
+  writes; do not announce failure as proof that nothing was saved.
+- Use the success icon and explicit wording; color alone must not communicate
+  the outcome.
+
+The Readability Checker comparison form demonstrates this pattern. Its server
+renders the shared [alerts.html](../nofos/bloom_nofos/templates/includes/alerts.html)
+variant into the background response:
 
 ```django
-{% include "includes/alerts.html" with messages=messages success_heading="Comparison saved" slim=True only %}
+{% include "includes/alerts.html" with messages=feedback_messages success_heading="Comparison saved" slim=True fragment=True only %}
 ```
 
-The same shared component's existing regular/fixed variants remain available
-for screens whose established flow needs them. This decision does not change
-every existing alert automatically.
+The fragment flag omits initialization scripts; it leaves existing callers
+unchanged. Do not queue a separate flash message for a later page.
 
-### Errors
+### Form completion with a page refresh or navigation
 
-Use the relevant shared field component's red inline validation message, preserve
-the entered value, associate the error with the field and provide a correction
-action. Follow [file-upload errors](#file-upload-errors) for upload-specific
-behavior. A failure unrelated to a particular field can use the existing error
-alert with a brief explanation and recovery action. Never leave a stale success
-message visible as the outcome of a failed save.
+Use the destination screen's established **regular, larger success alert**.
+For example, NOFO editing uses the shared component with **stick_to_bottom=True**:
+it appears at the bottom and dismisses after a few seconds. Reuse that behavior
+where appropriate to the existing screen. Do not select the inline slim variant
+merely because a normal form POST reloads the same URL.
 
-### Existing examples and scope
+A no-JavaScript fallback that reloads the page follows this completion pattern.
+Its fixed alert cannot auto-dismiss without JavaScript; it remains visible in
+that fallback. This decision does not change other forms automatically.
 
-The Readability Checker comparison form demonstrates the slim success variant
-after a normal form submission and reload. The NOFO readability panel already
-has an asynchronous save that updates a small **Snapshot saved.** live status;
-see [readability_metrics_panel.html](../nofos/nofos/templates/nofos/includes/readability_metrics_panel.html)
+### Errors and verification
+
+Use the shared field component's red inline validation message, preserve the
+value, associate the error with the field and allow correction. Follow
+[file-upload errors](#file-upload-errors) for upload-specific behavior. An
+operational failure can use an error message with a recovery action. Clear stale
+feedback when retrying; never show success for a rejected or unconfirmed save.
+
+Verify saving, validation, server/network failure, timeout/retry, duplicate
+prevention, focus, live announcements and progressive fallback. Check that other
+forms retain their existing submission and completion behavior.
+
+The NOFO readability panel already updates a small **Snapshot saved.** text live
+status asynchronously; see
+[readability_metrics_panel.html](../nofos/nofos/templates/nofos/includes/readability_metrics_panel.html)
 and [nofo_readability_metrics.js](../nofos/bloom_nofos/static/js/nofos/nofo_readability_metrics.js).
-That text-only status is an existing implementation, not the new default visual
-pattern. When its success presentation is next revised, align it with the slim
-variant or document why it needs a different treatment. This documentation change
-does not migrate that panel.
-
-Verify successful saving, invalid input, server failure, keyboard focus, live
-announcements, and the absence of duplicate or competing success messages.
+It is an existing implementation. This comparison-form change does not migrate
+that panel or other Builder forms.
 
 ## File-upload errors
 
@@ -670,15 +678,13 @@ render the shared red error rather than competing browser validation tooltips.
 Server validation remains authoritative and allows any finite percentage in range.
 Like upload errors, the error receives keyboard focus and remains correctable.
 
-Saving is a normal server-rendered form POST and full document reload, not
-background saving or autosave. Reuse Django success messages and
-[includes/alerts.html](../nofos/bloom_nofos/templates/includes/alerts.html), as on
-the NOFO index/edit screens. Render its non-fixed **slim=True** success variant on the report: a short
-confirmation in the body, without a separate heading. This optional variant
-leaves existing callers unchanged. Do not introduce a custom success banner
-or a new entry page. The alert remains
-visible rather than auto-dismissing. Comparison responses must not reopen the
-upload-analysis progress/ready modal.
+Only the comparison form is enhanced by
+[word_comparison.js](../nofos/bloom_nofos/static/js/word_comparison.js).
+It saves through a background POST, updates field errors and a shared slim
+success fragment in place, and keeps the report loaded. The saved percentage
+becomes read-only and the action reads **Saved**. The normal form POST remains
+a fallback, using the existing full-size fixed success feedback after reloading.
+Follow the [form save feedback decision](#form-save-feedback) above.
 
 Use the metrics chart card treatment for **Difference over time**: signed
 percentage-point differences, a clearly labelled zero reference, native SVG
@@ -693,8 +699,8 @@ live status (**Snapshot saved.**) for its asynchronous snapshot save:
 and [nofo_readability_metrics.js](../nofos/bloom_nofos/static/js/nofos/nofo_readability_metrics.js).
 That text-only status is an existing implementation. Apply the
 [form save feedback decision](#form-save-feedback) when adding or revising success
-feedback; the uploaded report uses the slim shared success alert after its normal
-form POST/reload.
+feedback; this comparison form uses the slim shared success alert after its
+background save, while other forms retain their existing behavior.
 
 
 The expanded **View chart data** content mirrors the metrics landing page's

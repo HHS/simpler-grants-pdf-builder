@@ -10,8 +10,9 @@ This evidence update changes documentation only.
 1. A reviewer analyzes a Word upload in the Readability Checker.
 2. On that report, they enter only **Microsoft Word for Windows passive sentences (%)**
    for the same whole-document copy, then select **Save comparison**.
-3. A full form submission reloads the same report with Builder's shared success
-   message. This is not asynchronous saving. There is no next entry page.
+3. The comparison saves in the background, without reloading the document.
+   A slim success message appears beside the form; the field becomes read-only
+   and the button reads Saved. No other Builder form changes.
 4. Authorized metrics viewers can open the saved comparisons and difference chart.
 
 | Capture | Caption |
@@ -20,7 +21,10 @@ This evidence update changes documentation only.
 | [After full report](after-checker-save-action.png) | Completed report with the inline comparison section and retention notice. |
 | [Populated percentage entry](after-inline-percentage-entry.png) | Full report with an invented 3.3% value, ready to submit. |
 | [Invalid percentage](after-percentage-validation-error.png) | Full report after entering 101: red inline field error, preserved report and retry action. |
-| [Saved confirmation](after-inline-saved-confirmation.png) | Full report with the shared Builder success message after a normal POST/reload. |
+| [Saving in place](after-comparison-saving.png) | Full report while the background save is pending; duplicate submissions are blocked. |
+| [Network failure](after-comparison-network-error.png) | Full report with retry guidance, preserved percentage and no navigation. |
+| [Saved confirmation](after-inline-saved-confirmation.png) | Full report with the shared slim success message after background saving. |
+| [No-JavaScript fallback](after-no-javascript-fallback.png) | Normal form submission reloads the report and uses the existing larger fixed success alert. |
 | [Full report after saving](after-saved-confirmation.png) | Same report after saving; no separate investigation page. |
 | [Before usage overview](before-usage-overview.png) | Existing usage page before peer navigation. |
 | [After usage overview](after-usage-overview.png) | Default usage reporting with shared metrics text-link navigation. |
@@ -39,7 +43,9 @@ flags were enabled.
 
 The analyzer was replaced only in this capture environment with a fixed,
 content-free synthetic report. The browser used the real multipart report route,
-percentage form and save POST. All filenames, accounts, percentages and save dates
+percentage form and background save POST, with controlled transport interception
+for pending and connection-failure states. A separate JavaScript-disabled browser
+context exercised the normal-submission fallback. All filenames, accounts, percentages and save dates
 are invented. Seven seeded comparisons span October 23–29, 2026, including
 positive and negative differences and an unavailable Readability Checker result.
 Package/profile labels use the implemented measurement identities; the invented
@@ -48,8 +54,9 @@ measurements do not validate classifier accuracy or Microsoft Word for Windows.
 Before images render the unchanged baseline templates with a controlled report
 context. After images use the implemented templates, models, forms and routes.
 Chrome viewport: 1440 × 1080 CSS pixels, device scale 1; narrow capture: 390 × 844.
-The current PR embeds full-page PNGs for entry, error, saved confirmation,
-the populated comparison page and both expanded disclosures. A standalone chart
+The current PR embeds full-page PNGs for entry, pending save, validation,
+connection failure, saved confirmation, the populated comparison page and both
+expanded disclosures. The no-JavaScript completion is captured separately. A standalone chart
 crop remains available as supplementary evidence, not the PR's main chart image. No real document text, credentials, cookies or desktop content appears.
 
 ## Validation
@@ -159,3 +166,24 @@ The back link reads **Back to Readability Checker usage**: the product name
 retains its capitals, while “usage” is lowercase. Comparison-page captures and
 the full usage-page capture were refreshed; the PR displays the latter directly
 so the single comparison navigation link is visible without opening a gallery.
+
+
+## In-place comparison submission supersedes the reload prototype
+
+The current comparison form saves through a background POST without document
+navigation. Slim success feedback is reserved for this small in-place step.
+Normal reload/navigation completion uses the existing larger alert; the
+no-JavaScript fallback follows that pattern. No other form's behavior changed.
+Earlier notes describing a POST/reload prototype are historical and superseded.
+
+Capture checks preserve the report DOM node, URL and scroll position during
+validation and successful saving, verify duplicate prevention while saving,
+and exercise network-error retry. Updated full-page captures include pending,
+validation, network-failure, saved, and no-JavaScript fallback states.
+
+
+Final in-place submission checks: 73 affected Django tests and 67 JavaScript
+tests pass. Browser checks confirmed no document navigation or scroll jump during
+validation and success, a single pending request despite repeat submission,
+safe retry after a dropped connection, a read-only saved value, and the larger
+success alert in the no-JavaScript fallback.

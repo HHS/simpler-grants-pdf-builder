@@ -8,11 +8,13 @@ from constance import config
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.messages.storage.base import Message
 from django.core import signing
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
@@ -83,9 +85,26 @@ def save(request):
                 pk=run,
                 defaults={**snapshot, "word_passive": form.cleaned_data["passive"]},
             )
+    wants_json = request.headers.get("Accept") == "application/json"
     if record:
         message = f"Microsoft Word for Windows: {record.word_passive:.1f}%."
+        if wants_json:
+            return JsonResponse(
+                {
+                    "saved": True,
+                    "word_passive": record.word_passive,
+                    "html": render_to_string(
+                        "nofos/includes/word_comparison_feedback.html",
+                        {"feedback_messages": [Message(messages.SUCCESS, message)]},
+                        request=request,
+                    ),
+                }
+            )
         messages.success(request, message)
+    elif wants_json:
+        return JsonResponse(
+            {"saved": False, "errors": form.errors.get_json_data()}, status=400
+        )
     from bloom_nofos.views import _metric_rows
 
     report = snapshot["checker"]

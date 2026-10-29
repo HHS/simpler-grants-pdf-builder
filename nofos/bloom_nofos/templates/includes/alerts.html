@@ -30,6 +30,7 @@
   {% endif %}
 {% endfor %}
 
+{% if not fragment %}
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const ALERT_SELECTOR = '.usa-alert--fixed';
@@ -72,3 +73,4 @@
     });
   });
 </script>
+{% endif %}

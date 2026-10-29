@@ -9,8 +9,13 @@ ordinary usage records or portfolio scores.
 On a completed Word-upload report, an authorized user enters one value:
 **Microsoft Word for Windows passive sentences (%)** for the same whole-document
 copy, using the compact number field with increment/decrement controls. **Save comparison** explicitly retains the completed Readability Checker
-result and entered percentage, then reloads the report with the shared Builder success message.
-Nothing is saved while typing. Invalid values show the shared text-field's red
+result and entered percentage in the background. The page does not refresh.
+The action shows **Saving…**, then **Saved**, with a slim **Comparison saved**
+message beside the form. The saved percentage becomes read-only.
+Nothing is saved while typing. A connection failure lets the user retry without
+saving the same report twice. An expired report requires analyzing again.
+If JavaScript is unavailable, normal submission reloads the report with the
+existing larger success alert instead. Invalid values show the shared text-field's red
 inline error; correct the value and submit again.
 No separate entry or investigation page is required. The percentage is required,
 including an explicit zero when appropriate, and must be between 0 and 100.
