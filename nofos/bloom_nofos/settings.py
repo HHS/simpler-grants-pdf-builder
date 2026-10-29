@@ -715,7 +715,7 @@ CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 CONSTANCE_CONFIG = {
     "HHS_NOFO_WORD_COMPARISONS_ENABLED": (
         False,
-        "Enable explicit Word comparison retention and tracker. Requires separate save permission; metrics viewers can see retained document names. Disabling hides access without deleting records.",
+        "Enable saving new Word comparisons. Requires separate save permission. Metrics viewers can always access the comparison page and retained document names and results. Disabling prevents new saves without hiding or deleting records.",
         bool,
     ),
     "DOCUMENT_HISTORY_INDEX_ENABLED": (

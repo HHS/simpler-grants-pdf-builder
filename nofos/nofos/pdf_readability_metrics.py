@@ -235,7 +235,6 @@ class PdfReadabilityMetricsView(MetricsViewerRequiredMixin, TemplateView):
                 {
                     "metrics": data,
                     "attempts_page": page,
-                    "comparisons_enabled": config.HHS_NOFO_WORD_COMPARISONS_ENABLED,
                 }
             )
         response["Cache-Control"] = "private, no-store"
