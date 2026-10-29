@@ -551,3 +551,23 @@ Keep the identifier in the application shell; NOFO document and PDF templates
 continue to use their own branding. Verify signed-in and signed-out layouts,
 keyboard focus, and wrapping at mobile and desktop widths with
 `tests/js/footer.browser.cjs`.
+
+## Metrics page headings and back navigation
+
+Metrics subpages reuse
+[includes/page_heading.html](../nofos/bloom_nofos/templates/includes/page_heading.html).
+It supplies the existing blue back-arrow link, body-sized navigation text,
+spacing and page-title typography. Use a named destination rather than browser
+history so direct links behave consistently.
+
+The Readability Checker usage overview and comparison list link back to
+**Usage & quality metrics**. A comparison detail links back to
+**Passive sentence comparisons**. Keep the overview/comparison tabs below the
+shared heading; they navigate between peer views rather than replacing the
+parent back link. Do not introduce an additional breadcrumb trail or a separately
+styled plain back link for these pages.
+
+Pass the title, back_text and back_href to the shared include with **only**.
+For example, resolve nofos:builder_metrics into metrics_href and use
+back_text="Back to usage &amp; quality metrics". Check the arrow, link focus,
+title spacing and wrapping on desktop and narrow layouts.

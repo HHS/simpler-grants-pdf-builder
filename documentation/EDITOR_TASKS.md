@@ -1089,6 +1089,8 @@ the separate comparison-management permission.
 5. Metrics viewers can open **Readability Checker Usage → Passive sentence
    comparisons**, filter results and sort by largest absolute difference.
    A positive difference means Checker measured a higher passive percentage.
+   Use **Back to passive sentence comparisons** from a detail page, or
+   **Back to usage & quality metrics** from the comparison list, to return.
 
 Missing results appear as unavailable, never zero. Word and Checker sentence
 counts have separate denominators. **Reviewed** means someone examined the result,

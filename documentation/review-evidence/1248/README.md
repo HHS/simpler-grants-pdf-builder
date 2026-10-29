@@ -51,8 +51,10 @@ uses 390 × 844. No debug overlay is present.
   disabled access, explicit write permission, immutable repeated saves, distinct
   runs, correction history, missing/zero values, validation, filters, database
   sorting, pagination, audit exclusion and legacy query-preserving redirects.
-- Desktop and narrow rendering checked. The title computes to Source Sans Pro Web,
-  32px, weight 700 in this app's current stylesheet. Navigation can receive
+- Desktop and narrow rendering rechecked after the navigation review. The comparison
+  pages now reuse includes/page_heading.html, matching existing metrics subpages.
+  Titles on the metrics landing page, usage overview and comparison list all
+  compute to Merriweather Web, 31.2px, weight 700. Navigation can receive
   keyboard focus; labels are associated with inputs, column headers have scope,
   current navigation uses aria-current, and saved confirmation uses role=status.
   The narrow document has no horizontal overflow outside the table container.
@@ -71,3 +73,13 @@ deletion (including manual revisions), backup caveats and non-destructive rollba
 Editor Tasks updates cover TASK-READABILITY-UPLOAD and the new
 [TASK-WORD-COMPARISON](../../EDITOR_TASKS.md#task-word-comparison).
 No import transformation or metric formula changes are included.
+
+
+## Navigation consistency review
+
+The comparison list and detail now use the same shared blue back-arrow/page-heading
+component as the existing metrics subpages. The list returns to Usage & quality
+metrics; detail returns to Passive sentence comparisons. Refreshed after captures
+show the implemented shared navigation. Eight comparison tests pass after this
+template change. The pattern is recorded in UI_PATTERNS and return navigation
+is included in TASK-WORD-COMPARISON.

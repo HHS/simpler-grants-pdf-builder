@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Word comparison — {{ record.filename }}{% endblock %}
 {% block content %}
-<p><a href="{% url 'nofos:word_comparisons' %}">Passive sentence comparisons</a></p>
-<h1 class="font-heading-xl text-bold">{{ record.filename }}</h1>
+{% url 'nofos:word_comparisons' as comparisons_href %}
+{% include "includes/page_heading.html" with title=record.filename back_text="Back to passive sentence comparisons" back_href=comparisons_href only %}
 <p role="status">Saved to the internal comparison tracker · {{ record.status }}</p>
 <p>Checker results are fixed for this run. No uploaded document or sentence text is retained.</p>
 <div class="grid-row grid-gap">

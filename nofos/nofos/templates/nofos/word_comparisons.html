@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Readability Checker Usage{% endblock %}
 {% block content %}
-<h1 class="font-heading-xl text-bold">Readability Checker Usage</h1>
+{% url 'nofos:builder_metrics' as metrics_href %}
+{% include "includes/page_heading.html" with title="Readability Checker Usage" back_text="Back to usage &amp; quality metrics" back_href=metrics_href only %}
 {% include "nofos/includes/comparison_tabs.html" %}
 <h2 class="font-heading-lg text-bold">Passive sentence comparisons</h2>
 <p>Deliberately saved Word uploads. Differences are Checker minus Word in percentage points. Reviewed means a reviewer examined the result; it does not mean agreement.</p>
