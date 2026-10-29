@@ -94,7 +94,7 @@ server validation still rejects missing and multiple files before analysis.
 
 ## Usage, failures and privacy
 
-The existing `/nofos/metrics/readability-pilot` page offers All, Authenticated,
+The existing `/nofos/metrics/readability-checker-usage` page offers All, Authenticated,
 Public and Unknown filters in HTML and JSON. Selected source survives pagination
 and is visible in printed output. Its labeled source breakdown covers all
 retained rows. Other counts, rates, outcomes, daily/weekly totals, percentiles and
@@ -225,7 +225,7 @@ from this application PR. The following locations were inspected on October 6,
    `HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED` in Constance after verifying
    applicable safeguards. Leave `HHS_NOFO_PDF_METRICS_PILOT_ENABLED` off.
 4. Verify successful and handled unsuccessful authenticated test uploads appear
-   under the Authenticated filter at `/nofos/metrics/readability-pilot` without
+   under the Authenticated filter at `/nofos/metrics/readability-checker-usage` without
    document content. Operational monitoring must also cover requests rejected
    before the application workflow.
 

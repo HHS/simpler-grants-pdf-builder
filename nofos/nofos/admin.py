@@ -5,7 +5,14 @@ from django_mirror.admin import MirrorAdmin
 from django_mirror.widgets import MirrorArea
 from martor.widgets import AdminMartorWidget
 
-from .models import Nofo, PolicyLanguageSlot, PolicyLanguageVariant, Section, Subsection
+from .models import (
+    Nofo,
+    PolicyLanguageSlot,
+    PolicyLanguageVariant,
+    Section,
+    Subsection,
+    WordComparison,
+)
 from .views import (
     duplicate_nofo,
     insert_order_space_view,
@@ -203,3 +210,21 @@ admin.site.register(Subsection, SubsectionAdmin)
 admin.site.register(Section, SectionAdmin)
 admin.site.register(Nofo, NofoAdmin)
 admin.site.register(PolicyLanguageSlot, PolicyLanguageSlotAdmin)
+
+
+@admin.register(WordComparison)
+class WordComparisonAdmin(admin.ModelAdmin):
+    list_display = ("filename", "analyzed_at", "version")
+    readonly_fields = tuple(field.name for field in WordComparison._meta.fields)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser

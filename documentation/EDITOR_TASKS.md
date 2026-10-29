@@ -892,7 +892,7 @@ Check the report's **Measurement version** when comparing results. Version 0.7.0
 changes passive treatment of “as defined by” modifiers; use the same version and
 format to compare content revisions.
 
-This upload does not create a NOFO or save report history. When usage recording
+This upload does not create a NOFO. Ordinary unsaved reports have no retained history; authorized reviewers can explicitly save Word comparisons as described in [TASK-WORD-COMPARISON](#task-word-comparison). When usage recording
 is enabled, **How we handle your document** explains that content-free usage/error
 records include the attempted file category (PDF, DOCX or unknown) and are kept
 without automatic expiration by default; they exclude your
@@ -1067,3 +1067,30 @@ matching task in the same pull request.
 | Table size rules | `add_class_to_table()` in `nofos/nofos/templatetags/utils/__init__.py` |
 | Merged-cell tables kept as HTML | `convert_table()` in `nofos/nofos/nofo_markdown.py` |
 | Find & Replace, Remove Page Breaks, Theme options | `nofo_find_replace.html`, `nofo_remove_page_breaks.html`, `nofo_edit_theme_options.html` |
+
+
+<a id="task-word-comparison"></a>
+
+### TASK-WORD-COMPARISON — Save a Checker upload and compare Windows Word
+
+**Before you start:** the operator must enable Word comparisons and grant you
+the separate comparison-management permission.
+
+1. Complete [TASK-READABILITY-UPLOAD](#task-readability-upload) with a Word file.
+2. Select **Save for Word comparison** within 30 minutes. The adjacent notice
+   explains that the internal tracker retains these results and document name.
+   Ordinary unsaved reports remain temporary.
+3. On the saved detail page, enter **Word passive sentences (%)**, the displayed
+   whole-document sentence count, and measurement date. Confirm that you measured
+   the same saved copy in Windows Word. Record Word version/build and any control
+   removal or edits in preparation notes.
+4. Select **Save Word measurements**. You can return to this URL later without
+   reuploading. Corrections add history entries; the Checker measurement stays fixed.
+5. Metrics viewers can open **Readability Checker Usage → Passive sentence
+   comparisons**, filter results and sort by largest absolute difference.
+   A positive difference means Checker measured a higher passive percentage.
+
+Missing results appear as unavailable, never zero. Word and Checker sentence
+counts have separate denominators. **Reviewed** means someone examined the result,
+not that the measurements agree. See the [operator guide](readability/WORD_COMPARISONS.md)
+for permissions, retention and deletion.

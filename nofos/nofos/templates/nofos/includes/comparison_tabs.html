@@ -1,0 +1,6 @@
+<nav class="margin-y-3" aria-label="Readability Checker metrics">
+  <ul class="usa-button-group">
+    <li class="usa-button-group__item"><a class="usa-button {% if page %}usa-button--outline{% endif %}" href="{% url 'nofos:builder_metrics_readability_pilot' %}" {% if not page %}aria-current="page"{% endif %}>Usage overview</a></li>
+    <li class="usa-button-group__item"><a class="usa-button {% if not page %}usa-button--outline{% endif %}" href="{% url 'nofos:word_comparisons' %}" {% if page %}aria-current="page"{% endif %}>Passive sentence comparisons</a></li>
+  </ul>
+</nav>

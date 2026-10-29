@@ -88,7 +88,18 @@
           </details>
         {% endif %}
 
-        <p class="margin-top-4">Your document was processed temporarily on HHS-operated systems to calculate these estimates. It was not added to NOFO Builder, and no report history is retained. Save or copy your results before leaving this page; they cannot be recovered later.</p>
+        {% if comparison_run %}
+        <section class="margin-top-3 border-1px border-base-lighter padding-2" aria-labelledby="comparison-heading">
+          <h2 id="comparison-heading" class="font-heading-md">Compare with Windows Word</h2>
+          <p>This saves these results to the internal comparison tracker. Metrics viewers can see the document name. The uploaded document and sentence text are not retained.</p>
+          <form method="post" action="{% url 'nofos:word_comparison_save' %}">
+            {% csrf_token %}<input type="hidden" name="run" value="{{ comparison_run }}">
+            <button class="usa-button" type="submit">Save for Word comparison</button>
+          </form>
+          <p>Save within 30 minutes. You can enter Word measurements immediately or later.</p>
+        </section>
+        {% endif %}
+        <p class="margin-top-4">Your document was processed temporarily on HHS-operated systems to calculate these estimates. It was not added to NOFO Builder, and ordinary unsaved reports have no retained history. Save or copy your results before leaving this page; they cannot be recovered later.</p>
         <div class="readability-actions no-print">
           <button class="usa-button" type="button" id="print-readability-report">Print / Save as PDF</button>
           <button class="usa-button usa-button--outline" type="button" id="copy-readability-report">Copy metrics</button>

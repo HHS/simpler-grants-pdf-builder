@@ -594,6 +594,8 @@ DJANGO_EASY_AUDIT_UNREGISTERED_CLASSES_EXTRA = [
     "nofos.DocumentAuditEvent",
     # Audit events can attach request/user metadata: never audit anonymous outcomes.
     "nofos.PdfReadabilityAttempt",
+    "nofos.WordComparison",
+    "nofos.WordComparisonRevision",
     "nofos.NofoReadabilityScore",
     "nofos.NofoReadabilityCheckpoint",
     "nofos.MetricsActor",
@@ -712,6 +714,11 @@ HHS_NOFO_METRIC_GOALS = (
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
 CONSTANCE_CONFIG = {
+    "HHS_NOFO_WORD_COMPARISONS_ENABLED": (
+        False,
+        "Enable explicit Word comparison retention and tracker. Requires separate save/edit permission; metrics viewers can see retained document names. Disabling hides access without deleting records.",
+        bool,
+    ),
     "DOCUMENT_HISTORY_INDEX_ENABLED": (
         DOCUMENT_HISTORY_INDEX_ENABLED,
         "Use indexed document history. Keep disabled until the separate backfill and backfill_document_audit_index --check succeed in this environment. Changes apply without restarting workers; disable to restore the legacy reader.",

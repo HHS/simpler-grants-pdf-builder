@@ -46,3 +46,5 @@ retain useful rationale and evidence. No automatic age-based deletion applies.
 - [Synthetic design-pilot fixtures — #1146](design-pilot-1146/README.md)
 
 Other folders retain their issue or descriptive names and capture records.
+
+- [Word passive sentence comparisons — #1248](1248/README.md)

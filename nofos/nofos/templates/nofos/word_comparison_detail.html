@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Word comparison — {{ record.filename }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'nofos:word_comparisons' %}">Passive sentence comparisons</a></p>
+<h1 class="font-heading-xl text-bold">{{ record.filename }}</h1>
+<p role="status">Saved to the internal comparison tracker · {{ record.status }}</p>
+<p>Checker results are fixed for this run. No uploaded document or sentence text is retained.</p>
+<div class="grid-row grid-gap">
+<section class="tablet:grid-col-6" aria-labelledby="checker-heading">
+<h2 class="font-heading-lg text-bold" id="checker-heading">Saved Checker result</h2>
+<dl>
+<dt>Passive sentences</dt><dd>{% if record.passive != None %}{{ record.passive|floatformat:1 }}%{% else %}Unavailable{% endif %}</dd>
+<dt>Measured sentence count</dt><dd>{{ record.checker.scope.complete_sentence_count|default_if_none:"Unavailable" }}</dd>
+<dt>Actual passive sentence count</dt><dd>{{ record.checker.scope.passive_sentence_count|default_if_none:"Unavailable" }}</dd>
+<dt>Analysis date</dt><dd>{{ record.analyzed_at }}</dd>
+<dt>Package version / profile</dt><dd>{{ record.version }} / {{ record.checker.profile_id|default:record.checker.profile }}</dd>
+<dt>Input processing</dt><dd>{{ record.checker.input_processing }}</dd>
+<dt>Run identity</dt><dd class="font-sans-2xs">{{ record.pk }}</dd>
+<dt>Upload SHA-256</dt><dd class="font-sans-2xs" style="overflow-wrap:anywhere">{{ record.fingerprint }}</dd>
+<dt>Checker minus Word</dt><dd>{% if record.difference != None %}{% if record.difference > 0 %}+{% endif %}{{ record.difference|floatformat:1 }} percentage points{% else %}Unavailable{% endif %}</dd>
+</dl>
+<p>The fingerprint identifies the Checker input. It cannot prove which copy was opened in Word. Sentence denominators can differ; a discrepancy is a review signal.</p>
+{% for warning in record.checker.warnings %}<p>{{ warning }}</p>{% endfor %}
+</section>
+<section class="tablet:grid-col-6" aria-labelledby="word-heading">
+<h2 class="font-heading-lg text-bold" id="word-heading">Windows Word measurements</h2>
+<p>Use the displayed whole-document statistics. Record control removal or edits in preparation notes. We do not infer an exact passive numerator from Word’s rounded percentage.</p>
+{% if can_edit %}
+<form method="post" class="usa-form" style="max-width:100%">
+{% csrf_token %}{{ form.non_field_errors }}
+{% for field in form %}<div class="margin-bottom-2">{% if field.name == "same_copy" or field.name == "reviewed" %}<label for="{{ field.id_for_label }}">{{ field }} {{ field.label }}</label>{{ field.errors }}{% else %}{{ field.label_tag }}{{ field.errors }}{{ field }}{% endif %}{% if field.help_text %}<p>{{ field.help_text }}</p>{% endif %}</div>{% endfor %}
+<button class="usa-button" type="submit">Save Word measurements</button>
+</form>
+{% else %}<p>View-only access. A comparison manager can add Word results.</p>{% endif %}
+</section></div>
+<h2 class="font-heading-lg text-bold">Measurement and review history</h2>
+{% for revision in revisions %}
+<article class="border-top-1px border-base-lighter padding-y-2">
+<h3>{{ revision.created_at }} · {{ revision.reviewer|default:"Deleted reviewer" }}</h3>
+<p>{{ revision.status }} · {{ revision.agency }} · Word {{ revision.word_version|default:"version not recorded" }}</p>
+<p>Passive: {{ revision.passive|default_if_none:"Unavailable" }}{% if revision.passive != None %}%{% endif %} · Sentences: {{ revision.sentence_count|default_if_none:"Unavailable" }} · Measured: {{ revision.measured_on|default_if_none:"Unavailable" }}</p>
+<p>Words: {{ revision.word_count|default_if_none:"Unavailable" }} · Grade: {{ revision.grade|default_if_none:"Unavailable" }} · Same-copy confirmation: {{ revision.same_copy|yesno:"Yes,No" }}</p>
+<p style="white-space:pre-wrap">{{ revision.notes }}</p>
+</article>{% empty %}<p>Awaiting Word results. You can return here later without reuploading.</p>{% endfor %}
+{% endblock %}
