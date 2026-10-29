@@ -1090,7 +1090,10 @@ matching task in the same pull request.
    comparison** again. If the connection fails, retry; the same report will not
    be saved twice. With JavaScript unavailable, the form instead reloads the
    report and shows the existing larger success alert.
-4. Metrics viewers can follow **View passive sentence comparisons**. The table is
+4. Metrics viewers can always open **Passive sentence comparisons** from the
+   Readability Checker usage page, even when new submissions are disabled. Saved
+   results remain visible; an empty page says no comparisons have been saved yet.
+   After saving, they can also follow **View passive sentence comparisons**. The table is
    newest first. Expand **View details** in **Calculation version** for profile and
    input-processing identities. Use **View chart data** for exact plotted values.
    **Back to Readability Checker usage** returns to the usage page.

@@ -191,13 +191,16 @@ def difference_trend(records):
 @permission_required("nofos.view_builder_metrics", raise_exception=True)
 @never_cache
 def comparison_list(request):
-    require_enabled()
     records = WordComparison.objects.order_by("-saved_at", "-pk")
     page = Paginator(records, 25).get_page(request.GET.get("page"))
     return render(
         request,
         "nofos/word_comparisons.html",
-        {"page": page, "trend": difference_trend(records)},
+        {
+            "page": page,
+            "trend": difference_trend(records),
+            "comparison_submissions_enabled": enabled(),
+        },
     )
 
 

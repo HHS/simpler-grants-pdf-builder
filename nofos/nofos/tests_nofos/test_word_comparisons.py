@@ -137,9 +137,12 @@ class ComparisonTests(TestCase):
         self.assertEqual(nav.a["href"], reverse("nofos:word_comparisons"))
         with override_config(HHS_NOFO_WORD_COMPARISONS_ENABLED=False):
             self.assertEqual(self.save(token).status_code, 404)
-            self.assertEqual(
-                self.client.get(reverse("nofos:word_comparisons")).status_code, 404
-            )
+            page = self.client.get(reverse("nofos:word_comparisons"))
+            self.assertContains(page, "New comparison submissions are disabled.")
+            self.assertContains(page, "No saved comparisons yet.")
+            usage = self.client.get(reverse("nofos:builder_metrics_readability_pilot"))
+            self.assertContains(usage, f'href="{reverse("nofos:word_comparisons")}"')
+            self.assertFalse(WordComparison.objects.exists())
         response = self.client.get(
             "/nofos/metrics/readability-pilot?source=authenticated&page=2"
         )
@@ -150,6 +153,27 @@ class ComparisonTests(TestCase):
             status_code=301,
             fetch_redirect_response=False,
         )
+
+    def test_disabled_submissions_preserve_viewing_and_permissions(self):
+        self.save(self.stage())
+        with override_config(HHS_NOFO_WORD_COMPARISONS_ENABLED=False):
+            self.user.user_permissions.remove(
+                Permission.objects.get(codename="manage_word_comparisons")
+            )
+            page = self.client.get(reverse("nofos:word_comparisons"))
+            self.assertContains(page, "Synthetic.docx")
+            self.assertContains(page, "3.3%")
+            self.assertContains(page, "New comparison submissions are disabled.")
+            self.user.user_permissions.remove(
+                Permission.objects.get(codename="view_builder_metrics")
+            )
+            self.assertEqual(
+                self.client.get(reverse("nofos:word_comparisons")).status_code, 403
+            )
+            self.client.logout()
+            self.assertEqual(
+                self.client.get(reverse("nofos:word_comparisons")).status_code, 302
+            )
 
     def test_expiration_csrf_and_audit_exclusion(self):
         import time

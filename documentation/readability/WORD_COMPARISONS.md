@@ -50,11 +50,10 @@ can change the differences. Inspect calculation details before interpreting a tr
 
 ## Rollout and permissions
 
-1. Apply migration 0160. This feature is unmerged; its initial migration reflects
-   the MVP schema. Local reviewers who applied an earlier draft should rebuild
-   their disposable comparison database rather than treating it as deployed data.
+1. Apply migration 0160 before using the comparison page.
 2. **HHS_NOFO_WORD_COMPARISONS_ENABLED** is a default-off Constance flag and takes
-   effect without restarting workers. Authenticated Readability Checker enablement
+   effect without restarting workers. It controls new submissions only; metrics viewers
+   can always access the comparison page and its usage-page link. Authenticated Readability Checker enablement
    and its separate permission remain required to analyze a Word upload.
 3. In user admin, grant **Can save passive sentence comparisons** to selected reviewers.
    This grants nofos.manage_word_comparisons, independently of metrics viewing.
@@ -79,8 +78,8 @@ excluded from EasyAudit copying. Database backups have their independent retenti
 deletion does not immediately purge backups. Deleting an account leaves the saved
 comparison with no user identity.
 
-Disable the Constance flag to hide saving and the comparison page while retaining
-data. Keep the migration applied on code rollback; do not use ordinary attempt
+Disable the Constance flag to stop new saves while retaining data. Metrics viewers
+can still view saved results; the page states that new submissions are disabled. Keep the migration applied on code rollback; do not use ordinary attempt
 cleanup on deliberately retained comparisons.
 
 ## Deferred beyond MVP
