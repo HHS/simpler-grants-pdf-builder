@@ -180,6 +180,13 @@ class ComparisonTests(TestCase):
         self.assertNotContains(response, "<form")
         self.assertNotContains(response, "Status</th>")
         self.assertEqual(len(response.context["trend"]["points"]), 27)
+        from bs4 import BeautifulSoup
+
+        chart_data = BeautifulSoup(response.content, "html.parser").select_one(
+            "details.metrics-data-details"
+        )
+        self.assertIsNone(chart_data.find("table"))
+        self.assertEqual(len(chart_data.find_all("dt")), 27)
         self.assertContains(response, "?page=2")
         self.user.user_permissions.remove(
             Permission.objects.get(codename="view_builder_metrics")

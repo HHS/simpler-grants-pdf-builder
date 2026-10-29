@@ -118,3 +118,13 @@ for asynchronous saving. This report continues to use a normal POST/reload, with
 the shared alerts component's optional slim success variant: no separate heading,
 just “Comparison saved.” and the entered percentage. Existing alert callers
 retain their current appearance. Full-page success captures were refreshed. All 23 affected comparison, readability-history and shared-form tests pass.
+
+
+## Expanded chart-data layout review
+
+The expanded data now uses a compact, unbordered date/value definition list,
+matching the metrics landing page's View monthly data text size and spacing.
+Document names appear beneath dates. There is no nested table in the disclosure;
+the separate saved-results table remains below the chart. The full-page expanded
+capture has been refreshed. Fifteen comparison/metrics tests pass, including a
+check that the disclosure contains no table and includes every plotted value.

@@ -633,3 +633,12 @@ live status (**Snapshot saved.**) for its asynchronous snapshot save:
 and [nofo_readability_metrics.js](../nofos/bloom_nofos/static/js/nofos/nofo_readability_metrics.js).
 Use that existing status approach for background snapshot saving. The uploaded
 report uses the slim shared success alert after its normal form POST/reload.
+
+
+The expanded **View chart data** content mirrors the metrics landing page's
+**View monthly data** typography and spacing: small text, compact date/value
+columns and no boxed usa-table treatment. Use a semantic definition list for
+comparison entries, including the document name beneath its date; do not nest
+a table inside this disclosure. Keep the full saved-results table outside the
+chart component. The shared disclosure classes are metrics-data-details,
+margin-top-2 and font-sans-2xs.
