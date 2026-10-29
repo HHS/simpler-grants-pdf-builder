@@ -1,9 +1,7 @@
-<nav class="metrics-other-pages {% if checker_navigation %}margin-y-3{% else %}margin-bottom-3{% endif %}" aria-label="{% if checker_navigation %}Readability Checker metrics{% else %}Other metrics pages{% endif %}">
+<nav class="metrics-other-pages {% if comparison_link %}margin-y-3{% else %}margin-bottom-3{% endif %}" aria-label="{% if comparison_link %}Related metrics pages{% else %}Other metrics pages{% endif %}">
   <p class="margin-y-0">
-    {% if checker_navigation %}
-    <a href="{% url 'nofos:builder_metrics_readability_pilot' %}" {% if not page %}aria-current="page"{% endif %}>Usage overview</a>
-    <span aria-hidden="true"> | </span>
-    <a href="{% url 'nofos:word_comparisons' %}" {% if page %}aria-current="page"{% endif %}>Passive sentence comparisons</a>
+    {% if comparison_link %}
+    <a href="{% url 'nofos:word_comparisons' %}">Passive Sentence Comparisons</a>
     {% else %}
     {% if readability_metrics_enabled %}
     <a href="{% url 'nofos:builder_metrics_readability_scores' %}">NOFO readability metrics</a>

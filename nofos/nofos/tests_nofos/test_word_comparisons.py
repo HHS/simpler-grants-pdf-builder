@@ -125,6 +125,15 @@ class ComparisonTests(TestCase):
 
     def test_disable_and_legacy_redirect(self):
         token = self.stage()
+        from bs4 import BeautifulSoup
+
+        usage = self.client.get(reverse("nofos:builder_metrics_readability_pilot"))
+        nav = BeautifulSoup(usage.content, "html.parser").select_one(
+            "nav.metrics-other-pages"
+        )
+        self.assertEqual(len(nav.find_all("a")), 1)
+        self.assertEqual(nav.a.get_text(strip=True), "Passive Sentence Comparisons")
+        self.assertEqual(nav.a["href"], reverse("nofos:word_comparisons"))
         with override_config(HHS_NOFO_WORD_COMPARISONS_ENABLED=False):
             self.assertEqual(self.save(token).status_code, 404)
             self.assertEqual(
@@ -182,9 +191,17 @@ class ComparisonTests(TestCase):
         self.assertEqual(len(response.context["trend"]["points"]), 27)
         from bs4 import BeautifulSoup
 
-        chart_data = BeautifulSoup(response.content, "html.parser").select_one(
-            "details.metrics-data-details"
+        soup = BeautifulSoup(response.content, "html.parser")
+        self.assertEqual(soup.h1.get_text(strip=True), "Passive Sentence Comparisons")
+        back_link = soup.select_one(".back-link a")
+        self.assertEqual(
+            back_link.get_text(strip=True), "Back to Readability Checker Usage"
         )
+        self.assertEqual(
+            back_link["href"], reverse("nofos:builder_metrics_readability_pilot")
+        )
+        self.assertNotContains(response, "Usage overview")
+        chart_data = soup.select_one("details.metrics-data-details")
         self.assertIsNone(chart_data.find("table"))
         self.assertEqual(len(chart_data.find_all("dt")), 27)
         self.assertContains(response, "?page=2")

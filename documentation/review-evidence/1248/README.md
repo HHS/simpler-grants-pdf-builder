@@ -128,3 +128,13 @@ Document names appear beneath dates. There is no nested table in the disclosure;
 the separate saved-results table remains below the chart. The full-page expanded
 capture has been refreshed. Fifteen comparison/metrics tests pass, including a
 check that the disclosure contains no table and includes every plotted value.
+
+
+## Page hierarchy review
+
+The comparison page now has its own **Passive Sentence Comparisons** H1 and
+**Back to Readability Checker Usage** back link. The usage page contains one
+related-page link, **Passive Sentence Comparisons**; the former peer navigation
+is removed. Full-page default and expanded-state captures reflect this hierarchy. All 32
+affected comparison/usage/metrics tests pass, including the H1, back-link target
+and single-link navigation assertions.

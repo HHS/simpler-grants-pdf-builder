@@ -565,15 +565,13 @@ It supplies the existing blue back-arrow link, body-sized navigation text,
 spacing and page-title typography. Use a named destination rather than browser
 history so direct links behave consistently.
 
-The Readability Checker usage overview and comparison list link back to
-**Usage & quality metrics**. Keep the overview/comparison tabs below the
-shared heading; they navigate between peer views rather than replacing the
-parent back link. Render this peer navigation with the shared
-[nofos/includes/metrics_navigation.html](../nofos/nofos/templates/nofos/includes/metrics_navigation.html)
-component, also used by the metrics landing page: bold blue text links separated
-by a decorative vertical bar, with aria-current on the current Readability Checker view.
-Do not style these navigation links as buttons. Do not introduce an additional breadcrumb trail or a separately
-styled plain back link for these pages.
+The Readability Checker usage page links back to **Usage & quality metrics**.
+Below its heading, show one bold text navigation link, **Passive Sentence
+Comparisons**, using
+[nofos/includes/metrics_navigation.html](../nofos/nofos/templates/nofos/includes/metrics_navigation.html).
+The comparison page is a child page: its H1 is **Passive Sentence Comparisons**
+and its shared back-arrow reads **Back to Readability Checker Usage**. It does
+not repeat the usage/comparison links as peer tabs.
 
 Pass the title, back_text and back_href to the shared include with **only**.
 For example, resolve nofos:builder_metrics into metrics_href and use

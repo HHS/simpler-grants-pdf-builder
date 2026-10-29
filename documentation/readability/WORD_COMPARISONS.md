@@ -21,7 +21,7 @@ upload fingerprint remain fixed. Repeated submission for the same run keeps the
 first saved comparison. To compare a corrected measurement, analyze and save a new
 run; the MVP has no correction/editing interface.
 
-Metrics viewers can open **Readability Checker Usage → Passive sentence comparisons**.
+Metrics viewers can open **Readability Checker Usage → Passive Sentence Comparisons**.
 The table shows saved results, newest first, with Calculation version / View details
 matching saved NOFO readability history. There are no filters or sort controls.
 
