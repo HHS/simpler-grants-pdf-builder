@@ -90,7 +90,7 @@
         {% endif %}
 
         {% if comparison_run %}
-        <section class="margin-top-3 border-1px border-base-lighter padding-2" aria-labelledby="comparison-heading">
+        <section data-comparison-entry class="margin-top-3 border-1px border-base-lighter padding-2" aria-labelledby="comparison-heading">
           <h2 id="comparison-heading" class="font-heading-md">Compare with Microsoft Word for Windows</h2>
           <p>This saves these results to the internal comparison tracker. Metrics viewers can see the document name. The uploaded document and sentence text are not retained.</p>
           <form id="word-comparison-form" method="post" action="{% url 'nofos:word_comparison_save' %}" novalidate>
@@ -100,10 +100,10 @@
             </div>
             <button class="usa-button margin-top-2" type="submit">Save comparison</button>
             <p data-comparison-error class="usa-error-message" role="alert" hidden></p>
-            <div data-comparison-feedback></div>
           </form>
           <p id="comparison-save-hint">Enter the percentage and save within 30 minutes.</p>
         </section>
+        <div id="comparison-feedback" data-comparison-feedback tabindex="-1"></div>
         {% endif %}
         {% if comparison_saved %}
         <noscript><style>#nofo-editor-success-alert.usa-alert--fixed { opacity: 1; }</style></noscript>

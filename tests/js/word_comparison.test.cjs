@@ -21,10 +21,12 @@ function setup(fetchImpl, exists = true) {
   const field = node({ value: '3.3', readOnly: false });
   field.setAttribute('aria-describedby', 'passive--hint-1');
   const button = node({ textContent: 'Save comparison' });
-  const fieldError = node({ hidden: true }), feedback = node(), failure = node({ hidden: true }), hint = node();
+  const fieldError = node({ hidden: true }), feedback = node(), failure = node({ hidden: true });
+  const entry = node({ removed: false, remove() { this.removed = true; } });
   let submit; const calls = [];
   const form = node({
     action: '/nofos/readability-checker/comparisons/save',
+    closest: () => entry,
     querySelector: selector => ({ '[name="passive"]': field, '[type="submit"]': button,
       '[data-comparison-feedback]': feedback, '[data-comparison-error]': failure })[selector],
     addEventListener(event, handler) { if (event === 'submit') submit = handler; },
@@ -41,10 +43,10 @@ function setup(fetchImpl, exists = true) {
     window, FormData: FakeFormData, AbortController, TypeError,
     document: { getElementById: id => ({
       'word-comparison-form': exists ? form : null,
-      'passive--error': fieldError, 'comparison-save-hint': hint,
+      'passive--error': fieldError, 'comparison-feedback': feedback,
     })[id] },
   });
-  return { field, button, fieldError, feedback, failure, hint, form, calls,
+  return { field, button, fieldError, feedback, failure, entry, form, calls,
     expire: () => timeout(), get timerCleared() { return timerCleared; },
     submit: () => { let prevented = false; const promise = submit({ preventDefault() { prevented = true; } });
       assert.equal(prevented, true); return promise; } };
@@ -56,7 +58,7 @@ test('only enhances the comparison form', () => {
   const state = setup(() => { throw Error('unexpected request'); }, false);
   assert.equal(state.calls.length, 0);
 });
-test('background save blocks duplicates, preserves the field and uses the returned saved value', async () => {
+test('confirmed background save removes the entry controls and focuses confirmation without scrolling', async () => {
   let resolve;
   const state = setup(() => new Promise(done => { resolve = done; }));
   const pending = state.submit();
@@ -64,14 +66,13 @@ test('background save blocks duplicates, preserves the field and uses the return
   assert.equal(state.field.readOnly, true);
   await state.submit();
   assert.equal(state.calls.length, 1);
-  resolve(response(200, { saved: true, word_passive: 3.2, html: '<div class="usa-alert--slim">Saved</div>' }));
+  resolve(response(200, { saved: true, word_passive: 3.2, html: '<div class="usa-alert--slim">Saved: 3.2%</div>' }));
   await pending;
-  assert.equal(state.field.value, 3.2);
-  assert.equal(state.button.textContent, 'Saved');
-  assert.equal(state.button.getAttribute('aria-disabled'), 'true');
-  assert.equal(state.field.readOnly, true);
-  assert.equal(state.hint.hidden, true);
+  assert.equal(state.entry.removed, true);
+  assert.equal(state.feedback.focused, true);
+  assert.equal(state.feedback.focusOptions.preventScroll, true);
   assert.match(state.feedback.innerHTML, /usa-alert--slim/);
+  assert.match(state.feedback.innerHTML, /3.2%/);
   assert.equal(state.calls[0][1].credentials, 'same-origin');
   assert.equal(state.calls[0][1].body.run, 'signed-test-run');
   assert.equal(state.calls[0][1].headers.Accept, 'application/json');
@@ -86,6 +87,7 @@ test('validation errors use text, preserve the value, associate and focus the er
   state.field.value = '101';
   await state.submit();
   assert.equal(state.field.value, '101');
+  assert.equal(state.entry.removed, false);
   assert.equal(state.field.readOnly, false);
   assert.equal(state.fieldError.hidden, false);
   assert.match(state.fieldError.textContent, /Make sure/);
@@ -96,7 +98,7 @@ test('validation errors use text, preserve the value, associate and focus the er
   state.field.value = '3.3'; await state.submit();
   assert.equal(state.fieldError.hidden, true);
   assert.equal(state.field.getAttribute('aria-invalid'), null);
-  assert.equal(state.button.textContent, 'Saved');
+  assert.equal(state.entry.removed, true);
 });
 test('network failure permits retry without losing the value', async () => {
   let attempt = 0;
@@ -109,9 +111,10 @@ test('network failure permits retry without losing the value', async () => {
   assert.equal(state.button.textContent, 'Save comparison');
   assert.equal(state.field.readOnly, false);
   assert.match(state.failure.textContent, /won't be saved twice/);
+  assert.equal(state.entry.removed, false);
   await state.submit();
   assert.equal(state.failure.hidden, true);
-  assert.equal(state.button.textContent, 'Saved');
+  assert.equal(state.entry.removed, true);
 });
 test('expired reports, permission loss and server errors do not show success or expose response text', async () => {
   for (const status of [403, 404, 500]) {

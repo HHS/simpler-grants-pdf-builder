@@ -10,8 +10,11 @@ On a completed Word-upload report, an authorized user enters one value:
 **Microsoft Word for Windows passive sentences (%)** for the same whole-document
 copy, using the compact number field with increment/decrement controls. **Save comparison** explicitly retains the completed Readability Checker
 result and entered percentage in the background. The page does not refresh.
-The action shows **Saving…**, then **Saved**, with a slim **Comparison saved**
-message beside the form. The saved percentage becomes read-only.
+The action shows **Saving…**. After confirmation, the entry field, label,
+helper text, button and expiry notice are replaced by a slim **Comparison saved**
+message showing the saved percentage and a permitted results link. Focus moves
+to the confirmation without a programmatic scroll. If saving fails, the form
+and entered value remain available for correction or retry.
 Nothing is saved while typing. A connection failure lets the user retry without
 saving the same report twice. An expired report requires analyzing again.
 If JavaScript is unavailable, normal submission reloads the report with the

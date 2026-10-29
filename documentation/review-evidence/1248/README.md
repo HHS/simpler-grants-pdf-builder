@@ -14,8 +14,9 @@ This evidence update changes documentation only.
 2. On that report, they enter only **Microsoft Word for Windows passive sentences (%)**
    for the same whole-document copy, then select **Save comparison**.
 3. The comparison saves in the background, without reloading the document.
-   A slim success message appears beside the form; the field becomes read-only
-   and the button reads Saved. No other Builder form changes.
+   The whole entry section is replaced by the slim success summary and permitted
+   results link. Focus moves to the confirmation; no field, label, helper text,
+   submit button or expiry notice remains. No other Builder form changes.
 4. Authorized metrics viewers can open the saved comparisons and difference chart.
 
 | Capture | Caption |
@@ -65,8 +66,9 @@ crop remains available as supplementary evidence, not the PR's main chart image.
 ## Validation
 
 - Current in-place revision: 73 affected Django tests and 67 JavaScript tests
-  pass. Browser checks verify stable document/URL/scroll, validation, pending
-  duplicate prevention, network retry, saved read-only state and normal no-JS
+  passed before the completed-step follow-up. Current browser checks verify
+  stable document/URL, validation, pending duplicate prevention, network retry,
+  control removal with confirmation focus and normal no-JS
   completion. The following broader results predate the transport change.
 
 - 106 focused Django tests pass, including real Word/PDF analysis, report saving,
@@ -195,3 +197,22 @@ tests pass. Browser checks confirmed no document navigation or scroll jump durin
 validation and success, a single pending request despite repeat submission,
 safe retry after a dropped connection, a read-only saved value, and the larger
 success alert in the no-JavaScript fallback.
+
+
+## Completed-step simplification
+
+After confirmed saving, remove the entire entry section instead of retaining
+a read-only number input and inactive Saved button. Only the slim confirmation,
+saved percentage and permitted comparison link remain. Focus transfers to the
+confirmation with preventScroll; errors and uncertain saves preserve the form
+and entered value. Earlier read-only/Saved-button captures are superseded.
+The full-page saved-state capture is refreshed for this behavior.
+
+
+Completed-step verification: 22 affected Django tests and 67 JavaScript tests
+pass. Browser checks confirm that no comparison entry controls remain after
+success, focus lands on the confirmation with preventScroll, the document/URL
+remain unchanged, and failed or pending saves retain the form. Natural viewport
+clamping as the page becomes shorter is allowed; no programmatic scrolling is
+introduced. The visible blue outline in the capture is the keyboard-focus
+indicator, not an editing control or developer overlay.

@@ -1082,7 +1082,9 @@ matching task in the same pull request.
    increment/decrement controls. Enter zero if its displayed percentage is zero.
 3. Select **Save comparison** within 30 minutes. This retains the Readability Checker
    result and entered percentage without refreshing the report. The button shows
-   **Saving…**, then **Saved**, and a slim **Comparison saved** message appears.
+   **Saving…**, then the entry controls are replaced by a slim **Comparison saved**
+   message showing the saved percentage. Focus moves to that confirmation;
+   the field, label, helper text, button and expiry notice are removed.
    There is no next entry page and nothing is saved while typing.
    If a red field error appears, correct the percentage and select **Save
    comparison** again. If the connection fails, retry; the same report will not

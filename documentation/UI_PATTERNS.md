@@ -97,7 +97,12 @@ current page without refreshing it. Its USWDS class is **usa-alert--slim**.
   heading. Put it next to the relevant action/result, in normal document flow.
 - Confirm success only after the server acknowledges the save. Nothing is saved
   merely because the user types. Never imply autosave for an explicit save action.
-- Preserve scroll position, entered values and keyboard focus. Announce the
+- Preserve entered values and keyboard focus while the action is incomplete.
+  After a confirmed save, a completed step can replace its entry controls with
+  the slim confirmation and an optional results link. Remove obsolete labels,
+  helper text and expiry instructions along with the field and submit button.
+  If the focused control is removed, move focus to the confirmation using
+  preventScroll so the focus change does not scroll the page. Announce the
   confirmation through a polite live region. Do not reopen a processing modal,
   float the confirmation at the bottom or automatically dismiss it.
 - Prevent concurrent submissions. Keep permission checks and validation on the
@@ -681,8 +686,10 @@ Like upload errors, the error receives keyboard focus and remains correctable.
 Only the comparison form is enhanced by
 [word_comparison.js](../nofos/bloom_nofos/static/js/word_comparison.js).
 It saves through a background POST, updates field errors and a shared slim
-success fragment in place, and keeps the report loaded. The saved percentage
-becomes read-only and the action reads **Saved**. The normal form POST remains
+success fragment in place, and keeps the report loaded. After confirmation,
+remove the entire entry section and focus the slim confirmation without a
+programmatic scroll. Only the saved percentage summary and permitted results
+link remain; failure leaves the form and entered value available for retry. The normal form POST remains
 a fallback, using the existing full-size fixed success feedback after reloading.
 Follow the [form save feedback decision](#form-save-feedback) above.
 

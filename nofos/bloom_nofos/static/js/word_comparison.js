@@ -5,8 +5,10 @@
   const field = form.querySelector('[name="passive"]');
   const button = form.querySelector('[type="submit"]');
   const fieldError = document.getElementById("passive--error");
-  const feedback = form.querySelector("[data-comparison-feedback]");
+  const feedback = document.getElementById("comparison-feedback");
+  const entry = form.closest("[data-comparison-entry]");
   const failure = form.querySelector("[data-comparison-error]");
+  if (!field || !button || !fieldError || !feedback || !entry || !failure) return;
   let busy = false;
   let saved = false;
   const originalDescription = field.getAttribute("aria-describedby") || "";
@@ -57,11 +59,11 @@
         throw new Error("We couldn't confirm the save. Try again. The same report won't be saved twice.");
       }
       saved = true;
-      field.value = payload.word_passive;
       // Trusted fragment rendered by the authenticated server using shared components.
       feedback.innerHTML = payload.html;
-      button.textContent = "Saved";
-      document.getElementById("comparison-save-hint").hidden = true;
+      entry.remove();
+      // The submit control no longer exists: give focus a meaningful destination.
+      feedback.focus({ preventScroll: true });
     } catch (error) {
       failure.textContent = error.name === "AbortError" || error instanceof TypeError
         ? "We couldn't confirm the save. Try again. The same report won't be saved twice."
@@ -71,9 +73,11 @@
       window.clearTimeout(timer);
       busy = false;
       form.removeAttribute("aria-busy");
-      field.readOnly = saved;
-      button.setAttribute("aria-disabled", saved ? "true" : "false");
-      if (!saved) button.textContent = "Save comparison";
+      if (!saved) {
+        field.readOnly = false;
+        button.setAttribute("aria-disabled", "false");
+        button.textContent = "Save comparison";
+      }
     }
   });
 })();
