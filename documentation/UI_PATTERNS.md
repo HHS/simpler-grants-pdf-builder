@@ -82,6 +82,64 @@ or changing alerts, compare their heading-to-body and paragraph spacing at wide
 and narrow widths, and check for page-specific typography overrides described
 above.
 
+## Form save feedback
+
+**Design decision — October 29, 2026, reviewed in [#1249](https://github.com/HHS/simpler-grants-pdf-builder/pull/1249):**
+use the **slim success alert** for a compact confirmation when a user saves form
+information and stays on the current view. This includes both a save that updates
+the page in place and a normal submission that reloads the same view. The visual
+choice does not require changing how the form submits.
+
+### Success
+
+- Reuse the shared alert component with **slim=True**. Its USWDS class is
+  **usa-alert--slim**; “slim” is the component name, rather than “thin.”
+- Keep the message short, such as **Comparison saved.** Include a small amount of
+  useful context when needed. Omit the separate heading and large alert treatment.
+- Show success only after the server confirms the save. Do not show it while the
+  user is typing or imply autosave when an explicit save action is required.
+- Keep the confirmation near the relevant action/result, in normal document flow,
+  without a floating toast or automatic disappearance. Use the success icon and
+  explicit wording; color alone must not communicate the outcome.
+- For an update without a page reload, announce the changed confirmation through
+  a polite live region (such as role=status) and preserve keyboard focus and
+  unsaved input. A successful update should not reopen a processing modal.
+
+For server-rendered form responses, use Django success messages and the existing
+[alerts.html](../nofos/bloom_nofos/templates/includes/alerts.html) variant:
+
+```django
+{% include "includes/alerts.html" with messages=messages success_heading="Comparison saved" slim=True only %}
+```
+
+The same shared component's existing regular/fixed variants remain available
+for screens whose established flow needs them. This decision does not change
+every existing alert automatically.
+
+### Errors
+
+Use the relevant shared field component's red inline validation message, preserve
+the entered value, associate the error with the field and provide a correction
+action. Follow [file-upload errors](#file-upload-errors) for upload-specific
+behavior. A failure unrelated to a particular field can use the existing error
+alert with a brief explanation and recovery action. Never leave a stale success
+message visible as the outcome of a failed save.
+
+### Existing examples and scope
+
+The Readability Checker comparison form demonstrates the slim success variant
+after a normal form submission and reload. The NOFO readability panel already
+has an asynchronous save that updates a small **Snapshot saved.** live status;
+see [readability_metrics_panel.html](../nofos/nofos/templates/nofos/includes/readability_metrics_panel.html)
+and [nofo_readability_metrics.js](../nofos/bloom_nofos/static/js/nofos/nofo_readability_metrics.js).
+That text-only status is an existing implementation, not the new default visual
+pattern. When its success presentation is next revised, align it with the slim
+variant or document why it needs a different treatment. This documentation change
+does not migrate that panel.
+
+Verify successful saving, invalid input, server failure, keyboard focus, live
+announcements, and the absence of duplicate or competing success messages.
+
 ## File-upload errors
 
 Use the shared [`file_input.html`](../nofos/bloom_nofos/templates/includes/file_input.html)
@@ -629,8 +687,10 @@ For comparison, the NOFO readability panel already uses a smaller text-only
 live status (**Snapshot saved.**) for its asynchronous snapshot save:
 [readability_metrics_panel.html](../nofos/nofos/templates/nofos/includes/readability_metrics_panel.html)
 and [nofo_readability_metrics.js](../nofos/bloom_nofos/static/js/nofos/nofo_readability_metrics.js).
-Use that existing status approach for background snapshot saving. The uploaded
-report uses the slim shared success alert after its normal form POST/reload.
+That text-only status is an existing implementation. Apply the
+[form save feedback decision](#form-save-feedback) when adding or revising success
+feedback; the uploaded report uses the slim shared success alert after its normal
+form POST/reload.
 
 
 The expanded **View chart data** content mirrors the metrics landing page's
