@@ -1878,3 +1878,35 @@ class DesignPilotReviewDecision(models.Model):
                 name="design_review_decision_once",
             )
         ]
+
+
+class WordComparison(models.Model):
+    """Explicitly retained, immutable Checker measurements; no source text."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True
+    )
+    filename = models.CharField(max_length=180)
+    fingerprint = models.CharField(max_length=64)
+    analyzed_at = models.DateTimeField()
+    version = models.CharField(max_length=100)
+    checker = models.JSONField()
+    passive = models.FloatField(null=True)
+
+    class Meta:
+        permissions = [
+            (
+                "manage_word_comparisons",
+                "Can save passive sentence comparisons",
+            ),
+        ]
+
+    word_passive = models.FloatField()
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def difference(self):
+        if self.passive is None:
+            return None
+        return self.passive - self.word_passive

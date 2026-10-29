@@ -7,6 +7,7 @@
   <div class="readability-page">
     {% if report %}
       <article aria-labelledby="report-title">
+        {% if comparison_submission %}<span id="comparison-save-response" hidden></span>{% endif %}
         <div class="readability-report-heading">
           <p class="text-base margin-bottom-1" id="readability-report-source">Readability Checker</p>
           <h1 id="report-title" class="font-heading-xl margin-y-0">Readability report</h1>
@@ -88,7 +89,28 @@
           </details>
         {% endif %}
 
-        <p class="margin-top-4">Your document was processed temporarily on HHS-operated systems to calculate these estimates. It was not added to NOFO Builder, and no report history is retained. Save or copy your results before leaving this page; they cannot be recovered later.</p>
+        {% if comparison_run %}
+        <section data-comparison-entry class="margin-top-3 border-1px border-base-lighter padding-2" aria-labelledby="comparison-heading">
+          <h2 id="comparison-heading" class="font-heading-md">Compare with Microsoft Word for Windows</h2>
+          <p>This saves these results to the internal comparison tracker. Metrics viewers can see the document name. The uploaded document and sentence text are not retained.</p>
+          <form id="word-comparison-form" method="post" action="{% url 'nofos:word_comparison_save' %}" novalidate>
+            {% csrf_token %}<input type="hidden" name="run" value="{{ comparison_run }}">
+            <div class="readability-comparison-entry">
+              {% include "includes/_text_input.html" with id="passive" id_for_label="comparison-passive-label" label=comparison_form.passive.label hint=comparison_form.passive.help_text value=comparison_form.passive.value error=comparison_form.passive.errors.0 input_type="NumberInput" min_value=0 max_value=100 step="0.1" dynamic_errors=True only %}
+            </div>
+            <button class="usa-button margin-top-2" type="submit">Save comparison</button>
+            <p data-comparison-error class="usa-error-message" role="alert" hidden></p>
+          </form>
+          <p id="comparison-save-hint">Enter the percentage and save within 30 minutes.</p>
+        </section>
+        <div id="comparison-feedback" data-comparison-feedback tabindex="-1"></div>
+        {% endif %}
+        {% if comparison_saved %}
+        <noscript><style>#nofo-editor-success-alert.usa-alert--fixed { opacity: 1; }</style></noscript>
+        {% include "includes/alerts.html" with messages=messages success_heading="Comparison saved" stick_to_bottom=True only %}
+        {% if perms.nofos.view_builder_metrics %}<p><a href="{% url 'nofos:word_comparisons' %}">View passive sentence comparisons</a></p>{% endif %}
+        {% endif %}
+        <p class="margin-top-4">Your document was processed temporarily on HHS-operated systems to calculate these estimates. It was not added to NOFO Builder, and ordinary unsaved reports have no retained history. For an unsaved report, save or copy your results before leaving this page; the report cannot be recovered later.</p>
         <div class="readability-actions no-print">
           <button class="usa-button" type="button" id="print-readability-report">Print / Save as PDF</button>
           <button class="usa-button usa-button--outline" type="button" id="copy-readability-report">Copy metrics</button>
@@ -159,4 +181,7 @@
   </div>
 {% endblock %}
 
-{% block js_footer %}<script src="{% static 'js/pdf_readability.js' %}"></script>{% endblock %}
+{% block js_footer %}
+<script src="{% static 'js/pdf_readability.js' %}"></script>
+<script src="{% static 'js/word_comparison.js' %}"></script>
+{% endblock %}

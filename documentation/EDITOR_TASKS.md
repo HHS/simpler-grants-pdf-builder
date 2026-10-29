@@ -892,7 +892,7 @@ Check the report's **Measurement version** when comparing results. Version 0.7.0
 changes passive treatment of “as defined by” modifiers; use the same version and
 format to compare content revisions.
 
-This upload does not create a NOFO or save report history. When usage recording
+This upload does not create a NOFO. Ordinary unsaved reports have no retained history; authorized reviewers can explicitly save Word comparisons as described in [TASK-WORD-COMPARISON](#task-word-comparison). When usage recording
 is enabled, **How we handle your document** explains that content-free usage/error
 records include the attempted file category (PDF, DOCX or unknown) and are kept
 without automatic expiration by default; they exclude your
@@ -1067,3 +1067,37 @@ matching task in the same pull request.
 | Table size rules | `add_class_to_table()` in `nofos/nofos/templatetags/utils/__init__.py` |
 | Merged-cell tables kept as HTML | `convert_table()` in `nofos/nofos/nofo_markdown.py` |
 | Find & Replace, Remove Page Breaks, Theme options | `nofo_find_replace.html`, `nofo_remove_page_breaks.html`, `nofo_edit_theme_options.html` |
+
+
+<a id="task-word-comparison"></a>
+
+### TASK-WORD-COMPARISON — Compare passive sentence percentages
+
+**Before you start:** an operator must enable comparisons and grant you
+**Can save passive sentence comparisons** in addition to Readability Checker access.
+
+1. Complete [TASK-READABILITY-UPLOAD](#task-readability-upload) with a Word file.
+2. On the report, enter **Microsoft Word for Windows passive sentences (%)** for
+   that same whole-document copy. Type the percentage or use the number field’s
+   increment/decrement controls. Enter zero if its displayed percentage is zero.
+3. Select **Save comparison** within 30 minutes. This retains the Readability Checker
+   result and entered percentage without refreshing the report. The button shows
+   **Saving…**, then the entry controls are replaced by a slim **Comparison saved**
+   message showing the saved percentage. Focus moves to that confirmation;
+   the field, label, helper text, button and expiry notice are removed.
+   There is no next entry page and nothing is saved while typing.
+   If a red field error appears, correct the percentage and select **Save
+   comparison** again. If the connection fails, retry; the same report will not
+   be saved twice. With JavaScript unavailable, the form instead reloads the
+   report and shows the existing larger success alert.
+4. Metrics viewers can follow **View passive sentence comparisons**. The table is
+   newest first. Expand **View details** in **Calculation version** for profile and
+   input-processing identities. Use **View chart data** for exact plotted values.
+   **Back to Readability Checker usage** returns to the usage page.
+
+The trend plots Readability Checker minus Microsoft Word for Windows in percentage
+points by save date; positive values mean the Readability Checker percentage is
+higher. Different documents and calculation versions can affect the trend.
+There is no correction or investigation workflow in this MVP; analyze and save a
+new run for a new comparison. See the [operator guide](readability/WORD_COMPARISONS.md)
+for permissions, retention, deletion and deferred enhancements.

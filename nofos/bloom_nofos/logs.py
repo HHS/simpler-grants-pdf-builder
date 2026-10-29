@@ -13,6 +13,7 @@ def is_pdf_readability_request(request):
         "/nofos/readability",
         "/readability-checker",
         "/nofos/readability-checker",
+        "/nofos/readability-checker/comparisons/save",
     }
 
 

@@ -4,6 +4,11 @@ Use this guide when adding or changing Builder screens. Start with an existing
 component and its behavior before creating a new variation. This is a small,
 incremental catalog of verified patterns, not an audit of every screen.
 
+Before implementing UI, identify the closest existing screen and its shared
+components, even when the pattern is not cataloged here. Reuse those components,
+or explain in the PR why a different implementation is needed. Scope this check
+to the UI being changed; it does not require an application-wide component audit.
+
 ## Typography when an editor loads Bootstrap
 
 The [root README's USWDS implementation note](../README.md#a-note-on-our-implementation-of-the-us-web-design-system-uswds)
@@ -76,6 +81,77 @@ uses this pattern for both its introductory and reliability alerts. When adding
 or changing alerts, compare their heading-to-body and paragraph spacing at wide
 and narrow widths, and check for page-specific typography overrides described
 above.
+
+## Form save feedback
+
+**Design decision — October 29, 2026, reviewed in [#1249](https://github.com/HHS/simpler-grants-pdf-builder/pull/1249):**
+choose feedback according to whether submission updates one step in place or
+completes a form with a page reload/navigation.
+
+### One step saved in place, without a page refresh
+
+Use the shared **slim success alert** when a small form saves one part of the
+current page without refreshing it. Its USWDS class is **usa-alert--slim**.
+
+- Keep the message short, such as **Comparison saved.**, without a separate
+  heading. Put it next to the relevant action/result, in normal document flow.
+- Confirm success only after the server acknowledges the save. Nothing is saved
+  merely because the user types. Never imply autosave for an explicit save action.
+- Preserve entered values and keyboard focus while the action is incomplete.
+  After a confirmed save, a completed step can replace its entry controls with
+  the slim confirmation and an optional results link. Remove obsolete labels,
+  helper text and expiry instructions along with the field and submit button.
+  If the focused control is removed, move focus to the confirmation using
+  preventScroll so the focus change does not scroll the page. Announce the
+  confirmation through a polite live region. Do not reopen a processing modal,
+  float the confirmation at the bottom or automatically dismiss it.
+- Prevent concurrent submissions. Keep permission checks and validation on the
+  server. For ambiguous connection failures, allow a safe retry without duplicate
+  writes; do not announce failure as proof that nothing was saved.
+- Use the success icon and explicit wording; color alone must not communicate
+  the outcome.
+
+The Readability Checker comparison form demonstrates this pattern. Its server
+renders the shared [alerts.html](../nofos/bloom_nofos/templates/includes/alerts.html)
+variant into the background response:
+
+```django
+{% include "includes/alerts.html" with messages=feedback_messages success_heading="Comparison saved" slim=True fragment=True only %}
+```
+
+The fragment flag omits initialization scripts; it leaves existing callers
+unchanged. Do not queue a separate flash message for a later page.
+
+### Form completion with a page refresh or navigation
+
+Use the destination screen's established **regular, larger success alert**.
+For example, NOFO editing uses the shared component with **stick_to_bottom=True**:
+it appears at the bottom and dismisses after a few seconds. Reuse that behavior
+where appropriate to the existing screen. Do not select the inline slim variant
+merely because a normal form POST reloads the same URL.
+
+A no-JavaScript fallback that reloads the page follows this completion pattern.
+Its fixed alert cannot auto-dismiss without JavaScript; it remains visible in
+that fallback. This decision does not change other forms automatically.
+
+### Errors and verification
+
+Use the shared field component's red inline validation message, preserve the
+value, associate the error with the field and allow correction. Follow
+[file-upload errors](#file-upload-errors) for upload-specific behavior. An
+operational failure can use an error message with a recovery action. Clear stale
+feedback when retrying; never show success for a rejected or unconfirmed save.
+
+Verify saving, validation, server/network failure, timeout/retry, duplicate
+prevention, focus, live announcements and progressive fallback. Check that other
+forms retain their existing submission and completion behavior.
+
+The NOFO readability panel already updates a small **Snapshot saved.** text live
+status asynchronously; see
+[readability_metrics_panel.html](../nofos/nofos/templates/nofos/includes/readability_metrics_panel.html)
+and [nofo_readability_metrics.js](../nofos/bloom_nofos/static/js/nofos/nofo_readability_metrics.js).
+It is an existing implementation. This comparison-form change does not migrate
+that panel or other Builder forms.
 
 ## File-upload errors
 
@@ -551,3 +627,93 @@ Keep the identifier in the application shell; NOFO document and PDF templates
 continue to use their own branding. Verify signed-in and signed-out layouts,
 keyboard focus, and wrapping at mobile and desktop widths with
 `tests/js/footer.browser.cjs`.
+
+## Metrics page headings and back navigation
+
+Metrics subpages reuse
+[includes/page_heading.html](../nofos/bloom_nofos/templates/includes/page_heading.html).
+It supplies the existing blue back-arrow link, body-sized navigation text,
+spacing and page-title typography. Use a named destination rather than browser
+history so direct links behave consistently.
+
+The Readability Checker usage page links back to **Usage & quality metrics**.
+Below its heading, show one bold text navigation link, **Passive sentence
+comparisons**, using
+[nofos/includes/metrics_navigation.html](../nofos/nofos/templates/nofos/includes/metrics_navigation.html).
+The comparison page is a child page: its H1 is **Passive sentence comparisons**
+and its shared back-arrow reads **Back to Readability Checker usage**. It does
+not repeat the usage/comparison links as peer tabs.
+
+Pass the title, back_text and back_href to the shared include with **only**.
+For example, resolve nofos:builder_metrics into metrics_href and use
+back_text="Back to usage &amp; quality metrics". Check the arrow, link focus,
+title spacing and wrapping on desktop and narrow layouts.
+
+## Saved readability tables
+
+Use the saved NOFO readability history as the reference for saved-result tables.
+Keep a caption describing the order (for comparisons, **Saved results, newest
+first**), standard usa-table styling, a focusable horizontal-scroll region,
+and pagination links only when there is more than one page.
+These tables do not need filters or an Apply button.
+
+Show **Calculation version** in the row as **Metrics v[number]**, followed by a
+native **View details** disclosure for profile and input-processing identities.
+Reuse [readability_calculation_version.html](../nofos/nofos/templates/nofos/includes/readability_calculation_version.html),
+shared by NOFO history and Word comparisons. Show schema/result basis only when
+those identities are available; do not invent them for uploaded Readability Checker runs.
+
+
+### Inline passive-percentage entry and trend
+
+The comparison MVP keeps the single Microsoft Word for Windows percentage field
+on the completed Readability Checker report. Follow the existing short-name edit
+form's shared text-field rendering:
+[form_macro.html](../nofos/bloom_nofos/templates/includes/form_macro.html) /
+[_text_input.html](../nofos/bloom_nofos/templates/includes/_text_input.html).
+The comparison uses the text-field include's NumberInput variant directly for
+its one small field, with native increment/decrement controls in 0.1-point steps.
+Chrome may hide these arrows while the field is idle; it is still the same
+number input. Capture the field hovered consistently when illustrating the
+control across states, rather than implying a second field type.
+The shared rendering retains the label, hint, red inline error and
+invalid-field association.
+The field has 0–100 bounds; the form uses novalidate so server validation can
+render the shared red error rather than competing browser validation tooltips.
+Server validation remains authoritative and allows any finite percentage in range.
+Like upload errors, the error receives keyboard focus and remains correctable.
+
+Only the comparison form is enhanced by
+[word_comparison.js](../nofos/bloom_nofos/static/js/word_comparison.js).
+It saves through a background POST, updates field errors and a shared slim
+success fragment in place, and keeps the report loaded. After confirmation,
+remove the entire entry section and focus the slim confirmation without a
+programmatic scroll. Only the saved percentage summary and permitted results
+link remain; failure leaves the form and entered value available for retry. The normal form POST remains
+a fallback, using the existing full-size fixed success feedback after reloading.
+Follow the [form save feedback decision](#form-save-feedback) above.
+
+Use the metrics chart card treatment for **Difference over time**: signed
+percentage-point differences, a clearly labelled zero reference, native SVG
+title/description, and a native **View chart data** disclosure with exact values.
+Do not add totals, averages or thresholds. Missing differences are omitted;
+a single available pair still renders a point.
+
+
+For comparison, the NOFO readability panel already uses a smaller text-only
+live status (**Snapshot saved.**) for its asynchronous snapshot save:
+[readability_metrics_panel.html](../nofos/nofos/templates/nofos/includes/readability_metrics_panel.html)
+and [nofo_readability_metrics.js](../nofos/bloom_nofos/static/js/nofos/nofo_readability_metrics.js).
+That text-only status is an existing implementation. Apply the
+[form save feedback decision](#form-save-feedback) when adding or revising success
+feedback; this comparison form uses the slim shared success alert after its
+background save, while other forms retain their existing behavior.
+
+
+The expanded **View chart data** content mirrors the metrics landing page's
+**View monthly data** typography and spacing: small text, compact date/value
+columns and no boxed usa-table treatment. Use a semantic definition list for
+comparison entries, including the document name beneath its date; do not nest
+a table inside this disclosure. Keep the full saved-results table outside the
+chart component. The shared disclosure classes are metrics-data-details,
+margin-top-2 and font-sans-2xs.

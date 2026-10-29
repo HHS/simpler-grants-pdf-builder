@@ -29,7 +29,7 @@ Link durable guides or topic indexes from this page; individual evidence records
 - [endnote-import.md](endnote-import.md) — Windows Word author FAQ, native note/cross-reference import fallbacks, and manually bracketed reference conventions
 - [DOCUMENT_PROCESSING.md](DOCUMENT_PROCESSING.md) — Shared content-processing boundary, application responsibilities and remaining portability limits
 - [NOFO_BUILDER_FAQ.md](NOFO_BUILDER_FAQ.md) — Answers to common questions about designing a NOFO in NOFO Builder: importing, Markdown, tables, page layout, endnotes, appendices, metadata, and status; links to the editor tasks for step-by-step instructions
-- [UI_PATTERNS.md](UI_PATTERNS.md) — Reusable interface patterns, including alert text and spacing, shared file-upload error states, loading progress modals, readability reliability alerts, and subsection save-conflict recovery
+- [UI_PATTERNS.md](UI_PATTERNS.md) — Reusable interface patterns, including alert text and spacing, compact form-save success feedback, shared file-upload error states, loading progress modals, readability reliability alerts, and subsection save-conflict recovery
 - [STYLE_GUIDE.md](STYLE_GUIDE.md) — The SimplerNOFOs Style Guide (edition of August 25, 2026) as Markdown: writing, formatting, and structure conventions for NOFO content, with known conversion gaps listed at the end
 - [TABLES.md](TABLES.md) — Automatic table styling: size classes, captions, points columns, import-time width classes, and how users override them
 - [UPDATING_PYTHON_DEPENDENCIES.md](UPDATING_PYTHON_DEPENDENCIES.md) — How to update Python dependencies
@@ -82,3 +82,5 @@ folder when it defines an evolving contract; label its status and limitations.
   path-dependent scripts in the same PR. Keep commit-pinned historical citations
   pointing to the original source. Review references in archived evidence for
   their original context rather than rewriting historical results.
+
+- [Passive sentence comparison tracker](readability/WORD_COMPARISONS.md) — Inline Microsoft Word for Windows percentage entry, Readability Checker difference trend, permissions, rollout and deletion

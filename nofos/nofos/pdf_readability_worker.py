@@ -67,6 +67,14 @@ def _safe_result(result, profile_kind: str, page_count: int) -> dict:
         "recovered_word_count": recovered_words,
         "sentence_word_count": sentence_words,
         "complete_sentence_count": complete_sentences,
+        "passive_sentence_count": count(
+            (
+                payload["metrics"]
+                .get("passive_sentence_percentage", {})
+                .get("components")
+                or {}
+            ).get("passive_sentence_count")
+        ),
         "excluded_word_count": excluded_words,
         "excluded_word_percentage": excluded_percentage,
     }
@@ -143,6 +151,11 @@ def _safe_result(result, profile_kind: str, page_count: int) -> dict:
         warnings.append("Some PDF content may not have been recovered reliably.")
     report = {
         "profile": profile_kind,
+        "profile_id": (
+            WORD_PROFILE
+            if profile_kind == "word"
+            else (TAGGED_PROFILE if profile_kind == "tagged" else GENERIC_PROFILE)
+        ),
         "reliability": reliability,
         "pages_analyzed": pages_analyzed,
         "pages_total": page_count,

@@ -5,6 +5,7 @@ import logging
 
 from bloom_nofos.logs import CustomJsonFormatter, ReadabilityRequestFilter
 from bloom_nofos.middleware import JSONRequestLoggingMiddleware
+from django.core import signing
 from django.core.exceptions import (
     PermissionDenied,
     SuspiciousOperation,
@@ -30,7 +31,13 @@ def handler400(request, exception):
     return HttpResponse("Bad request", status=400)
 
 
-urlpatterns = [path("readability/", failing_view), path("other/", failing_view)]
+COMPARISON_SAVE = "/nofos/readability-checker/comparisons/save"
+urlpatterns = [
+    path("readability/", failing_view),
+    path("other/", failing_view),
+    path(COMPARISON_SAVE.lstrip("/"), failing_view),
+    path(COMPARISON_SAVE.lstrip("/") + "/", failing_view),
+]
 
 
 class ReadabilityLoggingTests(SimpleTestCase):
@@ -94,6 +101,8 @@ class ReadabilityLoggingTests(SimpleTestCase):
                 "/readability-checker",
                 "/nofos/readability-checker/",
                 "/nofos/readability-checker",
+                COMPARISON_SAVE,
+                COMPARISON_SAVE + "/",
             ):
                 for status in (200, 400, 503):
                     with self.subTest(prod=prod, path=path, status=status):
@@ -129,7 +138,12 @@ class ReadabilityLoggingTests(SimpleTestCase):
 
     @override_settings(is_prod=True)
     def test_other_routes_keep_existing_logging(self):
-        for path in ("/nofos/", "/readability-other/", "/readability/child/"):
+        for path in (
+            "/nofos/",
+            "/readability-other/",
+            "/readability/child/",
+            COMPARISON_SAVE + "/other/",
+        ):
             with self.subTest(path=path):
                 request = self.request(path)
                 with self.assertLogs("django.request", level="INFO") as logs:
@@ -197,6 +211,44 @@ class ReadabilityLoggingTests(SimpleTestCase):
         for record in logs.records:
             self.assert_safe(record)
 
+    @override_settings(
+        ROOT_URLCONF=__name__,
+        MIDDLEWARE=["bloom_nofos.middleware.JSONRequestLoggingMiddleware"],
+        DEBUG=False,
+        is_prod=True,
+    )
+    def test_comparison_save_failures_do_not_log_signed_reports(self):
+        token = signing.dumps(
+            {
+                "filename": "secret.docx",
+                "fingerprint": "secret-fingerprint",
+                "checker": {"version": "secret-version"},
+            },
+            salt="word-comparison",
+        )
+        logger = logging.getLogger("django.request")
+        privacy_filter = ReadabilityRequestFilter()
+        logger.addFilter(privacy_filter)
+        self.addCleanup(logger.removeFilter, privacy_filter)
+        client = Client(raise_request_exception=False)
+        for route in (COMPARISON_SAVE, COMPARISON_SAVE + "/"):
+            with self.subTest(route=route):
+                with self.assertLogs("django.request", level="ERROR") as logs:
+                    response = client.post(
+                        route + "?name=secret.docx",
+                        {"run": token, "passive": "3.3"},
+                        HTTP_REFERER="https://example.test/secret-referrer",
+                        HTTP_USER_AGENT="secret-agent",
+                    )
+                self.assertEqual(response.status_code, 500)
+                self.assertEqual(len(logs.records), 2)
+                for record in logs.records:
+                    self.assert_safe(record)
+                    self.assertNotIn("request", record.__dict__)
+                    self.assertIsNone(record.exc_info)
+                    self.assertEqual(record.url, route)
+                    self.assertNotIn(token, CustomJsonFormatter().format(record))
+
     def test_inherited_django_handlers_have_privacy_filter(self):
         handlers = logging.getLogger("django").handlers
         self.assertTrue(handlers)
@@ -210,22 +262,25 @@ class ReadabilityLoggingTests(SimpleTestCase):
 
     @override_settings(CSRF_TRUSTED_ORIGINS=[])
     def test_real_csrf_rejection_sanitizes_submitted_referrer(self):
-        request = self.factory.post(
-            "/readability/?name=secret.pdf",
-            secure=True,
-            HTTP_REFERER="https://evil.test/secret-filename.pdf",
-        )
-        with self.assertLogs("django.security.csrf", level="WARNING") as logs:
-            # assertLogs replaces handlers; use the same filter as the runtime
-            # handlers whose installation is checked separately above.
-            for handler in logging.getLogger("django.security.csrf").handlers:
-                handler.addFilter(ReadabilityRequestFilter())
-            response = CsrfViewMiddleware(lambda request: HttpResponse()).process_view(
-                request, lambda request: HttpResponse(), (), {}
-            )
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(len(logs.records), 1)
-        self.assert_safe(logs.records[0])
+        for route in ("/readability/", COMPARISON_SAVE, COMPARISON_SAVE + "/"):
+            with self.subTest(route=route):
+                request = self.factory.post(
+                    route + "?name=secret.pdf",
+                    {"run": "secret-signed-report"},
+                    secure=True,
+                    HTTP_REFERER="https://evil.test/secret-filename.pdf",
+                )
+                with self.assertLogs("django.security.csrf", level="WARNING") as logs:
+                    # assertLogs replaces handlers; install the runtime filter.
+                    for handler in logging.getLogger("django.security.csrf").handlers:
+                        handler.addFilter(ReadabilityRequestFilter())
+                    response = CsrfViewMiddleware(
+                        lambda request: HttpResponse()
+                    ).process_view(request, lambda request: HttpResponse(), (), {})
+                self.assertEqual(response.status_code, 403)
+                self.assertEqual(len(logs.records), 1)
+                self.assert_safe(logs.records[0])
+                self.assertNotIn("request", logs.records[0].__dict__)
 
     @override_settings(ROOT_URLCONF=__name__, MIDDLEWARE=[], DEBUG=False)
     def test_real_suspicious_operation_omits_exception_and_request(self):

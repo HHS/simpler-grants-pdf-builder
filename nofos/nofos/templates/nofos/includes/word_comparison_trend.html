@@ -1,0 +1,36 @@
+<section class="border-1px border-base-lighter radius-md padding-2 margin-y-3" aria-labelledby="comparison-trend-title">
+  <h2 id="comparison-trend-title" class="font-heading-md margin-top-0">Difference over time</h2>
+  <p>Readability Checker minus Microsoft Word for Windows (percentage points). Above zero means the Readability Checker percentage is higher; below zero means it is lower.</p>
+  {% if trend.points %}
+  <svg viewBox="0 0 650 255" role="img" aria-labelledby="comparison-chart-title comparison-chart-desc" style="display:block;width:100%;max-width:900px;height:auto">
+    <title id="comparison-chart-title">Passive sentence percentage-point differences over time</title>
+    <desc id="comparison-chart-desc">Each point is one saved document comparison, ordered by save date. The dashed line is zero difference. Exact values are available in the expanded chart data below.</desc>
+    <line x1="65" y1="30" x2="65" y2="200" stroke="#565c65"/>
+    <line x1="65" y1="200" x2="585" y2="200" stroke="#565c65"/>
+    <line x1="65" y1="{{ trend.zero_y }}" x2="585" y2="{{ trend.zero_y }}" stroke="#565c65" stroke-dasharray="5 4"/>
+    <g font-size="12" fill="#1b1b1b">
+      <text x="55" y="34" text-anchor="end">{{ trend.maximum }}</text>
+      <text x="55" y="{{ trend.zero_y }}" text-anchor="end">0</text>
+      <text x="55" y="204" text-anchor="end">{{ trend.minimum }}</text>
+      <text x="65" y="225">{{ trend.first_date|date:"M j, Y" }}</text>
+      <text x="585" y="225" text-anchor="end">{{ trend.last_date|date:"M j, Y" }}</text>
+      <text x="325" y="248" text-anchor="middle">Date saved</text>
+    </g>
+    <polyline points="{{ trend.path }}" fill="none" stroke="#005ea2" stroke-width="2"/>
+    {% for point in trend.points %}<circle cx="{{ point.x }}" cy="{{ point.y }}" r="4" fill="#005ea2"><title>{{ point.filename }} · {{ point.date|date:"M j, Y, g:i a" }} · {{ point.difference|floatformat:1 }} percentage points</title></circle>{% endfor %}
+  </svg>
+  <p class="font-sans-xs">Each point represents one saved comparison, across all pages. Document content and calculation versions can affect the differences; the line is not an average or a quality threshold.</p>
+  <details class="metrics-data-details margin-top-2 font-sans-2xs">
+    <summary><span>View chart data<span class="usa-sr-only"> for Difference over time</span></span></summary>
+    <p class="text-bold margin-bottom-1">All plotted comparisons, oldest first</p>
+    <dl class="margin-top-0">
+      {% for point in trend.points %}
+      <div class="grid-row grid-gap-1 padding-y-05">
+        <dt class="grid-col-8">{{ point.date|date:"M j, Y, g:i a" }}<span class="display-block text-normal">{{ point.filename }}</span></dt>
+        <dd class="grid-col-4 margin-0">{% if point.difference > 0 %}+{% endif %}{{ point.difference|floatformat:1 }} percentage points</dd>
+      </div>
+      {% endfor %}
+    </dl>
+  </details>
+  {% else %}<p>No paired percentages are available yet. Save a comparison to begin the chart.</p>{% endif %}
+</section>

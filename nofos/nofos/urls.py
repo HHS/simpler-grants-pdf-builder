@@ -1,7 +1,7 @@
 from bloom_nofos.views import authenticated_pdf_readability, readability_redirect
 from django.urls import path
 
-from . import views
+from . import views, word_comparisons
 from .pdf_readability_metrics import PdfReadabilityMetricsView
 from .readability_history_views import NofoReadabilityHistoryView
 from .readability_overview import BuilderReadabilityScoresView
@@ -9,6 +9,17 @@ from .readability_overview import BuilderReadabilityScoresView
 app_name = "nofos"
 
 urlpatterns = [
+    path("metrics/readability-pilot", word_comparisons.legacy_redirect),
+    path(
+        "metrics/readability-checker-usage/comparisons",
+        word_comparisons.comparison_list,
+        name="word_comparisons",
+    ),
+    path(
+        "readability-checker/comparisons/save",
+        word_comparisons.save,
+        name="word_comparison_save",
+    ),
     path(
         "readability/",
         readability_redirect,
@@ -30,7 +41,7 @@ urlpatterns = [
         name="nofo_readability_history",
     ),
     path(
-        "metrics/readability-pilot",
+        "metrics/readability-checker-usage",
         PdfReadabilityMetricsView.as_view(),
         name="builder_metrics_readability_pilot",
     ),

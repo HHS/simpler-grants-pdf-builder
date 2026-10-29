@@ -381,6 +381,7 @@ class PdfReadabilityTests(SimpleTestCase):
                 "recovered_word_count": 23,
                 "sentence_word_count": 20,
                 "complete_sentence_count": 3,
+                "passive_sentence_count": 0,
                 "excluded_word_count": 3,
                 "excluded_word_percentage": 13.0,
             },

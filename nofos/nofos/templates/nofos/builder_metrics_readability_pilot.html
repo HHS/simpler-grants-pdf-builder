@@ -21,6 +21,7 @@
 {% block content %}
 {% url 'nofos:builder_metrics' as metrics_href %}
 {% include "includes/page_heading.html" with title="Readability Checker usage" back_text="Back to usage &amp; quality metrics" back_href=metrics_href only %}
+{% if comparisons_enabled %}{% include "nofos/includes/metrics_navigation.html" with comparison_link=True %}{% endif %}
 <p>These metrics include recorded attempts from the Readability Checker. Authenticated uploads support PDF and Word (.docx); public uploads support PDF only. File categories describe the submitted extension, not verified contents. Historical and unclassified attempts are Unknown.</p>
 <details class="margin-top-2 margin-bottom-3 border-1px border-base-lighter radius-md padding-2">
   <summary class="text-bold">About these metrics</summary>

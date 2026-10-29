@@ -78,7 +78,7 @@ safeguards below still apply and are not replaced by ZIP validation.
 ### Content-free outcome monitoring (#985)
 
 Metrics viewers can open **Readability Checker usage** at
-`/nofos/metrics/readability-pilot` from **Other metrics**
+`/nofos/metrics/readability-checker-usage` from **Other metrics**
 on `/nofos/metrics`, including while the pilot is disabled. The page shows the
 stored pilot flag, recording state, retained daily/weekly attempts, all-attempt
 success and capacity rates, nearest-rank durations, outcome meanings, and pages
