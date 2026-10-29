@@ -1,5 +1,8 @@
 # #1248 — Passive sentence comparison MVP
 
+Tested current in-place submission and interaction captures: 23db532b.
+
+Earlier prototype revisions:
 Tested MVP implementation: b976df33cfb20009f0caa62fb71e8dc70fe7ce99.
 Tested shared-form UI and full-page interaction captures: b09834c2.
 Before baseline: db661721 (upstream main).
@@ -60,6 +63,11 @@ expanded disclosures. The no-JavaScript completion is captured separately. A sta
 crop remains available as supplementary evidence, not the PR's main chart image. No real document text, credentials, cookies or desktop content appears.
 
 ## Validation
+
+- Current in-place revision: 73 affected Django tests and 67 JavaScript tests
+  pass. Browser checks verify stable document/URL/scroll, validation, pending
+  duplicate prevention, network retry, saved read-only state and normal no-JS
+  completion. The following broader results predate the transport change.
 
 - 106 focused Django tests pass, including real Word/PDF analysis, report saving,
   owner/permission isolation, tampering, expiration, CSRF, default-off/live
