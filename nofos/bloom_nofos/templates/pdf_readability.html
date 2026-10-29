@@ -104,7 +104,7 @@
         </section>
         {% endif %}
         {% if comparison_saved %}
-        {% include "includes/alerts.html" with messages=messages success_heading="Comparison saved" only %}
+        {% include "includes/alerts.html" with messages=messages success_heading="Comparison saved" slim=True only %}
         {% if perms.nofos.view_builder_metrics %}<p><a href="{% url 'nofos:word_comparisons' %}">View passive sentence comparisons</a></p>{% endif %}
         {% endif %}
         <p class="margin-top-4">Your document was processed temporarily on HHS-operated systems to calculate these estimates. It was not added to NOFO Builder, and ordinary unsaved reports have no retained history. For an unsaved report, save or copy your results before leaving this page; the report cannot be recovered later.</p>

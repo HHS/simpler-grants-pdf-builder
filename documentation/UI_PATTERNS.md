@@ -613,8 +613,10 @@ Like upload errors, the error receives keyboard focus and remains correctable.
 Saving is a normal server-rendered form POST and full document reload, not
 background saving or autosave. Reuse Django success messages and
 [includes/alerts.html](../nofos/bloom_nofos/templates/includes/alerts.html), as on
-the NOFO index/edit screens. Render its non-fixed success variant on the report;
-do not introduce a custom success banner or a new entry page. The alert remains
+the NOFO index/edit screens. Render its non-fixed **slim=True** success variant on the report: a short
+confirmation in the body, without a separate heading. This optional variant
+leaves existing callers unchanged. Do not introduce a custom success banner
+or a new entry page. The alert remains
 visible rather than auto-dismissing. Comparison responses must not reopen the
 upload-analysis progress/ready modal.
 
@@ -623,3 +625,11 @@ percentage-point differences, a clearly labelled zero reference, native SVG
 title/description, and a native **View chart data** disclosure with exact values.
 Do not add totals, averages or thresholds. Missing differences are omitted;
 a single available pair still renders a point.
+
+
+For comparison, the NOFO readability panel already uses a smaller text-only
+live status (**Snapshot saved.**) for its asynchronous snapshot save:
+[readability_metrics_panel.html](../nofos/nofos/templates/nofos/includes/readability_metrics_panel.html)
+and [nofo_readability_metrics.js](../nofos/bloom_nofos/static/js/nofos/nofo_readability_metrics.js).
+Use that existing status approach for background snapshot saving. The uploaded
+report uses the slim shared success alert after its normal form POST/reload.

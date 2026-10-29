@@ -85,11 +85,6 @@ def save(request):
             )
     if record:
         message = f"Microsoft Word for Windows: {record.word_passive:.1f}%."
-        if record.difference is not None:
-            message += (
-                " Readability Checker minus Microsoft Word for Windows: "
-                f"{record.difference:+.1f} percentage points."
-            )
         messages.success(request, message)
     from bloom_nofos.views import _metric_rows
 

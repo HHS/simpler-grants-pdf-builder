@@ -1,15 +1,15 @@
 {% for message in messages %}
   {% if "success" in message.tags and success_heading %}
-    <div id="nofo-editor-success-alert" class="usa-alert usa-alert--success margin-bottom-3{% if stick_to_bottom %} usa-alert--fixed{% endif %}" role="alert" aria-live="polite">
+    <div id="nofo-editor-success-alert" class="usa-alert usa-alert--success{% if slim %} usa-alert--slim{% endif %} margin-bottom-3{% if stick_to_bottom %} usa-alert--fixed{% endif %}" role="alert" aria-live="polite">
       <div class="usa-alert__body">
         {% if stick_to_bottom %}
           <button type="button" class="usa-alert__close" aria-label="Dismiss success message" tabindex="0">
             <span aria-hidden="true">×</span>
           </button>
         {% endif %}
-        <h4 class="usa-alert__heading text-black">{{ success_heading }}</h4>
+        {% if not slim %}<h4 class="usa-alert__heading text-black">{{ success_heading }}</h4>{% endif %}
         <p class="usa-alert__text">
-          {{ message | safe }}
+          {% if slim %}<strong>{{ success_heading }}.</strong> {% endif %}{{ message | safe }}
         </p>
       </div>
     </div>

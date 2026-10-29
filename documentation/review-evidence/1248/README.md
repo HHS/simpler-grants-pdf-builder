@@ -109,3 +109,12 @@ and shared success feedback remain unchanged. Fifteen comparison/shared-form
 tests pass. Browser capture verified ArrowUp changes 3.3 to 3.4 and ArrowDown
 returns to 3.3, followed by a successful submission. Full-page entry/error/saved
 captures were refreshed; the populated-entry capture shows the hovered control.
+
+
+## Compact success-feedback review
+
+The existing NOFO readability panel provides text-only “Snapshot saved.” feedback
+for asynchronous saving. This report continues to use a normal POST/reload, with
+the shared alerts component's optional slim success variant: no separate heading,
+just “Comparison saved.” and the entered percentage. Existing alert callers
+retain their current appearance. Full-page success captures were refreshed. All 23 affected comparison, readability-history and shared-form tests pass.

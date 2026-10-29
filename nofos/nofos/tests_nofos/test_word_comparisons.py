@@ -67,6 +67,8 @@ class ComparisonTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Comparison saved")
         self.assertTemplateUsed(response, "includes/alerts.html")
+        self.assertContains(response, "usa-alert--slim")
+        self.assertNotContains(response, '<h4 class="usa-alert__heading')
         self.assertContains(response, "Readability report")
         self.assertContains(response, "View passive sentence comparisons")
         self.assertNotContains(response, 'name="passive"')
