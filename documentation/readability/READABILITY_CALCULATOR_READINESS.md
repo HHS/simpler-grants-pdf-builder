@@ -47,12 +47,12 @@ and arrange an authorized correction; this plan does not change flags itself.
 Repeat the check at the end. The existing inspection does not read Constance.
 
 Check the canonical signed-out GET and empty POST `/readability-checker/`: expect the
-disabled 503, no upload form, no-store and noindex headers. Record both exact
+disabled response (GET 200, POST 403), no upload form, no-store and noindex headers. Record both exact
 current route forms (`/readability-checker` and `/readability-checker/`) and
 legacy forms (`/readability` and `/readability/`) without automatically following
 redirects. The legacy route redirects to the renamed checker, and a slashless
 request may have Django redirect/error behavior: record
-it; do not mistake it for WAF enforcement or assume both forms return 503.
+it; do not mistake it for WAF enforcement or assume both forms return the same status.
 Confirm `/health` responds normally. If the baseline is unexpected, stop before
 rate/block testing and investigate.
 

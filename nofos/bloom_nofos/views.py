@@ -141,7 +141,10 @@ def authenticated_pdf_readability(request):
 def _pdf_readability_workflow(request, enabled, source):
     started = time.monotonic()
     if not enabled and source == "public":
-        response = render(request, "pdf_readability_unavailable.html", status=503)
+        # Disabled is an intentional access state, not a service failure.
+        # Return before CSRF/form handling can parse an uploaded document.
+        status = 403 if request.method == "POST" else 200
+        response = render(request, "pdf_readability_unavailable.html", status=status)
         response["Cache-Control"] = "no-store"
         if request.method == "POST":
             _record_pdf_attempt(source, "disabled", response.status_code, started)

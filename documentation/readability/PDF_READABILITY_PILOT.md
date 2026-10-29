@@ -227,7 +227,7 @@ Release gates before enabling the anonymous route (merge is not approval to enab
 - Confirm the *stored* Constance value of `HHS_NOFO_PDF_METRICS_PILOT_ENABLED` is
   off in every deployment environment; an existing database value overrides the
   environment default. Name the owner who can disable it, test the route-level
-  infrastructure backstop, and provide a purpose-built 503 without an upload form
+  infrastructure backstop, and provide an unavailable page (GET 200, POST 403) without an upload form
   for disabled GET and POST. Preserve `no-store` and noindex; use `Retry-After`
   only with a credible restoration time. Name a support path.
 - Align the public report with the authenticated readability panel: scope counts,
@@ -321,3 +321,20 @@ directory and nested parser copies. A forced termination of the web worker or ho
 can interrupt that cleanup. Before enablement, verify the environment's stale-temp
 cleanup or ephemeral-task replacement policy and its retention implications. Do not
 describe the implementation as a guarantee of immediate deletion after a crash.
+
+### Disabled public HTTP responses
+
+With the public flag off, GET `/readability-checker/` serves the existing
+unavailable page with 200; POST returns that page with 403 before application
+form/CSRF processing or multipart parsing. This does not prevent upstream servers
+from receiving/buffering a request body. No upload form is shown. Both retain
+no-store and noindex headers. Unsupported methods (including HEAD) remain 405;
+legacy paths retain their redirects. Authenticated disabled behavior is unchanged.
+
+Recorded public disabled POST attempts keep outcome `disabled` and category
+`unknown`, with status 403 for new records; historical 503 records are unchanged.
+Expected disabled visits no longer contribute to ALB target-5xx counts. A 200
+response is not proof that uploads are enabled; monitoring/readiness checks must
+check the feature state and page behavior. This does not establish the cause of
+past alarms or change genuine processing-error responses. Rollback restores the
+previous 503 behavior without changing the feature flag.

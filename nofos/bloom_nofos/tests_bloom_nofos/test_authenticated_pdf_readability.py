@@ -77,7 +77,7 @@ class AuthenticatedPilotTests(TestCase):
 
     def test_public_disabled_independently_no_navigation_link(self):
         self.login()
-        self.assertEqual(self.client.get(self.public_url).status_code, 503)
+        self.assertEqual(self.client.get(self.public_url).status_code, 200)
         response = self.client.get(self.url)
         self.assertContains(response, "Readability Checker", count=2)
         self.assertContains(response, "How we handle your document")
@@ -132,7 +132,7 @@ class AuthenticatedPilotTests(TestCase):
         response = self.client.get(self.url)
         self.assertContains(response, "it does not need to be designed for publication")
         self.assertContains(response, "Blank templates without identifying details")
-        self.assertEqual(self.client.get(self.public_url).status_code, 503)
+        self.assertEqual(self.client.get(self.public_url).status_code, 200)
 
     def test_real_draft_upload_returns_reference_metrics_with_public_disabled(self):
         self.login()
@@ -151,7 +151,7 @@ class AuthenticatedPilotTests(TestCase):
             response.context["report"]["scope"]["complete_sentence_count"], 3
         )
         self.assertContains(response, "Keep instructions that applicants need.")
-        self.assertEqual(self.client.get(self.public_url).status_code, 503)
+        self.assertEqual(self.client.get(self.public_url).status_code, 200)
 
     def test_real_word_upload_records_only_content_free_outcome(self):
         from nofos.models import Nofo

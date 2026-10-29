@@ -49,7 +49,7 @@ class AttemptTests(TestCase):
     def test_disabled_recorded_get_not_recorded(self):
         self.client.get(self.url)
         self.assertEqual(PdfReadabilityAttempt.objects.count(), 0)
-        self.assertEqual(self.client.post(self.url).status_code, 503)
+        self.assertEqual(self.client.post(self.url).status_code, 403)
         self.assertEqual(PdfReadabilityAttempt.objects.get().outcome, "disabled")
 
     @override_settings(PDF_READABILITY_ATTEMPT_RECORDING_ENABLED=False)
@@ -128,7 +128,7 @@ class AttemptTests(TestCase):
             "django.request.pdf_readability_metrics", level="WARNING"
         ) as logs:
             response = self.client.post(self.url)
-        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.status_code, 403)
         self.assertEqual(
             [r.getMessage() for r in logs.records],
             ["PDF readability outcome could not be recorded."],
