@@ -220,3 +220,28 @@ class ComparisonTests(TestCase):
             {"sort": "difference", "version": "other-version", "page": 2},
         )
         self.assertIsNone(response.context["page"][-1].difference)
+
+    def test_admin_comparison_toggle_is_independent(self):
+        from django.contrib.auth.models import Permission
+        from users.forms import BloomUserChangeForm
+
+        form = BloomUserChangeForm(instance=self.user)
+        self.assertTrue(form.initial["can_manage_word_comparisons"])
+        form.cleaned_data = {
+            "can_view_metrics": False,
+            "can_use_pdf_readability_pilot": False,
+            "can_manage_word_comparisons": False,
+        }
+        form._save_m2m()
+        self.assertFalse(
+            self.user.user_permissions.filter(
+                codename="manage_word_comparisons"
+            ).exists()
+        )
+        form.cleaned_data["can_manage_word_comparisons"] = True
+        form._save_m2m()
+        self.assertTrue(
+            self.user.user_permissions.filter(
+                codename="manage_word_comparisons"
+            ).exists()
+        )

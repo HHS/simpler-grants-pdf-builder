@@ -10,8 +10,8 @@ content-free usage event.
 1. Apply migration 0160. The Constance flag
    HHS_NOFO_WORD_COMPARISONS_ENABLED defaults **off**; it takes effect without
    restarting workers. Existing authenticated Checker enablement remains required.
-2. Grant nofos.manage_word_comparisons directly to selected reviewers using
-   Django's user permissions administration. This grants saving/editing, not
+2. Select **Can save and edit Word comparisons** on selected users in Django admin
+   to grant nofos.manage_word_comparisons directly. This grants saving/editing, not
    metrics visibility. Bloom membership neither grants nor blocks this permission.
 3. Grant nofos.view_builder_metrics separately to people who should see the
    tracker, including its retained document names. Comparison managers can open
