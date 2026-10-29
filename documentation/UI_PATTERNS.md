@@ -4,6 +4,11 @@ Use this guide when adding or changing Builder screens. Start with an existing
 component and its behavior before creating a new variation. This is a small,
 incremental catalog of verified patterns, not an audit of every screen.
 
+Before implementing UI, identify the closest existing screen and its shared
+components, even when the pattern is not cataloged here. Reuse those components,
+or explain in the PR why a different implementation is needed. Scope this check
+to the UI being changed; it does not require an application-wide component audit.
+
 ## Typography when an editor loads Bootstrap
 
 The [root README's USWDS implementation note](../README.md#a-note-on-our-implementation-of-the-us-web-design-system-uswds)

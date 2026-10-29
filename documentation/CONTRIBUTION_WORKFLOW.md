@@ -30,9 +30,10 @@ flowchart TD
     E2 -- Yes --> E2a[Read IMPORT_ERROR_CODES.md<br/>and the copy rules in import_errors.py]
     E2 -- No --> E3
     E2a --> E3{Adding or changing UI?}
-    E3 -- Yes --> E3a[Read UI_PATTERNS.md<br/>reuse relevant documented patterns]
+    E3 -- Yes --> E3a[Read UI_PATTERNS.md<br/>identify the closest existing screen<br/>and its shared components]
     E3 -- No --> F
-    E3a --> F
+    E3a --> E3b[Reuse those components or explain<br/>the different implementation in the PR]
+    E3b --> F
 
     F[Write the code and tests] --> G{Does it change documented<br/>behavior, or need new docs?}
     G -- Yes --> G1[Update the owning guide or topic index<br/>file dated results under review-evidence/]
@@ -63,7 +64,7 @@ flowchart TD
 | Branch off `main` | [`DEPLOYMENT.md` § 1. Create a feature branch](../DEPLOYMENT.md#1-create-a-feature-branch) and [§ Branch Protection Rules](../DEPLOYMENT.md#branch-protection-rules) |
 | Changing import behavior | [`IMPORT_RULES.md`](IMPORT_RULES.md), [`DOCUMENT_PROCESSING.md`](DOCUMENT_PROCESSING.md) for the shared processing boundary, and [`DEPLOYMENT.md` § Updating Import Rules](../DEPLOYMENT.md#updating-import-rules) |
 | Changing user-facing import errors | [`IMPORT_ERROR_CODES.md`](IMPORT_ERROR_CODES.md), and the "Copy rules" at the top of [`nofos/bloom_nofos/import_errors.py`](../nofos/bloom_nofos/import_errors.py) |
-| Adding or changing UI | [`UI_PATTERNS.md`](UI_PATTERNS.md): check this growing catalog for a relevant pattern and reuse its shared component. It is not a complete inventory of the site's UI; extend it when introducing another verified pattern. |
+| Adding or changing UI | [`UI_PATTERNS.md`](UI_PATTERNS.md): identify the closest existing screen and its shared components before implementing the UI. Reuse those components, or explain in the PR why a different implementation is needed. The catalog is not a complete inventory; inspect the existing screen even when its pattern is undocumented, and extend the catalog when introducing another verified pattern. |
 | Updating docs | Follow [placement and maintenance](README.md#where-documentation-belongs): reuse a guide or topic folder, put issue-specific investigations/experiments/validation in `review-evidence/`, and index durable guides or topic indexes. Use the [ADR template](template.md) for architectural decisions. Check placement and moved links before opening the PR and after review changes. |
 | Editor task changes | [`AGENTS.md` § Keep editor tasks current](../AGENTS.md#keep-editor-tasks-current) defines when to update [`EDITOR_TASKS.md`](EDITOR_TASKS.md). Applies to people and agents; preserve existing task IDs and anchors. |
 | Run checks locally | [`DEPLOYMENT.md` § Before You Push](../DEPLOYMENT.md#before-you-push) |

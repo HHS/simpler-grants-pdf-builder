@@ -86,7 +86,10 @@ preparation.
 
 Before adding or changing user-facing UI, read
 [documentation/UI_PATTERNS.md](documentation/UI_PATTERNS.md) and reuse relevant
-shared components and typography utilities. On editor pages that load Bootstrap,
+shared components and typography utilities. Before implementing the UI, identify
+the closest existing screen and its shared components, including patterns not yet
+cataloged. Reuse those components, or explain in the PR why a different
+implementation is needed. On editor pages that load Bootstrap,
 check computed heading/alert styles and actual rendered fonts against an existing
 Builder page; stylesheet loading alone does not prove the typography matches.
 Extend the catalog when introducing another verified pattern; do not assume
