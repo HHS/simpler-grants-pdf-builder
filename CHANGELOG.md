@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.56.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.56.0...nofos-v3.56.1) (2026-10-30)
+
+
+### Bug Fixes
+
+* keep saved Word comparisons available to metrics viewers ([#1255](https://github.com/HHS/simpler-grants-pdf-builder/issues/1255)) ([ba6aee5](https://github.com/HHS/simpler-grants-pdf-builder/commit/ba6aee5768d269a6cb6443065ef04f6cca6c0270))
+* reopen NOFO side navigation on iOS Safari after jumping to a section ([#1258](https://github.com/HHS/simpler-grants-pdf-builder/issues/1258)) ([5e1e911](https://github.com/HHS/simpler-grants-pdf-builder/commit/5e1e911c73167b880a1f41b350d1ef9c55450c13))
+
 ## [3.56.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.55.0...nofos-v3.56.0) (2026-10-29)
 
 
