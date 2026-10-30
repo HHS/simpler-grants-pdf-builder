@@ -157,6 +157,11 @@
 
         // Close navigation when focus leaves the navigation area
         sideNavContainer.addEventListener('focusout', function (e) {
+            // Only close if the nav was open when focus left. iOS Safari doesn't focus
+            // buttons on tap, so tapping the (focused) toggle blurs it to <body> just
+            // before the click opens the nav — without this check we'd immediately close it.
+            if (!sideNavContainer.classList.contains('is-open')) return;
+
             // Use setTimeout to allow focus to move to the next element
             setTimeout(function () {
                 // Check if the new focused element is still within the navigation
