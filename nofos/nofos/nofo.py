@@ -1760,6 +1760,9 @@ def suggest_nofo_theme(nofo_number, opdiv=""):
     ):
         return "portrait-acl-white"
 
+    if "indian health service" in opdiv_lower or re.search(r"\bihs\b", opdiv_lower):
+        return "portrait-ihs-white"
+
     if "cdc-" in nofo_number.lower():
         return "portrait-cdc-blue"
 
