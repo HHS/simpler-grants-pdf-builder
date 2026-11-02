@@ -5,6 +5,11 @@ November 2, 2026. Source baseline: `3c1e0351` on `main`.
 Status: initial design investigation for review, **not an implementation or completed acceptance**.
 No application templates, styles, imports, records or settings are changed.
 
+**Next iteration:** [Second prototype and continuation feasibility findings](FOLLOWUP.md)
+responds to the review with a spanning introduction, varied page counters,
+HTML enlargement/keyboard checks and a repeated-caption experiment that is not
+recommended for production as-is.
+
 ## Recommendation
 
 Take **print-only two-column step groups** into the next design review. Reuse
