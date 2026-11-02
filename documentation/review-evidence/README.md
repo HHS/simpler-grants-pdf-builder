@@ -39,6 +39,7 @@ retain useful rationale and evidence. No automatic age-based deletion applies.
 
 ## Investigation records
 
+- [FY27 Contents layout comparison — #1263](1263/README.md)
 - [Word import drift — #974](974/README.md)
 - [Shared design impact and render-input traceability — #1197](1197/README.md)
 - [Draft readability — #1059](draft-readability-1059/README.md), with [characterization details](draft-readability-1059/characterization.md)
