@@ -145,6 +145,75 @@ need end-to-end validation if equivalent evidence is unavailable. Mark these
 this plan. A future brief upload test requires the requester's separate explicit
 authorization, a duration/request cap and verified disabled-state restoration.
 
+### Dev-only upload-read observation
+
+The existing inspector and New Relic completion logs cannot establish which
+web worker is waiting for body bytes. For the bounded slow-upload plan in
+[SGG #13115](https://github.com/HHS/simpler-grants-gov/pull/13115), Builder provides
+an optional WSGI body-read observer. This is diagnostic visibility, not slow-client
+protection, and does not authorize test traffic or feature enablement.
+
+It requires both the trusted deployment variable `ENVIRONMENT=infra-dev` and
+**Admin → Constance → `HHS_NOFO_UPLOAD_READ_OBSERVATION_ENABLED`**. The admin
+switch defaults off and is read on each matching request without a restart.
+Missing/different environment values keep the observer inert, including in
+production even if its admin switch is accidentally checked. Do not identify
+the environment through a client-supplied Host header. The existing deployment
+metadata supplies ENVIRONMENT; confirm it on the target revision before use.
+
+The observer runs before CSRF/authentication middleware can consume a body. It
+wraps only POST streams for the exact current/legacy public and authenticated
+Readability upload routes; comparison saves, other uploads, GETs, preconsumed
+streams and ASGI requests are excluded. It changes no upload permission or flag.
+Use the ordinary Constance checkbox and help text; there is no new upload-screen
+component or editor action.
+
+When enabled, `django.request.readability_observation` emits the constant
+message `Readability upload observation` with:
+
+- `observation_phase`: `request_entered`, `read_begin`, `read_end`, `read_aborted`,
+  `response_returned` or `response_raised`;
+- a fresh server-generated `observation_id`, worker process ID and fixed
+  `upload_source` label, with sequence/operation on read entry;
+- returned byte counts and elapsed milliseconds on read return, plus aggregate
+  read-call/byte counts and a truncation boolean when the response returns/raises.
+
+It never reads a document merely to observe it and does not log file contents,
+filenames, URLs/query strings, headers, cookies, user identity, scores or exception
+text. Correlation IDs identify a diagnostic request, not a person. These events
+are operational logs and follow their separate handling/access/retention rules;
+they are not new indefinite-retention usage-record fields. Keep detailed
+correlation/worker evidence restricted and publish only findings/counts.
+
+Each request records an entry event, at most eight read entry/return pairs and
+one final event (18 events). Later reads still execute normally; the final event reports
+`read_events_truncated=true`, making incomplete coverage explicit. A logging-sink
+failure does not fail the request. The underlying read result/error is preserved.
+
+Before any upload test, verify this deployed code and the dev environment gate,
+record the initial switch state, and explicitly authorize any diagnostic-switch
+activation. Enabling observation alone does not enable uploads. With uploads
+still disabled, an ordinary approved empty POST can verify event forwarding; it
+emits `request_entered` and `response_returned` with zero reads. A later synthetic-upload test
+needs its own entry-route/flag authorization, bounds and restoration plan.
+
+In New Relic, restrict to the dev entity and `logtype='ecs-application'`, then
+filter `message='Readability upload observation'`. Correlate by log stream,
+worker PID, observation ID and read sequence. A begin followed by a delayed end
+shows time spent in that body-read call; it is not a direct network-transfer
+measurement and does not identify upstream buffering by itself. A missing end
+can reflect worker death, log delay/loss or truncation: corroborate with worker
+lifecycle evidence rather than declaring active occupation from absence alone.
+`response_returned` means the application returned a response, not proof that a
+socket closed, a streaming response finished or all temporary storage was cleaned.
+
+At the end, cancel test clients, turn the observation switch off, verify its
+stored state, restore any separately authorized upload setting, and observe
+service recovery. A request samples the switch at entry: switching off prevents
+new observations but does not erase prior logs or stop an in-flight observer.
+Use only fictional files. No live observations or upload tests are established
+by merging this implementation, and production diagnostic activation is unsupported.
+
 ## 4. Production setup: separate from public launch
 
 After relevant dev verification and handling review, prepare one consolidated
