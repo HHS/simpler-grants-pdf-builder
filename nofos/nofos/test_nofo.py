@@ -4643,6 +4643,31 @@ class HTMLSuggestDeadlineTests(TestCase):
 
 
 class HTMLSuggestThemeTests(TestCase):
+    def test_ihs_opdiv_selects_light_theme_before_number_heuristics(self):
+        for opdiv in (
+            "Indian Health Service",
+            "Indian Health Service (IHS)",
+            "IHS",
+            "ihs",
+        ):
+            for number in (
+                "",
+                "UNKNOWN-001",
+                "{Insert Opportunity Number}",
+                "CDC-RFA-27-001",
+            ):
+                with self.subTest(opdiv=opdiv, number=number):
+                    self.assertEqual(
+                        suggest_nofo_theme(number, opdiv=opdiv),
+                        "portrait-ihs-white",
+                    )
+
+    def test_ihs_substring_in_unrelated_opdiv_does_not_select_ihs(self):
+        self.assertEqual(
+            suggest_nofo_theme("CDC-RFA-27-001", opdiv="NIHSupport"),
+            "portrait-cdc-blue",
+        )
+
     def test_suggest_nofo_number_hrsa_returns_hrsa_theme(self):
         nofo_number = "HRSA-24-019"
         nofo_theme = "portrait-hrsa-white"
