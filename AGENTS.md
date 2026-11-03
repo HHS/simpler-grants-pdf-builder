@@ -15,6 +15,13 @@ See [issue labels](documentation/CONTRIBUTION_WORKFLOW.md#issue-labels) for the 
 
 For issue drafting, follow the [shared issue-drafting procedure](documentation/ISSUE_DRAFTING.md).
 
+## Read the upstream PR template before opening a PR
+
+Before opening an upstream PR, read the current [PR template](.github/pull_request_template.md)
+and the **Open the PR** row in the [contribution workflow](documentation/CONTRIBUTION_WORKFLOW.md#what-to-read-at-each-step)
+from upstream `main`. Start the PR description from that template, link the tracking issue,
+and leave unverified checks unchecked.
+
 ## PR titles must follow Conventional Commits
 
 Every PR title must start with a type prefix — `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`,
