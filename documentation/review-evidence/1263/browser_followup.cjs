@@ -13,6 +13,9 @@ const assert = require('node:assert/strict');
 
 (async () => {
   const python = process.env.PYTHON || 'python';
+  const prototype = process.env.CONTENTS_PROTOTYPE || 'columns_followup';
+  assert.ok(['columns_followup', 'fallback'].includes(prototype), 'unknown fixed prototype');
+  const samples = prototype === 'fallback' ? ['sparse','fy27','long','overflow'] : ['sparse','fy27','long','overflow','wrapped_intro'];
   const browser = await chromium.launch({channel: 'chrome', headless: true});
   const page = await browser.newPage();
   // No remote requests. Repository font/image data are embedded by the probe.
@@ -20,10 +23,10 @@ const assert = require('node:assert/strict');
   let checks = 0;
   try {
     for (const theme of ['ihs', 'hrsa', 'cdc']) {
-      for (const sample of ['sparse', 'fy27', 'long', 'overflow', 'wrapped_intro']) {
+      for (const sample of samples) {
         const generated = execFileSync(python, ['-c',
-          'import runpy,sys; m=runpy.run_path(sys.argv[1]); print(m["page"](sys.argv[2],sys.argv[3]))',
-          join(__dirname, 'columns_followup.py'), sample, theme], {encoding: 'utf8', maxBuffer: 10*1024*1024});
+          'import runpy,sys; from pathlib import Path; sys.path.insert(0,str(Path(sys.argv[1]).resolve().parent)); m=runpy.run_path(sys.argv[1]); print(m["page"](sys.argv[2],sys.argv[3]))',
+          join(__dirname, `${prototype}.py`), sample, theme], {encoding: 'utf8', maxBuffer: 10*1024*1024});
         for (const width of [320, 800]) {
           for (const factor of [1, 2]) {
             await page.goto('about:blank');

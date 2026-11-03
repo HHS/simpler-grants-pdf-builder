@@ -5,10 +5,106 @@ November 2, 2026. Follow-up to [the comparison](README.md) and
 Related to [#1263](https://github.com/HHS/simpler-grants-pdf-builder/issues/1263).
 **Design evidence only. No application behavior changes or implementation approval.**
 
+**Correction, November 3:** the retained file named `followup-wrapped_intro-ihs-columns.pdf`
+uses a longer invented label, but that label remained on one line in its PDF.
+It did not demonstrate PDF wrapping. The earlier description was incorrect.
+The next prototype uses the fixed “Before you get started” label and does not
+pursue the hypothetical longer introduction.
+
+## Third prototype: aligned entry and single-column fallback, November 3
+
+The [new generator](fallback.py) reuses the existing fixture, template, theme
+cascade, PDF renderer and link checks. It changes no application files. The
+ordinary two-column version reserves the introduction row across both columns,
+but limits its link to the left column's width. Its page number now aligns with
+the numbers below it, and the two first step headings still align. The label is
+exactly **Before you get started**.
+
+For an oversized step, **roomy** is an explicit alternative for the entire
+Contents, not automatic detection. It uses a single column and ordinary page
+overflow. A running page label supplies the exact name of the step listed first
+on that page, for example **Contents: Step 3: Prepare your application**. If the
+page later moves into Step 4, Step 4's original heading remains in the list.
+The header describes the starting context, not every entry on the page.
+
+This is simpler than inserting labels at arbitrary column boundaries: no script,
+second layout pass, count-based split, table conversion, duplicate body heading,
+new link or hidden source entry is required. Each subsection supplies its parent's
+exact step name to the running string. This matters when a page starts with a
+new step or continues one before reaching another; a previous-page-only string
+could identify the wrong starting step. Prince's documented
+[named-string page policy](https://www.princexml.com/doc/15/gen-content/#the-optional-page-policy-value)
+is the mechanism, not a claim of general renderer portability.
+
+| New synthetic PDF | Contents pages | Verified result |
+| --- | --- | --- |
+| [Aligned two-column entry](fallback-fy27-ihs-columns.pdf) | 1 | 29 entries; introduction counter matches the left column; first headings remain level. |
+| [Long-label single column](fallback-long-ihs-roomy.pdf) | 2 | 30 entries; full labels, icons, list structure and individual targets retained. |
+| [Oversized-step single column](fallback-overflow-ihs-roomy.pdf) | 4 | 62 entries; Step 3 still spans pages 2–4, with its exact starting context repeated in the page margin. |
+
+**The oversized step is not intact or made to fit one page.** This fallback
+trades space for visible context: four Contents pages versus three in the earlier
+two-column stress case. It does not solve optimal fit or choose the layout
+automatically. The retained single-column result also leaves unused width; it
+should not be described as a demonstrated full-print-width optimization.
+
+![Introduction counter aligned to the left column](fallback-aligned.png)
+
+![Running step context on an oversized-step continuation page](fallback-context.png)
+
+### Structure and validation
+
+- All 24 new fixture/theme/mode combinations preserve the list DOM, exact labels
+  and original destinations. The only body additions are parent-step data
+  attributes used by the print header; they are checked against the source step.
+  The original 48 and second-prototype 30 offline checks still pass.
+- All 121 links in the three new PDFs pass destination, printed-counter and
+  tagged-link-order checks. Each PDF retains seven `TOC` groups and exactly one
+  `TOCI` per original entry, unlike the rejected caption experiment.
+- PDF geometry checks verify the introduction's right edge matches Step 1's
+  right edge, the introduction is above the steps, and both first headings align.
+- On the single-column continuation pages, checks compare the running name with
+  the actual first listed step and with every continuing step's source name.
+  Inspection of the emitted marked-content stream confirms that these redundant
+  margin labels are artifacts. The original step name remains visible in the
+  body and its logical list relationships remain tagged. This does not establish
+  actual screen-reader speech or navigation.
+- 48 Chrome checks cover the four fixed-label fixture shapes, three themes,
+  320px/800px widths and normal/doubled computed text. They verify viewport fit,
+  source-order Tab, visible focus and Enter navigation on the new default
+  two-column candidate's single-column screen view. The fallback's CSS is
+  print-only; this is still not the full Builder application.
+
+**Still not production acceptance:** actual PDF assistive-technology navigation,
+magnification, exact approved-source wording, representative documents and real
+application integration remain open. The first-page margin rule has only been
+tested with Contents as the first physical PDF page; placement after a cover
+needs separate verification. No claim is made that the redundant label's artifact
+treatment has been accepted by an accessibility reviewer.
+
+To reproduce this iteration (the earlier commands below reproduce earlier
+experiments):
+
+```sh
+python documentation/review-evidence/1263/fallback.py
+python documentation/review-evidence/1263/fallback.py pdf
+python documentation/review-evidence/1263/fallback.py pdf --sample long --mode roomy
+python documentation/review-evidence/1263/fallback.py pdf --sample overflow --mode roomy
+python documentation/review-evidence/1263/fallback.py verify
+CONTENTS_PROTOTYPE=fallback PYTHON=/path/to/builder/python node documentation/review-evidence/1263/browser_followup.cjs
+```
+
+Outputs are in ignored `generated/fallback/`; the three PDFs and two screenshots
+above are retained for review. Only synthetic inputs and repository assets use
+the public test renderer, with JavaScript off and no production credentials.
+Editor Tasks was rechecked: no change is needed for this investigation-only slice.
+Keep #1263 open. The remaining sections record the earlier November 2 experiment.
+
 ## What changed
 
 The introduction now spans the full width above the columns. The first step in
-each column starts at the same height, including when the introduction wraps.
+each column starts at the same height in the tested PDFs. The longer-label PDF
+did not actually wrap its introduction.
 The prototype retains the existing step/subsection text sizes, complete fixture
 labels, icons and individual link targets. The renderer chooses breaks from
 content; there is no Step 4 split, height cap or removed entry. A small step stays
@@ -31,7 +127,7 @@ rules to consider in implementation, not deployed fixes.
 | Synthetic PDF | Contents pages | Result |
 | --- | --- | --- |
 | [29-entry FY27 shape](followup-fy27-ihs-columns.pdf) | 1 | Full-width introduction; aligned first steps; all links and counters retained. |
-| [Wrapped introduction](followup-wrapped_intro-ihs-columns.pdf) | 1 | Introduction wraps above the columns without a second-column spacer. |
+| [Longer invented introduction, historical filename](followup-wrapped_intro-ihs-columns.pdf) | 1 | Label remains on one line in this PDF; this is not evidence of PDF wrapping. |
 | [Oversized step, normal columns](followup-overflow-ihs-columns.pdf) | 3 | All entries retained, but continuation lacks a repeated step label and leaves excess space before the oversized step. Not ready. |
 | [Oversized step, repeated-caption experiment](followup-overflow-ihs-captions.pdf) | 3 | Exact step name with “(continued)” appears at the two continuation fragments. Tagging and visual tradeoffs prevent adoption as-is. |
 
