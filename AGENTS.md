@@ -52,7 +52,9 @@ See `DEPLOYMENT.md` for the full contribution workflow, branch protection rules,
 title convention.
 
 Before opening any PR, read and complete [the PR template](.github/pull_request_template.md),
-including when supplying a custom body with `gh pr create`.
+including when supplying a custom body with `gh pr create`. Check the template on
+upstream `main` if your checkout is missing it or may have an older copy. Follow the
+template's UI evidence instructions for visible changes.
 
 ## Documentation belongs in `documentation/`
 

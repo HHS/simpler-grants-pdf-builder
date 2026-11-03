@@ -8,6 +8,10 @@
 
 <!-- How did you verify this works? -->
 
+## UI evidence
+
+<!-- For visible UI changes, embed before-and-after screenshots of the same screen and interaction state using synthetic or approved data. Store any screenshots committed to the repository under documentation/review-evidence/<issue-number>/. If you could not capture screenshots, explain why and describe how you verified the visible change. -->
+
 ## Checklist
 
 - [ ] Documentation follows the [placement rules](../documentation/README.md#where-documentation-belongs): existing guides reused where appropriate, issue-specific evidence filed together, and indexes/links updated; rechecked after review changes (or no documentation changes).
