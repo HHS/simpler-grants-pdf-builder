@@ -21,10 +21,12 @@ flowchart TD
     A([Idea, bug, or request]) --> B[Pick an issue template:<br/>bug report or feature request]
     B --> C[Create the GitHub issue]
     B -. Agent-assisted .-> IA[Agent drafts using ISSUE_DRAFTING.md]
-    IA --> IR{Contributor reviews draft<br/>and approves posting?}
-    IR -- Draft only --> ID([Keep the draft])
-    IR -- Needs edits --> IA
-    IR -- Approves posting --> C
+    IA --> IR{Contributor asked to file now?}
+    IR -- Draft or review requested --> ID([Return the draft])
+    IR -- Yes --> IP{Agent can post?}
+    IP -- Yes --> C
+    IP -- No access --> IH[Hand over draft and filing link]
+    IH --> C
     C --> D[Branch off main<br/>handle/short-description]
     D --> E[Read the docs for what you're touching]
 
