@@ -1731,6 +1731,11 @@ def suggest_nofo_before_you_begin(
 
 def suggest_nofo_theme(nofo_number, opdiv=""):
     opdiv_lower = (opdiv or "").lower()
+    if "centers for disease control and prevention" in opdiv_lower or re.search(
+        r"\bcdc\b", opdiv_lower
+    ):
+        return "portrait-cdc-blue"
+
     if "national institutes of health" in opdiv_lower or re.search(
         r"\bnih\b", opdiv_lower
     ):
