@@ -530,6 +530,10 @@ label.usa-label {
 
 /* List page */
 
+.nofo_index #group-filter {
+  max-width: min(30rem, calc(100vw - 2rem));
+}
+
 .nofo_index .nofo_index--filter a {
   text-decoration: none;
 }

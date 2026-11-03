@@ -6,14 +6,23 @@ Follow the workflow in [`documentation/CONTRIBUTION_WORKFLOW.md`](documentation/
 issue, branch, PR with a Conventional Commit title, CI, then squash and merge. It links to what to
 read at each step and lists the rules that apply only to agents.
 
+## Before opening or editing a GitHub issue
+
+Before drafting, filing, or revising an issue, follow the
+[shared issue-drafting procedure](documentation/ISSUE_DRAFTING.md). If your agent
+supports repository skills, use the [issue-create skill](.agents/skills/issue-create/SKILL.md).
+
+Read the procedure, issue template, label guidance, and triage guidance from upstream
+`main`. If your checkout or local upstream reference lacks these files, read them
+directly on GitHub or fetch upstream `main`. Verify the template, labels, and duplicate
+search before posting.
+
 ## Reuse existing issue labels
 
 Before creating or relabeling an issue, inspect the repository's current labels and use their
 exact names, including capitalization and emoji. Do not create a new label or a synonym unless
 the user explicitly requests it. Preserve unrelated labels when updating an existing issue.
 See [issue labels](documentation/CONTRIBUTION_WORKFLOW.md#issue-labels) for the current conventions.
-
-For issue drafting, follow the [shared issue-drafting procedure](documentation/ISSUE_DRAFTING.md).
 
 ## Read the upstream PR template before opening a PR
 
@@ -42,7 +51,8 @@ See `DEPLOYMENT.md` for the full contribution workflow, branch protection rules,
 title convention.
 
 Before opening any PR, read and complete [the PR template](.github/pull_request_template.md),
-including when supplying a custom body with `gh pr create`.
+including when supplying a custom body with `gh pr create`. Follow the upstream
+template's UI evidence instructions for visible changes.
 
 ## Documentation belongs in `documentation/`
 
