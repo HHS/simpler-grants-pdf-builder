@@ -4769,6 +4769,20 @@ class HTMLSuggestThemeTests(TestCase):
         nofo_theme = "portrait-cms-white"
         self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
 
+    def test_suggest_nofo_theme_from_cms_opdiv(self):
+        for number, opdiv in (
+            ("{Insert opportunity number.}", "CMS"),
+            ("", "Centers for Medicare & Medicaid Services"),
+            ("CDC-RFA-DP-25-001", "Centers for Medicare and Medicaid Services"),
+        ):
+            with self.subTest(number=number, opdiv=opdiv):
+                self.assertEqual(
+                    suggest_nofo_theme(number, opdiv), "portrait-cms-white"
+                )
+
+    def test_suggest_nofo_theme_ignores_cms_inside_another_word(self):
+        self.assertEqual(suggest_nofo_theme("", "CMSFunding"), "portrait-nih-white")
+
     def test_suggest_nofo_number_rfa_returns_cdc_theme(self):
         nofo_number = "RFA-CK-26-104"
         nofo_theme = "portrait-cdc-blue"
