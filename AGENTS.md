@@ -24,7 +24,6 @@ exact names, including capitalization and emoji. Do not create a new label or a 
 the user explicitly requests it. Preserve unrelated labels when updating an existing issue.
 See [issue labels](documentation/CONTRIBUTION_WORKFLOW.md#issue-labels) for the current conventions.
 
-
 ## Read the upstream PR template before opening a PR
 
 Before opening an upstream PR, read the current [PR template](.github/pull_request_template.md)
@@ -52,8 +51,7 @@ See `DEPLOYMENT.md` for the full contribution workflow, branch protection rules,
 title convention.
 
 Before opening any PR, read and complete [the PR template](.github/pull_request_template.md),
-including when supplying a custom body with `gh pr create`. Check the template on
-upstream `main` if your checkout is missing it or may have an older copy. Follow the
+including when supplying a custom body with `gh pr create`. Follow the upstream
 template's UI evidence instructions for visible changes.
 
 ## Documentation belongs in `documentation/`
