@@ -157,11 +157,12 @@ def check():
     print(f"checks: {count}\nstatus: passed")
 
 
-def generate(sample, theme, mode, render=False):
-    OUT.mkdir(parents=True, exist_ok=True)
+def generate(sample, theme, mode, render=False, *, content=None, output=None):
+    output = OUT if output is None else output
+    output.mkdir(parents=True, exist_ok=True)
     stem = f"{sample}-{theme}-{mode}"
-    content = page(sample, theme, mode)
-    (OUT / f"{stem}.html").write_text(content)
+    content = page(sample, theme, mode) if content is None else content
+    (output / f"{stem}.html").write_text(content)
     if render:
         import docraptor
 
@@ -178,8 +179,8 @@ def generate(sample, theme, mode, render=False):
                 "prince_options": {"media": "print", "profile": "PDF/UA-1"},
             }
         )
-        (OUT / f"{stem}.pdf").write_bytes(result)
-    print(f"output: {OUT / stem}\nstatus: generated")
+        (output / f"{stem}.pdf").write_bytes(result)
+    print(f"output: {output / stem}\nstatus: generated")
 
 
 def main():

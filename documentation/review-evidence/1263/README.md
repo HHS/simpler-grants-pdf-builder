@@ -10,6 +10,10 @@ responds to the review with a spanning introduction, varied page counters,
 HTML enlargement/keyboard checks and a repeated-caption experiment that is not
 recommended for production as-is.
 
+[November 3 follow-up](FOLLOWUP.md#third-prototype-aligned-entry-and-single-column-fallback-november-3)
+corrects the earlier PDF-wrapping claim, aligns the introduction counter, and
+tests a single-column fallback with running step context and intact list tags.
+
 ## Recommendation
 
 Take **print-only two-column step groups** into the next design review. Reuse
