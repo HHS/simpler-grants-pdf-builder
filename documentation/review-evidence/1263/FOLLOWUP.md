@@ -72,6 +72,12 @@ Screenshots from the same synthetic fallback PDF, in page order. The test servic
 
 ![Page 4. Step 3 finishes, then Step 4 begins. The running label still names Step 3 because its entries start the page.](fallback-oversized-page-4.png)
 
+### Fallback scope and accessibility
+
+Two columns are the proposed default for portrait PDF Contents. The single-column layout is a fallback for unusually long Contents. The prototype selects it explicitly. The selection rule for Builder remains open in #1263.
+
+The running step label repeats context already present in the Contents list. In the generated stress PDF, the repeated label is marked as an artifact and all 62 original entries remain tagged, with link references in source order. This follows [W3C PDF14 guidance for running headers](https://www.w3.org/TR/WCAG20-TECHS/pdf#PDF14). For the complete Builder export, verify reading and tab order across the break and check whether a screen reader user who lands directly on a continuation page can identify the parent step. These checks are part of evaluating the applicable Section 508 and WCAG 2.0 AA criteria.
+
 ### Structure and validation
 
 - All 24 new fixture/theme/mode combinations preserve the list DOM, exact labels
