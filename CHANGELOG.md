@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.56.2](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.56.1...nofos-v3.56.2) (2026-11-03)
+
+
+### Bug Fixes
+
+* default CDC imports to CDC Portrait ([#1269](https://github.com/HHS/simpler-grants-pdf-builder/issues/1269)) ([d41a957](https://github.com/HHS/simpler-grants-pdf-builder/commit/d41a9571d5e754a24c2eaaab557fba07652f8428))
+* default IHS imports to the IHS light theme ([#1261](https://github.com/HHS/simpler-grants-pdf-builder/issues/1261)) ([3c1e035](https://github.com/HHS/simpler-grants-pdf-builder/commit/3c1e0351ea0096f06452179cea36cd93c4726616))
+* Read PDF metadata after Assistance listing fields ([#1272](https://github.com/HHS/simpler-grants-pdf-builder/issues/1272)) ([478b60c](https://github.com/HHS/simpler-grants-pdf-builder/commit/478b60c14a15431860ce6a5e8b4e0c16a93b6999))
+
+
+### Documentation
+
+* add a shared agent workflow for drafting GitHub issues ([#1267](https://github.com/HHS/simpler-grants-pdf-builder/issues/1267)) ([50b22f4](https://github.com/HHS/simpler-grants-pdf-builder/commit/50b22f44c643de5288db4330590a187d4511140d))
+* allow agents to file issues when asked ([#1273](https://github.com/HHS/simpler-grants-pdf-builder/issues/1273)) ([52be4d7](https://github.com/HHS/simpler-grants-pdf-builder/commit/52be4d70550a704f5a7202ee1d2a7f2d3e9ddb26))
+* compare FY27 contents layout prototypes ([#1264](https://github.com/HHS/simpler-grants-pdf-builder/issues/1264)) ([e038ba7](https://github.com/HHS/simpler-grants-pdf-builder/commit/e038ba780a28151db3d6b05abfeaa24abb6666a8))
+* refine contents alignment and single-column fallback ([#1268](https://github.com/HHS/simpler-grants-pdf-builder/issues/1268)) ([7077475](https://github.com/HHS/simpler-grants-pdf-builder/commit/7077475fd24db7dc9130a405e2ef43343e599806))
+* require agents to complete the PR template ([#1270](https://github.com/HHS/simpler-grants-pdf-builder/issues/1270)) ([07703b0](https://github.com/HHS/simpler-grants-pdf-builder/commit/07703b0b2adb9c963b403e0b7837baf9230aa43d))
+
+
+### Miscellaneous Chores
+
+* add gated dev upload read observations ([#1265](https://github.com/HHS/simpler-grants-pdf-builder/issues/1265)) ([6ec470b](https://github.com/HHS/simpler-grants-pdf-builder/commit/6ec470b87e51884474c8d42ece981ff2c93ea34b))
+* bump pypdf from 6.21.2 to 6.21.4 ([#1259](https://github.com/HHS/simpler-grants-pdf-builder/issues/1259)) ([831f5f9](https://github.com/HHS/simpler-grants-pdf-builder/commit/831f5f95495e7d36047e0dccade2230ccac418df))
+* bump the python-minor-and-patch group with 3 updates ([#1262](https://github.com/HHS/simpler-grants-pdf-builder/issues/1262)) ([bf66ead](https://github.com/HHS/simpler-grants-pdf-builder/commit/bf66ead076c3ba763870f440b2675c906e1609aa))
+
 ## [3.56.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.56.0...nofos-v3.56.1) (2026-10-30)
 
 
