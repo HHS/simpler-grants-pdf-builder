@@ -34,6 +34,9 @@ from CHANGELOG.md despite a valid title. If that happens, add a `BEGIN_COMMIT_OV
 See `DEPLOYMENT.md` for the full contribution workflow, branch protection rules, and the hotfix
 title convention.
 
+Before opening any PR, read and complete [the PR template](.github/pull_request_template.md),
+including when supplying a custom body with `gh pr create`.
+
 ## Documentation belongs in `documentation/`
 
 Follow [documentation placement and maintenance](documentation/README.md#where-documentation-belongs).
