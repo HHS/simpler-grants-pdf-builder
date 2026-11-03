@@ -41,6 +41,7 @@ from slugify import slugify
 
 from . import content_processing as _content_processing
 from .content_processing import (
+    ASSISTANCE_LISTING_NUMBER_LABELS,
     BEFORE_YOU_BEGIN_HEADING_TEXT,
     DEFAULT_NOFO_OPPORTUNITY_NUMBER,
     END_NOTES_SECTION_NAME,
@@ -1674,15 +1675,6 @@ def get_side_nav_links(nofo):
 # These are the fields owned by a structured Metadata block. Tagline and
 # assistance-listing labels deliberately retain their independent legacy path.
 
-
-# Label variants seen in real NOFOs today. A future HHS Word template may add a
-# dedicated, single label for this - once confirmed, prefer matching that first.
-ASSISTANCE_LISTING_NUMBER_LABELS = (
-    "Assistance Listing Number:",
-    "Assistance Listing:",
-    "Federal Assistance Listing Number:",
-    "Federal Assistance Listing:",
-)
 
 # CFDA numbers are 2 digits, a period, then up to 3 more characters (eg, 93.884,
 # 12.ABC per SGG's own example). Matches just the code, not any trailing title

@@ -107,6 +107,10 @@ is needed, contact the SimplerNOFOs team.
   from the imported content. When several recognized blocks exist, the last is
   authoritative; fields are not combined with earlier blocks or legacy labels.
   Replace template placeholders before import. See [Word metadata import](WORD_METADATA_IMPORT.md).
+- Supported **Assistance listing** labels within a Metadata block do not stop
+  later Author, Subject or Keywords fields from being imported. Check **NOFO
+  metadata** after import. Earlier records are not repaired automatically; edit
+  those fields or re-import, noting that re-import replaces incoming metadata.
 - Builder can omit a leading Word **Title** paragraph during import. The NOFO
   title suggestion comes from metadata, not that omitted paragraph; check it
   before saving the name.
