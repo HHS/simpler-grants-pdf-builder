@@ -34,7 +34,8 @@ distinguish document corrections, learning needs and product improvements.
 
 On the NOFO list, Bloom group members can use **NOFO Group** to choose a group
 or **All**. The list defaults to **Bloom**, and changing the group keeps the
-selected NOFO status. Other users see their own group's NOFOs.
+selected NOFO status. The Staging environment option is available outside
+production. Other users see their own group's NOFOs.
 
 ### For agents and tools referencing these tasks
 

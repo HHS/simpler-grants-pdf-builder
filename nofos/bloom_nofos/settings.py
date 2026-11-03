@@ -40,6 +40,7 @@ if cast_to_boolean(os.environ.get("IS_DOCKER", False)):
     env_file = ".env.docker"
 
 is_prod = cast_to_boolean(os.environ.get("IS_PROD", False))
+IS_PROD = is_prod
 if is_prod:
     env_file = ".env.production"
 

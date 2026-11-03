@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -79,3 +79,11 @@ class NofoIndexViewTests(TestCase):
 
         self.assertEqual(list(response.context["nofo_list"]), [hrsa])
         self.assertNotContains(response, 'id="group-filter"')
+
+    @override_settings(IS_PROD=True)
+    def test_production_excludes_staging_from_group_choices(self):
+        response = self.client.get(reverse("nofos:nofo_index"), {"group": "staging"})
+
+        self.assertEqual(response.context["nofo_group"], "bloom")
+        self.assertNotContains(response, "Staging environment")
+        self.assertContains(response, "&amp;group=all")

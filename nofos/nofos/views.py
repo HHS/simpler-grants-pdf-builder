@@ -306,7 +306,14 @@ class NofosListView(ListView):
     model = Nofo
     template_name = "nofos/nofo_index.html"
 
-    group_choices = [*settings.GROUP_CHOICES, ("all", "All")]
+    @property
+    def group_choices(self):
+        choices = [
+            (value, label)
+            for value, label in settings.GROUP_CHOICES
+            if value != "staging" or not settings.IS_PROD
+        ]
+        return [*choices, ("all", "All")]
 
     def get_queryset(self):
         queryset = super().get_queryset()
