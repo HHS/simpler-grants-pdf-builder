@@ -26,10 +26,17 @@ See [issue labels](documentation/CONTRIBUTION_WORKFLOW.md#issue-labels) for the 
 
 ## Read the upstream PR template before opening a PR
 
-Before opening an upstream PR, read the current [PR template](.github/pull_request_template.md)
-and the **Open the PR** row in the [contribution workflow](documentation/CONTRIBUTION_WORKFLOW.md#what-to-read-at-each-step)
-from upstream `main`. Start the PR description from that template, link the tracking issue,
-and leave unverified checks unchecked.
+Before creating or editing an upstream PR description, read the current
+[PR template](.github/pull_request_template.md) and the **Open the PR** row in the
+[contribution workflow](documentation/CONTRIBUTION_WORKFLOW.md#what-to-read-at-each-step)
+from upstream `main`. Fetch upstream and read the template with
+`git show upstream/main:.github/pull_request_template.md` if needed.
+
+Use the template as the starting point for the actual PR body. With GitHub CLI,
+copy it to a temporary file, fill in every section, and pass it with
+`gh pr create --body-file` or `gh pr edit --body-file`. Before submitting, compare
+the completed body with the upstream template, link the tracking issue, document
+UI evidence or explain its absence, and leave unverified checks unchecked.
 
 ## PR titles must follow Conventional Commits
 
@@ -49,10 +56,6 @@ from CHANGELOG.md despite a valid title. If that happens, add a `BEGIN_COMMIT_OV
 
 See `DEPLOYMENT.md` for the full contribution workflow, branch protection rules, and the hotfix
 title convention.
-
-Before opening any PR, read and complete [the PR template](.github/pull_request_template.md),
-including when supplying a custom body with `gh pr create`. Follow the upstream
-template's UI evidence instructions for visible changes.
 
 ## Documentation belongs in `documentation/`
 
