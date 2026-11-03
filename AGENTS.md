@@ -13,6 +13,8 @@ exact names, including capitalization and emoji. Do not create a new label or a 
 the user explicitly requests it. Preserve unrelated labels when updating an existing issue.
 See [issue labels](documentation/CONTRIBUTION_WORKFLOW.md#issue-labels) for the current conventions.
 
+For issue drafting, follow the [shared issue-drafting procedure](documentation/ISSUE_DRAFTING.md).
+
 ## PR titles must follow Conventional Commits
 
 Every PR title must start with a type prefix — `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`,

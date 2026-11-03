@@ -6,6 +6,7 @@ Link durable guides or topic indexes from this page; individual evidence records
 
 - [Admin styling](ADMIN_STYLING.md) — Keep admin assets aligned with Django and add scoped customizations
 - [SECURITY.md](SECURITY.md) — Security vulnerability reporting through HHS responsible disclosure, research scope and policy contacts
+- [ISSUE_DRAFTING.md](ISSUE_DRAFTING.md) — Shared agent procedure for drafting and filing GitHub issues
 - [QUALITY_REVIEW_AND_TRIAGE.md](QUALITY_REVIEW_AND_TRIAGE.md) — Design/accessibility and application-experience review, evidence gathering, triage, proposed priorities and assisted-review boundaries
 - [SCALABLE_NOFO_DESIGN_SYSTEM.md](SCALABLE_NOFO_DESIGN_SYSTEM.md) — Technology-agnostic architecture considerations for shared NOFO components, branding, compatibility, reproducible output and PDF validation, with pinned Builder evidence
 - [readability/](readability/README.md) — Source-native metrics, Word/PDF upload guidance, safeguards, verification and launch readiness

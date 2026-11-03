@@ -120,6 +120,8 @@ merge. The differences:
 
 **AI agents**
 
+- Use the [shared issue-drafting procedure](ISSUE_DRAFTING.md) when drafting or filing an issue. Invoke `/issue-create` in Claude Code or `$issue-create` in Codex.
+
 - Read [`AGENTS.md`](../AGENTS.md) first (Claude Code loads it through
   [`CLAUDE.md`](../CLAUDE.md)), then this page.
 - Never push to `main` or force-push a shared branch. Work on a branch and
