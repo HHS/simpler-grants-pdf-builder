@@ -306,6 +306,8 @@ class NofosListView(ListView):
     model = Nofo
     template_name = "nofos/nofo_index.html"
 
+    group_choices = [*settings.GROUP_CHOICES, ("all", "All")]
+
     def get_queryset(self):
         queryset = super().get_queryset()
 
@@ -326,9 +328,10 @@ class NofosListView(ListView):
         if user_group == "bloom":
             # default group param for bloom users is "bloom"
             self.group = self.request.GET.get("group", "bloom")
-            if self.group == "bloom":
-                queryset = queryset.filter(group="bloom")
-            # else: bloom can see "all"
+            if self.group not in dict(self.group_choices):
+                self.group = "bloom"
+            if self.group != "all":
+                queryset = queryset.filter(group=self.group)
         else:
             # non-bloom users can only see their own group
             self.group = user_group
@@ -340,6 +343,7 @@ class NofosListView(ListView):
         context = super().get_context_data(**kwargs)
         context["nofo_status"] = self.status
         context["nofo_group"] = self.group
+        context["nofo_group_choices"] = self.group_choices
         return context
 
 
