@@ -20,6 +20,11 @@ this contribution workflow.
 flowchart TD
     A([Idea, bug, or request]) --> B[Pick an issue template:<br/>bug report or feature request]
     B --> C[Create the GitHub issue]
+    B -. Agent-assisted .-> IA[Agent drafts using ISSUE_DRAFTING.md]
+    IA --> IR{Contributor reviews draft<br/>and approves posting?}
+    IR -- Draft only --> ID([Keep the draft])
+    IR -- Needs edits --> IA
+    IR -- Approves posting --> C
     C --> D[Branch off main<br/>handle/short-description]
     D --> E[Read the docs for what you're touching]
 
