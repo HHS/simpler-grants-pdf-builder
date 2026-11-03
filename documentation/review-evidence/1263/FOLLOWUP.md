@@ -52,6 +52,26 @@ should not be described as a demonstrated full-print-width optimization.
 
 ![Running step context on an oversized-step continuation page](fallback-context.png)
 
+### Oversized step across four Contents pages
+
+Screenshots from the same synthetic fallback PDF, in page order. The test service adds the gray watermark bands.
+
+**Page 1. The first two steps are listed, with Step 3 starting on the next page.**
+
+![Page 1. The first two steps are listed, with Step 3 starting on the next page.](fallback-oversized-page-1.png)
+
+**Page 2. Step 3 starts here. Its name appears in the running label and in the regular linked step heading.**
+
+![Page 2. Step 3 starts here. Its name appears in the running label and in the regular linked step heading.](fallback-oversized-page-2.png)
+
+**Page 3. Step 3 continues. The running label gives context as the list resumes at attachment 19.**
+
+![Page 3. Step 3 continues. The running label gives context as the list resumes at attachment 19.](fallback-oversized-page-3.png)
+
+**Page 4. Step 3 finishes, then Step 4 begins. The running label still names Step 3 because its entries start the page.**
+
+![Page 4. Step 3 finishes, then Step 4 begins. The running label still names Step 3 because its entries start the page.](fallback-oversized-page-4.png)
+
 ### Structure and validation
 
 - All 24 new fixture/theme/mode combinations preserve the list DOM, exact labels
