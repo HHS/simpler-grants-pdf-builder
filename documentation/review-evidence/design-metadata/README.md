@@ -1,5 +1,26 @@
 # Metadata consumption evidence
 
+## November 4 compatibility refresh
+
+Merged the refreshed #1164 parent with main `8b5b6377` into this branch without
+rebasing or rewriting shared history. Reconciled the trace with the current
+Assistance listing pass-through grammar: these paragraphs contribute to block
+hashes but not the ten mapped-field events. Added regressions for all four
+supported aliases, traced/untraced output equivalence, assistance-only blocks,
+changed listing hashes, and saved Author evidence through actual synthetic
+Word import. No private source was used.
+
+Added a no-operation merge migration joining Metadata trace and Word comparison
+branches. A fresh isolated SQLite migration succeeds, and model drift check
+reports no changes. All 68 JavaScript tests and current design-guide relative
+link-target checks pass. Focused Python tests and hosted CI are recorded in the
+PR handoff; no fresh independent review or browser walkthrough is claimed yet.
+Older screenshots and results below remain dated historical evidence.
+
+The provenance guide now lives in `documentation/design-pilot/` alongside the
+existing pilot contracts. Acceptance, transfer, discard, actual model execution
+and complete source fidelity remain outside this PR.
+
 October 20, 2026. Invented local content only. This is a bounded #1146 mapping
 slice, not complete source fidelity or acceptance readiness.
 
