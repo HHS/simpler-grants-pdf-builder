@@ -331,7 +331,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 
 - **Ambiguous existing IDs:** If a citation’s existing ID is duplicated elsewhere, leave its references and citation unchanged rather than adding links to that ambiguous destination. Unique existing manual citation IDs may be reused.
 
-- **Editor warnings:** Repeated source numbers are counted once for first-appearance numbering and citation order. Conflicting IDs and incoming ambiguous-destination warnings are grouped by ID; independent defects remain visible. See [Endnote warnings](ENDNOTE_WARNINGS.md) for exact messages and combinations. Viewing saved content does not repair IDs.
+- **Editor warnings:** Repeated source numbers are counted once for first-appearance numbering and citation order. Conflicting IDs and incoming ambiguous-destination warnings are grouped by ID; independent defects remain visible. Reference-count wording is limited to forward-reference anchors outside the citation section; duplicated citation backlinks use the generic destination message. See [Endnote warnings](ENDNOTE_WARNINGS.md) for exact messages and combinations. Viewing saved content does not repair IDs.
 
 ### IMPORT-051 — Manual endnote lists/links preserved as raw HTML in Markdown
 - **Type:** conversion

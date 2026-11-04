@@ -447,7 +447,15 @@ def _inspect(soup):
         elements = collisions[identifier]
         labels = {e.get_text(strip=True) for e in elements}
         if (
-            all(e.name == "a" for e in elements)
+            all(
+                e.name == "a"
+                and id(e) not in section
+                and re.match(
+                    r"^#(?:(?:footnote|endnote)-(?!ref-)|ftnt\d)",
+                    e.get("href", ""),
+                )
+                for e in elements
+            )
             and len(labels) == 1
             and MARKER.fullmatch(next(iter(labels)))
         ):

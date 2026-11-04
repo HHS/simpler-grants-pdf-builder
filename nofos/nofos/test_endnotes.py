@@ -400,3 +400,26 @@ class ReusedManualEndnoteTests(TestCase):
         before = str(rendered)
         self.assertEqual(convert_bracketed_endnotes(rendered), [])
         self.assertEqual(str(rendered), before)
+
+    def test_duplicated_citation_backlinks_are_not_counted_as_references(self):
+        for target, reference in (
+            ("ftnt1", "ftnt_ref1"),
+            ("endnote-1", "endnote-ref-1"),
+            ("endnote-manual-1", "endnote-ref-manual-1"),
+        ):
+            with self.subTest(target=target):
+                soup = BeautifulSoup(
+                    f'<p><a id="{reference}" href="#{target}">[1]</a></p>'
+                    "<h1>Endnotes</h1>"
+                    f'<p><a id="{target}" href="#{reference}">[1]</a> Source</p>'
+                    f'<p><a id="{target}" href="#{reference}">[1]</a> Duplicate</p>',
+                    "html.parser",
+                )
+                before = str(soup)
+                issues = analyze_endnotes(soup)
+                self.assertEqual(
+                    [i["message"] for i in issues if i["code"] == "destination"],
+                    ["Endnote links have a conflicting destination ID."],
+                )
+                self.assertFalse(any("across" in i["message"] for i in issues))
+                self.assertEqual(str(soup), before)

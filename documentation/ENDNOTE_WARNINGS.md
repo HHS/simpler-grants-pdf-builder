@@ -49,7 +49,7 @@ Messages are shown verbatim apart from those placeholders.
 | --- | --- | --- |
 | `heading` | Use one structural Endnotes heading so citations can be identified. | Note-heading evidence exists, but there is not exactly one recognized structural heading. Bold or paragraph text alone does not qualify. |
 | `destination` | An endnote link points to a missing or conflicting destination. | A recognized note link has no target. Duplicated targets use the grouped collision message instead. Applies to forward and return links. |
-| `destination` | Endnote [{n}] has conflicting link IDs across {count} references. | A duplicated ID belongs exclusively to anchors with the same bracketed number. Reported once per ID, including incoming links to it. |
+| `destination` | Endnote [{n}] has conflicting link IDs across {count} references. | A duplicated ID belongs exclusively to forward-reference anchors outside the citation section with the same bracketed number. Citation backlinks do not qualify for a reference count. Reported once per ID, including incoming links to it. |
 | `destination` | Endnote links have a conflicting destination ID. | Other duplicated-ID shapes, including citation targets or inconsistent labels. Reported once per ID. |
 | `return-link` | An endnote citation is missing its return link. | A numeric forward link has one destination, but lacks a reference ID or a matching return link in the citation container. |
 | `duplicate` | [{n}] is used more than once in linked endnotes. | The same linked reference number points to different destinations. |
@@ -99,6 +99,7 @@ for an entire document and no severity-based suppression.
 | One duplicated reference ID, three references, two return links to it | One conflicting-ID issue. Suppress per-anchor ID and incoming ambiguous-destination duplicates for that ID. |
 | Two distinct duplicated IDs | Two conflicting-ID issues, even if their visible numbers match. |
 | Duplicated citation-target ID | One generic conflicting-ID issue, including when no incoming link exists yet; do not guess a reference count or source label. Import leaves that citation and its references unchanged rather than adding ambiguous links. |
+| Duplicated citation backlinks (for example Google `ftnt1` anchors returning to `ftnt_ref1`) | One generic conflicting-ID issue, even when their labels match; do not count backlinks as body references. |
 | Duplicated ID with inconsistent labels | One generic conflicting-ID issue; retain the independent relationship-conflict check. |
 | Duplicated ID plus unrelated missing destination | Both issues. Missing destinations are not grouped merely because their number matches. |
 | Duplicated ID plus missing return link | Both issues when the return link is actually absent. A present but ambiguous return link contributes only to the ID collision. |
