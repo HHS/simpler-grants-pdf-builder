@@ -98,7 +98,7 @@ for an entire document and no severity-based suppression.
 | --- | --- |
 | One duplicated reference ID, three references, two return links to it | One conflicting-ID issue. Suppress per-anchor ID and incoming ambiguous-destination duplicates for that ID. |
 | Two distinct duplicated IDs | Two conflicting-ID issues, even if their visible numbers match. |
-| Duplicated citation-target ID | One generic conflicting-ID issue; do not guess a reference count or source label. |
+| Duplicated citation-target ID | One generic conflicting-ID issue, including when no incoming link exists yet; do not guess a reference count or source label. Import leaves that citation and its references unchanged rather than adding ambiguous links. |
 | Duplicated ID with inconsistent labels | One generic conflicting-ID issue; retain the independent relationship-conflict check. |
 | Duplicated ID plus unrelated missing destination | Both issues. Missing destinations are not grouped merely because their number matches. |
 | Duplicated ID plus missing return link | Both issues when the return link is actually absent. A present but ambiguous return link contributes only to the ID collision. |

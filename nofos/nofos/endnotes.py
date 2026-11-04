@@ -521,6 +521,8 @@ def _inspect(soup):
                 "conflict",
             )
     for target in soup.find_all(id=re.compile(r"^(?:endnote|footnote)-(?!ref-).+")):
+        if target["id"] in collisions:
+            report_collision(target["id"], target)
         if not soup.find("a", href=f'#{target["id"]}'):
             warn(
                 target,
@@ -798,12 +800,20 @@ def convert_bracketed_endnotes(soup):
     if len(headings) != 1:
         return issues
     used = {tag["id"] for tag in soup.find_all(id=True)}
+    # Existing citation IDs may already have incoming links. Do not rename or
+    # reuse an ambiguous destination, or add new references to that collision.
+    ambiguous_citations = {
+        number
+        for number, items in citations.items()
+        for citation, _, _ in items
+        if citation.get("id") and len(soup.find_all(id=citation["id"])) != 1
+    }
     # Reverse offsets protect multiple different markers in the same paragraph.
     pairs = [
         (n, item)
         for n, items in refs.items()
         for item in items
-        if n not in invalid and len(citations[n]) == 1
+        if n not in invalid and n not in ambiguous_citations and len(citations[n]) == 1
     ]
     pairs.sort(
         key=lambda pair: (len(list(pair[1][0].parents)), pair[1][1]), reverse=True

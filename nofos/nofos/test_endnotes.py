@@ -354,3 +354,49 @@ class ReusedManualEndnoteTests(TestCase):
         self.assertEqual(analyze_endnotes(soup), [])
         self.assertEqual(len(soup.select("sup a")), 2)
         self.assertEqual(len({a["href"] for a in soup.select("sup a")}), 1)
+
+    def test_colliding_citation_id_does_not_gain_new_links(self):
+        for identifier in ("endnote-manual-1", "source-bookmark"):
+            with self.subTest(identifier=identifier):
+                soup = BeautifulSoup(
+                    f'<p>Read [1] again [1]</p><div id="{identifier}">Bookmark</div>'
+                    f'<h1>Endnotes</h1><p id="{identifier}">[1] Source</p>',
+                    "html.parser",
+                )
+                before = str(soup)
+                convert_bracketed_endnotes(soup)
+                self.assertEqual(str(soup), before)
+                self.assertIsNone(soup.find("sup"))
+
+    def test_manual_citation_collision_is_reported_without_incoming_links(self):
+        issues = self.inspect(
+            '<p>[1]</p><div id="endnote-manual-1">Bookmark</div>'
+            '<h1>Endnotes</h1><p id="endnote-manual-1">[1] Source</p>'
+        )
+        self.assertEqual(sum(i["code"] == "destination" for i in issues), 1)
+
+    def test_repeated_manual_references_survive_markdown_storage_and_reimport(self):
+        import markdown
+
+        from .nofo_markdown import md
+
+        soup = BeautifulSoup(
+            "<h1>Program</h1><p>First [1], repeated [1].</p><p>Again [1].</p>"
+            "<h1>Endnotes</h1><p>[1] Source <em>title</em>.</p>",
+            "html.parser",
+        )
+        self.assertEqual(convert_bracketed_endnotes(soup), [])
+        rendered = BeautifulSoup(
+            markdown.markdown(md(str(soup)), extensions=["extra"]), "html.parser"
+        )
+        references = rendered.select("sup a")
+        self.assertEqual(len(references), 3)
+        self.assertEqual(len({a["id"] for a in references}), 3)
+        for reference in references:
+            targets = rendered.find_all(id=reference["href"][1:])
+            self.assertEqual(len(targets), 1)
+            self.assertIsNotNone(targets[0].find("a", href="#" + reference["id"]))
+        self.assertEqual(analyze_endnotes(rendered), [])
+        before = str(rendered)
+        self.assertEqual(convert_bracketed_endnotes(rendered), [])
+        self.assertEqual(str(rendered), before)
