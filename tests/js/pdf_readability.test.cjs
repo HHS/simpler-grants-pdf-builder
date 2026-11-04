@@ -42,7 +42,7 @@ function setup({ form = true, error = false, report = false, word = false, valid
     elements['readability-copy-status'] = copyStatus;
     elements['readability-copy-fallback'] = fallback;
     Object.assign(elements, {
-      'readability-report-source': node(word ? 'Word readability pilot' : 'PDF readability pilot'),
+      'readability-report-source': node('Readability Checker'),
       'readability-file': node('draft <Q>.pdf'),
       'readability-date': node('September 23, 2026'),
       'readability-version': node('0.5.3'),
@@ -163,7 +163,7 @@ test('copy includes provenance, scope, every metric and note, and disclaimer', a
 test('copy identifies Word reports without a PDF source label', async () => {
   const state = setup({ form: false, report: true, word: true });
   await state.listeners['copy:click']();
-  assert.match(state.copiedText, /^HHS NOFO Builder: Word readability pilot report/);
+  assert.match(state.copiedText, /^HHS NOFO Builder: Readability Checker report/);
   assert.doesNotMatch(state.copiedText, /Writer instructions and placeholders may be included/);
   assert.match(state.copiedText, /Compare drafts with the same content scope/);
   assert.match(state.copiedText, /Why “Estimated”\? These measures describe text recovered from your Word document/);

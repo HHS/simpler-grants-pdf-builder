@@ -28,7 +28,7 @@
   });
 
   const report = document.getElementById("report-title");
-  if (report) {
+  if (report && !document.getElementById("comparison-save-response")) {
     const showReady = () => {
       document.getElementById("readability-progress-trigger")?.click();
       window.setTimeout(() => {
@@ -42,7 +42,7 @@
     else window.addEventListener("load", showReady, { once: true });
   }
 
-  const uploadError = document.getElementById("pdf--error");
+  const uploadError = document.getElementById("pdf--error") || document.getElementById("passive--error");
   if (uploadError) {
     uploadError.setAttribute("tabindex", "-1");
     uploadError.focus();

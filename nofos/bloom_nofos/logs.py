@@ -8,7 +8,13 @@ logger = logging.getLogger("django.request")
 
 
 def is_pdf_readability_request(request):
-    return request.path_info.rstrip("/") in {"/readability", "/nofos/readability"}
+    return request.path_info.rstrip("/") in {
+        "/readability",
+        "/nofos/readability",
+        "/readability-checker",
+        "/nofos/readability-checker",
+        "/nofos/readability-checker/comparisons/save",
+    }
 
 
 def configure_logging(config):

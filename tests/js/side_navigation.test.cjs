@@ -36,6 +36,8 @@ function setup({ width = 1280, initialScroll = 0 } = {}) {
   ].map((id) => [id, element(id)]));
   elements['side-nav-list'].querySelectorAll = () => links;
   elements['side-nav-list'].querySelector = () => links[0];
+  elements['side-nav-container'].contains = (el) =>
+    links.includes(el) || el === elements['side-nav-close'];
   const timers = new Map();
   const scrollListeners = {};
   let destination;
@@ -75,8 +77,12 @@ function setup({ width = 1280, initialScroll = 0 } = {}) {
 
   return {
     links, pipes, window, elements,
+    document,
     open() {
       elements['side-nav-toggle'].listeners.click();
+      this.flush();
+    },
+    flush() {
       const pending = [...timers.values()];
       timers.clear();
       pending.forEach((fn) => fn());
@@ -132,4 +138,22 @@ test('mobile jump-to closes navigation and retains the selected indicators', () 
   assert.equal(nav.elements['side-nav-toggle'].getAttribute('aria-expanded'), 'false');
   nav.settle();
   nav.assertCurrent(2);
+});
+
+test('mobile navigation reopens after a jump when Safari blurs the tapped toggle', () => {
+  const nav = setup({ width: 375 });
+  const toggle = nav.elements['side-nav-toggle'];
+  nav.open();
+  nav.click(2);
+  assert.equal(nav.document.activeElement, toggle);
+
+  // iOS Safari does not focus a tapped button: the focused toggle blurs to
+  // <body> before the click handler opens the navigation.
+  nav.document.activeElement = nav.document.body;
+  nav.elements['side-nav-container'].listeners.focusout({});
+  toggle.listeners.click();
+  nav.flush();
+
+  assert.equal(toggle.getAttribute('aria-expanded'), 'true');
+  assert.ok(nav.elements['side-nav-container'].classList.contains('is-open'));
 });

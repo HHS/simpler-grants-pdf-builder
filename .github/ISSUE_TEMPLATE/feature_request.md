@@ -2,7 +2,7 @@
 name: Feature request
 about: Suggest a new feature, an improvement, or a documentation change
 title: ""
-labels: enhancement
+labels: "Feature request"
 ---
 
 ## Summary

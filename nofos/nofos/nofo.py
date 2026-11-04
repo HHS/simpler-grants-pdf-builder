@@ -41,6 +41,7 @@ from slugify import slugify
 
 from . import content_processing as _content_processing
 from .content_processing import (
+    ASSISTANCE_LISTING_NUMBER_LABELS,
     BEFORE_YOU_BEGIN_HEADING_TEXT,
     DEFAULT_NOFO_OPPORTUNITY_NUMBER,
     END_NOTES_SECTION_NAME,
@@ -1675,15 +1676,6 @@ def get_side_nav_links(nofo):
 # assistance-listing labels deliberately retain their independent legacy path.
 
 
-# Label variants seen in real NOFOs today. A future HHS Word template may add a
-# dedicated, single label for this - once confirmed, prefer matching that first.
-ASSISTANCE_LISTING_NUMBER_LABELS = (
-    "Assistance Listing Number:",
-    "Assistance Listing:",
-    "Federal Assistance Listing Number:",
-    "Federal Assistance Listing:",
-)
-
 # CFDA numbers are 2 digits, a period, then up to 3 more characters (eg, 93.884,
 # 12.ABC per SGG's own example). Matches just the code, not any trailing title
 # text (eg, "93.318: Protecting and Improving Health Globally...") - the
@@ -1739,6 +1731,11 @@ def suggest_nofo_before_you_begin(
 
 def suggest_nofo_theme(nofo_number, opdiv=""):
     opdiv_lower = (opdiv or "").lower()
+    if "centers for disease control and prevention" in opdiv_lower or re.search(
+        r"\bcdc\b", opdiv_lower
+    ):
+        return "portrait-cdc-blue"
+
     if "national institutes of health" in opdiv_lower or re.search(
         r"\bnih\b", opdiv_lower
     ):
@@ -1759,6 +1756,14 @@ def suggest_nofo_theme(nofo_number, opdiv=""):
         r"\bacl\b", opdiv_lower
     ):
         return "portrait-acl-white"
+
+    if "indian health service" in opdiv_lower or re.search(r"\bihs\b", opdiv_lower):
+        return "portrait-ihs-white"
+
+    if re.search(
+        r"\b(?:centers for medicare (?:&|and) medicaid services|cms)\b", opdiv_lower
+    ):
+        return "portrait-cms-white"
 
     if "cdc-" in nofo_number.lower():
         return "portrait-cdc-blue"

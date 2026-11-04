@@ -27,7 +27,8 @@ recognition results: five supported and the blank guide unsupported. The real
 Word print export also completes analysis. No private content is committed.
 
 No application flags outside the isolated local database changed. No deployment
-or clearance determination was made. See the durable guide for matrix gaps.
+or clearance determination was made. See the [current drafting guide](../../readability/DRAFT_PDF_READABILITY.md) and
+[historical characterization and matrix gaps](characterization.md).
 
 ## Released package adoption
 
@@ -102,3 +103,9 @@ Validation after resolving the conflicts:
 
 The historical browser captures and remaining accuracy limitations above still
 apply; this update does not add browser or private-source validation.
+
+## Issue disposition — October 26, 2026
+
+[#1059 was closed with the delivered scope and limitations accepted](https://github.com/HHS/simpler-grants-pdf-builder/issues/1059#issuecomment-6424519352).
+The broader real-conversion comparisons and independently verified real-source
+extraction remain unverified. Closure adds no new validation or release approval.

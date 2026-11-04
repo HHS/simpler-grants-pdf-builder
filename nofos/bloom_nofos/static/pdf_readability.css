@@ -31,3 +31,6 @@
 }
 
 /* Lightweight contextual help, using native disclosure semantics. */
+
+
+.readability-comparison-entry .usa-input { max-width: 8rem; }

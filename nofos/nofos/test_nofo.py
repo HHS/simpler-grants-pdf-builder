@@ -4643,6 +4643,31 @@ class HTMLSuggestDeadlineTests(TestCase):
 
 
 class HTMLSuggestThemeTests(TestCase):
+    def test_ihs_opdiv_selects_light_theme_before_number_heuristics(self):
+        for opdiv in (
+            "Indian Health Service",
+            "Indian Health Service (IHS)",
+            "IHS",
+            "ihs",
+        ):
+            for number in (
+                "",
+                "UNKNOWN-001",
+                "{Insert Opportunity Number}",
+                "CDC-RFA-27-001",
+            ):
+                with self.subTest(opdiv=opdiv, number=number):
+                    self.assertEqual(
+                        suggest_nofo_theme(number, opdiv=opdiv),
+                        "portrait-ihs-white",
+                    )
+
+    def test_ihs_substring_in_unrelated_opdiv_does_not_select_ihs(self):
+        self.assertEqual(
+            suggest_nofo_theme("CDC-RFA-27-001", opdiv="NIHSupport"),
+            "portrait-cdc-blue",
+        )
+
     def test_suggest_nofo_number_hrsa_returns_hrsa_theme(self):
         nofo_number = "HRSA-24-019"
         nofo_theme = "portrait-hrsa-white"
@@ -4743,6 +4768,20 @@ class HTMLSuggestThemeTests(TestCase):
         nofo_number = "CMS-1W1-24-001"
         nofo_theme = "portrait-cms-white"
         self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_nofo_theme_from_cms_opdiv(self):
+        for number, opdiv in (
+            ("{Insert opportunity number.}", "CMS"),
+            ("", "Centers for Medicare & Medicaid Services"),
+            ("CDC-RFA-DP-25-001", "Centers for Medicare and Medicaid Services"),
+        ):
+            with self.subTest(number=number, opdiv=opdiv):
+                self.assertEqual(
+                    suggest_nofo_theme(number, opdiv), "portrait-cms-white"
+                )
+
+    def test_suggest_nofo_theme_ignores_cms_inside_another_word(self):
+        self.assertEqual(suggest_nofo_theme("", "CMSFunding"), "portrait-nih-white")
 
     def test_suggest_nofo_number_rfa_returns_cdc_theme(self):
         nofo_number = "RFA-CK-26-104"

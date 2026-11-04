@@ -21,6 +21,15 @@ class GovBannerTests(TestCase):
         self.assertContains(
             response, "/static/img/us_flag_small.png", status_code=status_code
         )
+        self.assertContains(
+            response, 'aria-label="Agency identifier"', count=1, status_code=status_code
+        )
+        self.assertContains(
+            response,
+            '<a href="https://www.hhs.gov/">U.S. Department of Health and Human Services</a>',
+            count=1,
+            status_code=status_code,
+        )
         html = response.content.decode()
         self.assertLess(html.index('class="usa-banner"'), html.index("usa-header"))
 
@@ -29,7 +38,7 @@ class GovBannerTests(TestCase):
 
     def test_readability_page_has_banner_whether_pilot_is_on_or_off(self):
         url = reverse("pdf_readability")
-        self.assertBannerAboveHeader(self.client.get(url), status_code=503)
+        self.assertBannerAboveHeader(self.client.get(url), status_code=200)
         with override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True):
             self.assertBannerAboveHeader(self.client.get(url))
 
@@ -62,3 +71,4 @@ class GovBannerTests(TestCase):
         response = self.client.get(reverse("nofos:nofo_view", kwargs={"pk": nofo.pk}))
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, BANNER_TEXT)
+        self.assertNotContains(response, 'aria-label="Agency identifier"')

@@ -231,7 +231,12 @@ class PdfReadabilityMetricsView(MetricsViewerRequiredMixin, TemplateView):
         if request.headers.get("Accept") == "application/json":
             response = JsonResponse(data)
         else:
-            response = self.render_to_response({"metrics": data, "attempts_page": page})
+            response = self.render_to_response(
+                {
+                    "metrics": data,
+                    "attempts_page": page,
+                }
+            )
         response["Cache-Control"] = "private, no-store"
         response["Vary"] = "Accept, Cookie"
         return response

@@ -25,6 +25,14 @@ Labels ignore case and whitespace. Inline bold or italic formatting does not spl
 value. Only the first colon separates label and value, so `Metadata subject: Research:
 community health` keeps the second colon. Blank paragraphs may separate fields.
 
+The existing `Assistance listing`, `Assistance listing number`, `Federal assistance
+listing` and `Federal assistance listing number` labels may appear between these
+fields, including with blank values. They do not stop later PDF metadata from
+being read. Assistance-listing extraction still uses its independent legacy
+lookup and feature switch; these labels alone do not recognize a Metadata block.
+Inside a recognized block, their paragraphs are consumed with the other source
+fields. Unknown labels still end the block.
+
 The field block ends at any following heading, table, list, or non-label prose, even
 when that heading is lower-level. Put all fields together before an appendix or notes.
 The section need not be the last part of the Word document. Builder captures its fields,
@@ -99,6 +107,11 @@ the existing overwrite, validation, status checks and transaction rollback behav
 preserves stored theme, cover and registration-page variant; a missing incoming title
 does not replace an existing title with a timestamp default. No migration or backfill is
 required. New-import cover/theme suggestions use the resolved OpDiv and opportunity number.
+
+If an earlier import left PDF metadata blank after an Assistance listing field,
+review and correct **NOFO metadata**, or re-import the source after this fix is
+deployed. Re-import replaces incoming metadata values under the normal rules;
+it does not preserve manual metadata edits. No existing record is repaired automatically.
 
 The shared suggestion functions also supply OpDiv during Composer and Compare imports;
 those workflows retain their filename-based document titles and their own stored fields.

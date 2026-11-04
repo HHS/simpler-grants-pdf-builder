@@ -5,6 +5,82 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.56.2](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.56.1...nofos-v3.56.2) (2026-11-03)
+
+
+### Bug Fixes
+
+* default CDC imports to CDC Portrait ([#1269](https://github.com/HHS/simpler-grants-pdf-builder/issues/1269)) ([d41a957](https://github.com/HHS/simpler-grants-pdf-builder/commit/d41a9571d5e754a24c2eaaab557fba07652f8428))
+* default IHS imports to the IHS light theme ([#1261](https://github.com/HHS/simpler-grants-pdf-builder/issues/1261)) ([3c1e035](https://github.com/HHS/simpler-grants-pdf-builder/commit/3c1e0351ea0096f06452179cea36cd93c4726616))
+* Read PDF metadata after Assistance listing fields ([#1272](https://github.com/HHS/simpler-grants-pdf-builder/issues/1272)) ([478b60c](https://github.com/HHS/simpler-grants-pdf-builder/commit/478b60c14a15431860ce6a5e8b4e0c16a93b6999))
+
+
+### Documentation
+
+* add a shared agent workflow for drafting GitHub issues ([#1267](https://github.com/HHS/simpler-grants-pdf-builder/issues/1267)) ([50b22f4](https://github.com/HHS/simpler-grants-pdf-builder/commit/50b22f44c643de5288db4330590a187d4511140d))
+* allow agents to file issues when asked ([#1273](https://github.com/HHS/simpler-grants-pdf-builder/issues/1273)) ([52be4d7](https://github.com/HHS/simpler-grants-pdf-builder/commit/52be4d70550a704f5a7202ee1d2a7f2d3e9ddb26))
+* compare FY27 contents layout prototypes ([#1264](https://github.com/HHS/simpler-grants-pdf-builder/issues/1264)) ([e038ba7](https://github.com/HHS/simpler-grants-pdf-builder/commit/e038ba780a28151db3d6b05abfeaa24abb6666a8))
+* refine contents alignment and single-column fallback ([#1268](https://github.com/HHS/simpler-grants-pdf-builder/issues/1268)) ([7077475](https://github.com/HHS/simpler-grants-pdf-builder/commit/7077475fd24db7dc9130a405e2ef43343e599806))
+* require agents to complete the PR template ([#1270](https://github.com/HHS/simpler-grants-pdf-builder/issues/1270)) ([07703b0](https://github.com/HHS/simpler-grants-pdf-builder/commit/07703b0b2adb9c963b403e0b7837baf9230aa43d))
+
+
+### Miscellaneous Chores
+
+* add gated dev upload read observations ([#1265](https://github.com/HHS/simpler-grants-pdf-builder/issues/1265)) ([6ec470b](https://github.com/HHS/simpler-grants-pdf-builder/commit/6ec470b87e51884474c8d42ece981ff2c93ea34b))
+* bump pypdf from 6.21.2 to 6.21.4 ([#1259](https://github.com/HHS/simpler-grants-pdf-builder/issues/1259)) ([831f5f9](https://github.com/HHS/simpler-grants-pdf-builder/commit/831f5f95495e7d36047e0dccade2230ccac418df))
+* bump the python-minor-and-patch group with 3 updates ([#1262](https://github.com/HHS/simpler-grants-pdf-builder/issues/1262)) ([bf66ead](https://github.com/HHS/simpler-grants-pdf-builder/commit/bf66ead076c3ba763870f440b2675c906e1609aa))
+
+## [3.56.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.56.0...nofos-v3.56.1) (2026-10-30)
+
+
+### Bug Fixes
+
+* keep saved Word comparisons available to metrics viewers ([#1255](https://github.com/HHS/simpler-grants-pdf-builder/issues/1255)) ([ba6aee5](https://github.com/HHS/simpler-grants-pdf-builder/commit/ba6aee5768d269a6cb6443065ef04f6cca6c0270))
+* reopen NOFO side navigation on iOS Safari after jumping to a section ([#1258](https://github.com/HHS/simpler-grants-pdf-builder/issues/1258)) ([5e1e911](https://github.com/HHS/simpler-grants-pdf-builder/commit/5e1e911c73167b880a1f41b350d1ef9c55450c13))
+
+## [3.56.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.55.0...nofos-v3.56.0) (2026-10-29)
+
+
+### Features
+
+* add Word passive sentence comparisons to Readability Checker metrics ([#1249](https://github.com/HHS/simpler-grants-pdf-builder/issues/1249)) ([74e7479](https://github.com/HHS/simpler-grants-pdf-builder/commit/74e7479d1cf1f8c39e77bc3752298c8e096c989c))
+
+
+### Bug Fixes
+
+* arrange small-screen footer links in two columns ([#1246](https://github.com/HHS/simpler-grants-pdf-builder/issues/1246)) ([db66172](https://github.com/HHS/simpler-grants-pdf-builder/commit/db661721a883c0d63ada784644f21c5ef610b2b1))
+* distinguish disabled public readability from service failures ([#1250](https://github.com/HHS/simpler-grants-pdf-builder/issues/1250)) ([6e57ed9](https://github.com/HHS/simpler-grants-pdf-builder/commit/6e57ed9f1e0923d1360f76532a83f9478fef80a0))
+* render error pages safely for invalid hosts ([#1252](https://github.com/HHS/simpler-grants-pdf-builder/issues/1252)) ([a5077ba](https://github.com/HHS/simpler-grants-pdf-builder/commit/a5077ba3954803a3a9d3a2d1fdd059bee683276b))
+* space comparison confirmation below calculation notes ([#1253](https://github.com/HHS/simpler-grants-pdf-builder/issues/1253)) ([ef30a00](https://github.com/HHS/simpler-grants-pdf-builder/commit/ef30a0004b6cbe3c41d6420e75c200c742be82fe))
+
+## [3.55.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.54.0...nofos-v3.55.0) (2026-10-28)
+
+
+### Features
+
+* add candidate-only local design interface ([#1162](https://github.com/HHS/simpler-grants-pdf-builder/issues/1162)) ([d27af07](https://github.com/HHS/simpler-grants-pdf-builder/commit/d27af07096343784d81f93459da70ac4442cd5cf))
+* add HHS agency identifier to application footers ([#1241](https://github.com/HHS/simpler-grants-pdf-builder/issues/1241)) ([718b85f](https://github.com/HHS/simpler-grants-pdf-builder/commit/718b85f07292e95c1b17b33a77c694cb34889aaf))
+* add revision-bound synthetic candidate review ([#1163](https://github.com/HHS/simpler-grants-pdf-builder/issues/1163)) ([502aa2f](https://github.com/HHS/simpler-grants-pdf-builder/commit/502aa2fda2635741559c6e0cf449b37bfbf89321))
+* record Readability Calculator file categories ([#1228](https://github.com/HHS/simpler-grants-pdf-builder/issues/1228)) ([93e8601](https://github.com/HHS/simpler-grants-pdf-builder/commit/93e86011f870dd81be479f6403395da27b9de1a8))
+
+
+### Bug Fixes
+
+* adopt readability metrics 0.7.0 and definition modifier profiles ([#1244](https://github.com/HHS/simpler-grants-pdf-builder/issues/1244)) ([471ede1](https://github.com/HHS/simpler-grants-pdf-builder/commit/471ede15a2ea21a74d2346bf94ead5de926a4133))
+* clarify drafting-stage PDF readability scope ([#1060](https://github.com/HHS/simpler-grants-pdf-builder/issues/1060)) ([2c16815](https://github.com/HHS/simpler-grants-pdf-builder/commit/2c168159f2f771c4749c9ebd11acc16b96ea1251))
+* clarify Readability Calculator usage for PDF and Word ([#1120](https://github.com/HHS/simpler-grants-pdf-builder/issues/1120)) ([2a98942](https://github.com/HHS/simpler-grants-pdf-builder/commit/2a98942716fd9002780448914ba0e8446ad88f91))
+* restore Standard image cover choice for HRSA NOFOs ([#1225](https://github.com/HHS/simpler-grants-pdf-builder/issues/1225)) ([da2f568](https://github.com/HHS/simpler-grants-pdf-builder/commit/da2f568f01890172ce37ffa352342b9427431963))
+* use Readability Checker naming consistently ([#1236](https://github.com/HHS/simpler-grants-pdf-builder/issues/1236)) ([be2d551](https://github.com/HHS/simpler-grants-pdf-builder/commit/be2d551e3a6527447c6c5ddc7b1f3f514e0388ce))
+
+
+### Documentation
+
+* add Readability Calculator launch readiness plan ([#1239](https://github.com/HHS/simpler-grants-pdf-builder/issues/1239)) ([8cac8f6](https://github.com/HHS/simpler-grants-pdf-builder/commit/8cac8f601dab8375a59227efbf098f66538817b0))
+* explain scalable NOFO design system architecture ([#1196](https://github.com/HHS/simpler-grants-pdf-builder/issues/1196)) ([c3fad94](https://github.com/HHS/simpler-grants-pdf-builder/commit/c3fad94c1e559f016b8934b280bed8432b60feb2))
+* investigate shared design impact and render traceability ([#1237](https://github.com/HHS/simpler-grants-pdf-builder/issues/1237)) ([8ac6e76](https://github.com/HHS/simpler-grants-pdf-builder/commit/8ac6e76d10fc8a1dc4abd82c3504b2fe6877e11f))
+* organize documentation and clarify placement rules ([#1243](https://github.com/HHS/simpler-grants-pdf-builder/issues/1243)) ([e66b6ca](https://github.com/HHS/simpler-grants-pdf-builder/commit/e66b6ca49e6fd42cc645c9100589aea0aa41f04c))
+* reuse existing repository issue labels ([#1233](https://github.com/HHS/simpler-grants-pdf-builder/issues/1233)) ([41184e5](https://github.com/HHS/simpler-grants-pdf-builder/commit/41184e5c80f4b75f7f47b49e7f382ed21f0bbe45))
+
 ## [3.54.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.53.2...nofos-v3.54.0) (2026-10-26)
 
 

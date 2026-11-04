@@ -1,0 +1,4 @@
+Metrics v{{ version }}
+<details><summary>View details</summary>
+  <div>Profile: {{ profile|default:"Unavailable" }}<br>Input processing: {{ input_processing|default:"Unavailable" }}{% if schema %}<br>Schema: {{ schema }}{% endif %}{% if result_basis %}<br>Result basis: {{ result_basis }}{% endif %}</div>
+</details>

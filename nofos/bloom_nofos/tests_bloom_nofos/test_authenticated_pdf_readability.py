@@ -77,8 +77,9 @@ class AuthenticatedPilotTests(TestCase):
 
     def test_public_disabled_independently_no_navigation_link(self):
         self.login()
-        self.assertEqual(self.client.get(self.public_url).status_code, 503)
+        self.assertEqual(self.client.get(self.public_url).status_code, 200)
         response = self.client.get(self.url)
+        self.assertContains(response, "Readability Checker", count=2)
         self.assertContains(response, "How we handle your document")
         self.assertContains(response, "do not include your identity")
         self.assertEqual(response["Cache-Control"], "no-store")
@@ -103,6 +104,8 @@ class AuthenticatedPilotTests(TestCase):
         with patch("bloom_nofos.views.analyze_uploaded_pdf", return_value=REPORT):
             response = self.client.post(self.url, {"pdf": self.upload()})
         self.assertContains(response, "Readability report")
+        self.assertContains(response, "Readability Checker", count=2)
+        self.assertNotContains(response, "PDF readability pilot")
         self.assertContains(
             response, "try uploading the original Word document instead"
         )
@@ -129,7 +132,7 @@ class AuthenticatedPilotTests(TestCase):
         response = self.client.get(self.url)
         self.assertContains(response, "it does not need to be designed for publication")
         self.assertContains(response, "Blank templates without identifying details")
-        self.assertEqual(self.client.get(self.public_url).status_code, 503)
+        self.assertEqual(self.client.get(self.public_url).status_code, 200)
 
     def test_real_draft_upload_returns_reference_metrics_with_public_disabled(self):
         self.login()
@@ -142,13 +145,13 @@ class AuthenticatedPilotTests(TestCase):
             },
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context["report"]["version"], "0.6.0")
+        self.assertEqual(response.context["report"]["version"], "0.7.0")
         self.assertEqual(response.context["report"]["scope"]["sentence_word_count"], 17)
         self.assertEqual(
             response.context["report"]["scope"]["complete_sentence_count"], 3
         )
         self.assertContains(response, "Keep instructions that applicants need.")
-        self.assertEqual(self.client.get(self.public_url).status_code, 503)
+        self.assertEqual(self.client.get(self.public_url).status_code, 200)
 
     def test_real_word_upload_records_only_content_free_outcome(self):
         from nofos.models import Nofo
@@ -160,8 +163,9 @@ class AuthenticatedPilotTests(TestCase):
             self.url, {"pdf": SimpleUploadedFile("SECRET-WORD.docx", synthetic_docx())}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Word readability pilot")
-        self.assertEqual(response.context["report"]["version"], "0.6.0")
+        self.assertContains(response, "Readability Checker")
+        self.assertNotContains(response, "Word readability pilot")
+        self.assertEqual(response.context["report"]["version"], "0.7.0")
         self.assertNotContains(response, 'id="readability-draft-scope"')
         self.assertNotContains(response, "before exporting it")
         self.assertContains(response, "Compare drafts with the same content scope.")

@@ -40,6 +40,7 @@ if cast_to_boolean(os.environ.get("IS_DOCKER", False)):
     env_file = ".env.docker"
 
 is_prod = cast_to_boolean(os.environ.get("IS_PROD", False))
+IS_PROD = is_prod
 if is_prod:
     env_file = ".env.production"
 
@@ -159,6 +160,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "bloom_nofos.middleware.PdfReadabilityResponseMiddleware",
+    "bloom_nofos.upload_observation.ReadabilityUploadObservationMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -594,6 +596,7 @@ DJANGO_EASY_AUDIT_UNREGISTERED_CLASSES_EXTRA = [
     "nofos.DocumentAuditEvent",
     # Audit events can attach request/user metadata: never audit anonymous outcomes.
     "nofos.PdfReadabilityAttempt",
+    "nofos.WordComparison",
     "nofos.NofoReadabilityScore",
     "nofos.NofoReadabilityCheckpoint",
     "nofos.MetricsActor",
@@ -711,7 +714,21 @@ HHS_NOFO_METRIC_GOALS = (
 # Add a field for constance
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
+# Trusted deployment metadata, not a Host header or an administrator toggle.
+# This diagnostic is inert when ENVIRONMENT is missing or is not infra-dev.
+READABILITY_OBSERVATION_ENVIRONMENT = env.str("ENVIRONMENT", default="")
+
 CONSTANCE_CONFIG = {
+    "HHS_NOFO_UPLOAD_READ_OBSERVATION_ENABLED": (
+        False,
+        "Dev diagnostics only: observe Readability upload body-read timing, byte counts and temporary worker/correlation IDs. Requires ENVIRONMENT=infra-dev; inert elsewhere. Logs no document content, filenames, headers or user identity. Does not enable uploads. Enable only for a reviewed bounded test and turn off afterward.",
+        bool,
+    ),
+    "HHS_NOFO_WORD_COMPARISONS_ENABLED": (
+        False,
+        "Enable saving new Word comparisons. Requires separate save permission. Metrics viewers can always access the comparison page and retained document names and results. Disabling prevents new saves without hiding or deleting records.",
+        bool,
+    ),
     "DOCUMENT_HISTORY_INDEX_ENABLED": (
         DOCUMENT_HISTORY_INDEX_ENABLED,
         "Use indexed document history. Keep disabled until the separate backfill and backfill_document_audit_index --check succeed in this environment. Changes apply without restarting workers; disable to restore the legacy reader.",

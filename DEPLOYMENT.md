@@ -40,6 +40,10 @@ Branch off of `main` and name your branch descriptively. There is no enforced na
 
 Open a PR targeting `main`. CI will run automatically on every PR.
 
+Before opening the PR and again after review changes, follow the
+[documentation placement and maintenance rules](documentation/README.md#where-documentation-belongs)
+and complete the PR template documentation check.
+
 **PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/)** — start the title with a type prefix, e.g. `feat: ...`, `fix: ...`, `chore: ...`, `docs: ...`, `refactor: ...`, `test: ...`, `ci: ...`. This is enforced by `.github/workflows/pr_title_lint.yml` (not a required check, so it won't block merging) and, more importantly, is what [release-please](https://github.com/googleapis/release-please) uses to group merged PRs into CHANGELOG.md entries — see `release-please-config.json` for the type-to-section mapping. A title without a recognized prefix means the change is miscategorized or silently omitted from the changelog.
 
 **This only works reliably under squash merge, so always squash and merge (see § 4).** Release-please reads the commit message(s) that actually land on `main`, not the PR title — squash merge is the one method where GitHub sets the resulting commit's message to the PR title, so those line up. Under rebase, your individual commits land as-is; if they aren't themselves Conventional-Commit-formatted, the PR can pass title lint and still be silently missing from the changelog. `pr_title_lint.yml` is advisory only (not a required check) — it nudges toward a good title, but doesn't by itself guarantee correct categorization under rebase. If a PR does go missing from the changelog, you can fix it after the fact: edit the *merged* PR's description to add
@@ -264,4 +268,4 @@ If a fix needs to bypass the normal PR flow (e.g. a critical production bug), pr
 
 - [HHS/simpler-grants-gov](https://github.com/HHS/simpler-grants-gov) — monorepo where deploy workflows live
 - [DEVELOPMENT.md (simpler-grants-gov)](https://github.com/HHS/simpler-grants-gov/blob/main/DEVELOPMENT.md) — broader development lifecycle documentation
-- [Local development setup](./README.md) — how to run the NOFO Builder locally
+- [Local development setup](README.md) — how to run the NOFO Builder locally

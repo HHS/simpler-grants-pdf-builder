@@ -701,6 +701,15 @@ METADATA_LABEL_PATTERN = re.compile(r"^\s*[^:\n]{1,80}:\s*\S*", re.IGNORECASE)
 INVALID_OPDIV_ACRONYMS = {"N/A", "NA", "NONE", "TBD", "UNKNOWN"}
 
 
+# Shared with the independent, feature-controlled assistance-listing reader.
+ASSISTANCE_LISTING_NUMBER_LABELS = (
+    "Assistance Listing Number:",
+    "Assistance Listing:",
+    "Federal Assistance Listing Number:",
+    "Federal Assistance Listing:",
+)
+
+
 METADATA_BLOCK_LABELS = {
     "opdiv",
     "agency",
@@ -717,6 +726,11 @@ METADATA_BLOCK_LABELS = {
 
 def _metadata_label_key(label):
     return re.sub(r"\s+", "", sanitize_imported_text(label)).casefold()
+
+
+_METADATA_PASSTHROUGH_LABELS = {
+    _metadata_label_key(label.rstrip(":")) for label in ASSISTANCE_LISTING_NUMBER_LABELS
+}
 
 
 def metadata_block_fields(heading):
@@ -764,10 +778,16 @@ def _metadata_block(heading):
             continue
         label, separator, value = text.partition(":")
         key = _metadata_label_key(label)
-        if not separator or key not in METADATA_BLOCK_LABELS:
+        if (
+            not separator
+            or key not in METADATA_BLOCK_LABELS | _METADATA_PASSTHROUGH_LABELS
+        ):
             break
-        # First occurrence wins, including a blank, just like legacy scanning.
-        fields.setdefault(key, sanitize_imported_text(value))
+        if key in METADATA_BLOCK_LABELS:
+            # First occurrence wins, including a blank, just like legacy scanning.
+            fields.setdefault(key, sanitize_imported_text(value))
+        # Known independent fields may appear between mapped fields without
+        # changing their lookup/precedence or recognizing a block on their own.
         elements.append(element)
     return fields or None, elements if fields else []
 

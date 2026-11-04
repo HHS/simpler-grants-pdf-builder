@@ -1,3 +1,4 @@
+import hashlib
 import logging
 import math
 import os
@@ -108,6 +109,12 @@ def _metric_rows(report):
     return rows
 
 
+@csrf_exempt
+def readability_redirect(request, route_name):
+    """Keep shared links and pending uploads usable after the tool rename."""
+    return redirect(route_name, permanent=True, preserve_request=True)
+
+
 @never_cache
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
@@ -135,7 +142,10 @@ def authenticated_pdf_readability(request):
 def _pdf_readability_workflow(request, enabled, source):
     started = time.monotonic()
     if not enabled and source == "public":
-        response = render(request, "pdf_readability_unavailable.html", status=503)
+        # Disabled is an intentional access state, not a service failure.
+        # Return before CSRF/form handling can parse an uploaded document.
+        status = 403 if request.method == "POST" else 200
+        response = render(request, "pdf_readability_unavailable.html", status=status)
         response["Cache-Control"] = "no-store"
         if request.method == "POST":
             _record_pdf_attempt(source, "disabled", response.status_code, started)
@@ -250,6 +260,26 @@ def _pdf_readability_form(request):
         else:
             upload = uploads[0]
             try:
+                from nofos.word_comparisons import (
+                    PERMISSION,
+                    WordResultsForm,
+                    enabled,
+                    stage_run,
+                )
+
+                comparison_allowed = (
+                    word_uploads_allowed
+                    and enabled()
+                    and request.user.has_perm(PERMISSION)
+                    and str(upload.name).lower().endswith(".docx")
+                )
+                fingerprint = None
+                if comparison_allowed:
+                    digest = hashlib.sha256()
+                    for chunk in upload.chunks():
+                        digest.update(chunk)
+                    fingerprint = digest.hexdigest()
+                    upload.seek(0)
                 report = analyze_uploaded_pdf(upload)
             except PdfReadabilityError as error:
                 request.pdf_readability_outcome = error.code
@@ -268,6 +298,11 @@ def _pdf_readability_form(request):
                 logger.warning("PDF readability analysis failed unexpectedly.")
             else:
                 request.pdf_readability_outcome = "success"
+                if comparison_allowed and report.get("profile") == "word":
+                    context["comparison_form"] = WordResultsForm()
+                    context["comparison_run"] = stage_run(
+                        request, report, _safe_upload_name(upload.name), fingerprint
+                    )
                 context.update(
                     {
                         "report": report,

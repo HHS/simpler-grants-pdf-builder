@@ -7,7 +7,7 @@ from bloom_nofos.views import _metric_rows, _safe_upload_name
 from constance.test import override_config
 from django.contrib.staticfiles import finders
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from nofos.pdf_readability import PdfReadabilityError
@@ -77,41 +77,95 @@ class PdfReadabilityPageTests(TestCase):
     def setUp(self):
         self.url = reverse("pdf_readability")
 
+    def test_checker_urls_and_legacy_redirects_preserve_uploads(self):
+        from users.models import BloomUser
+
+        self.client.force_login(
+            BloomUser.objects.create_user(
+                email="redirect@example.com",
+                password=None,
+                group="bloom",
+                force_password_reset=False,
+            )
+        )
+        self.assertEqual(self.url, "/readability-checker/")
+        self.assertEqual(
+            reverse("nofos:authenticated_pdf_readability"),
+            "/nofos/readability-checker/",
+        )
+        for old_url, new_url in (
+            ("/readability/", self.url),
+            ("/nofos/readability/", reverse("nofos:authenticated_pdf_readability")),
+        ):
+            for method in ("get", "post"):
+                with self.subTest(url=old_url, method=method):
+                    response = getattr(self.client, method)(old_url)
+                    self.assertEqual(response.status_code, 308)
+                    self.assertEqual(response["Location"], new_url)
+                    self.assertEqual(response["Cache-Control"], "no-store")
+                    self.assertIn("noindex", response["X-Robots-Tag"])
+
     def test_print_styles_hide_banner_and_footer(self):
         css_path = finders.find("pdf_readability.css")
         self.assertIsNotNone(css_path)
         css = Path(css_path).read_text()
         self.assertIn(".usa-banner, .usa-footer { display: none !important; }", css)
 
+    def test_disabled_unsupported_methods_remain_405(self):
+        for method in ("head", "put", "delete", "options"):
+            with self.subTest(method=method):
+                response = getattr(self.client, method)(self.url)
+                self.assertEqual(response.status_code, 405)
+                self.assertIn("no-store", response["Cache-Control"])
+                self.assertIn("noindex", response["X-Robots-Tag"])
+
+    def test_disabled_post_rejects_before_reading_request_body(self):
+        from bloom_nofos.views import pdf_readability
+
+        request = RequestFactory().post(
+            self.url,
+            data=b"malformed synthetic multipart",
+            content_type="multipart/form-data; boundary=missing",
+        )
+        with patch.object(
+            request, "read", side_effect=AssertionError("body read")
+        ), patch(
+            "bloom_nofos.views._pdf_readability_form",
+            side_effect=AssertionError("form called"),
+        ):
+            response = pdf_readability(request)
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(hasattr(request, "_files"))
+
     def test_flag_is_off_by_default_for_get_and_post(self):
-        self.assertEqual(self.client.get(self.url).status_code, 503)
+        self.assertEqual(self.client.get(self.url).status_code, 200)
         response = self.client.post(self.url, {"pdf": sample_pdf()})
-        self.assertEqual(response.status_code, 503)
-        self.assertContains(response, "Service status", status_code=503)
-        self.assertContains(response, "NOFO Builder", status_code=503)
-        self.assertContains(response, "Back to top", status_code=503)
-        self.assertContains(response, "Latest updates", status_code=503)
+        self.assertEqual(response.status_code, 403)
+        self.assertContains(response, "Service status", status_code=403)
+        self.assertContains(response, "NOFO Builder", status_code=403)
+        self.assertContains(response, "Back to top", status_code=403)
+        self.assertContains(response, "Latest updates", status_code=403)
         self.assertContains(
             response,
             "contact your agency's grants policy office first",
-            status_code=503,
+            status_code=403,
         )
-        self.assertContains(response, "NOFO Builder Feedback Form", status_code=503)
+        self.assertContains(response, "NOFO Builder Feedback Form", status_code=403)
         self.assertContains(
             response,
             'href="https://forms.office.com/r/KH4icQuZ0S"',
-            status_code=503,
+            status_code=403,
         )
-        self.assertContains(response, 'target="_blank"', status_code=503)
+        self.assertContains(response, 'target="_blank"', status_code=403)
         self.assertContains(
             response,
             'rel="nofollow noopener noreferrer"',
-            status_code=503,
+            status_code=403,
         )
         self.assertNotContains(
-            response, "the team that provided this link", status_code=503
+            response, "the team that provided this link", status_code=403
         )
-        self.assertNotContains(response, 'type="file"', status_code=503)
+        self.assertNotContains(response, 'type="file"', status_code=403)
         self.assertNotIn("Retry-After", response)
         self.assertIn("no-store", response["Cache-Control"])
 
@@ -119,6 +173,8 @@ class PdfReadabilityPageTests(TestCase):
     def test_signed_out_form_has_csrf_file_label_and_no_login_link(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Readability Checker", count=2)
+        self.assertContains(response, "Check a document’s readability")
         self.assertContains(response, "pdf_readability.css")
         self.assertContains(response, "styles.css")
         self.assertNotContains(response, "theme-base.css")
@@ -271,6 +327,8 @@ class PdfReadabilityPageTests(TestCase):
         self.assertEqual(response.status_code, 200)
         analyze.assert_called_once()
         self.assertContains(response, "Readability report")
+        self.assertContains(response, "Readability Checker", count=2)
+        self.assertNotContains(response, "PDF readability pilot")
         self.assertContains(response, "How to read these results")
         self.assertContains(
             response, "not a compliance, accessibility, or clearance determination"
@@ -285,12 +343,12 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "Copy metrics")
         self.assertContains(
             response,
-            '<a class="usa-link text-bold" href="/readability/">Analyze another document</a>',
+            '<a class="usa-link text-bold" href="/readability-checker/">Analyze another document</a>',
             html=True,
         )
         self.assertNotContains(
             response,
-            'class="usa-button usa-button--outline" href="/readability/"',
+            'class="usa-button usa-button--outline" href="/readability-checker/"',
         )
         self.assertContains(response, "NOFO Builder")
         self.assertContains(response, "Calculation notes (1)")

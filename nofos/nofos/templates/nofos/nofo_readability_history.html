@@ -38,11 +38,7 @@
         <th scope="row">{{ checkpoint.saved_at|date:"M j, Y, g:i a T" }}{% if checkpoint.is_current %}<span class="display-block">Current version</span>{% endif %}</th>
         <td>{{ checkpoint.saved_by }}{% if checkpoint.is_automatic %}<span class="display-block font-sans-xs">Automatic, {{ checkpoint.trigger_phrase }}</span>{% endif %}</td><td>{{ checkpoint.change_summary.label }}</td>
         {% for metric in checkpoint.metrics %}<td>{{ metric.display }}{% if metric.change %}<span class="display-block font-sans-xs">{{ metric.change }}</span>{% endif %}</td>{% endfor %}
-        <td>Metrics v{{ checkpoint.package_version }}
-          <details><summary>View details</summary>
-            <div>Profile: {{ checkpoint.profile_reference }}<br>Input processing: {{ checkpoint.input_contract_version }}<br>Schema: {{ checkpoint.schema_version }}<br>Result basis: {{ checkpoint.result_basis }}</div>
-          </details>
-        </td>
+        <td>{% include "nofos/includes/readability_calculation_version.html" with version=checkpoint.package_version profile=checkpoint.profile_reference input_processing=checkpoint.input_contract_version schema=checkpoint.schema_version result_basis=checkpoint.result_basis only %}</td>
       </tr>
       {% empty %}<tr><td colspan="9">No saved snapshots yet.</td></tr>{% endfor %}
     </tbody>

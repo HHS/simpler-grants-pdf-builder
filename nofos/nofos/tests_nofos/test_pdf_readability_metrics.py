@@ -49,7 +49,7 @@ class AttemptTests(TestCase):
     def test_disabled_recorded_get_not_recorded(self):
         self.client.get(self.url)
         self.assertEqual(PdfReadabilityAttempt.objects.count(), 0)
-        self.assertEqual(self.client.post(self.url).status_code, 503)
+        self.assertEqual(self.client.post(self.url).status_code, 403)
         self.assertEqual(PdfReadabilityAttempt.objects.get().outcome, "disabled")
 
     @override_settings(PDF_READABILITY_ATTEMPT_RECORDING_ENABLED=False)
@@ -128,7 +128,7 @@ class AttemptTests(TestCase):
             "django.request.pdf_readability_metrics", level="WARNING"
         ) as logs:
             response = self.client.post(self.url)
-        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.status_code, 403)
         self.assertEqual(
             [r.getMessage() for r in logs.records],
             ["PDF readability outcome could not be recorded."],
@@ -249,12 +249,12 @@ class MetricsTests(TestCase):
     def test_file_neutral_copy_and_route_help(self):
         self.login_viewer()
         page = self.client.get(self.url)
-        self.assertContains(page, "<title>Readability Calculator usage", html=False)
-        self.assertContains(page, "Readability Calculator usage")
+        self.assertContains(page, "<title>Readability Checker usage", html=False)
+        self.assertContains(page, "Readability Checker usage")
         self.assertNotContains(page, "PDF readability pilot usage")
         self.assertContains(
             page,
-            "These metrics include recorded attempts from the Readability Calculator.",
+            "These metrics include recorded attempts from the Readability Checker.",
         )
         self.assertContains(
             page,
@@ -273,7 +273,7 @@ class MetricsTests(TestCase):
         self.assertContains(page, "No recorded attempts.")
         main = self.client.get(reverse("nofos:builder_metrics"))
         self.assertContains(
-            main, f'<a href="{self.url}">Readability Calculator usage</a>', html=True
+            main, f'<a href="{self.url}">Readability Checker usage</a>', html=True
         )
         self.assertNotContains(main, "PDF readability pilot usage")
 

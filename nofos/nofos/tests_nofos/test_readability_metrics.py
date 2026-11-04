@@ -479,6 +479,45 @@ class NofoReadabilityMetricsTests(TestCase):
         self.assertEqual(result["metrics"]["word_count"]["status"], "calculated")
         self.assertGreater(result["metrics"]["word_count"]["value"], 0)
 
+    def test_real_builder_uses_definition_modifier_rule_and_preserves_scope(self):
+        import hhs_nofo_metrics as metrics
+
+        subsection = Subsection.objects.get(section__nofo=self.nofo)
+        subsection.body = (
+            "An eligible entity as defined by the charter. "
+            "Applications are reviewed by the board. "
+            "An entity as defined by the charter is selected. "
+            "Applicants submit forms."
+        )
+        subsection.save()
+        source = metrics.SourceBundle.from_html(render_nofo_export_document(self.nofo))
+        old = metrics.analyze(
+            source,
+            profile="hhs-nofo-fy27-html@0.5.0",
+            adapter_config={"root_id": "download_target"},
+        ).to_dict()
+        new = analyze_nofo_readability(self.nofo)
+        before = old["metrics"]["passive_sentence_percentage"]
+        after = new["metrics"]["passive_sentence_percentage"]
+        self.assertEqual(new["engine"]["version"], "0.7.0")
+        self.assertEqual(new["profile"]["version"], "0.6.0")
+        self.assertEqual(after["method"]["version"], "0.5.0-provisional")
+        # Builder also renders standard applicant text. Exactly one of the
+        # controlled sentences changes; both finite passives must remain.
+        self.assertEqual(
+            before["components"]["passive_sentence_count"]
+            - after["components"]["passive_sentence_count"],
+            1,
+        )
+        self.assertGreaterEqual(after["components"]["passive_sentence_count"], 2)
+        self.assertEqual(
+            before["components"]["sentence_count"],
+            after["components"]["sentence_count"],
+        )
+        for key in old["metrics"]:
+            if key != "passive_sentence_percentage":
+                self.assertEqual(old["metrics"][key], new["metrics"][key])
+
     @override_config(HHS_NOFO_METRICS_ENABLED=False)
     @patch("nofos.readability.analyze_nofo_readability")
     def test_disabled_endpoint_fails_closed(self, analyze):

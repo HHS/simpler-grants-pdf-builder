@@ -652,6 +652,11 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Source:** `content_processing.py::builder_import_content`, `_metadata_block`; `views.py::BaseNofoImportView`, `NofosConfirmReimportView`
 - **Status:** active (Builder only)
 
+  Within a recognized block, the four supported assistance-listing label
+  paragraphs are consumed alongside mapped fields, even when their feature
+  switch is off. They do not recognize a block by themselves or change the
+  independent assistance-listing lookup. Unknown labels still end consumption.
+
 ### IMPORT-039 — Writer-instructions table extraction
 - **Type:** extraction
 - **Trigger:** A single-cell table whose text starts with "Instructions for NOFO writers", "Instructions for new NOFO team", "Instructions for template managers" (including combined manager/writer guidance), or matches the pattern `*-specific instructions`.
@@ -692,6 +697,15 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
 
   **Builder tagline precedence.** If IMPORT-059 finds a scoped new-format Tagline heading, use that source even when blank. Otherwise retain this legacy `Tagline:` scanner and its underscore-only blank behavior. Composer and Compare keep their existing path.
 
+  **Intervening assistance-listing fields.** The existing Assistance Listing,
+  Assistance Listing Number, Federal Assistance Listing and Federal Assistance
+  Listing Number labels are allowed inside a block without truncating later
+  mapped fields, including when blank. They remain outside the block-owned
+  field set: legacy precedence and feature-controlled extraction are unchanged.
+  At least one mapped field is still required to recognize a block. Unknown
+  labels, prose, media and structural boundaries still end it. IMPORT-063 uses
+  the same grammar for bounded source consumption.
+
   **Tagline exception — underscore-only placeholders.** `Tagline:` alone gets one extra check: if the extracted value is made up entirely of underscores and whitespace (`"Tagline: _________"`, the ruled blank an HHS Word template leaves for a writer to fill in), the tagline is suggested as empty instead. In isolation this step is a **repair**, the same shape as IMPORT-048 for `{placeholder}` PDF metadata values; it's documented here rather than as its own rule because it only ever runs as part of this rule's tagline extraction. IMPORT-010's sanitization keeps underscores — they are ordinary printable characters — so without this the row of underscores would be saved as the tagline and rendered on the NOFO cover. A value that merely *contains* underscores is untouched (`"Apply by ____ to be considered"` imports as written), and no other metadata field treats underscores as blank, so an underscore-only `Agency:` still imports literally. The check lives next to `suggest_nofo_tagline()` rather than in the shared scanner precisely to keep it that narrow.
 - **Source:** `content_processing.py::metadata_block_fields`, `recognized_metadata_block`, `_suggest_by_startswith_string`; application field defaults and the remaining `suggest_nofo_*` family stay in `nofo.py` (the pure opportunity-number/OpDiv readers are shared). The tagline exception remains `nofo.py::suggest_nofo_tagline`, `_is_underscore_placeholder`
 - **Status:** active
@@ -710,8 +724,8 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
 
 ### IMPORT-042 — Cover theme suggestion
 - **Type:** extraction
-- **Trigger:** OpDiv text or the opportunity-number prefix matches a known agency (`nih`, `hrsa`, `samhsa`, `acl`, `cdc-`, `acf-`, `acl-`, `cms-`, `ihs-`, `rfa-`). ACF is recognized from an `ACF` opportunity-number segment, the full "Administration for Children and Families" OpDiv name, or a standalone `ACF` OpDiv acronym. SAMHSA is recognized from the full "Substance Abuse and Mental Health Services Administration" OpDiv name or a standalone `SAMHSA` OpDiv acronym. ACL is recognized case-insensitively from the full "Administration for Community Living" OpDiv name or a standalone `ACL` acronym; substrings within unrelated words do not qualify.
-- **Action:** Suggest the matching portrait theme. A recognized ACL OpDiv selects `portrait-acl-white` (ACL Default) before opportunity-number heuristics, including when the number is blank, generic, a template placeholder or has a conflicting agency prefix. Existing NIH, HRSA and SAMHSA OpDiv checks retain their priority. Without a recognized ACL OpDiv, the existing `acl-` number heuristic and other agency rules remain unchanged; unmatched sources still fall back to NIH Light. Author metadata does not select a theme. Apply suggestions only on first-time imports; re-import preserves the saved theme, cover and registration-page variant. No migration or backfill changes previously imported records.
+- **Trigger:** OpDiv text or the opportunity-number prefix matches a known agency (`nih`, `hrsa`, `samhsa`, `acl`, `cdc-`, `acf-`, `acl-`, `cms-`, `ihs-`, `rfa-`). CDC is recognized from the full “Centers for Disease Control and Prevention” OpDiv name or a standalone `CDC` OpDiv acronym before other theme checks. ACF is recognized from an `ACF` opportunity-number segment, the full "Administration for Children and Families" OpDiv name, or a standalone `ACF` OpDiv acronym. SAMHSA is recognized from the full "Substance Abuse and Mental Health Services Administration" OpDiv name or a standalone `SAMHSA` OpDiv acronym. IHS is recognized case-insensitively from the full "Indian Health Service" OpDiv name or a standalone `IHS` acronym. ACL is recognized case-insensitively from the full "Administration for Community Living" OpDiv name or a standalone `ACL` acronym; substrings within unrelated words do not qualify.
+- **Action:** Suggest the matching portrait theme. A recognized IHS OpDiv selects `portrait-ihs-white` (IHS (Light)) before opportunity-number heuristics, including blank or placeholder numbers and conflicting agency prefixes. Existing NIH, HRSA, SAMHSA and ACL OpDiv checks retain their priority. A recognized ACL OpDiv selects `portrait-acl-white` (ACL Default) before opportunity-number heuristics, including when the number is blank, generic, a template placeholder or has a conflicting agency prefix. Existing NIH, HRSA and SAMHSA OpDiv checks retain their priority. Without a recognized ACL OpDiv, the existing `acl-` number heuristic and other agency rules remain unchanged; unmatched sources still fall back to NIH Light. Author metadata does not select a theme. Apply suggestions only on first-time imports; re-import preserves the saved theme, cover and registration-page variant. No migration or backfill changes previously imported records. CMS is recognized case-insensitively from the full “Centers for Medicare & Medicaid Services” OpDiv name (including “and” in place of “&”) or a standalone `CMS` acronym. A recognized CMS OpDiv selects `portrait-cms-white` (CMS (Light)) before opportunity-number heuristics, including for blank or placeholder numbers. The existing `cms-` opportunity-number rule selects the same theme.
 - **Source:** `nofo.py::suggest_nofo_theme`, `is_acf_nofo_metadata`
 - **Status:** active
 
