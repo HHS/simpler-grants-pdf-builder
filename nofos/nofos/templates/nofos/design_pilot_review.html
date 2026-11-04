@@ -33,7 +33,7 @@
 <div class="border-bottom border-base-light padding-y-2" id="finding-{{ finding.id }}">
 <h3 class="font-heading-md text-bold">{{ finding.target }}: {{ finding.status_label }} ({{ finding.severity_label }})</h3>
 <p>Rule: {{ finding.rule }}. Human decision required: {{ finding.human_required|yesno:"Yes,No" }}.</p>
-<p>{{ finding.evidence }}</p><p>{{ finding.action }}</p>
+<p style="overflow-wrap:anywhere">{{ finding.evidence }}</p><p>{{ finding.action }}</p>
 {% if finding.section_id %}<a href="#section-{{ finding.section_id }}">Review affected section</a>{% endif %}
 {% if finding.decision %}<p>Acknowledged by {{ finding.decision.actor.email }} on {{ finding.decision.created }}: {{ finding.decision.reason }}</p>
 {% elif finding.severity == 'warning' %}

@@ -19,6 +19,13 @@ target, evidence, status, severity and next step; section findings link to the
 affected read-only section. A pass describes only that diagnostic's scope.
 Unsupported diagnostic input becomes blocking/not assessed, not a pass.
 
+The report also includes [bounded fidelity evidence](DESIGN_FIDELITY_EVIDENCE.md):
+exact converted table/list/link/image observations in the filtered native HTML
+and direct local-resource byte checks. These do not validate Word extraction or
+account for all import/render transformations. Unmatched/reordered exact
+observations require reconciliation; they are not automatically importer defects.
+No converted elements is informational/not assessed, not proof of source absence.
+
 Exact stored-source and imported-record checks reuse the host's integrity guard.
 They do not prove source-to-import fidelity. Source-to-import reconciliation and
 complete asset/link verification are explicitly not assessed and remain blocking.
