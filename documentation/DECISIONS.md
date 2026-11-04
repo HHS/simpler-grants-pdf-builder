@@ -2,6 +2,10 @@
 
 This file records significant architectural, product, and implementation decisions made on the NOFO Builder project. Entries are ordered newest-first.
 
+Use this log for brief product and implementation decisions. Record substantial
+architectural choices, alternatives and rationale in [ADRs](adr/README.md), using
+the shared [ADR template](template.md), and link the record here when relevant.
+
 ---
 
 ## 2026-10-11 — State three HHS style guide points in the style guide
@@ -430,7 +434,7 @@ matched. See [TABLES.md](TABLES.md) and IMPORT-054 in
 
 ## 2026-09-25 — Always show a privacy notice on the PDF readability upload page
 
-**Context:** The public `/readability/` page invited users to upload a draft NOFO,
+**Context:** The public `/readability-checker/` page invited users to upload a draft NOFO,
 but its only data-handling text was a plain paragraph among several others above
 the form. It named no privacy policy or support path, and the pilot runbook
 forbids claiming pre-decisional use is safe before security/privacy approval.
@@ -451,7 +455,14 @@ promise deletion timing. Those remain #968 release gates.
 
 ## 2026-09-24 — Use a loose two-signal NOFO check for the PDF readability pilot
 
-**Context:** The unauthenticated `/readability/` pilot needs modest protection
+**2026-10-07 amendment (#1059):** A real Word print export drops agency metadata
+and places agency details after cover and contents pages. Inspect at most five
+opening pages and accept an agency name in page text as an alternative to agency
+metadata. Count that agency signal once and retain the two-different-types
+threshold. This is not an approval to enable the public route or to treat the
+recognition gate as format or policy validation. The original decision follows.
+
+**Context:** The unauthenticated `/readability-checker/` pilot needs modest protection
 against use as a general-purpose PDF analyzer, but strict FY27 template or
 semantic-heading recognition would reject legitimate HHS NOFOs, especially
 ordinary agency variations and untagged PDFs. Document recognition is not a
@@ -481,7 +492,7 @@ A successful report must continue to say that it is an estimate, not approval.
 ## 2026-09-24 — Show the USWDS government website banner on every page
 
 **Context:** NOFO Builder now has a public, unauthenticated PDF readability page
-at `/readability/`. People who reach it may never have used NOFO Builder and
+at `/readability-checker/`. People who reach it may never have used NOFO Builder and
 have no other cue that it is a government service. simpler.grants.gov already
 uses the standard USWDS government website banner ("An official website of the
 United States government"), but NOFO Builder did not show it anywhere.

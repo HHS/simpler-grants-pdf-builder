@@ -12,6 +12,18 @@ register = template.Library()
 @register.filter()
 def add_footnote_ids(html_string):
     soup = BeautifulSoup(html_string, "html.parser")
+    repeated_returns = {}
+    for link in soup.find_all("a", href=True):
+        match = re.fullmatch(
+            r"(#(?:footnote|endnote)-ref-(?!manual-).+)-repeat-([2-9][0-9]*|1[0-9]+)",
+            link["href"],
+        )
+        if match and link.get_text(strip=True) == "↑":
+            repeated_returns[match[1]] = True
+            link["aria-label"] = f"Return to citation reference {match[2]}"
+    for link in soup.find_all("a", href=True):
+        if link["href"] in repeated_returns and link.get_text(strip=True) == "↑":
+            link["aria-label"] = "Return to first citation reference"
     for a in soup.find_all("a"):
         footnote_num = is_footnote_ref(a)
         footnote_type = get_footnote_type(a)

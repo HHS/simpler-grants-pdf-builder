@@ -7,6 +7,7 @@ from datetime import timedelta
 from threading import Barrier
 from unittest.mock import patch
 
+from bs4 import BeautifulSoup
 from django.db import connections
 from django.http import HttpResponse
 from django.test import (
@@ -175,6 +176,44 @@ class CandidateToolTests(TestCase):
         self.run.nofo.group = "hrsa"
         self.run.nofo.save()
         self.assertEqual(self.call().status_code, 401)
+
+    def test_review_status_matches_key_lifecycle_and_client_access(self):
+        url = reverse("design_pilot:review", args=[self.run.pk])
+
+        def check_status(heading, *, active):
+            response = self.client.get(url)
+            self.assertContains(response, f'text-bold">{heading}</h3>')
+            self.assertEqual(response.context["tool_access_active"], active)
+            self.assertNotContains(response, self.token)
+            soup = BeautifulSoup(response.content, "html.parser")
+            revoke = soup.find(
+                "form", action=reverse("design_pilot:revoke_access", args=[self.run.pk])
+            )
+            self.assertEqual(revoke.button.has_attr("disabled"), not active)
+            return response
+
+        check_status("Active", active=True)
+        self.assertEqual(self.call().status_code, 200)
+        # The displayed boundary agrees with the transport at the exact expiry.
+        now = timezone.now()
+        DesignPilotCandidate.objects.filter(pk=self.run.pk).update(tool_expires_at=now)
+        with patch("django.utils.timezone.now", return_value=now):
+            check_status("Expired", active=False)
+            self.assertEqual(self.call().status_code, 401)
+        self.token, _ = tools.issue_access(self.user, self.run.pk)
+        check_status("Active", active=True)
+        DesignPilotCandidate.objects.filter(pk=self.run.pk).update(
+            tool_requests=tools.MAX_REQUESTS
+        )
+        response = check_status("Request limit reached", active=False)
+        self.assertContains(response, "100 of 100 requests used")
+        self.assertEqual(self.call().status_code, 401)
+        tools.revoke_access(self.user, self.run.pk)
+        check_status("No active access", active=False)
+        self.assertEqual(self.call().status_code, 401)
+        self.token, _ = tools.issue_access(self.user, self.run.pk)
+        check_status("Active", active=True)
+        self.assertEqual(self.call().status_code, 200)
 
     def test_human_issuance_requires_owner_post_and_csrf(self):
         url = reverse("design_pilot:issue_access", args=[self.run.pk])

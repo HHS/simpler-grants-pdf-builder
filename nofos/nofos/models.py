@@ -1413,6 +1413,13 @@ class PdfReadabilityAttempt(models.Model):
     outcome = models.CharField(max_length=32)
     http_status = models.PositiveSmallIntegerField()
     duration_ms = models.PositiveIntegerField()
+    file_category = models.CharField(
+        max_length=7,
+        choices=[("pdf", "PDF"), ("docx", "DOCX"), ("unknown", "Unknown")],
+        default="unknown",
+        db_index=True,
+        help_text="Attempted upload category from its recognized extension, not verified content.",
+    )
     source = models.CharField(
         max_length=16,
         choices=[
@@ -1735,6 +1742,58 @@ class ExternalSourceHandoffResult(models.Model):
         raise ValidationError("Handoff results cannot be deleted through the ORM.")
 
 
+class AuditObjectDocument(models.Model):
+    """Durable document ownership, including objects removed by a reimport."""
+
+    content_type = models.ForeignKey(
+        "contenttypes.ContentType", on_delete=models.CASCADE, related_name="+"
+    )
+    object_id = models.UUIDField()
+    document_content_type = models.ForeignKey(
+        "contenttypes.ContentType", on_delete=models.CASCADE, related_name="+"
+    )
+    document_id = models.UUIDField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["content_type", "object_id"],
+                name="audit_object_document_unique",
+            )
+        ]
+
+
+class DocumentAuditEvent(models.Model):
+    """Small indexed projection; original audit content remains in CRUDEvent."""
+
+    event = models.OneToOneField(
+        "easyaudit.CRUDEvent",
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name="document_index",
+    )
+    document_content_type = models.ForeignKey(
+        "contenttypes.ContentType", on_delete=models.CASCADE, related_name="+"
+    )
+    document_id = models.UUIDField()
+    datetime = models.DateTimeField()
+    visible = models.BooleanField()
+
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=[
+                    "document_content_type",
+                    "document_id",
+                    "-datetime",
+                    "-event",
+                ],
+                condition=models.Q(visible=True),
+                name="document_audit_page_idx",
+            )
+        ]
+
+
 class ExternalSourceHandoffCurrent(models.Model):
     """The sole mutable current-result selector for a receipt."""
 
@@ -1820,3 +1879,35 @@ class DesignPilotReviewDecision(models.Model):
                 name="design_review_decision_once",
             )
         ]
+
+
+class WordComparison(models.Model):
+    """Explicitly retained, immutable Checker measurements; no source text."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True
+    )
+    filename = models.CharField(max_length=180)
+    fingerprint = models.CharField(max_length=64)
+    analyzed_at = models.DateTimeField()
+    version = models.CharField(max_length=100)
+    checker = models.JSONField()
+    passive = models.FloatField(null=True)
+
+    class Meta:
+        permissions = [
+            (
+                "manage_word_comparisons",
+                "Can save passive sentence comparisons",
+            ),
+        ]
+
+    word_passive = models.FloatField()
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def difference(self):
+        if self.passive is None:
+            return None
+        return self.passive - self.word_passive

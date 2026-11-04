@@ -1,7 +1,7 @@
 """
 Preserve supported Word-only semantics before Mammoth emits HTML.
 
-Implements import rules IMPORT-001 and IMPORT-060 in documentation/IMPORT_RULES.md.
+Implements import rules IMPORT-001, IMPORT-060 and IMPORT-005 in documentation/IMPORT_RULES.md.
 Update those entries if you change this file's behavior.
 """
 
@@ -45,6 +45,127 @@ def _word_child(node, name):
         if node is not None
         else None
     )
+
+
+def _is_supported_strong1_style(style):
+    """Recognize a direct, bold-only definition, not a name-based guess.
+
+    Inheritance and additional formatting stay on Mammoth's existing path,
+    including its unrecognized-style warning. Do not remove their style link.
+    """
+    name = _word_child(style, "name")
+    if (
+        style.getAttributeNS(WORD_NAMESPACE, "type") != "character"
+        or not style.getAttributeNS(WORD_NAMESPACE, "styleId")
+        or name is None
+        or name.getAttributeNS(WORD_NAMESPACE, "val") != "Strong1"
+    ):
+        return False
+    # These describe the style in Word's UI, not inherited/run formatting.
+    metadata = {
+        "name",
+        "aliases",
+        "uiPriority",
+        "semiHidden",
+        "unhideWhenUsed",
+        "qFormat",
+        "rsid",
+    }
+    children = [
+        child for child in style.childNodes if child.nodeType == child.ELEMENT_NODE
+    ]
+    if any(
+        child.namespaceURI != WORD_NAMESPACE
+        or child.localName not in metadata | {"rPr"}
+        for child in children
+    ):
+        return False
+    properties = [child for child in children if child.localName == "rPr"]
+    if len(properties) != 1:
+        return False
+    formatting = [
+        child
+        for child in properties[0].childNodes
+        if child.nodeType == child.ELEMENT_NODE
+    ]
+    return (
+        len(formatting) == 1
+        and formatting[0].namespaceURI == WORD_NAMESPACE
+        and formatting[0].localName == "b"
+        and formatting[0].getAttributeNS(WORD_NAMESPACE, "val")
+        in ("", "1", "true", "on")
+    )
+
+
+def normalize_strong1_runs(upload):
+    """Materialize Strong1 bold on a conversion copy, preserving run overrides.
+
+    Mammoth does not resolve custom character-style bold and treats both an
+    absent w:b and w:b=0 as False. Resolve the style before that distinction is
+    lost, then remove its run reference so it cannot add a second bold wrapper.
+    """
+    upload.seek(0)
+    with ZipFile(upload) as archive:
+        if "word/styles.xml" not in archive.namelist():
+            upload.seek(0)
+            return upload
+        styles = _word_xml(archive.read("word/styles.xml"))
+        style_ids = set()
+        for style in styles.getElementsByTagNameNS(WORD_NAMESPACE, "style"):
+            if _is_supported_strong1_style(style):
+                style_ids.add(style.getAttributeNS(WORD_NAMESPACE, "styleId"))
+        replacements = {}
+        if style_ids:
+            for part in (
+                "word/document.xml",
+                "word/footnotes.xml",
+                "word/endnotes.xml",
+            ):
+                if part not in archive.namelist():
+                    continue
+                document = _word_xml(archive.read(part))
+                changed = False
+                for run in document.getElementsByTagNameNS(WORD_NAMESPACE, "r"):
+                    properties = _word_child(run, "rPr")
+                    style = _word_child(properties, "rStyle")
+                    if (
+                        style is None
+                        or style.getAttributeNS(WORD_NAMESPACE, "val") not in style_ids
+                    ):
+                        continue
+                    bold = _word_child(properties, "b")
+                    if bold is None:
+                        bold = document.createElementNS(
+                            WORD_NAMESPACE, f"{style.prefix}:b" if style.prefix else "b"
+                        )
+                        properties.appendChild(bold)
+                    elif bold.getAttributeNS(WORD_NAMESPACE, "val") == "off":
+                        # Word accepts "off"; Mammoth recognizes "0"/"false".
+                        bold.setAttributeNS(
+                            WORD_NAMESPACE,
+                            bold.getAttributeNodeNS(WORD_NAMESPACE, "val").name,
+                            "0",
+                        )
+                    properties.removeChild(style)
+                    changed = True
+                if changed:
+                    replacements[part] = document.toxml(encoding="UTF-8")
+        if not replacements:
+            upload.seek(0)
+            return upload
+        result = BytesIO()
+        with ZipFile(result, "w") as output:
+            for entry in archive.infolist():
+                output.writestr(
+                    entry,
+                    (
+                        replacements[entry.filename]
+                        if entry.filename in replacements
+                        else archive.read(entry)
+                    ),
+                )
+    result.seek(0)
+    return result
 
 
 def omit_leading_word_title(upload):

@@ -236,6 +236,91 @@ class BracketedEndnoteImportTests(TestCase):
 
 
 class NativeWordNoteImportTests(TestCase):
+    def test_noteref_fields_preserve_explicit_relationships_through_storage(self):
+        from nofos.word_endnotes import preserve_word_note_cross_references
+
+        for simple in (True, False):
+            for resolved in (True, False):
+                with self.subTest(simple=simple, resolved=resolved):
+                    source = native_notes_docx()
+                    with ZipFile(BytesIO(source)) as archive:
+                        files = {
+                            name: archive.read(name) for name in archive.namelist()
+                        }
+                    xml = files["word/document.xml"].replace(
+                        b'<w:footnoteReference w:id="1"/>', b""
+                    )
+                    xml = xml.replace(
+                        b'<w:r><w:endnoteReference w:id="1"/>',
+                        b'<w:bookmarkStart w:id="42" w:name="_RefNote"/><w:r><w:endnoteReference w:id="1"/>',
+                    ).replace(
+                        b"<w:t>.</w:t></w:r>",
+                        b'<w:t>.</w:t></w:r><w:bookmarkEnd w:id="42"/>',
+                    )
+                    name = "_RefNote" if resolved else "_Missing"
+                    instruction = f" NOTEREF {name} \\f \\h "
+                    if simple:
+                        field = f'<w:fldSimple w:instr="{instruction}"><w:r><w:t>2</w:t></w:r></w:fldSimple>'
+                    else:
+                        field = (
+                            '<w:r><w:fldChar w:fldCharType="begin"/></w:r>'
+                            f"<w:r><w:instrText>{instruction[:9]}</w:instrText></w:r>"
+                            f"<w:r><w:instrText>{instruction[9:]}</w:instrText></w:r>"
+                            '<w:r><w:fldChar w:fldCharType="separate"/></w:r>'
+                            "<w:r><w:t>2</w:t></w:r>"
+                            '<w:r><w:fldChar w:fldCharType="end"/></w:r>'
+                        )
+                    files["word/document.xml"] = xml.replace(
+                        b"<w:sectPr/>",
+                        f"<w:p><w:r><w:t>Repeated citation </w:t></w:r>{field}</w:p><w:sectPr/>".encode(),
+                    )
+                    # A title authored inside the first endnote is promoted out.
+                    files["word/endnotes.xml"] = files["word/endnotes.xml"].replace(
+                        b'<w:endnote w:id="1">',
+                        b'<w:endnote w:id="1"><w:p><w:r><w:rPr><w:b/></w:rPr><w:t>References</w:t></w:r></w:p>',
+                    )
+                    output = BytesIO()
+                    with ZipFile(output, "w", ZIP_DEFLATED) as archive:
+                        for name, data in files.items():
+                            archive.writestr(name, data)
+                    upload = SimpleUploadedFile(
+                        "cross-reference.docx",
+                        output.getvalue(),
+                        content_type=DOCX_CONTENT_TYPE,
+                    )
+                    original = upload.read()
+                    upload.seek(0)
+                    prepared = preserve_word_note_cross_references(upload)
+                    if not resolved:
+                        self.assertIs(prepared, upload)
+                    html, _ = parse_uploaded_file_as_html_string(upload)
+                    nofo = import_html_to_nofo(html)
+                    rendered = render_stored_document(nofo)
+                    refs = rendered.select('a[href="#endnote-1"]')
+                    self.assertEqual(len(refs), 2 if resolved else 1)
+                    self.assertEqual(len({a["id"] for a in refs}), len(refs))
+                    self.assertNotIn(
+                        "References", rendered.find(id="endnote-1").get_text()
+                    )
+                    self.assertEqual(find_endnote_issues(nofo), [])
+                    assert_internal_endnote_links_are_reciprocal(self, rendered)
+                    if resolved:
+                        from nofos.templatetags.add_footnote_ids import add_footnote_ids
+
+                        labeled = BeautifulSoup(
+                            add_footnote_ids(str(rendered)), "html.parser"
+                        )
+                        returns = labeled.find(id="endnote-1").find_all("a")
+                        self.assertEqual(
+                            [a.get("aria-label") for a in returns],
+                            [
+                                "Return to first citation reference",
+                                "Return to citation reference 2",
+                            ],
+                        )
+                    upload.seek(0)
+                    self.assertEqual(upload.read(), original)
+
     def test_docx_custom_endnote_mark_does_not_duplicate_or_trigger_manual_warning(
         self,
     ):

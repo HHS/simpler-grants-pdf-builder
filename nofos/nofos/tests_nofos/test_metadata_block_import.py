@@ -9,6 +9,7 @@ from compare.models import CompareDocument
 from compare.views import CompareImportView
 from composer.models import ContentGuide
 from composer.views import ComposerImportView
+from constance.test import override_config
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
@@ -16,6 +17,7 @@ from users.models import BloomUser
 
 from nofos.models import Nofo, Section, Subsection
 from nofos.nofo import (
+    ASSISTANCE_LISTING_NUMBER_LABELS,
     add_headings_to_document,
     builder_import_content,
     create_nofo,
@@ -24,6 +26,7 @@ from nofos.nofo import (
     recognized_metadata_block,
     suggest_all_nofo_fields,
     suggest_nofo_agency,
+    suggest_nofo_assistance_listing_number,
     suggest_nofo_author,
     suggest_nofo_opdiv,
     suggest_nofo_opportunity_number,
@@ -47,6 +50,7 @@ def metadata_docx(
     legacy_intro=False,
     number="TEST-1096",
     author="Example Office",
+    assistance_label=None,
 ):
     """Real Word headings, split inline runs, appendix and native notes."""
     fields = (
@@ -62,6 +66,12 @@ def metadata_docx(
         "<w:p><w:r><w:t>Metadata subject: Research: community health</w:t></w:r></w:p>"
         "<w:p><w:r><w:t>Metadata keywords: research, health</w:t></w:r></w:p>"
     ).encode()
+    if assistance_label is not None:
+        fields = fields.replace(
+            b"<w:p><w:r><w:t>Application deadline:",
+            f"<w:p><w:r><w:t>{assistance_label} 93.123</w:t></w:r></w:p>".encode()
+            + b"<w:p><w:r><w:t>Application deadline:",
+        )
     with ZipFile(BytesIO(native_notes_docx())) as source:
         files = {name: source.read(name) for name in source.namelist()}
     if legacy:
@@ -119,6 +129,60 @@ def parse_fixture(*, legacy=False, opdiv="HHS"):
 class MetadataBlockTests(TestCase):
     def soup(self, text):
         return BeautifulSoup(text, "html.parser")
+
+    def test_assistance_labels_do_not_truncate_mapped_fields_or_change_lookup(self):
+        for enabled in (False, True):
+            for label in ASSISTANCE_LISTING_NUMBER_LABELS:
+                with self.subTest(enabled=enabled, label=label), override_config(
+                    HHS_NOFO_ASSISTANCE_LISTING_ENABLED=enabled
+                ):
+                    source = self.soup(
+                        f"<p>{label} 12.345</p><h3>Metadata</h3>"
+                        f"<p>OpDiv: HHS</p><p>{label} 93.123</p>"
+                        "<p><strong>Metadata author:</strong> Example Office</p>"
+                        "<p>Metadata author: Ignored duplicate</p>"
+                        "<p>Metadata subject:</p><p>Metadata keywords: example</p>"
+                    )
+                    fields = recognized_metadata_block(source)
+                    self.assertEqual(fields["metadataauthor"], "Example Office")
+                    self.assertEqual(fields["metadatasubject"], "")
+                    self.assertEqual(fields["metadatakeywords"], "example")
+                    self.assertEqual(
+                        suggest_nofo_assistance_listing_number(source),
+                        "12.345" if enabled else "",
+                    )
+                    content = builder_import_content(source)
+                    self.assertNotIn("Example Office", str(content))
+                    self.assertNotIn("93.123", str(content))
+                    self.assertIn("12.345", str(content))
+
+    def test_assistance_only_block_does_not_override_or_consume(self):
+        source = self.soup(
+            "<h3>Metadata</h3><p>OpDiv: HHS</p><p>Metadata author: Earlier</p>"
+            "<h3>Metadata</h3><p>Assistance listing: 93.123</p>"
+        )
+        self.assertEqual(suggest_nofo_author(source), "Earlier")
+        content = builder_import_content(source)
+        self.assertIn("Assistance listing: 93.123", str(content))
+
+    def test_assistance_labels_do_not_allow_unknown_fields_or_media_to_be_skipped(self):
+        for boundary in (
+            "<p>Unrecognized field: value</p>",
+            '<p>Assistance listing: <img src="diagram.png"/></p>',
+            "<p>Ordinary prose.</p>",
+        ):
+            with self.subTest(boundary=boundary):
+                source = self.soup(
+                    "<h3>Metadata</h3><p>OpDiv: HHS</p>"
+                    "<p>Assistance listing:</p>"
+                    + boundary
+                    + "<p>Metadata author: Outside</p>"
+                )
+                self.assertEqual(suggest_nofo_author(source), "")
+                self.assertIn(boundary, str(builder_import_content(source)))
+                self.assertIn(
+                    "Metadata author: Outside", str(builder_import_content(source))
+                )
 
     def test_content_copy_consumes_all_recognized_blocks_without_losing_authority(self):
         source = self.soup(
@@ -323,6 +387,43 @@ class MetadataWordImportTests(TestCase):
             ),
             content_type=DOCX_CONTENT_TYPE,
         )
+
+    def test_assistance_listing_word_new_import_and_reimport_save_later_metadata(self):
+        for enabled in (False, True):
+            for label in ASSISTANCE_LISTING_NUMBER_LABELS:
+                with self.subTest(enabled=enabled, label=label), override_config(
+                    HHS_NOFO_ASSISTANCE_LISTING_ENABLED=enabled
+                ):
+                    response = self.client.post(
+                        reverse("nofos:nofo_import"),
+                        {"nofo-import": self.upload(assistance_label=label)},
+                    )
+                    self.assertEqual(response.status_code, 302)
+                    nofo = Nofo.objects.latest("created")
+                    for reimport in (False, True):
+                        if reimport:
+                            nofo.author = "Old author"
+                            nofo.assistance_listing_number = "12.345"
+                            nofo.save()
+                            response = self.client.post(
+                                reverse("nofos:nofo_import_overwrite", args=[nofo.pk]),
+                                {"nofo-import": self.upload(assistance_label=label)},
+                            )
+                            self.assertEqual(response.status_code, 302)
+                            nofo.refresh_from_db()
+                        self.assertEqual(
+                            (nofo.author, nofo.subject, nofo.keywords),
+                            (
+                                "Example Office",
+                                "Research: community health",
+                                "research, health",
+                            ),
+                        )
+                        self.assertEqual(nofo.application_deadline, "October 31, 2026")
+                        self.assertEqual(
+                            nofo.assistance_listing_number,
+                            "93.123" if enabled else ("12.345" if reimport else ""),
+                        )
 
     def test_acl_word_import_selects_acl_theme_from_resolved_opdiv(self):
         opdiv = "Administration for Community Living (ACL)"

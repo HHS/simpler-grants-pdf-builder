@@ -1,6 +1,20 @@
 {% extends 'nofos/design_pilot_base.html' %}
 {% block pilot_content %}
 <h1 class="font-heading-xl text-bold">Review synthetic candidate</h1>
+{% if review_error %}
+<div class="usa-alert usa-alert--warning margin-y-2" role="alert">
+  <div class="usa-alert__body">
+    <h2 class="usa-alert__heading text-bold">Warning not acknowledged</h2>
+    <p class="usa-alert__text">{{ review_error }}</p>
+    {% if draft_restored %}<p class="usa-alert__text">Your explanation is still in the warning form. Review the current findings before submitting it again.</p>
+    {% elif acknowledgment_reason %}<p class="usa-alert__text">The warning changed or is no longer available to acknowledge. Your unsaved explanation is retained below; review the current findings before reusing it.</p>{% endif %}
+  </div>
+</div>
+{% if acknowledgment_reason and not draft_restored %}
+<label class="usa-label" for="unsaved-acknowledgment-reason">Your unsaved explanation (copy if needed)</label>
+<textarea class="usa-textarea" id="unsaved-acknowledgment-reason" readonly>{{ acknowledgment_reason }}</textarea>
+{% endif %}
+{% endif %}
 <p>{{ run.source_name }}. Saved design changes: {{ run.sequence }}.</p>
 <p>Source SHA-256: <code style="overflow-wrap:anywhere">{{ run.source_sha256 }}</code></p>
 <p>Candidate: <code style="overflow-wrap:anywhere">{{ run.pk }}</code><br>Current revision: <code style="overflow-wrap:anywhere">{{ revision }}</code></p>
@@ -25,7 +39,7 @@
 {% elif finding.severity == 'warning' %}
 <form class="usa-form" method="post" action="{% url 'design_pilot:acknowledge' run.pk %}">{% csrf_token %}
 <input type="hidden" name="expected_revision" value="{{ revision }}"><input type="hidden" name="evidence_revision" value="{{ report.evidence_revision }}"><input type="hidden" name="finding_id" value="{{ finding.id }}"><input type="hidden" name="finding_digest" value="{{ finding.digest }}">
-<label class="usa-label" for="ack-{{ finding.id }}">Why can this warning be acknowledged?</label><textarea class="usa-textarea" id="ack-{{ finding.id }}" name="reason" maxlength="500" required></textarea>
+<label class="usa-label" for="ack-{{ finding.id }}">Why can this warning be acknowledged?</label><textarea class="usa-textarea" id="ack-{{ finding.id }}" name="reason" maxlength="500" required>{{ finding.draft_reason }}</textarea>
 <button type="submit" class="usa-button margin-top-2">Acknowledge warning</button>
 </form>{% endif %}
 </div>{% endfor %}
@@ -47,9 +61,27 @@
 <p>This slice uses text covers only. Cover assets are not available.</p>
 <h2 class="font-heading-lg text-bold margin-top-4">Candidate-only agent access</h2>
 <p>An approved local client can read this candidate and request theme or table-width changes. Access expires after 20 minutes or 100 requests. It cannot accept, transfer, discard or publish a design.</p>
-{% if tool_access_active %}<p>Latest access expires: {{ tool_expires_at }}. Requests used: {{ tool_requests }}. The key is not shown again.</p>{% else %}<p>No current key has been issued, or access has been revoked.</p>{% endif %}
-<form method="post" action="{% url 'design_pilot:issue_access' run.pk %}">{% csrf_token %}<button class="usa-button" type="submit">Create or replace agent access</button></form>
-<form method="post" action="{% url 'design_pilot:revoke_access' run.pk %}" class="margin-top-2">{% csrf_token %}<button class="usa-button usa-button--outline" type="submit">Revoke agent access</button></form>
+<div id="candidate-access-status" class="usa-alert {% if tool_access_active %}usa-alert--success{% elif tool_access_status == 'none' %}usa-alert--info{% else %}usa-alert--warning{% endif %} margin-y-2" role="status">
+  <div class="usa-alert__body">
+    {% if tool_access_active %}
+    <h3 class="usa-alert__heading text-bold">Active</h3>
+    <p class="usa-alert__text">Expires: {{ tool_expires_at }}. {{ tool_requests }} of {{ tool_request_limit }} requests used. The key is not shown again.</p>
+    {% elif tool_access_status == 'expired' %}
+    <h3 class="usa-alert__heading text-bold">Expired</h3>
+    <p class="usa-alert__text">This key has expired. The client can no longer access this candidate.</p>
+    <p class="usa-alert__text">{{ tool_requests }} of {{ tool_request_limit }} requests used. Create new access to reconnect the client.</p>
+    {% elif tool_access_status == 'exhausted' %}
+    <h3 class="usa-alert__heading text-bold">Request limit reached</h3>
+    <p class="usa-alert__text">{{ tool_requests }} of {{ tool_request_limit }} requests used. The client can no longer access this candidate. Create new access to reconnect the client.</p>
+    {% else %}
+    <h3 class="usa-alert__heading text-bold">No active access</h3>
+    <p class="usa-alert__text">No key has been issued, or access was revoked.</p>
+    {% endif %}
+  </div>
+</div>
+<form method="post" action="{% url 'design_pilot:issue_access' run.pk %}">{% csrf_token %}<button class="usa-button" type="submit">{% if tool_access_active %}Create or replace agent access{% elif tool_access_status == 'none' %}Create agent access{% else %}Create new agent access{% endif %}</button></form>
+<p>The new key will be shown only once. Creating new access replaces the previous key.</p>
+<form method="post" action="{% url 'design_pilot:revoke_access' run.pk %}" class="margin-top-2">{% csrf_token %}<button class="usa-button usa-button--outline" type="submit" {% if not tool_access_active %}disabled{% endif %}>Revoke agent access</button></form>
 <h2 class="font-heading-lg text-bold margin-top-4">Table widths</h2>
 {% for section in sections %}
 <form class="usa-form margin-bottom-4" method="post" action="{% url 'design_pilot:operation' run.pk %}">

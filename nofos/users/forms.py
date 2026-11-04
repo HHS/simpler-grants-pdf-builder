@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
 from django.core.exceptions import ValidationError
 
 from .models import BloomUser
@@ -22,6 +22,12 @@ def validate_user_group_for_superuser(cleaned_data):
 
 
 class MetricsAccessForm(forms.ModelForm):
+    can_manage_word_comparisons = forms.BooleanField(
+        label="Can save passive sentence comparisons",
+        required=False,
+        help_text="Grants explicit comparison-management permission. Does not grant Readability Checker or metrics-view access. Superusers have access automatically.",
+    )
+
     can_view_metrics = forms.BooleanField(
         label="Can view metrics",
         required=False,
@@ -44,6 +50,18 @@ class MetricsAccessForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance.pk:
+            self.initial["can_manage_word_comparisons"] = (
+                self.instance.user_permissions.filter(
+                    content_type__app_label="nofos", codename="manage_word_comparisons"
+                ).exists()
+            )
+            if self.instance.groups.filter(
+                permissions__codename="manage_word_comparisons",
+                permissions__content_type__app_label="nofos",
+            ).exists():
+                self.fields[
+                    "can_manage_word_comparisons"
+                ].help_text += " A group also grants this permission; unchecking will not remove group access."
             self.initial["can_view_metrics"] = self.instance.groups.filter(
                 name="Metrics viewers"
             ).exists()
@@ -87,6 +105,13 @@ class MetricsAccessForm(forms.ModelForm):
 
     def _save_m2m(self):
         super()._save_m2m()
+        comparison_permission = Permission.objects.get(
+            content_type__app_label="nofos", codename="manage_word_comparisons"
+        )
+        if self.cleaned_data.get("can_manage_word_comparisons"):
+            self.instance.user_permissions.add(comparison_permission)
+        else:
+            self.instance.user_permissions.remove(comparison_permission)
         metrics_viewers = Group.objects.get(name="Metrics viewers")
         if self.cleaned_data["can_view_metrics"]:
             self.instance.groups.add(metrics_viewers)

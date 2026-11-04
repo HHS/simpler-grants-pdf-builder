@@ -58,3 +58,19 @@ unimplemented. Missing exact matches can reflect intended transformations and
 must not automatically be called importer defects. The maintained rule/field/ID
 mapping ledger and complete Word extraction/prose/asset verification remain work
 to do. No acceptance, deletion, live transfer or real-data operation was tested.
+
+## October 26 branch update
+
+Merged current main, including the completed #1162 and #1163 slices, without
+rewriting history. Conflict resolution preserves main's explicit access statuses,
+retained acknowledgment drafts, real DOCX import-warning regression, outside-edit
+recovery and HRSA cover policy. The incremental fidelity behavior is unchanged.
+Current migration history is retained; the drift check reports no changes and no
+additional migration is needed.
+
+- Combined fidelity/review/transport/concurrency/host/kernel suite: 81 tests passed.
+- Full Django suite: 2,928 tests passed with three existing skips.
+- JavaScript suite: 61 tests passed.
+- Changed Python files pass Black/isort, and the diff check passes.
+- The final comparison with main contains the fidelity slice and its documentation;
+  no earlier access-control, recovery or import behavior is reverted.

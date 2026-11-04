@@ -8,6 +8,7 @@ from django.db import OperationalError
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from . import design_pilot_host as host
@@ -54,13 +55,14 @@ def pilot_view(view):
     return wrapped
 
 
-def error(request, message, status=400):
+def error(request, message, status=400, *, acknowledgment_reason=""):
     candidate_id = request.resolver_match.kwargs.get("candidate_id")
     return render(
         request,
         "nofos/design_pilot_error.html",
         {
             "message": message,
+            "acknowledgment_reason": acknowledgment_reason,
             "candidate_url": (
                 reverse("design_pilot:review", args=[candidate_id])
                 if candidate_id
@@ -97,11 +99,46 @@ def index(request):
 @pilot_view
 @require_GET
 def review(request, candidate_id):
-    run = host.owned_candidate(request.user, candidate_id)
+    return _review_response(request, candidate_id)
+
+
+def _review_response(request, candidate_id, *, message="", draft=None, status=200):
     try:
+        run = host.owned_candidate(request.user, candidate_id)
         report = candidate_review.report(run)
     except DesignRequestError as exc:
-        return error(request, str(exc), 409)
+        return error(
+            request,
+            str(exc),
+            409,
+            acknowledgment_reason=(draft or {}).get("reason", ""),
+        )
+    except OperationalError:
+        return error(
+            request,
+            "The local database is busy. Return to review before trying again.",
+            409,
+            acknowledgment_reason=(draft or {}).get("reason", ""),
+        )
+    draft_restored = False
+    if draft:
+        for finding in report["findings"]:
+            if (
+                finding["id"] == draft.get("finding_id")
+                and finding["digest"] == draft.get("finding_digest")
+                and finding["severity"] == "warning"
+                and not finding["decision"]
+            ):
+                finding["draft_reason"] = draft.get("reason", "")
+                draft_restored = True
+    access_status = "none"
+    if run.tool_token_digest:
+        if not run.tool_expires_at or run.tool_expires_at <= timezone.now():
+            access_status = "expired"
+        elif run.tool_requests >= tools.MAX_REQUESTS:
+            access_status = "exhausted"
+        else:
+            access_status = "active"
     return render(
         request,
         "nofos/design_pilot_review.html",
@@ -109,15 +146,21 @@ def review(request, candidate_id):
             "run": run,
             "revision": report["revision"],
             "report": report,
+            "review_error": message,
+            "acknowledgment_reason": (draft or {}).get("reason", ""),
+            "draft_restored": draft_restored,
             "review_sections": run.nofo.sections.order_by(
                 "order", "pk"
             ).prefetch_related("subsections"),
             "choices": host.candidate_capabilities(request.user, run)["choices"],
             "sections": run.nofo.sections.order_by("order", "pk"),
-            "tool_access_active": bool(run.tool_token_digest),
+            "tool_access_status": access_status,
+            "tool_access_active": access_status == "active",
+            "tool_request_limit": tools.MAX_REQUESTS,
             "tool_expires_at": run.tool_expires_at,
             "tool_requests": run.tool_requests,
         },
+        status=status,
     )
 
 
@@ -133,12 +176,15 @@ def acknowledge(request, candidate_id):
     try:
         candidate_review.acknowledge(request.user, candidate_id, command)
     except DesignRequestError as exc:
-        return error(request, str(exc), 409)
+        return _review_response(
+            request, candidate_id, message=str(exc), draft=command, status=409
+        )
     except OperationalError:
         return error(
             request,
             "The local database is busy. Return to review before trying again.",
             409,
+            acknowledgment_reason=command.get("reason", ""),
         )
     return redirect("design_pilot:review", candidate_id=candidate_id)
 

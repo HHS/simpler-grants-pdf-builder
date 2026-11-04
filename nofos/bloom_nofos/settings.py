@@ -40,6 +40,7 @@ if cast_to_boolean(os.environ.get("IS_DOCKER", False)):
     env_file = ".env.docker"
 
 is_prod = cast_to_boolean(os.environ.get("IS_PROD", False))
+IS_PROD = is_prod
 if is_prod:
     env_file = ".env.production"
 
@@ -50,7 +51,9 @@ env_exists = os.path.exists(env_path)
 if env_exists:
     environ.Env.read_env(env_path)
 
-# Pending privacy approval in #968; no scheduler is installed by this change.
+# Content-free public and authenticated usage records have no automatic expiration.
+# Leave retention unset; cleanup is optional if a future decision adds expiration.
+# Recording remains independently default-off for each route.
 PDF_READABILITY_ATTEMPT_RECORDING_ENABLED = env.bool(
     "PDF_READABILITY_ATTEMPT_RECORDING_ENABLED", default=False
 )
@@ -157,6 +160,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "bloom_nofos.middleware.PdfReadabilityResponseMiddleware",
+    "bloom_nofos.upload_observation.ReadabilityUploadObservationMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -578,11 +582,21 @@ ALLOWED_HTML_ATTRIBUTES = [
 DJANGO_EASY_AUDIT_READONLY_EVENTS = True
 DJANGO_EASY_AUDIT_WATCH_REQUEST_EVENTS = False
 
+# Environment fallback for Constance; a saved admin value takes precedence.
+# Enable only after the separate post-rollout backfill and completeness checks.
+# Live index maintenance is independent of this read-path switch.
+DOCUMENT_HISTORY_INDEX_ENABLED = env.bool(
+    "DOCUMENT_HISTORY_INDEX_ENABLED", default=False
+)
+
 # NofoReadabilityScore is already an append-only record of when metrics were
 # calculated, so auditing it would only duplicate rows it already holds.
 DJANGO_EASY_AUDIT_UNREGISTERED_CLASSES_EXTRA = [
+    "nofos.AuditObjectDocument",
+    "nofos.DocumentAuditEvent",
     # Audit events can attach request/user metadata: never audit anonymous outcomes.
     "nofos.PdfReadabilityAttempt",
+    "nofos.WordComparison",
     "nofos.NofoReadabilityScore",
     "nofos.NofoReadabilityCheckpoint",
     "nofos.MetricsActor",
@@ -700,7 +714,26 @@ HHS_NOFO_METRIC_GOALS = (
 # Add a field for constance
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
+# Trusted deployment metadata, not a Host header or an administrator toggle.
+# This diagnostic is inert when ENVIRONMENT is missing or is not infra-dev.
+READABILITY_OBSERVATION_ENVIRONMENT = env.str("ENVIRONMENT", default="")
+
 CONSTANCE_CONFIG = {
+    "HHS_NOFO_UPLOAD_READ_OBSERVATION_ENABLED": (
+        False,
+        "Dev diagnostics only: observe Readability upload body-read timing, byte counts and temporary worker/correlation IDs. Requires ENVIRONMENT=infra-dev; inert elsewhere. Logs no document content, filenames, headers or user identity. Does not enable uploads. Enable only for a reviewed bounded test and turn off afterward.",
+        bool,
+    ),
+    "HHS_NOFO_WORD_COMPARISONS_ENABLED": (
+        False,
+        "Enable saving new Word comparisons. Requires separate save permission. Metrics viewers can always access the comparison page and retained document names and results. Disabling prevents new saves without hiding or deleting records.",
+        bool,
+    ),
+    "DOCUMENT_HISTORY_INDEX_ENABLED": (
+        DOCUMENT_HISTORY_INDEX_ENABLED,
+        "Use indexed document history. Keep disabled until the separate backfill and backfill_document_audit_index --check succeed in this environment. Changes apply without restarting workers; disable to restore the legacy reader.",
+        bool,
+    ),
     "DOCRAPTOR_IPS": (
         DOCRAPTOR_IPS,
         "IPs that are allowed to view and print NOFO documents. Latest IPs: https://docraptor.com/ips.txt",

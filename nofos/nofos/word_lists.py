@@ -151,7 +151,9 @@ class WordListPlan:
             same = bool(
                 stack
                 and stack[-1]["level"] == item.level
-                and stack[-1]["num_id"] == item.num_id
+                # Bullet numbering instances carry no restart semantics. Word
+                # can change numId within one uninterrupted bullet sequence.
+                and (item.marker is None or stack[-1]["num_id"] == item.num_id)
                 and stack[-1]["marker"] == item.marker
                 and (item.marker is None or stack[-1]["next"] == item.ordinal)
             )

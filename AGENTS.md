@@ -6,6 +6,38 @@ Follow the workflow in [`documentation/CONTRIBUTION_WORKFLOW.md`](documentation/
 issue, branch, PR with a Conventional Commit title, CI, then squash and merge. It links to what to
 read at each step and lists the rules that apply only to agents.
 
+## Before opening or editing a GitHub issue
+
+Before drafting, filing, or revising an issue, follow the
+[shared issue-drafting procedure](documentation/ISSUE_DRAFTING.md). If your agent
+supports repository skills, use the [issue-create skill](.agents/skills/issue-create/SKILL.md).
+
+Read the procedure, issue template, label guidance, and triage guidance from upstream
+`main`. If your checkout or local upstream reference lacks these files, read them
+directly on GitHub or fetch upstream `main`. Verify the template, labels, and duplicate
+search before posting.
+
+## Reuse existing issue labels
+
+Before creating or relabeling an issue, inspect the repository's current labels and use their
+exact names, including capitalization and emoji. Do not create a new label or a synonym unless
+the user explicitly requests it. Preserve unrelated labels when updating an existing issue.
+See [issue labels](documentation/CONTRIBUTION_WORKFLOW.md#issue-labels) for the current conventions.
+
+## Read the upstream PR template before opening a PR
+
+Before creating or editing an upstream PR description, read the current
+[PR template](.github/pull_request_template.md) and the **Open the PR** row in the
+[contribution workflow](documentation/CONTRIBUTION_WORKFLOW.md#what-to-read-at-each-step)
+from upstream `main`. Fetch upstream and read the template with
+`git show upstream/main:.github/pull_request_template.md` if needed.
+
+Use the template as the starting point for the actual PR body. With GitHub CLI,
+copy it to a temporary file, fill in every section, and pass it with
+`gh pr create --body-file` or `gh pr edit --body-file`. Before submitting, compare
+the completed body with the upstream template, link the tracking issue, document
+UI evidence or explain its absence, and leave unverified checks unchecked.
+
 ## PR titles must follow Conventional Commits
 
 Every PR title must start with a type prefix — `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`,
@@ -27,10 +59,20 @@ title convention.
 
 ## Documentation belongs in `documentation/`
 
-Put repository documentation in the top-level `documentation/` directory. Do not create a
-top-level `docs/` directory. Add durable guides to `documentation/README.md`; use
-`documentation/adr/` for architecture decision records and `documentation/review-evidence/` only
-for PR-specific screenshots and validation notes.
+Follow [documentation placement and maintenance](documentation/README.md#where-documentation-belongs).
+Update an existing guide before adding a file. Put reusable guidance in a guide or
+established topic folder, architectural decisions in `documentation/adr/`, and
+issue/PR-specific investigations, experiments, screenshots and validation records
+in `documentation/review-evidence/`, with a README and supporting files together.
+Split dated results from current guidance and link both ways. Link durable guides
+or topic indexes from `documentation/README.md`; individual evidence records do
+not need separate entries there. Never create a top-level `docs/` directory.
+
+Keep the reusable ADR template at `documentation/template.md`; discover it through
+the documentation and ADR indexes. Reconcile proposal/status notes as implementation
+lands, preserve historical evidence, and name a replacement before archiving a guide.
+Before opening a PR and after review changes, check placement, reuse, indexes and
+links, including path-dependent scripts affected by moves.
 
 ## Keep editor tasks current
 
@@ -45,11 +87,34 @@ before merging. In the PR checklist, confirm the instructions were updated or ex
 update is needed. Routine internal changes with no effect on editor instructions need only a
 brief explanation; they do not require a documentation edit.
 
+## Runtime feature switches
+
+If a feature should be enabled or disabled by an administrator after deployment,
+manage its switch through Django Constance and read it through `constance.config`
+when the behavior runs. Do not require an environment change or worker restart
+for an operational feature toggle.
+
+- Default new optional features to disabled.
+- Explain the effect and any enablement prerequisites in the admin help text.
+- If an environment variable supplies the initial default, document that a saved
+  Constance value takes precedence.
+- Test both states and verify that changing the switch takes effect without
+  restarting workers.
+- Update rollout, rollback, and affected editor instructions in the same PR.
+
+Keep credentials, infrastructure configuration, and settings that must be fixed
+at application startup in environment-based settings. Do not expose them through
+Constance. A feature switch does not replace permission checks or required data
+preparation.
+
 ## UI patterns
 
 Before adding or changing user-facing UI, read
 [documentation/UI_PATTERNS.md](documentation/UI_PATTERNS.md) and reuse relevant
-shared components and typography utilities. On editor pages that load Bootstrap,
+shared components and typography utilities. Before implementing the UI, identify
+the closest existing screen and its shared components, including patterns not yet
+cataloged. Reuse those components, or explain in the PR why a different
+implementation is needed. On editor pages that load Bootstrap,
 check computed heading/alert styles and actual rendered fonts against an existing
 Builder page; stylesheet loading alone does not prove the typography matches.
 Extend the catalog when introducing another verified pattern; do not assume

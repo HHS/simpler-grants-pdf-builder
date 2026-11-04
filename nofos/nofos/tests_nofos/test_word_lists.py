@@ -67,6 +67,33 @@ def convert(source):
 
 
 class NativeWordListsTests(SimpleTestCase):
+    def test_bullets_continue_across_numbering_instances(self):
+        numbers = "".join(
+            f'<w:num w:numId="{n}"><w:abstractNumId w:val="0"/></w:num>'
+            for n in (1, 2, 3)
+        )
+        soup, _ = convert(
+            docx(
+                paragraph("First", num="1")
+                + paragraph("Second", num="2")
+                + paragraph("Child", num="3", level=1)
+                + paragraph("Third", num="1")
+                + paragraph("Boundary", num=None)
+                + paragraph("Separate", num="2"),
+                numbers=numbers,
+                levels=level(0, "bullet") + level(1, "bullet"),
+            )
+        )
+        roots = soup.find_all("ul", recursive=False)
+        self.assertEqual(len(roots), 2)
+        self.assertEqual(
+            [li.get_text() for li in roots[0].find_all("li", recursive=False)],
+            ["First", "SecondChild", "Third"],
+        )
+        self.assertEqual(roots[0].select_one("li > ul > li").get_text(), "Child")
+        self.assertEqual(roots[1].get_text(), "Separate")
+        self.assertEqual(soup.p.get_text(), "Boundary")
+
     def test_nonzero_letter_roman_decimal_tree_has_no_empty_parent_items(self):
         soup, _ = convert(
             docx(

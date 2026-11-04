@@ -1,7 +1,12 @@
 """Human-only review controls, not acceptance or a complete fidelity check."""
 
+from io import BytesIO
 from unittest.mock import patch
+from zipfile import ZipFile
 
+from bs4 import BeautifulSoup
+from constance.test import override_config
+from django.db import OperationalError
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
@@ -33,6 +38,123 @@ class CandidateReviewTests(TestCase):
             finding_digest=item["digest"],
             reason="Compared this synthetic detail with the source.",
         )
+
+    @override_config(WORD_IMPORT_STRICT_MODE=False)
+    def test_real_docx_warning_can_be_reviewed_and_acknowledged(self):
+        # An unmapped paragraph style produces a real Mammoth warning. Do not
+        # mock conversion or inject warnings into the candidate database.
+        stream = BytesIO()
+        with ZipFile(BytesIO(self.source)) as source, ZipFile(stream, "w") as output:
+            for item in source.infolist():
+                data = source.read(item.filename)
+                if item.filename == "word/styles.xml":
+                    data = data.replace(
+                        b"</w:styles>",
+                        b'<w:style w:type="paragraph" w:styleId="SyntheticReviewWarning"><w:name w:val="Synthetic review warning"/></w:style></w:styles>',
+                    )
+                elif item.filename == "word/document.xml":
+                    data = data.replace(
+                        b"<w:p><w:r><w:t>Synthetic program information.",
+                        b'<w:p><w:pPr><w:pStyle w:val="SyntheticReviewWarning"/></w:pPr><w:r><w:t>Synthetic program information.',
+                    )
+                output.writestr(item, data)
+        self.source = stream.getvalue()
+        response = self.client.post(
+            reverse("design_pilot:index"),
+            {"synthetic": "yes", "source": self.upload()},
+        )
+        self.assertEqual(response.status_code, 302)
+        run = DesignPilotCandidate.objects.get()
+        self.assertEqual(bytes(run.source_bytes), self.source)
+        self.assertIn("Synthetic program information.", run.conversion_html)
+        self.assertIn(
+            "Review Word conversion warnings against the source.", run.warnings
+        )
+        before = review.report(run)
+        self.assertGreater(before["open_warnings"], 0)
+        response = self.client.get(reverse("design_pilot:review", args=[run.pk]))
+        self.assertContains(
+            response, "Review Word conversion warnings against the source."
+        )
+        self.assertContains(response, "Acknowledge warning")
+        payload = self.acknowledgment(run)
+        self.assertEqual(
+            self.client.post(
+                reverse("design_pilot:acknowledge", args=[run.pk]), payload
+            ).status_code,
+            302,
+        )
+        decision = DesignPilotReviewDecision.objects.get()
+        self.assertEqual(decision.actor, self.user)
+        self.assertEqual(decision.reason, payload["reason"])
+        self.assertIsNotNone(decision.created)
+        after = review.report(run)
+        self.assertEqual(after["open_warnings"], before["open_warnings"] - 1)
+        self.assertEqual(after["blockers"], before["blockers"])
+
+    def test_stale_form_preserves_reason_and_requires_explicit_fresh_submission(self):
+        run = self.warning()
+        payload = self.acknowledgment(run)
+        payload["reason"] = 'Compared <source> & confirmed "synthetic detail".'
+        updated = fixtures.host.update_candidate(self.user, run.pk, self.command(run))
+        response = self.client.post(
+            reverse("design_pilot:acknowledge", args=[run.pk]), payload
+        )
+        self.assertEqual(response.status_code, 409)
+        self.assertFalse(DesignPilotReviewDecision.objects.exists())
+        soup = BeautifulSoup(response.content, "html.parser")
+        form = soup.find("textarea", id="ack-import-warning-0").find_parent("form")
+        self.assertEqual(form.textarea.text, payload["reason"])
+        self.assertNotContains(response, payload["reason"], status_code=409)
+        fresh = {
+            node["name"]: node.get("value", "") for node in form.select("input[name]")
+        }
+        fresh["reason"] = form.textarea.text
+        self.assertEqual(fresh["expected_revision"], review.report(updated)["revision"])
+        self.assertNotEqual(fresh["expected_revision"], payload["expected_revision"])
+        self.assertEqual(self.client.post(form["action"], fresh).status_code, 302)
+        self.assertEqual(
+            DesignPilotReviewDecision.objects.get().reason, payload["reason"]
+        )
+
+    def test_changed_warning_preserves_draft_separately_without_reusing_it(self):
+        run = self.warning()
+        payload = self.acknowledgment(run)
+        DesignPilotCandidate.objects.filter(pk=run.pk).update(
+            warnings=["Different warning"]
+        )
+        response = self.client.post(
+            reverse("design_pilot:acknowledge", args=[run.pk]), payload
+        )
+        self.assertEqual(response.status_code, 409)
+        self.assertFalse(DesignPilotReviewDecision.objects.exists())
+        soup = BeautifulSoup(response.content, "html.parser")
+        self.assertEqual(
+            soup.find(id="unsaved-acknowledgment-reason").text, payload["reason"]
+        )
+        self.assertEqual(soup.find(id="ack-import-warning-0").text, "")
+
+    def test_render_or_database_failure_retains_escaped_reason_for_copying(self):
+        run = self.warning()
+        payload = self.acknowledgment(run)
+        payload["reason"] = "<script>Draft explanation, not executable code.</script>"
+        for failure in (
+            DesignRequestError("Synthetic render failure"),
+            OperationalError("busy"),
+        ):
+            with self.subTest(failure=type(failure).__name__), patch.object(
+                fixtures.host, "review_artifact", side_effect=failure
+            ):
+                response = self.client.post(
+                    reverse("design_pilot:acknowledge", args=[run.pk]), payload
+                )
+            self.assertEqual(response.status_code, 409)
+            self.assertFalse(DesignPilotReviewDecision.objects.exists())
+            soup = BeautifulSoup(response.content, "html.parser")
+            self.assertEqual(
+                soup.find(id="unsaved-acknowledgment-reason").text, payload["reason"]
+            )
+            self.assertNotContains(response, payload["reason"], status_code=409)
 
     def test_no_diagnostic_findings_does_not_claim_acceptance_ready(self):
         run = self.candidate()

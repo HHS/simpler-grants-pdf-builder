@@ -358,12 +358,18 @@ def clean_instruction_boxes(upload):
             paired_agreement = (
                 paired and len(set(texts)) == 1 and link_keys[0] == link_keys[1]
             )
+            # Word can split punctuation into a separately padded run in one
+            # compatibility copy. Ignore only spaces before commas/full stops
+            # when deciding whether a verified blue instruction box is removable.
+            # Keep the original agreement check for retained-content conversion.
+            removal_texts = [re.sub(r"\s+([,.])", r"\1", text) for text in texts]
+            removal_agreement = len(set(removal_texts)) == 1
             supported_count = paired if unit.namespaceURI == MC else len(contents) == 1
             if (
                 supported_count
                 and all(_blue(fill) for fill in fills)
-                and len(set(texts)) == 1
-                and (unit.namespaceURI != MC or paired_agreement)
+                and removal_agreement
+                and (unit.namespaceURI != MC or link_keys[0] == link_keys[1])
                 and not adjacent_text
             ):
                 unit.parentNode.removeChild(unit)

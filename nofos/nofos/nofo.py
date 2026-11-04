@@ -41,6 +41,7 @@ from slugify import slugify
 
 from . import content_processing as _content_processing
 from .content_processing import (
+    ASSISTANCE_LISTING_NUMBER_LABELS,
     BEFORE_YOU_BEGIN_HEADING_TEXT,
     DEFAULT_NOFO_OPPORTUNITY_NUMBER,
     END_NOTES_SECTION_NAME,
@@ -109,6 +110,7 @@ from .endnotes import (
 )
 from .import_transforms import (
     APPLICATION_CHECKLIST_CHILD_STYLE_MAP,
+    normalize_strong1_runs,
     omit_leading_word_title,
     transform_word_document,
 )
@@ -127,6 +129,7 @@ from .utils import (
     strip_markdown_links,
     style_map_manager,
 )
+from .word_endnotes import preserve_word_note_cross_references
 from .word_instruction_boxes import clean_instruction_boxes
 
 
@@ -209,6 +212,8 @@ def parse_uploaded_file_as_html_string(
             from .word_lists import prepare_word_lists
 
             conversion_file, list_plan = prepare_word_lists(conversion_file)
+            conversion_file = normalize_strong1_runs(conversion_file)
+            conversion_file = preserve_word_note_cross_references(conversion_file)
             if list_review_warnings is not None:
                 list_review_warnings.extend(list_plan.warnings)
             doc_to_html_result = mammoth.convert_to_html(
@@ -1592,7 +1597,8 @@ def find_endnote_issues(nofo):
             append_fragment(fragment, section, subsection)
 
     results = []
-    for issue in analyze_endnotes(soup):
+    content_locations = set()
+    for issue in analyze_endnotes(soup, check_content=True):
         tag = issue["tag"]
         location = (
             tag
@@ -1602,6 +1608,11 @@ def find_endnote_issues(nofo):
         if location is None:
             continue
         section, subsection = locations[location["data-endnote-location"]]
+        if issue["code"] == "content-format":
+            key = location["data-endnote-location"]
+            if key in content_locations:
+                continue
+            content_locations.add(key)
         # Basic information is represented by the metadata table rather than its
         # imported subsection, and unnamed subsections have no editor anchor.
         # In either case, link to the containing section, which is always rendered.
@@ -1617,6 +1628,7 @@ def find_endnote_issues(nofo):
                 ),
                 "message": issue["message"],
                 "code": issue["code"],
+                "excerpt": issue.get("excerpt", ""),
             }
         )
     return results
@@ -1637,7 +1649,7 @@ def get_side_nav_links(nofo):
 
     Example:
         [
-            {'id': 'summary-box-key-information', 'name': 'NOFO Summary'},
+            {'id': 'nofo-edit--basic-information', 'name': 'Basic information'},
             {'id': 'section-1-html-id', 'name': 'Section 1 Name'},
             ...
         ]
@@ -1645,7 +1657,9 @@ def get_side_nav_links(nofo):
     if nofo.sections.count() == 0:
         return []
 
-    side_nav_links = [{"id": "summary-box-key-information", "name": "NOFO Summary"}]
+    side_nav_links = [
+        {"id": "nofo-edit--basic-information", "name": "Basic information"}
+    ]
 
     for section in nofo.sections.all().order_by("order"):
         side_nav_links.append({"id": section.html_id, "name": section.name})
@@ -1661,15 +1675,6 @@ def get_side_nav_links(nofo):
 # These are the fields owned by a structured Metadata block. Tagline and
 # assistance-listing labels deliberately retain their independent legacy path.
 
-
-# Label variants seen in real NOFOs today. A future HHS Word template may add a
-# dedicated, single label for this - once confirmed, prefer matching that first.
-ASSISTANCE_LISTING_NUMBER_LABELS = (
-    "Assistance Listing Number:",
-    "Assistance Listing:",
-    "Federal Assistance Listing Number:",
-    "Federal Assistance Listing:",
-)
 
 # CFDA numbers are 2 digits, a period, then up to 3 more characters (eg, 93.884,
 # 12.ABC per SGG's own example). Matches just the code, not any trailing title
@@ -1726,6 +1731,11 @@ def suggest_nofo_before_you_begin(
 
 def suggest_nofo_theme(nofo_number, opdiv=""):
     opdiv_lower = (opdiv or "").lower()
+    if "centers for disease control and prevention" in opdiv_lower or re.search(
+        r"\bcdc\b", opdiv_lower
+    ):
+        return "portrait-cdc-blue"
+
     if "national institutes of health" in opdiv_lower or re.search(
         r"\bnih\b", opdiv_lower
     ):
@@ -1746,6 +1756,14 @@ def suggest_nofo_theme(nofo_number, opdiv=""):
         r"\bacl\b", opdiv_lower
     ):
         return "portrait-acl-white"
+
+    if "indian health service" in opdiv_lower or re.search(r"\bihs\b", opdiv_lower):
+        return "portrait-ihs-white"
+
+    if re.search(
+        r"\b(?:centers for medicare (?:&|and) medicaid services|cms)\b", opdiv_lower
+    ):
+        return "portrait-cms-white"
 
     if "cdc-" in nofo_number.lower():
         return "portrait-cdc-blue"
@@ -2002,7 +2020,7 @@ def add_instructions_to_subsections(sections, instructions_tables):
         try:
             node = instructions_body.find(
                 string=re.compile(
-                    r"^(instructions for nofo writers|instructions for new nofo team)",
+                    r"^(instructions for nofo writers|instructions for new nofo team|instructions for template managers)",
                     re.IGNORECASE,
                 )
             )

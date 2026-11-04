@@ -4189,12 +4189,12 @@ class TestGetSideNavLinks(TestCase):
 
         result = get_side_nav_links(nofo)
 
-        # Should have summary plus 3 sections
+        # Should have Basic information plus 3 sections
         self.assertEqual(len(result), 4)
 
-        # First item should always be the summary
-        self.assertEqual(result[0]["id"], "summary-box-key-information")
-        self.assertEqual(result[0]["name"], "NOFO Summary")
+        # First item should always be Basic information
+        self.assertEqual(result[0]["id"], "nofo-edit--basic-information")
+        self.assertEqual(result[0]["name"], "Basic information")
 
         # Check section data
         self.assertEqual(result[1]["id"], "section-1")
@@ -4207,12 +4207,12 @@ class TestGetSideNavLinks(TestCase):
         self.assertEqual(result[3]["name"], "Section 3")
 
     def test_get_side_nav_links_with_no_sections(self):
-        """Test that get_side_nav_links returns only summary when no sections exist"""
+        """Test that get_side_nav_links returns no links when no sections exist"""
         nofo = create_nofo("Empty NOFO", [], opdiv="Test OpDiv")
 
         result = get_side_nav_links(nofo)
 
-        # Should only have the summary
+        # Should have no links
         self.assertEqual(len(result), 0)
 
 
@@ -4643,6 +4643,31 @@ class HTMLSuggestDeadlineTests(TestCase):
 
 
 class HTMLSuggestThemeTests(TestCase):
+    def test_ihs_opdiv_selects_light_theme_before_number_heuristics(self):
+        for opdiv in (
+            "Indian Health Service",
+            "Indian Health Service (IHS)",
+            "IHS",
+            "ihs",
+        ):
+            for number in (
+                "",
+                "UNKNOWN-001",
+                "{Insert Opportunity Number}",
+                "CDC-RFA-27-001",
+            ):
+                with self.subTest(opdiv=opdiv, number=number):
+                    self.assertEqual(
+                        suggest_nofo_theme(number, opdiv=opdiv),
+                        "portrait-ihs-white",
+                    )
+
+    def test_ihs_substring_in_unrelated_opdiv_does_not_select_ihs(self):
+        self.assertEqual(
+            suggest_nofo_theme("CDC-RFA-27-001", opdiv="NIHSupport"),
+            "portrait-cdc-blue",
+        )
+
     def test_suggest_nofo_number_hrsa_returns_hrsa_theme(self):
         nofo_number = "HRSA-24-019"
         nofo_theme = "portrait-hrsa-white"
@@ -4743,6 +4768,20 @@ class HTMLSuggestThemeTests(TestCase):
         nofo_number = "CMS-1W1-24-001"
         nofo_theme = "portrait-cms-white"
         self.assertEqual(suggest_nofo_theme(nofo_number), nofo_theme)
+
+    def test_suggest_nofo_theme_from_cms_opdiv(self):
+        for number, opdiv in (
+            ("{Insert opportunity number.}", "CMS"),
+            ("", "Centers for Medicare & Medicaid Services"),
+            ("CDC-RFA-DP-25-001", "Centers for Medicare and Medicaid Services"),
+        ):
+            with self.subTest(number=number, opdiv=opdiv):
+                self.assertEqual(
+                    suggest_nofo_theme(number, opdiv), "portrait-cms-white"
+                )
+
+    def test_suggest_nofo_theme_ignores_cms_inside_another_word(self):
+        self.assertEqual(suggest_nofo_theme("", "CMSFunding"), "portrait-nih-white")
 
     def test_suggest_nofo_number_rfa_returns_cdc_theme(self):
         nofo_number = "RFA-CK-26-104"
@@ -8708,6 +8747,40 @@ class HTMLCalloutBoxTests(TestCase):
 
 
 class DecomposeInstructionsTablesTest(TestCase):
+    def test_template_manager_tables_are_extracted_with_writer_guidance(self):
+        for title in ("Project narrative", "Budget justification"):
+            with self.subTest(title=title):
+                soup = BeautifulSoup(
+                    f"<table><tr><td><p>Instructions for template managers: {title}</p>"
+                    "<ul><li>Add standard template content.</li></ul>"
+                    f"<p>Instructions for NOFO writers: {title}</p>"
+                    "<ul><li>Add scoring points.</li></ul></td></tr></table>"
+                    "<p>Keep applicant instructions.</p>",
+                    "html.parser",
+                )
+                extracted = decompose_instructions_tables(soup)
+                self.assertEqual(len(extracted), 1)
+                self.assertNotIn("Instructions for", soup.get_text())
+                self.assertIn("Keep applicant instructions.", soup.get_text())
+                sections = [{"subsections": [{"name": title}]}]
+                add_instructions_to_subsections(sections, extracted)
+                guidance = sections[0]["subsections"][0]["instructions"].get_text()
+                self.assertIn("Add standard template content.", guidance)
+                self.assertIn("Add scoring points.", guidance)
+
+    def test_template_manager_label_does_not_remove_applicant_content(self):
+        soup = BeautifulSoup(
+            "<table><tr><td><p>Instructions for template managers: Review</p></td>"
+            "<td>Applicant content</td></tr></table>"
+            "<table><tr><td>Applicant instructions: Submit a narrative.</td></tr></table>"
+            "<table><tr><td>See Instructions for template managers for context.</td></tr></table>"
+            "<p>Instructions for template managers: Outside a table</p>",
+            "html.parser",
+        )
+        self.assertEqual(decompose_instructions_tables(soup), [])
+        self.assertEqual(len(soup.find_all("table")), 3)
+        self.assertIn("Outside a table", soup.get_text())
+
     def test_removes_correct_tables(self):
         """Test that tables with specific instructional text are removed."""
         html_content = """

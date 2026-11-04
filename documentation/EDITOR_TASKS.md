@@ -32,6 +32,11 @@ distinguish document corrections, learning needs and product improvements.
 - Steps describe the current UI only. If a label on screen doesn't match this
   page, trust the screen and report the mismatch.
 
+On the NOFO list, Bloom group members can use **NOFO Group** to choose a group
+or **All**. The list defaults to **Bloom**, and changing the group keeps the
+selected NOFO status. The Staging environment option is available outside
+production. Other users see their own group's NOFOs.
+
 ### For agents and tools referencing these tasks
 
 When you use a task in a suggestion, report, or comment:
@@ -103,16 +108,48 @@ is needed, contact the SimplerNOFOs team.
 
 **Notes**
 
+- When the imported OpDiv identifies CMS, Builder suggests **CMS (Light)** under
+  **NOFO theme options** on a new import, even if the opportunity number is blank
+  or a placeholder.
 - A recognized Word **Metadata** block supplies structured fields and is removed
   from the imported content. When several recognized blocks exist, the last is
   authoritative; fields are not combined with earlier blocks or legacy labels.
   Replace template placeholders before import. See [Word metadata import](WORD_METADATA_IMPORT.md).
+- Supported **Assistance listing** labels within a Metadata block do not stop
+  later Author, Subject or Keywords fields from being imported. Check **NOFO
+  metadata** after import. Earlier records are not repaired automatically; edit
+  those fields or re-import, noting that re-import replaces incoming metadata.
 - Builder can omit a leading Word **Title** paragraph during import. The NOFO
   title suggestion comes from metadata, not that omitted paragraph; check it
   before saving the name.
+- Word text using the **Strong1** character style imports as bold, retaining
+  explicit bold-off overrides and separately applied italics. This applies only
+  to a directly defined bold-only style. Other Strong1 definitions retain the
+  existing conversion warning behavior; compare their formatting with Word.
+  Redundant bold
+  formatting imports as a single bold level. Review the result against Word;
+  existing saved content receives this handling only when reimported.
+- Consecutive Word bullets at the same numbering level import as one list even
+  when their internal list IDs differ, avoiding extra gaps between bullet groups.
+  Paragraphs still separate lists; numbered-list restarts remain separate.
+- Import also repairs clear groups of typed `•` bullets (at least two items).
+  Following `o` lines become nested bullets when their parent bullet ends in a
+  colon. Standalone `o` lines, isolated bullets, existing lists, and table content
+  stay as supplied. Check the nesting after import; other ambiguous marker styles
+  need correction in the source. This applies on import/reimport only.
+- Empty **Appendix**, **Endnotes**, and **Footnotes** headings at Heading 1 or
+  Heading 2 are omitted when they form an unused run at the end of the document.
+  Capitalization and a trailing colon do not matter. Text, images, tables, lists,
+  child headings, and referenced bookmarks preserve the heading. You can add an
+  Appendix or Endnotes section afterward using the existing NOFO actions.
+  This cleanup applies on new import and reimport; it does not remove sections
+  from already saved NOFOs automatically.
 - For an existing NOFO, reimport replaces sections and subsections and can lose
   manual edits. It is not a way to apply import repairs to saved edits in place.
   Reimport preserves saved theme, cover and introductory ownership choices.
+- Adjacent bullet and numbered lists remain separate HTML lists after import,
+  including within a nested list. Compare their markers and nesting with Word;
+  this conversion does not repair previously saved content automatically.
 
 <a id="task-import-recover"></a>
 
@@ -164,7 +201,9 @@ or reimport, or when you find writer-only notes in the content.
    decision, resolve it with your grants policy office.
 4. Select **Save subsection**, then **Preview PDF** to check the result.
 
-Automatic cleanup does not remove every instruction container. The warning is
+Automatic cleanup removes verified blue instruction boxes even when Word’s compatibility copies differ only in spacing before commas or full stops.
+Single-cell instruction tables beginning “Instructions for template managers” are also removed from applicant content, including tables that combine manager and writer guidance.
+Cleanup does not remove every instruction container. The warning is
 an invitation to review, not evidence that all highlighted content is disposable.
 
 ---
@@ -393,6 +432,13 @@ where needed. Unsupported custom numbering and typed marker-like text need
 review. Existing records are not converted just by opening or saving them.
 See [Word list import and editing](WORD_LIST_IMPORT.md).
 
+Under **Eligibility → Types of eligible organizations**, import/reimport can
+restore bullets for explicitly recognized organization-category paragraphs after
+a supported domestic-organization introduction. Compare the list with Word,
+including definitions and restrictions that must remain outside it. Existing or
+mixed lists and unfamiliar category/intro wording are left unchanged; no repair
+runs when ordinary edits are saved. See [the bounded eligibility import rule](IMPORT_RULES.md#import-070--missing-eligibility-organization-bullets).
+
 ---
 
 ## Tables
@@ -579,18 +625,28 @@ You can make every table in a section use the full page width.
    (the button is shown only when external links are present).
 2. Fix any failing links using the content editor ([TASK-SUBSECTION-EDIT](#task-subsection-edit)).
 
+**Missing destinations:** the **Check missing link destinations** tab under
+**Before publishing, address the following** lists each affected link and its
+subsection. Open that subsection, add the intended destination inside the link's
+parentheses (for example, `[See eligibility](#eligibility)`), then select
+**Save subsection**. If ordinary text is intended, remove the link markup instead.
+Clearing only the destination leaves a warning; these are separate from broken
+internal links and are not requested over the network.
+
 <a id="task-endnote-review"></a>
 
 ### TASK-ENDNOTE-REVIEW — Investigate a broken endnote relationship
 
 **Steps**
 
-1. On the NOFO edit page, look for endnote warnings under
+1. On the NOFO edit page, open **Check endnotes** under
    **Before publishing, address the following**.
 2. Follow the affected subsection or section link and locate the reference
    and its matching citation entry.
 3. Check that each reference has an entry and each entry has a reference;
    identify missing or repeated numbers and broken destinations.
+   For a content-format warning, use the quoted block to locate content that
+   is not recognized as a citation. Keep valid citation continuation content.
 4. If the correction is unclear, contact your grants policy office first.
    If additional help is needed, contact the SimplerNOFOs team.
 
@@ -599,6 +655,11 @@ You can make every table in a section use the full page width.
 - Builder supports native Word notes and unambiguous manually bracketed notes.
   Do not recommend adding or removing an Endnotes heading without identifying
   the source authoring workflow.
+- Supported Word cross-references reuse a native citation with a unique link ID
+  and a return link for each occurrence. Typed superscripts have no relationship
+  to recover; replace them with actual Word endnotes or cross-references.
+  Import repairs unambiguous duplicate native IDs and extracts a standalone
+  References title from the first note. See the [Windows Word FAQ](endnote-import.md#faq-for-authors-using-microsoft-word-on-windows).
 - Explicit URLs and DOI identifiers in eligible imported citations are linked
   automatically; incomplete references are not guessed. A native note's isolated
   return arrow is moved inline only when it matches the narrow import rule.
@@ -686,6 +747,11 @@ where the link goes.
 2. Choose the **Theme**, **Cover style**, or **Icon style**.
 3. Select **Save theme options**.
 
+For HRSA NOFOs, **Cover style** offers **Text only** and **Standard image**.
+An existing **Full coverage with image** cover can also be retained as a legacy
+value. New HRSA imports start with **Text only**; choose **Standard image** here
+to use an image cover.
+
 **Notes**
 
 - New ACL imports can select **ACL (Default)** from the OpDiv even with a blank
@@ -744,6 +810,24 @@ structured field instead.
 
 ## Checking your work
 
+<a id="task-history-review"></a>
+
+### TASK-HISTORY-REVIEW — Review a NOFO's updates
+
+1. On the NOFO edit page, select **See all updates** beside **Last updated**.
+2. Review the latest events. Select **Load More Events** for the next batch.
+3. Follow an available comparison link to inspect a subsection's changes.
+
+An administrator enables the indexed history reader separately after deployment,
+backfill and a successful completeness check: in **Django admin → Constance →
+Config**, check `DOCUMENT_HISTORY_INDEX_ENABLED` and save. No further deployment
+or worker restart is required. Uncheck and save to return to the legacy reader.
+Until that cutover, the existing reader can still be slow. With indexed reads,
+events use exact timestamp order, then event ID for ties; deleted objects retain
+history descriptions but have no live comparison link. Concurrent new edits can
+shift offset-based batches. Report a timeout rather than repeatedly reloading.
+See [history rollout and limitations](DOCUMENT_HISTORY.md).
+
 <a id="task-preview"></a>
 
 ### TASK-PREVIEW — Preview the PDF after making changes
@@ -784,24 +868,27 @@ checkpoint once per unchanged measurement. Calculation alone does not save a
 manual checkpoint. Historical results remain available after measurement-version
 changes; compare version/profile information before treating a score difference
 as a content change. Automatic saves are best effort: an import or download can
-succeed even if metrics could not be saved. See [readability metrics](READABILITY_METRICS.md).
+succeed even if metrics could not be saved. See [readability metrics](readability/READABILITY_METRICS.md).
 
 <a id="task-readability-upload"></a>
 
 ### TASK-READABILITY-UPLOAD — Check Word or PDF readability without creating a NOFO
 
-**Starting point:** the direct `/nofos/readability/` URL on your Builder environment.
+**Starting point:** **Readability Checker** at the direct
+`/nofos/readability-checker/` URL on your Builder environment.
 There is no navigation link. This restricted pilot requires an active account,
 pilot permission and an enabled feature; signing in alone does not grant access.
 If access is denied or the page is unavailable, contact the pilot operator.
 
 **Steps**
 
-1. Open `/nofos/readability/` and review **Document requirements** and
+1. Open `/nofos/readability-checker/` and review **Document requirements** and
    **How we handle your document**. Use only documents authorized for this pilot.
 2. Choose one supported text-based HHS NOFO PDF or unlocked Word `.docx`, then
    select **Analyze document**. Legacy `.doc` and macro-enabled formats are not
-   supported.
+   supported. For PDFs, keep genuine NOFO identifiers in the first five pages;
+   recognition needs two distinct signal types, such as an agency name and an
+   opportunity number. Blank templates may not be recognized.
 3. Wait for analysis. If an error appears, follow its guidance and submit again.
 4. Read **Measurement scope**, reliability information and any **Calculation
    notes**. For Word, **Why “Estimated”?** under Measurement scope explains the
@@ -812,12 +899,24 @@ If access is denied or the page is unavailable, contact the pilot operator.
 5. Select **Copy metrics** or **Print / Save as PDF** before leaving the report.
    Use **Analyze another document** for another upload.
 
-This upload does not create a NOFO or save report history. Remove template
+Profiles are selected automatically; there is no profile setting to choose.
+Check the report's **Measurement version** when comparing results. Version 0.7.0
+changes passive treatment of “as defined by” modifiers; use the same version and
+format to compare content revisions.
+
+This upload does not create a NOFO. Ordinary unsaved reports have no retained history; authorized reviewers can explicitly save Word comparisons as described in [TASK-WORD-COMPARISON](#task-word-comparison). When usage recording
+is enabled, **How we handle your document** explains that content-free usage/error
+records include the attempted file category (PDF, DOCX or unknown) and are kept
+without automatic expiration by default; they exclude your
+identity, filename, document text and scores. Remove template
 instructions and unused options from the copy you upload when they should not
-count. Word, PDF and saved-Builder scores can differ; use the same format and
-analysis method when tracking revisions. The separate public `/readability/`
+count. Keep instructions applicants need. An in-progress draft can be checked
+before publication design, but favorable scores do not establish publication
+readiness. Compare drafts with the same content scope.
+Word, PDF and saved-Builder scores can differ; use the same format and
+analysis method when tracking revisions. The separate public `/readability-checker/`
 route remains PDF-only and has its own availability controls.
-See [authenticated readability pilot](AUTHENTICATED_PDF_READABILITY_PILOT.md).
+See [authenticated readability pilot](readability/AUTHENTICATED_PDF_READABILITY_PILOT.md).
 
 ---
 
@@ -829,7 +928,7 @@ did not generate or verify PDFs.
 
 These tasks apply only to the isolated synthetic profile, not a deployed Builder
 or an ordinary NOFO. They were checked in local Chrome on October 20, 2026.
-See [local host setup and limitations](DESIGN_PILOT_LOCAL_HOST.md).
+See [local host setup and limitations](design-pilot/DESIGN_PILOT_LOCAL_HOST.md).
 
 <a id="task-design-pilot-import"></a>
 
@@ -847,7 +946,9 @@ This route is unavailable under normal settings. Do not upload real documents.
 2. Select **This file contains invented information only.**
 3. Select **Import candidate**.
 4. If an error appears, follow its guidance, choose the corrected file and
-   submit again. A retry of the same source returns the existing candidate.
+   submit again. A retry of the same source checks the existing candidate’s
+   integrity and reopens it if valid. If invalid, the upload shows recovery
+   guidance without replacing the candidate.
 5. On **Review synthetic candidate**, check the source name, conversion
    warnings and saved design-change count.
 
@@ -876,6 +977,12 @@ This route is unavailable under normal settings. Do not upload real documents.
    review its latest state and enter the intended change again. An old HTML
    link must also be reopened from the current candidate.
 
+If the error says the candidate's content changed outside the pilot, ask the
+developer running it to follow [targeted recovery](design-pilot/DESIGN_PILOT_LOCAL_HOST.md#recover-a-candidate-after-an-outside-content-edit).
+Returning to the candidate or uploading the same file will not repair it. The
+developer must remove the affected candidate and its associated NOFO before you
+upload the original file again; this removes that candidate's saved changes.
+
 **PDF unavailable** is expected. Cover changes, acceptance, publication,
 production transfer and discard are not implemented in this slice. The human
 login is not an agent credential. Do not use ordinary editor tasks to bypass the
@@ -892,19 +999,26 @@ does not configure or start an agent runtime.
 
 **Steps**
 
-1. Under **Candidate-only agent access**, select **Create or replace agent access**.
+1. Under **Candidate-only agent access**, select **Create agent access** (or
+   **Create or replace agent access** when a key is already active).
 2. On **Candidate access created**, copy the key only into the approved local
    client. Keep it out of screenshots, URLs, chats, issues and logs. Do not share
    your Builder cookie or give the client broad host/database access.
 3. Select **Return to current candidate**. The key is not shown there again;
-   the page shows the latest expiry and request count instead.
+   the page shows **Active**, the latest expiry and request count instead.
 4. To stop access early, select **Revoke agent access** on that candidate.
-5. To replace a lost, expired or exhausted key, repeat step 1. This immediately
-   invalidates the previous key.
+5. For a lost key, select **Create or replace agent access**. After **Expired**
+   or **Request limit reached** appears, select **Create new agent access** to
+   reconnect the client. Creating access immediately invalidates the previous key.
+
+The status updates when you load or refresh the review page. **No active access**
+means no key has been issued, or access was revoked. **Revoke agent access** is
+disabled when access is no longer active. The server enforces expiry and request
+limits on every client request even while an older review page remains open.
 
 Access ends after 20 minutes or 100 admitted requests. The client can read this
 candidate and request theme/table-width changes only. It cannot accept, transfer,
-publish or discard a design. See the [interface protocol and limits](DESIGN_CANDIDATE_INTERFACE.md).
+publish or discard a design. See the [interface protocol and limits](design-pilot/DESIGN_CANDIDATE_INTERFACE.md).
 
 <a id="task-design-pilot-findings"></a>
 
@@ -923,7 +1037,7 @@ and deletion are not available in this slice.
    output is also available below the sections. Converted-content comparisons
    are bounded observations, not proof of Word fidelity. Unmatched elements may
    reflect documented import/render changes; reconcile them rather than assume
-   they are defects. See [fidelity evidence limits](DESIGN_FIDELITY_EVIDENCE.md).
+   they are defects. See [fidelity evidence limits](design-pilot/DESIGN_FIDELITY_EVIDENCE.md).
 3. For a nonblocking **Word conversion** warning only, compare the relevant
    source and enter **Why can this warning be acknowledged?** Then select
    **Acknowledge warning**. Confirm the recorded person, time and reason.
@@ -933,12 +1047,16 @@ and deletion are not available in this slice.
 5. Use the existing theme/table-width controls for presentation corrections.
    Changes invalidate old review evidence. Optionally select **View current HTML
    (opens a new tab)**; **PDF unavailable** is expected and not a blocker.
-6. Copy any reason you need to retain before submitting or leaving the form.
-   If **Request not saved** appears, select **Return to current candidate** and
-   review its latest checks before acknowledging again. Unsaved reasons are not
-   retained on the recovery page.
+6. If **Warning not acknowledged** appears, review the refreshed findings.
+   An unchanged warning keeps your explanation in its form; submit it again only
+   after checking the current candidate. If the warning changed or is no longer
+   available, the old explanation appears separately for copying and is not
+   automatically reused. If **Request not saved** appears instead, copy your
+   explanation from the read-only field, select **Return to current candidate**,
+   and review the latest checks before retrying. These unsaved drafts remain
+   only in the returned page; copy them before leaving or refreshing if needed.
 
-See [review scope and limits](DESIGN_CANDIDATE_REVIEW.md). A clean diagnostic
+See [review scope and limits](design-pilot/DESIGN_CANDIDATE_REVIEW.md). A clean diagnostic
 report is not complete source/content/asset verification or design acceptance.
 
 ## Maintaining this page
@@ -948,7 +1066,7 @@ matching task in the same pull request.
 
 | UI area | Source |
 | --- | --- |
-| Synthetic local candidate upload, changes and HTML review | `nofos/nofos/templates/nofos/design_pilot_*.html`; `nofos/nofos/design_pilot_views.py`; [local profile guide](DESIGN_PILOT_LOCAL_HOST.md) |
+| Synthetic local candidate upload, changes and HTML review | `nofos/nofos/templates/nofos/design_pilot_*.html`; `nofos/nofos/design_pilot_views.py`; [local profile guide](design-pilot/DESIGN_PILOT_LOCAL_HOST.md) |
 | NOFO edit page, section tables, warning tabs | `nofos/nofos/templates/nofos/nofo_edit.html` |
 | **NOFO actions** menu | `get_nofo_action_links()` in `nofos/nofos/nofo.py` |
 | Subsection edit page, conflict recovery, **Other actions** | `nofos/nofos/templates/nofos/subsection_edit.html`; `NofoSubsectionEditView` in `nofos/nofos/views.py` |
@@ -956,11 +1074,48 @@ matching task in the same pull request.
 | Blocking import errors and retry/support labels | `nofos/bloom_nofos/templates/import_error.html`; `nofos/bloom_nofos/import_errors.py` |
 | Editable introductory content and restrictions | `nofos/nofos/templates/nofos/nofo_edit.html`; `SubsectionEditForm` in `nofos/nofos/forms.py`; `documentation/EDITABLE_INTRODUCTION.md` |
 | Deadline matching/replacement | `nofos/nofos/templates/nofos/nofo_edit_application_deadline.html`; `NofoEditApplicationDeadlineView` in `nofos/nofos/views.py` |
-| Readability panel and saved checkpoints | `nofos/nofos/templates/nofos/includes/readability_metrics_panel.html`; `nofos/nofos/templates/nofos/includes/readability_saved_snapshots.html`; `documentation/READABILITY_METRICS.md` |
-| Standalone Word/PDF upload and report | `nofos/bloom_nofos/templates/pdf_readability.html`; `documentation/AUTHENTICATED_PDF_READABILITY_PILOT.md` |
+| Readability panel and saved checkpoints | `nofos/nofos/templates/nofos/includes/readability_metrics_panel.html`; `nofos/nofos/templates/nofos/includes/readability_saved_snapshots.html`; `documentation/readability/READABILITY_METRICS.md` |
+| Standalone Word/PDF upload and report | `nofos/bloom_nofos/templates/pdf_readability.html`; `documentation/readability/AUTHENTICATED_PDF_READABILITY_PILOT.md` |
 | Delete confirmation | `nofos/nofos/templates/nofos/subsection_confirm_delete.html` |
 | **Configure section** page | `nofos/nofos/templates/nofos/section_detail.html` |
 | **Preview PDF** / **Download PDF** | `nofos/bloom_nofos/templates/includes/print_button.html` |
 | Table size rules | `add_class_to_table()` in `nofos/nofos/templatetags/utils/__init__.py` |
 | Merged-cell tables kept as HTML | `convert_table()` in `nofos/nofos/nofo_markdown.py` |
 | Find & Replace, Remove Page Breaks, Theme options | `nofo_find_replace.html`, `nofo_remove_page_breaks.html`, `nofo_edit_theme_options.html` |
+
+
+<a id="task-word-comparison"></a>
+
+### TASK-WORD-COMPARISON — Compare passive sentence percentages
+
+**Before you start:** an operator must enable comparisons and grant you
+**Can save passive sentence comparisons** in addition to Readability Checker access.
+
+1. Complete [TASK-READABILITY-UPLOAD](#task-readability-upload) with a Word file.
+2. On the report, enter **Microsoft Word for Windows passive sentences (%)** for
+   that same whole-document copy. Type the percentage or use the number field’s
+   increment/decrement controls. Enter zero if its displayed percentage is zero.
+3. Select **Save comparison** within 30 minutes. This retains the Readability Checker
+   result and entered percentage without refreshing the report. The button shows
+   **Saving…**, then the entry controls are replaced by a slim **Comparison saved**
+   message showing the saved percentage. Focus moves to that confirmation;
+   the field, label, helper text, button and expiry notice are removed.
+   There is no next entry page and nothing is saved while typing.
+   If a red field error appears, correct the percentage and select **Save
+   comparison** again. If the connection fails, retry; the same report will not
+   be saved twice. With JavaScript unavailable, the form instead reloads the
+   report and shows the existing larger success alert.
+4. Metrics viewers can always open **Passive sentence comparisons** from the
+   Readability Checker usage page, even when new submissions are disabled. Saved
+   results remain visible; an empty page says no comparisons have been saved yet.
+   After saving, they can also follow **View passive sentence comparisons**. The table is
+   newest first. Expand **View details** in **Calculation version** for profile and
+   input-processing identities. Use **View chart data** for exact plotted values.
+   **Back to Readability Checker usage** returns to the usage page.
+
+The trend plots Readability Checker minus Microsoft Word for Windows in percentage
+points by save date; positive values mean the Readability Checker percentage is
+higher. Different documents and calculation versions can affect the trend.
+There is no correction or investigation workflow in this MVP; analyze and save a
+new run for a new comparison. See the [operator guide](readability/WORD_COMPARISONS.md)
+for permissions, retention, deletion and deferred enhancements.

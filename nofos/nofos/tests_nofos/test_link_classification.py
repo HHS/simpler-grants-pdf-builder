@@ -7,6 +7,8 @@ into the NOFO) and, for Google Docs, a duplicate of the external-link report.
 See GitHub issue #908.
 """
 
+from unittest.mock import patch
+
 from bs4 import BeautifulSoup
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -76,6 +78,12 @@ class LinkClassificationViewTests(TestCase):
         ):
             self.assertNotIn(absent, panel_text)
 
+        missing_panel = soup.find(id="tabpanel-5")
+        self.assertEqual(
+            [row.a.get_text() for row in missing_panel.find_all("li")],
+            ["empty link", "a blank one", "an href-less one"],
+        )
+
     def test_edit_page_counts_every_offsite_destination_as_external(self):
         response = self.client.get(self.edit_url)
 
@@ -93,8 +101,7 @@ class LinkClassificationViewTests(TestCase):
 
     def test_edit_page_highlights_no_destination_links_in_the_body(self):
         """
-        These are not in the broken-links panel, so the inline highlight is
-        the only thing that shows a designer where they are.
+        The inline highlight remains alongside the missing-destination panel.
         """
         response = self.client.get(self.edit_url)
         soup = BeautifulSoup(response.content, "html.parser")
@@ -150,3 +157,117 @@ class LinkClassificationViewTests(TestCase):
             " ", strip=True
         )
         self.assertNotIn("no destination", page_text)
+
+    def save_body(self, subsection, body):
+        url = reverse(
+            "nofos:subsection_edit",
+            args=[self.nofo.pk, self.section.pk, subsection.pk],
+        )
+        form = self.client.get(url).context["form"]
+        response = self.client.post(
+            url,
+            {
+                "name": subsection.name,
+                "tag": subsection.tag,
+                "html_class": subsection.html_class,
+                "body": body,
+                "edit_version": form["edit_version"].value(),
+            },
+            follow=True,
+        )
+        self.assertRedirects(response, self.edit_url + "#" + subsection.html_id)
+        subsection.refresh_from_db()
+        self.assertEqual(subsection.body, body)
+        return response
+
+    def missing_rows(self, response):
+        soup = BeautifulSoup(response.content, "html.parser")
+        panel = soup.find(id="tabpanel-5")
+        self.assertIsNotNone(panel)
+        return panel.find_all("li")
+
+    @patch("nofos.nofo.requests.get")
+    def test_empty_destination_stays_actionable_after_edit_save(self, request):
+        subsection = self.section.subsections.get()
+        subsection.body = "[See eligibility](#nonexistent-heading)"
+        subsection.save()
+        before = self.client.get(self.edit_url)
+        self.assertEqual(len(before.context["broken_links"]), 1)
+
+        response = self.save_body(subsection, "[See eligibility]()")
+        self.assertEqual(response.context["broken_links"], [])
+        rows = self.missing_rows(response)
+        self.assertEqual(len(rows), 1)
+        self.assertIn("See eligibility", rows[0].get_text())
+        self.assertIn("Test Section, Links", rows[0].get_text())
+        self.assertEqual(rows[0].a["href"], "#links")
+        self.assertContains(response, "Check missing link destinations (1)")
+        self.assertContains(response, "Link with no destination")
+        request.assert_not_called()
+
+        response = self.save_body(subsection, "[See eligibility](#links)")
+        self.assertEqual(response.context["missing_destination_links"], [])
+        self.assertNotContains(response, 'id="tab-5"')
+
+    def test_multiple_instances_clear_individually_after_saving(self):
+        subsection = self.section.subsections.get()
+        response = self.save_body(
+            subsection,
+            "[First]() [Second]() [Third](#missing)",
+        )
+        self.assertEqual(len(self.missing_rows(response)), 2)
+        self.assertEqual(len(response.context["broken_links"]), 1)
+
+        response = self.save_body(subsection, "[First](#links) [Second]() Third")
+        self.assertEqual(response.context["broken_links"], [])
+        rows = self.missing_rows(response)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].a.get_text(), "Second")
+
+        response = self.save_body(subsection, "[First](#links) Second Third")
+        self.assertEqual(response.context["missing_destination_links"], [])
+        self.assertNotContains(response, 'id="tab-5"')
+
+    def test_missing_destination_warning_always_has_a_rendered_location_target(self):
+        subsection = self.section.subsections.get()
+        for name, html_id in (
+            ("Links", "links"),
+            ("Basic information", "suppressed-basic-information"),
+            ("", ""),
+        ):
+            with self.subTest(name=name, html_id=html_id):
+                subsection.name = name
+                subsection.html_id = html_id
+                subsection.body = "[Find this missing destination]()"
+                subsection.save()
+                response = self.client.get(self.edit_url)
+                soup = BeautifulSoup(response.content, "html.parser")
+                link = soup.select_one("#tabpanel-5 li a")
+                expected = html_id if name == "Links" else self.section.html_id
+                self.assertEqual(link["href"], "#" + expected)
+                self.assertIsNotNone(soup.find(id=expected))
+                self.assertEqual(link.get_text(), "Find this missing destination")
+
+    @patch("nofos.nofo.requests.get")
+    def test_missing_destination_alone_keeps_warning_summary_in_review(self, request):
+        # External-link checking is hidden in this status. Complete metadata
+        # and valid heading levels leave missing destinations as the sole warning.
+        self.nofo.status = "review"
+        self.nofo.author = "Test author"
+        self.nofo.subject = "Test subject"
+        self.nofo.keywords = "test"
+        self.nofo.save()
+        subsection = self.section.subsections.get()
+        response = self.save_body(
+            subsection,
+            '[Only missing]() <a id="bookmark">Bookmark target</a>',
+        )
+        self.assertFalse(response.context["has_external_links"])
+        self.assertFalse(response.context["has_broken_links"])
+        self.assertFalse(response.context["has_heading_errors"])
+        self.assertFalse(response.context["has_unconverted_footnotes"])
+        self.assertFalse(response.context["has_missing_metadata"])
+        self.assertTrue(response.context["has_warnings"])
+        self.assertEqual(len(self.missing_rows(response)), 1)
+        self.assertContains(response, "Before publishing, address the following:")
+        request.assert_not_called()

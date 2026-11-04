@@ -530,6 +530,10 @@ label.usa-label {
 
 /* List page */
 
+.nofo_index #group-filter {
+  max-width: min(30rem, calc(100vw - 2rem));
+}
+
 .nofo_index .nofo_index--filter a {
   text-decoration: none;
 }
@@ -1998,6 +2002,24 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   margin-bottom: -0.5rem;
 }
 
+/* HHS agency identifier uses Builder's existing blue palette. */
+.builder-identifier {
+  background-color: var(--color--dark-blue);
+  padding-bottom: 0;
+}
+
+.builder-identifier .usa-identifier__logos svg {
+  display: block;
+  width: 3rem;
+  height: 3rem;
+  margin-block: 0.25rem;
+  fill: var(--color--white);
+}
+
+.builder-identifier .usa-identifier__identity-domain {
+  color: var(--color--white);
+}
+
 .usa-footer__not-actually-a-link {
   color: var(--color--med-grey);
   font-weight: 400;
@@ -2759,3 +2781,8 @@ hr.usa-prose:not([size]) {
 .styled-subsection-body--full {
   color: var(--color--green-dark);
 }
+
+
+/* Shared metrics page navigation: links between peer reporting views. */
+.metrics-other-pages a { font-weight: 700; text-decoration: none; }
+.metrics-other-pages a:hover { text-decoration: underline; }

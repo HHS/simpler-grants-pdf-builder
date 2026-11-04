@@ -20,6 +20,53 @@ HTML = '<body><h1>Step 1: Review the Opportunity</h1><h2>Basic information</h2><
 
 
 class CoreMetadataTraceTests(SimpleTestCase):
+    def test_assistance_fields_preserve_trace_and_plain_import_equivalence(self):
+        for label in core.ASSISTANCE_LISTING_NUMBER_LABELS:
+            with self.subTest(label=label):
+                source = BeautifulSoup(
+                    "<h2>Metadata</h2><p>OpDiv: HHS</p>"
+                    f"<p>{label} 93.123</p><p>Metadata author: Example Office</p>",
+                    "html.parser",
+                )
+                trace = []
+                observed = core.builder_import_content(source, metadata_trace=trace)
+                self.assertEqual(
+                    str(observed), str(core.builder_import_content(source))
+                )
+                fields = trace[0]["blocks"][0]["fields"]
+                self.assertEqual(
+                    [e["key"] for e in fields], ["opdiv", "metadataauthor"]
+                )
+                self.assertEqual(
+                    provenance._check_consumption(trace[0])["metadataauthor"][
+                        "value_sha256"
+                    ],
+                    provenance.digest("Example Office"),
+                )
+                self.assertEqual(
+                    core.recognized_metadata_block(source)["metadataauthor"],
+                    "Example Office",
+                )
+                self.assertNotIn("93.123", str(observed))
+                self.assertNotIn("93.123", json.dumps(trace))
+                changed = BeautifulSoup(
+                    str(source).replace("93.123", "12.345"), "html.parser"
+                )
+                changed_trace = []
+                core.builder_import_content(changed, metadata_trace=changed_trace)
+                self.assertNotEqual(
+                    trace[0]["blocks"][0]["source_sha256"],
+                    changed_trace[0]["blocks"][0]["source_sha256"],
+                )
+        source = BeautifulSoup(
+            "<h2>Metadata</h2><p>Assistance listing: 93.123</p>", "html.parser"
+        )
+        trace = []
+        self.assertEqual(
+            str(core.builder_import_content(source, metadata_trace=trace)), str(source)
+        )
+        self.assertEqual(trace[0]["blocks"], [])
+
     def test_trace_is_detached_and_output_equivalent(self):
         soup = BeautifulSoup(HTML, "html.parser")
         original = str(soup)
@@ -127,6 +174,18 @@ class HostedMetadataTraceTests(TestCase):
             metadata_trace_json=json.dumps(data)
         )
         run.refresh_from_db()
+
+    def test_real_word_with_assistance_field_keeps_mapped_author_evidence(self):
+        for label in core.ASSISTANCE_LISTING_NUMBER_LABELS:
+            with self.subTest(label=label):
+                run = self.metadata_candidate(assistance_label=label)
+                rows = {
+                    r["destination"]: r
+                    for r in provenance.check_trace(run)["destinations"]
+                }
+                self.assertEqual(run.nofo.author, "Example Office")
+                self.assertEqual(rows["author"]["status"], "pass")
+                self.assertEqual(len(rows), 10)
 
     def test_actual_word_trace_fields_match_and_placeholder_uses_existing_rule(self):
         run = self.metadata_candidate(author="{Same as OpDiv.}")

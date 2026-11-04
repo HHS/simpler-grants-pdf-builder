@@ -36,8 +36,9 @@
     <p class="nofo_index--filter">
 				<label class="usa-label display-inline-block font-sans-md margin-top-0" for="group-filter">NOFO Group:</label>
 				<select class="usa-select border-2px width-auto display-inline-block margin-top-0" name="group-filter" id="group-filter" onchange="location = this.value;">
-					<option value="{% url 'nofos:nofo_index' %}?status={{ nofo_status }}&group=bloom" {% if nofo_group == 'bloom' %}selected{% endif %}>Bloom</option>
-					<option value="{% url 'nofos:nofo_index' %}?status={{ nofo_status }}&group=all" {% if nofo_group == 'all' %}selected{% endif %}>All</option>
+					{% for value, label in nofo_group_choices %}
+						<option value="{% url 'nofos:nofo_index' %}?status={{ nofo_status|urlencode }}&amp;group={{ value|urlencode }}" {% if nofo_group == value %}selected{% endif %}>{% if value == 'bloom' %}Bloom{% else %}{{ label }}{% endif %}</option>
+					{% endfor %}
 				</select>
     </p>
 	{% endif %}

@@ -1,0 +1,11 @@
+{% extends "admin/constance/change_list.html" %}
+{% load i18n %}
+
+{# Constance still renders div.breadcrumbs; Django 6.1 styles an ordered list. #}
+{% block breadcrumbs %}
+  <ol class="breadcrumbs">
+    <li><a href="{% url 'admin:index' %}">{% translate 'Home' %}</a></li>
+    <li><a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a></li>
+    <li aria-current="page">{{ opts.verbose_name_plural|capfirst }}</li>
+  </ol>
+{% endblock %}

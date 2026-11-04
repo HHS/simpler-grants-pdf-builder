@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nofos"
-version = "3.52.3"
+version = "3.56.2"
 description = "the no-code solo nofo web flow"
 authors = ["Paul Craig <paul@pcraig.ca>"]
 readme = "README.md"
@@ -19,7 +19,7 @@ python-slugify = "^8.0.1"
 docraptor = "^3.1.0"
 django-constance = "^4.3.5"
 django-picklefield = "^3.4.0"
-markdown = "3.11"
+markdown = "3.11.1"
 requests = "^2.34.2"
 martor = "^1.8.1"
 django-mirror = "^0.1.13"
@@ -33,10 +33,10 @@ diff-match-patch = "^20241021"
 pre-commit = "^4.6.0"
 grabzit = "^3.5.8"
 cssutils = ">=2.11.1,<2.13.0"
-hhs-nofo-metrics = { url = "https://github.com/agilesix/hhs-nofo-metrics/releases/download/v0.6.0/hhs_nofo_metrics-0.6.0-py3-none-any.whl" }
+hhs-nofo-metrics = { url = "https://github.com/agilesix/hhs-nofo-metrics/releases/download/v0.7.0/hhs_nofo_metrics-0.7.0-py3-none-any.whl" }
 
 [tool.poetry.group.dev.dependencies]
-black = "^26.5.1"
+black = "^26.10.1"
 freezegun = "^1.5.5"
 isort = "^8.0.1"
 

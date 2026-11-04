@@ -43,7 +43,7 @@ Once a NOFO is reviewed and approved, our workflow is:
 7. Done!
 
 The provisional source-native readability integration is documented in
-[Source-native readability metrics](documentation/READABILITY_METRICS.md).
+[Source-native readability metrics](documentation/readability/READABILITY_METRICS.md).
 
 ## Contributing
 
@@ -337,6 +337,13 @@ Building a container on an M1 Mac to deploy on a cloud environment means targeti
    --add-cloudsql-instances {SERVICE}:{REGION}:{PROJECT} \
    --allow-unauthenticated
 ```
+
+## Security
+
+Report vulnerabilities through the [HHS responsible disclosure portal](https://hhs.responsibledisclosure.com).
+See [Security and responsible disclosure](documentation/SECURITY.md) for reporting
+instructions and the HHS research policy. Do not post vulnerability details in
+public issues or pull requests.
 
 ## Related resources
 

@@ -136,7 +136,7 @@ class SideNavigationTemplateTest(TestCase):
         pipes = soup.find_all("span", {"class": "side-nav-pipe"})
         nav_links = soup.select("#side-nav-list a")
 
-        # Should have 4 pipes  and 4 links (summary + 3 sections)
+        # Should have 4 pipes and 4 links (Basic information + 3 sections)
         self.assertEqual(len(pipes), 4)
         self.assertEqual(len(nav_links), 4)
 
@@ -149,6 +149,24 @@ class SideNavigationTemplateTest(TestCase):
             self.assertEqual(link.get("href"), f"#{heading['id']}")
             self.assertEqual(link.get("data-section-id"), heading["id"])
             self.assertEqual(link.get("tabindex"), "-1")
+
+    def test_side_navigation_links_target_h2_headings(self):
+        """Test that every side navigation link targets an h2 on the page.
+
+        The side navigation script only scrolls to and highlights h2[id] headings,
+        so a link to any other element does nothing when selected.
+        """
+        response = self.client.get(self.url)
+        soup = BeautifulSoup(response.content, "html.parser")
+
+        nav_links = soup.select("#side-nav-list a")
+        self.assertEqual(nav_links[0].get_text(strip=True), "Basic information")
+
+        for link in nav_links:
+            target_id = link.get("data-section-id")
+            target = soup.find(id=target_id)
+            self.assertIsNotNone(target, f"No element with id '{target_id}'")
+            self.assertEqual(target.name, "h2", f"'{target_id}' is not an h2")
 
     def test_side_navigation_with_no_sections(self):
         """Test side navigation behavior when NOFO has no sections."""

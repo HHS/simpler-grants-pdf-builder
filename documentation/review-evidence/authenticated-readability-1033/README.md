@@ -64,7 +64,7 @@ dependency installation; these local runs are not a new production-image build.
 The implementation does not approve a retention window, configure scheduled
 cleanup, provision real participants, enable either shared pilot, or verify
 deployed isolation/edge logging. Follow
-[the operating instructions](../../AUTHENTICATED_PDF_READABILITY_PILOT.md) for
+[the operating instructions](../../readability/AUTHENTICATED_PDF_READABILITY_PILOT.md) for
 environment-specific checks. These are distinct from implementation acceptance
 and the later participant validation round.
 

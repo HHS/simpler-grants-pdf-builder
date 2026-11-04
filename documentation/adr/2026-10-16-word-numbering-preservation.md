@@ -1,8 +1,8 @@
 # Preserve source numbering before Word conversion
 
-- **Status:** Proposed in #1121 implementation
-- **Last Modified:** 2026-10-16
-- **Deciders:** Pending pull-request review
+- **Status:** Active — implemented in [#1125](https://github.com/HHS/simpler-grants-pdf-builder/pull/1125)
+- **Last Modified:** 2026-10-28
+- **Deciders:** Review recorded in merged PR #1125 (October 16, 2026).
 
 ## Context
 
