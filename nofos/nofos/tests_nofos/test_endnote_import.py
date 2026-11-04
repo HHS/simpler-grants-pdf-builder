@@ -530,3 +530,38 @@ class EndnoteReimportTests(TestCase):
         self.assertEqual(
             self.nofo.sections.get().subsections.get().body, "Original content"
         )
+
+
+class ManualCitationBookmarkCollisionTests(TestCase):
+    def test_ordinary_bookmark_collision_survives_storage_and_warns_without_rewrite(
+        self,
+    ):
+        nofo = import_html_to_nofo(
+            "<h1>Program</h1><p>Read [1] again [1]</p>"
+            '<p id="source-bookmark">Bookmark</p><h1>Endnotes</h1>'
+            '<p id="source-bookmark">[1] Source</p>'
+        )
+        # Fetch again so the warning is checked against persisted Markdown,
+        # rather than the transient HTML tree used during import.
+        nofo = Nofo.objects.get(pk=nofo.pk)
+        before = list(
+            Subsection.objects.filter(section__nofo=nofo)
+            .order_by("pk")
+            .values_list("pk", "body")
+        )
+        stored = render_stored_document(nofo)
+        self.assertEqual(len(stored.find_all(id="source-bookmark")), 2)
+        self.assertIsNone(stored.find("a"))
+        issues = find_endnote_issues(nofo)
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(issues[0]["code"], "destination")
+        self.assertEqual(
+            issues[0]["message"], "Endnote links have a conflicting destination ID."
+        )
+        self.assertEqual(issues[0]["section"].name, "Endnotes")
+        after = list(
+            Subsection.objects.filter(section__nofo=nofo)
+            .order_by("pk")
+            .values_list("pk", "body")
+        )
+        self.assertEqual(after, before)

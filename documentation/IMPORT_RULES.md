@@ -329,7 +329,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Status:** active
 - **Note:** If note evidence exists only as non-structural text such as a bold "Endnotes" paragraph, the heading warning is associated with that text so the editor can direct the user to the content that needs a structural heading.
 
-- **Ambiguous existing IDs:** If a citation’s existing ID is duplicated elsewhere, leave its references and citation unchanged rather than adding links to that ambiguous destination. Unique existing manual citation IDs may be reused.
+- **Ambiguous existing IDs:** If a citation’s existing ID is duplicated elsewhere, leave its references and citation unchanged rather than adding links to that ambiguous destination. The validator reports a grouped destination warning for duplicated IDs on recognized manual citations regardless of ID prefix or incoming links. Unique existing manual citation IDs may be reused.
 
 - **Editor warnings:** Repeated source numbers are counted once for first-appearance numbering and citation order. Conflicting IDs and incoming ambiguous-destination warnings are grouped by ID; independent defects remain visible. Reference-count wording is limited to forward-reference anchors outside the citation section; duplicated citation backlinks use the generic destination message. See [Endnote warnings](ENDNOTE_WARNINGS.md) for exact messages and combinations. Viewing saved content does not repair IDs.
 

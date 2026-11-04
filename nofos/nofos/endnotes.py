@@ -538,6 +538,13 @@ def _inspect(soup):
                 "missing-reference",
             )
 
+    # Manual citations are recognized by their marker and section, not by an
+    # ID prefix. Surface collisions even before any note links exist.
+    for items in citations.values():
+        for citation, _, _ in items:
+            if citation.get("id") in collisions:
+                report_collision(citation["id"], citation)
+
     if evidence:
         for number in refs.keys() | citations.keys():
             r, c = refs[number], citations[number]
