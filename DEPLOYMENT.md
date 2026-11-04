@@ -189,6 +189,15 @@ To trigger a deploy, a team member navigates to the **Actions** tab in the `simp
 
 ---
 
+## Trivy installation for CI scans
+
+The Code Scans workflow downloads Trivy directly from GitHub Releases and verifies
+its SHA-256 checksum before extraction, avoiding a dependency on `get.trivy.dev`.
+The pinned Trivy action skips its built-in installation. To upgrade the scanner,
+update `TRIVY_VERSION` in `.github/workflows/code_scans.yml` and verify the Linux
+64-bit release archive and checksums are available. The Docker image continues
+to pass between jobs as a workflow artifact.
+
 ## Before You Push
 
 CI must pass before a PR can be merged, so it's worth running checks locally first to catch issues early.
