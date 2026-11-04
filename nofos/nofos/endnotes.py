@@ -431,6 +431,31 @@ def _inspect(soup):
         )
         invalid.update(refs)
 
+    # One issue per colliding ID, including incoming links to that collision.
+    elements_by_id = defaultdict(list)
+    for element in soup.find_all(id=True):
+        elements_by_id[element["id"]].append(element)
+    collisions = {
+        key: elements for key, elements in elements_by_id.items() if len(elements) > 1
+    }
+    reported_collisions = set()
+
+    def report_collision(identifier, anchor):
+        if identifier in reported_collisions:
+            return
+        reported_collisions.add(identifier)
+        elements = collisions[identifier]
+        labels = {e.get_text(strip=True) for e in elements}
+        if (
+            all(e.name == "a" for e in elements)
+            and len(labels) == 1
+            and MARKER.fullmatch(next(iter(labels)))
+        ):
+            message = f"Endnote {next(iter(labels))} has conflicting link IDs across {len(elements)} references."
+        else:
+            message = "Endnote links have a conflicting destination ID."
+        warn(anchor, message, "destination")
+
     native_numbers = set()
     native_refs = defaultdict(list)
     for anchor in soup.find_all("a", href=True):
@@ -446,8 +471,10 @@ def _inspect(soup):
             or re.match(r"^(?:footnote|endnote)-ref-", anchor.get("id", ""))
         ):
             continue
-        targets = soup.find_all(id=href[1:])
-        if len(targets) != 1:
+        targets = elements_by_id.get(href[1:], [])
+        if href[1:] in collisions:
+            report_collision(href[1:], anchor)
+        elif len(targets) != 1:
             warn(
                 anchor,
                 "An endnote link points to a missing or conflicting destination.",
@@ -469,19 +496,12 @@ def _inspect(soup):
                     "An endnote citation is missing its return link.",
                     "return-link",
                 )
-        if match and not (
-            anchor.get("id", "").startswith("endnote-ref-manual-")
-            or href.startswith("#endnote-ref-manual-")
-        ):
-            native_numbers.add(int(match[1]))
-            if not re.search(r"(?:-ref|_ref|^#ref)", href):
-                native_refs[int(match[1])].append(anchor)
-        if anchor.get("id") and len(soup.find_all(id=anchor["id"])) > 1:
-            warn(
-                anchor,
-                "An endnote reference has a conflicting destination ID.",
-                "destination",
-            )
+        if match and not re.search(r"(?:-ref|_ref|^#ref)", href):
+            if not anchor.get("id", "").startswith("endnote-ref-manual-"):
+                native_numbers.add(int(match[1]))
+            native_refs[int(match[1])].append(anchor)
+        if anchor.get("id") in collisions:
+            report_collision(anchor["id"], anchor)
     for number, anchors in native_refs.items():
         if len(anchors) > 1 and len({a["href"] for a in anchors}) > 1:
             warn(
@@ -512,7 +532,7 @@ def _inspect(soup):
         for number in refs.keys() | citations.keys():
             r, c = refs[number], citations[number]
             tag = (r or c)[0][0]
-            if len(r) > 1 or len(c) > 1:
+            if len(c) > 1:
                 warn(tag, f"[{number}] is used more than once.", "duplicate")
                 invalid.add(number)
             if not r:
@@ -576,7 +596,7 @@ def _inspect(soup):
             for n, matches in refs.items()
             for block, start, _ in matches
         )
-        sequence = [n for _, n in manual_events]
+        sequence = list(dict.fromkeys(n for _, n in manual_events))
         combined_events = sorted(
             manual_events
             + [
@@ -584,6 +604,7 @@ def _inspect(soup):
                 for n, anchors in native_refs.items()
                 for anchor in anchors
                 if id(anchor) not in section
+                and not anchor.get("id", "").startswith("endnote-ref-manual-")
             ]
         )
         # Repeated explicit native references reuse a citation, not a new number.
@@ -601,6 +622,7 @@ def _inspect(soup):
             if destination:
                 seen_native.add(destination)
             combined_sequence.append(number)
+        combined_sequence = list(dict.fromkeys(combined_sequence))
         if sequence and combined_sequence != list(range(1, len(combined_sequence) + 1)):
             warn(
                 refs[sequence[0]][0][0],
@@ -778,41 +800,46 @@ def convert_bracketed_endnotes(soup):
     used = {tag["id"] for tag in soup.find_all(id=True)}
     # Reverse offsets protect multiple different markers in the same paragraph.
     pairs = [
-        (n, items[0])
+        (n, item)
         for n, items in refs.items()
-        if n not in invalid and len(items) == len(citations[n]) == 1
+        for item in items
+        if n not in invalid and len(citations[n]) == 1
     ]
     pairs.sort(
         key=lambda pair: (len(list(pair[1][0].parents)), pair[1][1]), reverse=True
     )
+    citation_targets = {}
     for number, (block, start, end) in pairs:
-        if block.find("a", id=re.compile(r"^endnote-ref-manual-")):
-            # Skip just an already linked marker, not other raw markers sharing
-            # its paragraph.
-            existing = [
-                a
-                for a in block.find_all("a", id=True)
-                if a.get_text() == f"[{number}]"
-                and a["id"].startswith("endnote-ref-manual-")
-            ]
-            if existing:
-                continue
+        offset = 0
+        already_linked = False
+        for node in block.find_all(string=True):
+            end_offset = offset + len(node)
+            if offset < end and end_offset > start:
+                anchor = node.find_parent("a", href=True)
+                if anchor is not None:
+                    already_linked = True
+            offset = end_offset
+        if already_linked:
+            continue
         base = f"endnote-manual-{number}"
         ref_id = f"endnote-ref-manual-{number}"
         suffix = 1
-        while base in used or ref_id in used:
+        while (number not in citation_targets and base in used) or ref_id in used:
             base = f"endnote-manual-{number}-{suffix}"
             ref_id = f"endnote-ref-manual-{number}-{suffix}"
             suffix += 1
         used.update((base, ref_id))
         citation = citations[number][0][0]
-        # Keep existing source bookmarks while using a recognizable new target.
-        if citation.get("id"):
-            bookmark = soup.new_tag("a", id=citation["id"])
-            citation.insert(0, bookmark)
-        target = base
-        citation["id"] = target
-        citation["tabindex"] = "-1"
+        if number not in citation_targets:
+            # Keep source bookmarks; initialize each shared citation only once.
+            if citation.get("id", "").startswith("endnote-manual-"):
+                base = citation["id"]
+            elif citation.get("id"):
+                citation.insert(0, soup.new_tag("a", id=citation["id"]))
+            citation_targets[number] = base
+            citation["id"] = base
+            citation["tabindex"] = "-1"
+        target = citation_targets[number]
         link = soup.new_tag("a", href=f"#{target}", id=ref_id)
         link["aria-label"] = f"Endnote {number}"
         _wrap_range(soup, block, start, end, link)
@@ -824,6 +851,10 @@ def convert_bracketed_endnotes(soup):
         citation.append(back)
         # Mark citation number as linked too, so subsequent analysis/import does
         # not mistake it for an orphaned manually authored citation.
+        if citation.find(
+            "a", href=re.compile(r"^#endnote-ref-manual-"), string=f"[{number}]"
+        ):
+            continue
         marker = MARKER.search(citation.get_text())
         citation_link = soup.new_tag("a", href=f"#{ref_id}")
         citation_link["aria-label"] = f"Return to endnote {number} reference"

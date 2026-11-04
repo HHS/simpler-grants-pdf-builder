@@ -644,7 +644,10 @@ internal links and are not requested over the network.
 2. Follow the affected subsection or section link and locate the reference
    and its matching citation entry.
 3. Check that each reference has an entry and each entry has a reference;
-   identify missing or repeated numbers and broken destinations.
+   identify missing entries, duplicate citation entries, and broken destinations.
+   Repeated body references may reuse one citation number. A grouped ID warning
+   covers all links sharing that ID; unrelated defects remain separate.
+   See the [warning catalog](ENDNOTE_WARNINGS.md) for combinations.
    For a content-format warning, use the quoted block to locate content that
    is not recognized as a citation. Keep valid citation continuation content.
 4. If the correction is unclear, contact your grants policy office first.
