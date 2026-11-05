@@ -890,7 +890,8 @@ If access is denied or the page is unavailable, contact the pilot operator.
 
 1. Open `/nofos/readability-checker/` and review **Document requirements** and
    **How we handle your document**. Use only documents authorized for this pilot.
-2. Choose one supported text-based HHS NOFO PDF or unlocked Word `.docx`, then
+2. Choose one supported text-based HHS NOFO PDF up to 5 MiB or unlocked Word
+   `.docx` up to 15 MiB, then
    select **Analyze document**. Legacy `.doc` and macro-enabled formats are not
    supported. For PDFs, keep genuine NOFO identifiers in the first five pages;
    recognition needs two distinct signal types, such as an agency name and an

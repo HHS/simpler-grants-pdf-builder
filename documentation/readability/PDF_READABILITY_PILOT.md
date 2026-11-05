@@ -66,7 +66,7 @@ That catalog also distinguishes an unavailable metric from unassessed reliabilit
 Source explanations stay in one paragraph; only the authenticated tool suggests
 uploading Word instead of a PDF. Historical screenshots may predate copy changes.
 
-Both formats share the existing 15 MiB upload limit, 15-second deadline, global
+The upload limits are 5 MiB for PDF and 15 MiB for Word. Both formats share a 15-second deadline, global
 analysis slot, filtered subprocess environment and Linux resource limits. Word
 uses the same temporary-directory cleanup and content-free outcome recording.
 There is no page limit for Word, because there is no reliable pagination here;
@@ -308,9 +308,9 @@ service, or batch-processing system is part of this pilot.
 
 ## Temporary processing limits
 
-Initial application bounds are 15 MiB per upload, 150 pages, a 15-second analysis
+The application bounds for PDF are 5 MiB per upload, 150 pages, a 15-second analysis
 deadline, and one active analysis. The Linux child has a 1.5 GiB address-space
-ceiling, 20-second CPU ceiling, 2 MiB file-size ceiling, and 64 open-file ceiling.
+ceiling, 20-second CPU ceiling, 5 MiB per-file write ceiling for PDF analysis (2 MiB for Word analysis), and 64 open-file ceiling.
 These conservative pilot choices must be tuned against approved representative
 PDFs and the target ECS capacity; byte size alone does not bound parser memory.
 PostgreSQL advisory locking provides the production cross-worker analysis slot.

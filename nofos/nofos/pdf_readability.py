@@ -13,7 +13,9 @@ from pathlib import Path
 from django.core.files.uploadhandler import FileUploadHandler, StopUpload
 from django.db import connection
 
-MAX_UPLOAD_BYTES = 15 * 1024 * 1024
+from nofos.readability_upload_limits import PDF_UPLOAD_BYTES, WORD_UPLOAD_BYTES
+
+MAX_UPLOAD_BYTES = PDF_UPLOAD_BYTES
 MAX_PAGES = 150
 TIMEOUT_SECONDS = 15
 _ADVISORY_LOCK_ID = 0x50444652454144  # "PDFREAD", distinct from app data locks.
@@ -45,7 +47,7 @@ _ERRORS = {
         400,
     ),
     "too_large": (
-        "This file is too large. Choose a PDF or Word document smaller than 15 MB.",
+        "This file exceeds the upload size limit.",
         413,
     ),
     "too_many_pages": (
@@ -104,15 +106,25 @@ class PdfReadabilityError(Exception):
 
 
 class PdfSizeLimitUploadHandler(FileUploadHandler):
-    """Stop receiving the request once an upload exceeds the shared pilot limit."""
+    """Stop receiving the request once an upload exceeds the limit for its format."""
 
-    def __init__(self, request):
+    def __init__(self, request, *, allow_word=False):
         super().__init__(request)
+        self._allow_word = allow_word
         self._received = 0
+        self._limit = MAX_UPLOAD_BYTES
+
+    def new_file(self, field_name, file_name, *args, **kwargs):
+        super().new_file(field_name, file_name, *args, **kwargs)
+        self._limit = (
+            _upload_limit(Path(file_name).suffix.lower())
+            if self._allow_word
+            else MAX_UPLOAD_BYTES
+        )
 
     def receive_data_chunk(self, raw_data, start):
         self._received += len(raw_data)
-        if self._received > MAX_UPLOAD_BYTES:
+        if self._received > self._limit:
             self.request.pdf_upload_too_large = True
             raise StopUpload(connection_reset=False)
         return raw_data
@@ -164,15 +176,20 @@ def _analysis_slot():
             os.close(descriptor)
 
 
+def _upload_limit(suffix):
+    return WORD_UPLOAD_BYTES if suffix == ".docx" else MAX_UPLOAD_BYTES
+
+
 def _analyze_uploaded_pdf(upload) -> dict:
     if upload is None or not hasattr(upload, "chunks"):
         raise PdfReadabilityError("invalid_pdf")
-    if isinstance(upload.size, int) and upload.size > MAX_UPLOAD_BYTES:
+    suffix = Path(str(getattr(upload, "name", ""))).suffix.lower()
+    limit = _upload_limit(suffix)
+    if isinstance(upload.size, int) and upload.size > limit:
         raise PdfReadabilityError("too_large")
 
     with _analysis_slot():
         with tempfile.TemporaryDirectory(prefix="pdf-readability-") as directory:
-            suffix = Path(str(getattr(upload, "name", ""))).suffix.lower()
             if suffix not in {".pdf", ".docx"}:
                 raise PdfReadabilityError("unsupported_file")
             pdf_path = Path(directory) / f"input{suffix}"
@@ -182,7 +199,7 @@ def _analyze_uploaded_pdf(upload) -> dict:
                     os.chmod(pdf_path, 0o600)
                     for chunk in upload.chunks():
                         byte_count += len(chunk)
-                        if byte_count > MAX_UPLOAD_BYTES:
+                        if byte_count > limit:
                             raise PdfReadabilityError("too_large")
                         output.write(chunk)
                 if byte_count == 0:

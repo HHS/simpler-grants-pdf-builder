@@ -259,7 +259,7 @@ class AuthenticatedPilotTests(TestCase):
         for text in (
             "Check a document’s readability",
             "Choose a PDF or Word document",
-            "One PDF or Word (.docx) file",
+            "One PDF file up to 5 MiB or Word (.docx) file up to 15 MiB",
             'accept=".pdf,.docx,',
             "as a PDF or Word (.docx) document",
             "Analyzing your document",

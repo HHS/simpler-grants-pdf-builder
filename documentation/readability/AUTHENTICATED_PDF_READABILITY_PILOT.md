@@ -70,7 +70,7 @@ required. See
 [PDF_READABILITY_PILOT.md](PDF_READABILITY_PILOT.md) and
 [PDF_READABILITY_SAFEGUARDS.md](PDF_READABILITY_SAFEGUARDS.md).
 
-PDF limits remain one PDF, 15 MiB, 150 pages, a 15-second bounded analyzer worker and
+PDF limits are one PDF, 5 MiB, 150 pages, a 15-second bounded analyzer worker and
 the existing shared analysis slot. Both routes use the same slot. Unsupported,
 uncertain, scanned/no-text, encrypted, malformed, oversized, busy, timeout and
 unavailable cases retain their useful messages. Unexpected analyzer failures
