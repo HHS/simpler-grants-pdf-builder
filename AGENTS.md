@@ -6,6 +6,15 @@ Follow the workflow in [`documentation/CONTRIBUTION_WORKFLOW.md`](documentation/
 issue, branch, PR with a Conventional Commit title, CI, then squash and merge. It links to what to
 read at each step and lists the rules that apply only to agents.
 
+## Before drafting or editing an upstream issue or PR
+
+Read `AGENTS.md` and the relevant row in
+[What to read at each step](documentation/CONTRIBUTION_WORKFLOW.md#what-to-read-at-each-step)
+from current upstream `main`. Do this even if the checkout or task already supplies
+a copy of these instructions. Read the files on GitHub or run `git fetch upstream main`
+and inspect them with `git show upstream/main:<path>`. Compare the completed body
+with the current template before submitting.
+
 ## Before opening or editing a GitHub issue
 
 Before drafting, filing, or revising an issue, follow the
