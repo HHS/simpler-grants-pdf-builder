@@ -13,6 +13,8 @@ For investigating recurring errors or unclear recovery instructions and deciding
 whether to propose a product change, see
 [quality review and triage](QUALITY_REVIEW_AND_TRIAGE.md#review-triage).
 
+For advisory editor warnings, see [Endnote warnings](ENDNOTE_WARNINGS.md).
+
 ## Adding a new code
 
 1. Add an entry to `IMPORT_ERROR_CATALOG` with a title, a summary, recovery

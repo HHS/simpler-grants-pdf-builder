@@ -27,6 +27,7 @@ Link durable guides or topic indexes from this page; individual evidence records
 - [WORD_METADATA_IMPORT.md](WORD_METADATA_IMPORT.md) — Legacy labels and trailing Metadata blocks, precedence, defaults and saved-record behavior
 - [INTRODUCTORY_PAGE_IMPORT.md](INTRODUCTORY_PAGE_IMPORT.md) — Supported Word introductory headings, destinations, maintained registration families and legacy preservation
 - [EDITABLE_INTRODUCTION.md](EDITABLE_INTRODUCTION.md) — Imported introductory ownership, compatibility, editing, output policy and resolving template guidance before the introduction
+- [ENDNOTE_WARNINGS.md](ENDNOTE_WARNINGS.md) — Editor warning messages, triggers, grouping, combinations, and shared instructions
 - [endnote-import.md](endnote-import.md) — Windows Word author FAQ, native note/cross-reference import fallbacks, and manually bracketed reference conventions
 - [DOCUMENT_PROCESSING.md](DOCUMENT_PROCESSING.md) — Shared content-processing boundary, application responsibilities and remaining portability limits
 - [NOFO_BUILDER_FAQ.md](NOFO_BUILDER_FAQ.md) — Answers to common questions about designing a NOFO in NOFO Builder: importing, Markdown, tables, page layout, endnotes, appendices, metadata, and status; links to the editor tasks for step-by-step instructions

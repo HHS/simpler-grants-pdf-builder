@@ -208,7 +208,7 @@ class BracketedEndnotesTests(TestCase):
 
     def test_duplicate_missing_empty_remain_unchanged(self):
         soup = self.soup(
-            "<p>[1] [1] [2] [3]</p><h1>Endnotes</h1><p>[1] A</p><p>[2]</p>"
+            "<p>[1] [2] [3]</p><h1>Endnotes</h1><p>[1] A</p><p>[1] B</p><p>[2]</p>"
         )
         before = str(soup)
         codes = {i["code"] for i in convert_bracketed_endnotes(soup)}
@@ -258,3 +258,168 @@ class BracketedEndnotesTests(TestCase):
         before = str(soup)
         self.assertIn("destination", [i["code"] for i in analyze_endnotes(soup)])
         self.assertEqual(str(soup), before)
+
+
+class ReusedManualEndnoteTests(TestCase):
+    def inspect(self, html):
+        return analyze_endnotes(BeautifulSoup(html, "html.parser"))
+
+    def test_reused_raw_references_import_with_individual_return_links(self):
+        soup = BeautifulSoup(
+            "<p>A[1] B[1]</p><h1>Endnotes</h1><p>[1] Source</p>", "html.parser"
+        )
+        self.assertEqual(convert_bracketed_endnotes(soup), [])
+        refs = soup.select("sup a")
+        self.assertEqual(len(refs), 2)
+        self.assertEqual(len({a["id"] for a in refs}), 2)
+        self.assertEqual(len({a["href"] for a in refs}), 1)
+        for a in refs:
+            self.assertIsNotNone(soup.find("a", href="#" + a["id"]))
+        self.assertEqual(analyze_endnotes(soup), [])
+        before = str(soup)
+        convert_bracketed_endnotes(soup)
+        self.assertEqual(str(soup), before)
+
+    def test_group_collision_and_preserve_independent_missing_destination(self):
+        html = (
+            '<p><a id="endnote-ref-manual-1" href="#endnote-manual-1">[1]</a></p>' * 3
+            + '<h1>Endnotes</h1><p id="endnote-manual-1">'
+            '<a href="#endnote-ref-manual-1">[1]</a> Source '
+            '<a href="#endnote-ref-manual-1">↑</a></p>'
+        )
+        issues = self.inspect(html)
+        self.assertEqual(
+            [i["message"] for i in issues],
+            ["Endnote [1] has conflicting link IDs across 3 references."],
+        )
+        issues = self.inspect(html + '<a href="#endnote-missing">↑</a>')
+        self.assertEqual(len(issues), 2)
+
+    def test_independent_gaps_order_empty_and_duplicate_entries(self):
+        for html, code in (
+            (
+                "<p>[1] [1] [3]</p><h1>Endnotes</h1><p>[1] A</p><p>[3] B</p>",
+                "numbering",
+            ),
+            ("<p>[1] [1] [2]</p><h1>Endnotes</h1><p>[2] B</p><p>[1] A</p>", "order"),
+            ("<p>[1] [1]</p><h1>Endnotes</h1><p>[1]</p>", "empty"),
+            ("<p>[1]</p><h1>Endnotes</h1><p>[1] A</p><p>[1] B</p>", "duplicate"),
+        ):
+            with self.subTest(code=code):
+                self.assertIn(code, {i["code"] for i in self.inspect(html)})
+
+    def test_manual_links_to_different_targets_still_warn(self):
+        issues = self.inspect(
+            '<p><a id="endnote-ref-manual-1" href="#endnote-manual-1">[1]</a>'
+            '<a id="endnote-ref-manual-1-b" href="#endnote-manual-other">[1]</a></p>'
+            '<h1>Endnotes</h1><p id="endnote-manual-1">[1] A</p>'
+            '<p id="endnote-manual-other">Other</p>'
+        )
+        self.assertIn("duplicate", {i["code"] for i in issues})
+
+    def test_generic_target_collisions_and_two_independent_ids(self):
+        html = (
+            '<p><a href="#endnote-1">1</a></p>'
+            '<ol><li id="endnote-1">A</li><li id="endnote-1">B</li></ol>'
+        )
+        issues = self.inspect(html)
+        self.assertEqual(
+            [i["message"] for i in issues],
+            ["Endnote links have a conflicting destination ID."],
+        )
+        html += (
+            '<p><a id="endnote-ref-2" href="#endnote-2">[2]</a></p>' * 2
+            + '<ol><li id="endnote-2">C <a href="#endnote-ref-2">↑</a></li></ol>'
+        )
+        self.assertEqual(len(self.inspect(html)), 2)
+
+    def test_reuse_preserves_missing_return_and_conflicting_labels(self):
+        html = (
+            '<p><a id="endnote-ref-manual-1" href="#endnote-manual-1">[1]</a>'
+            '<a id="endnote-ref-manual-1-b" href="#endnote-manual-1">[1]</a></p>'
+            '<h1>Endnotes</h1><p id="endnote-manual-1">'
+            '<a href="#endnote-ref-manual-1">[1]</a> A</p>'
+        )
+        self.assertEqual([i["code"] for i in self.inspect(html)], ["return-link"])
+        issues = self.inspect(html.replace(">[1]</a></p>", ">[2]</a></p>"))
+        self.assertIn("conflict", {i["code"] for i in issues})
+
+    def test_new_raw_reference_reuses_existing_manual_target(self):
+        soup = BeautifulSoup("<p>[1]</p><h1>Endnotes</h1><p>[1] A</p>", "html.parser")
+        convert_bracketed_endnotes(soup)
+        extra = soup.new_tag("p")
+        extra.string = "Again [1]"
+        soup.h1.insert_before(extra)
+        convert_bracketed_endnotes(soup)
+        self.assertEqual(analyze_endnotes(soup), [])
+        self.assertEqual(len(soup.select("sup a")), 2)
+        self.assertEqual(len({a["href"] for a in soup.select("sup a")}), 1)
+
+    def test_colliding_citation_id_does_not_gain_new_links(self):
+        for identifier in ("endnote-manual-1", "source-bookmark"):
+            with self.subTest(identifier=identifier):
+                soup = BeautifulSoup(
+                    f'<p>Read [1] again [1]</p><div id="{identifier}">Bookmark</div>'
+                    f'<h1>Endnotes</h1><p id="{identifier}">[1] Source</p>',
+                    "html.parser",
+                )
+                before = str(soup)
+                convert_bracketed_endnotes(soup)
+                self.assertEqual(str(soup), before)
+                self.assertIsNone(soup.find("sup"))
+
+    def test_manual_citation_collision_is_reported_without_incoming_links(self):
+        issues = self.inspect(
+            '<p>[1]</p><div id="endnote-manual-1">Bookmark</div>'
+            '<h1>Endnotes</h1><p id="endnote-manual-1">[1] Source</p>'
+        )
+        self.assertEqual(sum(i["code"] == "destination" for i in issues), 1)
+
+    def test_repeated_manual_references_survive_markdown_storage_and_reimport(self):
+        import markdown
+
+        from .nofo_markdown import md
+
+        soup = BeautifulSoup(
+            "<h1>Program</h1><p>First [1], repeated [1].</p><p>Again [1].</p>"
+            "<h1>Endnotes</h1><p>[1] Source <em>title</em>.</p>",
+            "html.parser",
+        )
+        self.assertEqual(convert_bracketed_endnotes(soup), [])
+        rendered = BeautifulSoup(
+            markdown.markdown(md(str(soup)), extensions=["extra"]), "html.parser"
+        )
+        references = rendered.select("sup a")
+        self.assertEqual(len(references), 3)
+        self.assertEqual(len({a["id"] for a in references}), 3)
+        for reference in references:
+            targets = rendered.find_all(id=reference["href"][1:])
+            self.assertEqual(len(targets), 1)
+            self.assertIsNotNone(targets[0].find("a", href="#" + reference["id"]))
+        self.assertEqual(analyze_endnotes(rendered), [])
+        before = str(rendered)
+        self.assertEqual(convert_bracketed_endnotes(rendered), [])
+        self.assertEqual(str(rendered), before)
+
+    def test_duplicated_citation_backlinks_are_not_counted_as_references(self):
+        for target, reference in (
+            ("ftnt1", "ftnt_ref1"),
+            ("endnote-1", "endnote-ref-1"),
+            ("endnote-manual-1", "endnote-ref-manual-1"),
+        ):
+            with self.subTest(target=target):
+                soup = BeautifulSoup(
+                    f'<p><a id="{reference}" href="#{target}">[1]</a></p>'
+                    "<h1>Endnotes</h1>"
+                    f'<p><a id="{target}" href="#{reference}">[1]</a> Source</p>'
+                    f'<p><a id="{target}" href="#{reference}">[1]</a> Duplicate</p>',
+                    "html.parser",
+                )
+                before = str(soup)
+                issues = analyze_endnotes(soup)
+                self.assertEqual(
+                    [i["message"] for i in issues if i["code"] == "destination"],
+                    ["Endnote links have a conflicting destination ID."],
+                )
+                self.assertFalse(any("across" in i["message"] for i in issues))
+                self.assertEqual(str(soup), before)

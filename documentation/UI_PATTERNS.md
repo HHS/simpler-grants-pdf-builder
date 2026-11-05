@@ -9,6 +9,10 @@ components, even when the pattern is not cataloged here. Reuse those components,
 or explain in the PR why a different implementation is needed. Scope this check
 to the UI being changed; it does not require an application-wide component audit.
 
+For the existing **Check endnotes** panel, its messages and grouping rules, see
+[Endnote warnings](ENDNOTE_WARNINGS.md). This uses the editor’s existing tab, alert,
+disclosure, issue-list and shared-guidance components.
+
 ## Typography when an editor loads Bootstrap
 
 The [root README's USWDS implementation note](../README.md#a-note-on-our-implementation-of-the-us-web-design-system-uswds)

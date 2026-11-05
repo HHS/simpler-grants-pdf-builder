@@ -4,6 +4,8 @@ NOFO Builder preserves native Microsoft Word footnotes/endnotes and can create
 links for manually authored references. Native Word notes and manually bracketed
 notes use different authoring conventions.
 
+For messages, triggers and overlapping issues, see [Endnote warnings](ENDNOTE_WARNINGS.md).
+
 ## FAQ for authors using Microsoft Word on Windows
 
 ### Why do some citation numbers import without working links?
@@ -48,8 +50,8 @@ This creates an explicit relationship instead of a typed number. See
 The import fallback in IMPORT-076/IMPORT-072 preserves supported native Word
 cross-references and gives each occurrence its own forward and return link.
 Availability depends on the deployed release. Unsupported fields and unresolved
-bookmarks still need author review. Manual bracketed references do not gain
-support for repeated numbers from this fallback.
+bookmarks still need author review. Repeated manual references are handled
+separately by IMPORT-050.
 
 ### Where should I put the References heading?
 
@@ -72,19 +74,20 @@ Repeated links must each have a matching return link in their citation.
 Use the following convention:
 
 - Use `[1]`, `[2]`, etc. in the body, with no spaces inside the brackets.
-- Use each reference number once, in sequence throughout the document.
+- Number sources sequentially on first appearance. Later references may reuse
+  the same number when they identify one citation.
 - Put citations under one actual **Endnotes** heading, in reference order.
   Capitalization, a trailing colon, and Footnote/Footnotes headings are normalized
   during import. Bold paragraph text alone is not a structural heading.
 - Begin each citation with its matching marker on a new paragraph. Continuation
   paragraphs, lists, tables, and links belong to that citation until the next
   citation entry or the section boundary.
-- When citing the same source again, use the next reference number and repeat the
-  citation information under that number.
+- When citing the same source again, reuse its number and keep one citation
+  entry. Import creates a unique link ID and return link for each occurrence.
 
 Complete, unique pairs become forward and return links. Numbering gaps or order
 differences are advisory; they do not prevent otherwise unambiguous linking.
-Missing, duplicate, empty, or ambiguous manual pairs are left for review. NOFO
+Missing, duplicate citation entries, empty, or ambiguous manual pairs are left for review. NOFO
 Builder never silently renumbers notes. Ordinary bracketed content is not enough
 on its own to establish an endnote relationship.
 
