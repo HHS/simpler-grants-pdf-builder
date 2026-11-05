@@ -121,6 +121,10 @@ The deployment pipeline:
    - Running database migrations
    - Deploying the release to the target environment
 
+For a vulnerability-scan blocker, follow the [runtime vulnerability assessment
+and temporary-exception recommendations](documentation/UPDATING_PYTHON_DEPENDENCIES.md#when-a-container-vulnerability-scan-blocks-a-deployment)
+before proposing a policy change. This guidance does not authorize an exception.
+
 ### Subsection conflict protection rollout
 
 **For the first deployment of subsection save-conflict protection (#1075 / PR

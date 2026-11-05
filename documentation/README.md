@@ -34,7 +34,7 @@ Link durable guides or topic indexes from this page; individual evidence records
 - [UI_PATTERNS.md](UI_PATTERNS.md) — Reusable interface patterns, including alert text and spacing, compact form-save success feedback, shared file-upload error states, loading progress modals, readability reliability alerts, and subsection save-conflict recovery
 - [STYLE_GUIDE.md](STYLE_GUIDE.md) — The SimplerNOFOs Style Guide (edition of August 25, 2026) as Markdown: writing, formatting, and structure conventions for NOFO content, with known conversion gaps listed at the end
 - [TABLES.md](TABLES.md) — Automatic table styling: size classes, captions, points columns, import-time width classes, and how users override them
-- [UPDATING_PYTHON_DEPENDENCIES.md](UPDATING_PYTHON_DEPENDENCIES.md) — How to update Python dependencies
+- [UPDATING_PYTHON_DEPENDENCIES.md](UPDATING_PYTHON_DEPENDENCIES.md) — How to update Python dependencies and assess container scan blockers or proposed temporary exceptions
 - [WORD_LIST_IMPORT.md](WORD_LIST_IMPORT.md) — Supported native list markers, mixed HTML trees and editing limitations
 - [adr/](adr/README.md) — Architecture Decision Records (ADRs), written from [template.md](template.md)
 - [review-evidence/](review-evidence/README.md) — Issue-specific investigations, experiments, screenshots and validation records
