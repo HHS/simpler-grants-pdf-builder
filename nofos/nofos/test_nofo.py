@@ -5619,6 +5619,7 @@ class SuggestNofoFieldsTests(TestCase):
             "Substance Abuse and Mental Health Services Administration (SAMHSA)",
         )
         self.assertEqual(self.nofo.theme, "portrait-samhsa-white")
+        self.assertEqual(self.nofo.cover, "nofo--cover-page--text")
 
     def test_suggest_all_nofo_fields_cdc_nofo_defaults_to_text_cover(self):
         """A newly imported CDC NOFO gets the CDC theme and the text-only cover."""
