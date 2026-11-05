@@ -757,6 +757,9 @@ to use an image cover.
 
 **Notes**
 
+- New imports that identify SAMHSA start with **Text only**. To use an image
+  cover, choose **Standard image** in **Cover style**.
+
 - New ACL imports can select **ACL (Default)** from the OpDiv even with a blank
   or placeholder opportunity number. Previously imported records are not
   backfilled: if an ACL NOFO still has **NIH (Light)**, explicitly choose
