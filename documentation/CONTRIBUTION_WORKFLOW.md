@@ -67,7 +67,7 @@ flowchart TD
 
 | Step | Read this |
 | --- | --- |
-| Create the issue | [Bug report](../.github/ISSUE_TEMPLATE/bug_report.md) and [feature request](../.github/ISSUE_TEMPLATE/feature_request.md) templates (GitHub offers them when you click **New issue**) |
+| Create the issue | [Bug report](../.github/ISSUE_TEMPLATE/bug_report.md) and [feature request](../.github/ISSUE_TEMPLATE/feature_request.md) templates, [issue drafting procedure](ISSUE_DRAFTING.md), [label guidance](#issue-labels), and [triage guidance](QUALITY_REVIEW_AND_TRIAGE.md#review-finding). Read these from current upstream `main` and compare the completed body with the selected template before submitting. |
 | Branch off `main` | [`DEPLOYMENT.md` § 1. Create a feature branch](../DEPLOYMENT.md#1-create-a-feature-branch) and [§ Branch Protection Rules](../DEPLOYMENT.md#branch-protection-rules) |
 | Changing import behavior | [`IMPORT_RULES.md`](IMPORT_RULES.md), [`DOCUMENT_PROCESSING.md`](DOCUMENT_PROCESSING.md) for the shared processing boundary, and [`DEPLOYMENT.md` § Updating Import Rules](../DEPLOYMENT.md#updating-import-rules) |
 | Changing user-facing import errors | [`IMPORT_ERROR_CODES.md`](IMPORT_ERROR_CODES.md), and the "Copy rules" at the top of [`nofos/bloom_nofos/import_errors.py`](../nofos/bloom_nofos/import_errors.py) |
@@ -75,7 +75,7 @@ flowchart TD
 | Updating docs | Follow [placement and maintenance](README.md#where-documentation-belongs): reuse a guide or topic folder, put issue-specific investigations/experiments/validation in `review-evidence/`, and index durable guides or topic indexes. Use the [ADR template](template.md) for architectural decisions. Check placement and moved links before opening the PR and after review changes. |
 | Editor task changes | [`AGENTS.md` § Keep editor tasks current](../AGENTS.md#keep-editor-tasks-current) defines when to update [`EDITOR_TASKS.md`](EDITOR_TASKS.md). Applies to people and agents; preserve existing task IDs and anchors. |
 | Run checks locally | [`DEPLOYMENT.md` § Before You Push](../DEPLOYMENT.md#before-you-push) |
-| Open the PR | [`DEPLOYMENT.md` § 2. Open a pull request](../DEPLOYMENT.md#2-open-a-pull-request), [Conventional Commits](https://www.conventionalcommits.org/), and the [PR template](../.github/pull_request_template.md). Complete the Editor Tasks check: update affected instructions in the same PR or explain why no update is needed. |
+| Open the PR | [`DEPLOYMENT.md` § 2. Open a pull request](../DEPLOYMENT.md#2-open-a-pull-request), [Conventional Commits](https://www.conventionalcommits.org/), and the [PR template](../.github/pull_request_template.md). Read the repository guidance and template from current upstream `main` and compare the completed body with the template before submitting. Complete the Editor Tasks check: update affected instructions in the same PR or explain why no update is needed. |
 | Wait for CI | [`DEPLOYMENT.md` § 3. CI must pass](../DEPLOYMENT.md#3-ci-must-pass) |
 | Merge | [`DEPLOYMENT.md` § 4. Merge](../DEPLOYMENT.md#4-merge). Recheck Editor Tasks against the final behavior, including changes made during review, before merging. |
 | Changelog and releases | [`DEPLOYMENT.md` § Releases](../DEPLOYMENT.md#releases) and [`release-please-config.json`](../release-please-config.json) (which title prefixes go in which changelog section) |
