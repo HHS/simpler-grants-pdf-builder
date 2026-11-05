@@ -34,7 +34,12 @@ def _application_call(function, *args, **kwargs):
 
 
 def get_sections_and_subsections_from_soup(
-    soup, top_heading_level, *, consume_scoped_tagline=False, consume_metadata=False
+    soup,
+    top_heading_level,
+    *,
+    consume_scoped_tagline=False,
+    consume_metadata=False,
+    metadata_trace=None,
 ):
     return _application_call(
         content_processing.get_sections_and_subsections_from_soup,
@@ -42,6 +47,7 @@ def get_sections_and_subsections_from_soup(
         top_heading_level,
         consume_scoped_tagline=consume_scoped_tagline,
         consume_metadata=consume_metadata,
+        metadata_trace=metadata_trace,
     )
 
 
@@ -51,7 +57,8 @@ def process_document_content(
     section_parser=None,
     builder_import=False,
     extract_scoped_tagline=False,
-    editable_intro="generated"
+    editable_intro="generated",
+    metadata_trace=None,
 ):
     return _application_call(
         content_processing.process_document_content,
@@ -61,4 +68,5 @@ def process_document_content(
         extract_scoped_tagline=extract_scoped_tagline,
         editable_intro=editable_intro,
         debug_capture=capture_debug_soup if settings.DEBUG else None,
+        metadata_trace=metadata_trace,
     )

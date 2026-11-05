@@ -13,6 +13,7 @@ shared-environment or production operating approval.
 - [Candidate-only interface](DESIGN_CANDIDATE_INTERFACE.md) — Expiring/revocable access to one candidate.
 - [Candidate review](DESIGN_CANDIDATE_REVIEW.md) — Findings and human warning acknowledgments.
 - [Bounded fidelity evidence](DESIGN_FIDELITY_EVIDENCE.md) — Converted-content observations and direct local-resource checks; not complete source fidelity.
+- [Metadata provenance](DESIGN_METADATA_PROVENANCE.md) — Recognized block consumption and saved-field evidence; not independent Word extraction.
 - [Editor tasks](../EDITOR_TASKS.md#synthetic-local-design-pilot) — Current human-operated instructions.
 - [Fixture and baseline evidence](../review-evidence/design-pilot-1146/README.md) — Invented inputs, recorded checks and remaining baseline work.
 
