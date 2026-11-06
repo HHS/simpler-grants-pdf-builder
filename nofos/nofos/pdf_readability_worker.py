@@ -274,7 +274,9 @@ def main() -> int:
 
             resource.setrlimit(resource.RLIMIT_CPU, (20, 20))
             resource.setrlimit(resource.RLIMIT_AS, (1536 * 1024 * 1024,) * 2)
-            write_limit = PDF_UPLOAD_BYTES if path.suffix == ".pdf" else 2 * MIB
+            # Linux fast copy can probe for EOF at the destination offset.
+            # Leave one byte beyond the upload cap so that probe can succeed.
+            write_limit = PDF_UPLOAD_BYTES + 1 if path.suffix == ".pdf" else 2 * MIB
             resource.setrlimit(resource.RLIMIT_FSIZE, (write_limit, write_limit))
             resource.setrlimit(resource.RLIMIT_NOFILE, (64, 64))
         report = (
