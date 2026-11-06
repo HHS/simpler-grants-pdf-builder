@@ -67,3 +67,7 @@ and one PostgreSQL-only concurrency test skipped under SQLite. Modules:
 foundation behavior, not the proposed retrieval integration. No new application
 tests were introduced because no application behavior changed. The full test
 suite was not run locally.
+
+## November 6 implementation follow-through
+
+The historical test results above remain the spike baseline. #954 now owns five implementation work packages and a release requirement for PostgreSQL foundation, recovery and concurrency tests, followed by assembled integration and joint designer UAT. See the maintained implementation plan for the revised 17–26 engineering-day estimate. Those future test results must be recorded by the implementation tickets before rollout.

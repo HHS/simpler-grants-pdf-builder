@@ -177,24 +177,27 @@ These are functional owners, not requests for an individual to find another owne
 Reuse existing issues, not a parallel epic. The estimates are judgment, not
 measured throughput: one experienced Builder engineer with infrastructure support,
 review capacity and an available AS counterpart; low-volume pilot; unchanged Word
-contract and existing manual design. **15–23 engineering days, roughly 4–6 working
+contract and existing manual design. **17–26 engineering days, roughly 4–7 working
 weeks elapsed with review/UAT**, after the enabling contract/access is usable.
 External approval, provisioning and partner availability have no reliable duration
 yet and are additional, potentially overlapping lead time. Confidence: medium-low.
 
-| Order / issue | Deliverable and acceptance boundary | Engineering effort |
+| Work package | Dependencies / deliverable | Engineering effort |
 | --- | --- | --- |
-| 1. [#888](https://github.com/HHS/simpler-grants-pdf-builder/issues/888), [#952](https://github.com/HHS/simpler-grants-pdf-builder/issues/952) | Confirm source identity/immutability, group mapping, storage/scanning/retention and restricted machine access. Synthetic contract work can start now; actual access/approval is external. | 2–3 days Builder support, external lead time unknown |
-| 2. [#953](https://github.com/HHS/simpler-grants-pdf-builder/issues/953) within [#954](https://github.com/HHS/simpler-grants-pdf-builder/issues/954) | Digest-bound observations, durable fenced attempts and atomic import/result service; tests for retries, conflicts, crashes and concurrency. Preserve immutable history. | 4–6 days |
-| 3. [#954](https://github.com/HHS/simpler-grants-pdf-builder/issues/954) | Bounded retrieval/validation and task-local cleanup; reuse converter and core; new draft with review warnings/source linkage; no auto replacement or PDF. | 4–6 days |
-| 4. [#954](https://github.com/HHS/simpler-grants-pdf-builder/issues/954) with infrastructure review | Dedicated task role, scheduler, default-off switch, private monitoring, kill/recovery runbook; synthetic integration and restart/cleanup tests. Can overlap step 3 after service contract. | 2–3 days |
-| 5. [#954](https://github.com/HHS/simpler-grants-pdf-builder/issues/954) | Own automated AS integration tests, authorized designer UI/UAT, failure recovery, limited cohort rollout and manual fallback. Use findings from the manual pilot under #956. | 3–5 days, plus partner calendar |
-| Later. [#955](https://github.com/HHS/simpler-grants-pdf-builder/issues/955) / [#902](https://github.com/HHS/simpler-grants-pdf-builder/issues/902) | Optional agent-assisted design and trusted human acceptance. Reuse the existing design pilot; not on the retrieval/import critical path. | Separate estimate after remaining pilot work is resolved |
-| Later. [#951](https://github.com/HHS/simpler-grants-pdf-builder/issues/951)/[#957](https://github.com/HHS/simpler-grants-pdf-builder/issues/957) | Automated PDF availability/return. | Outside this estimate |
+| #888 / #952 | Shared contract and security coordination; external lead time unknown | 2–3 days |
+| [#1299](https://github.com/HHS/simpler-grants-pdf-builder/issues/1299) Track AS submission observations and durable processing attempts | #888/#952 decisions and #953 foundation | 3–4 days |
+| [#1300](https://github.com/HHS/simpler-grants-pdf-builder/issues/1300) Discover and retrieve AS Word submissions through S3 | #1299 | 3–5 days |
+| [#1301](https://github.com/HHS/simpler-grants-pdf-builder/issues/1301) Create source-linked Builder drafts atomically from AS submissions | #1299 | 4–6 days |
+| [#1302](https://github.com/HHS/simpler-grants-pdf-builder/issues/1302) Provision and operate the automated AS retrieval task | #1299 | 2–3 days |
+| [#1303](https://github.com/HHS/simpler-grants-pdf-builder/issues/1303) Validate automated AS integration, designer UAT and limited rollout | #1299, #1300, #1301, #1302 | 3–5 days |
+
+#954 owns end-to-end delivery. Infrastructure coordination can start early. Full integration testing follows all four implementation packages and verified machine access. #955/#902 agent design and #951/#957 PDF return retain separate estimates.
+
+The November 6 decomposition revises 15–23 days to 17–26 days by explicitly allowing for database recovery/concurrency validation and full-import/fallback integration. Each package includes its implementation tests; the final package covers assembled integration and UAT engineering. Re-estimate after contract/interface review.
 
 **Deck-ready milestones:** contract/security and access ready → receipt/import
 foundation (about week 1–2) → synthetic integrated retrieval/draft review (week 3–4)
-→ partner UAT and bounded rollout (week 4–6), with manual S3 handoff retained as
+→ partner UAT and bounded rollout (week 4–7), with manual S3 handoff retained as
 fallback. These are relative planning windows, not delivery promises. February/
 March 2027 is a plausible coordination target only after reconciling dependencies;
 it is not committed by this spike or the November deck.
@@ -207,7 +210,7 @@ it is not committed by this spike or the November deck.
 | Joint integration testing and UAT | February 2027 |
 | Limited rollout | February–March 2027 |
 
-These planning windows are proposed for review with AS and subsequent inclusion in the Agile Six schedule slide. Retain the 15–23 engineering-day / approximately 4–6 working-week estimate above. Assumptions include engineering and reviewer availability, agreed requirements, and machine access ready for integration testing. External approval/provisioning and partner-calendar lead time remain unestimated. Confirm the machine-access provisioning owner and target date under #954 with the infrastructure/security functions. The November 17 milestone covers human-download access. Calendar dates become delivery commitments only after coordination and agreement.
+These planning windows are proposed for review with AS and subsequent inclusion in the Agile Six schedule slide. Retain the 17–26 engineering-day / approximately 4–7 working-week estimate above. Assumptions include engineering and reviewer availability, agreed requirements, and machine access ready for integration testing. External approval/provisioning and partner-calendar lead time remain unestimated. Confirm the machine-access provisioning owner and target date under #954 with the infrastructure/security functions. The November 17 milestone covers human-download access. Calendar dates become delivery commitments only after coordination and agreement.
 
 Minimum verification includes wrong-role/group rejection; malformed/oversized/
 unsafe/expanded ZIP limits; changed object between observation and GET; duplicate
@@ -234,3 +237,7 @@ AWS references: [S3 notification delivery](https://docs.aws.amazon.com/AmazonS3/
 [GetObject version/conditional reads](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html),
 [scheduled ECS tasks](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/tasks-scheduled-eventbridge-scheduler.html).
 These describe platform capabilities, not this project's deployed configuration.
+
+## Verification baseline and rollout evidence
+
+The spike reported 24 passing synthetic foundation tests and one PostgreSQL-only test skipped under SQLite. Run that existing PostgreSQL test early in the tracking package. Implement and pass PostgreSQL concurrency/recovery tests alongside tracking and draft import, then link results from the automated integration/UAT ticket. Passing those tests and the joint integration/UAT criteria are release requirements under #954. Accepting the spike plan completes the investigation milestone; implementation tickets establish operational evidence.
