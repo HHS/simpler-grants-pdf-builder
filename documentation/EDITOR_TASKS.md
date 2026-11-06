@@ -129,6 +129,9 @@ is needed, contact the SimplerNOFOs team.
   Redundant bold
   formatting imports as a single bold level. Review the result against Word;
   existing saved content receives this handling only when reimported.
+- Import removes isolated bold formatting from a period, comma, question mark,
+  or colon directly after text. If the whole sentence is bold, the punctuation
+  stays bold with the sentence.
 - Consecutive Word bullets at the same numbering level import as one list even
   when their internal list IDs differ, avoiding extra gaps between bullet groups.
   Paragraphs still separate lists; numbered-list restarts remain separate.

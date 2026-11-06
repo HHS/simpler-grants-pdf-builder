@@ -179,3 +179,53 @@ print("isolated content processing passed")
         from nofos.content_processing import _get_classnames_for_font_weight_bold
 
         self.assertEqual(_get_classnames_for_font_weight_bold(styles), {"local"})
+
+
+class TrailingPunctuationImportTests(SimpleTestCase):
+    def test_import_cleans_isolated_bold_before_markdown_conversion(self):
+        sentence = "We do not consider <strong>voluntary</strong> cost sharing"
+        cases = [
+            (
+                f"{sentence}<strong>.</strong>",
+                f"{sentence}.",
+                "We do not consider **voluntary** cost sharing.",
+            ),
+            (
+                f"<strong>{sentence}<strong>.</strong></strong>",
+                f"<strong>{sentence}.</strong>",
+                "**We do not consider voluntary cost sharing.**",
+            ),
+            (
+                "If <strong>eligible</strong><b>, </b>apply",
+                "If <strong>eligible</strong>, apply",
+                "If **eligible**, apply",
+            ),
+            ("Who can apply<strong>?</strong>", "Who can apply?", "Who can apply?"),
+            ("Submit this<b>:</b>", "Submit this:", "Submit this:"),
+        ]
+        for source, expected_html, expected_markdown in cases:
+            with self.subTest(source=source):
+                soup, _ = process_nofo_html(
+                    BeautifulSoup(f"<p>{source}</p>", "html.parser"), "h1"
+                )
+                self.assertEqual(soup.p.decode_contents(), expected_html)
+                self.assertEqual(
+                    content_processing.md(str(soup.p)).strip(), expected_markdown
+                )
+
+    def test_import_preserves_other_bold_runs(self):
+        cases = [
+            "<strong>Apply by Friday.</strong>",
+            "<strong>?</strong> Apply",
+            "Apply <strong>:</strong>",
+            "Apply<br/><strong>:</strong>",
+            "Apply<strong>!</strong>",
+            "Apply<strong>?!</strong>",
+            'Apply<strong id="target">.</strong>',
+        ]
+        for source in cases:
+            with self.subTest(source=source):
+                soup, _ = process_nofo_html(
+                    BeautifulSoup(f"<p>{source}</p>", "html.parser"), "h1"
+                )
+                self.assertEqual(soup.p.decode_contents(), source)
