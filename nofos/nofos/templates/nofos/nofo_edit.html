@@ -601,7 +601,7 @@ Edit “{{ nofo|nofo_name }}”
     <div>
       <h2 class="margin-bottom-0">NOFO theme options</h2>
       <span class="padding-right-2 font-sans-sm">
-        <a href="{% url 'nofos:nofo_edit_theme_options' nofo.id %}">Edit<span class="usa-sr-only">: NOFO theme, cover style, and icon style</span></a>
+        <a href="{% url 'nofos:nofo_edit_theme_options' nofo.id %}">Edit<span class="usa-sr-only">: NOFO theme options</span></a>
       </span>
     </div>
   </caption>
@@ -624,6 +624,12 @@ Edit “{{ nofo|nofo_name }}”
       <th scope="row">Icon style</th>
       <td>{{ nofo.get_icon_style_display|get_value_or_none:"Outlined" }}</td>
     </tr>
+    {% if nofo.can_choose_pdf_contents_layout %}
+    <tr>
+      <th scope="row">PDF Contents layout</th>
+      <td>{{ nofo.get_pdf_contents_layout_display }}</td>
+    </tr>
+    {% endif %}
   </tbody>
 </table>
 

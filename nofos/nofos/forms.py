@@ -1,4 +1,3 @@
-from constance import config
 from django import forms
 from martor.fields import MartorFormField
 from users.models import BloomUser
@@ -173,10 +172,7 @@ class NofoThemeOptionsForm(forms.ModelForm):
     def __init__(self, *args, user=None, **kwargs):
         super(NofoThemeOptionsForm, self).__init__(*args, **kwargs)
 
-        if (
-            self.instance.has_fy27_contents
-            and config.HHS_NOFO_FY27_PDF_CONTENTS_ENABLED
-        ):
+        if self.instance.can_choose_pdf_contents_layout:
             # Accept submissions from a theme form loaded before this field
             # was enabled, without replacing a previously saved choice.
             self.fields["pdf_contents_layout"].required = False
