@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.57.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.57.0...nofos-v3.57.1) (2026-11-06)
+
+
+### Bug Fixes
+
+* preserve empty note headings with reference evidence ([#1305](https://github.com/HHS/simpler-grants-pdf-builder/issues/1305)) ([780b2a6](https://github.com/HHS/simpler-grants-pdf-builder/commit/780b2a6c5951482bd789331448ccc259bedbb1fb))
+* show PDF Contents layout in NOFO theme summary ([#1309](https://github.com/HHS/simpler-grants-pdf-builder/issues/1309)) ([4dfd10d](https://github.com/HHS/simpler-grants-pdf-builder/commit/4dfd10db709b5def66f20f5dc28d57f01bf5ef7f))
+
+
+### Documentation
+
+* record dev PDF Contents validation ([#1306](https://github.com/HHS/simpler-grants-pdf-builder/issues/1306)) ([00018e5](https://github.com/HHS/simpler-grants-pdf-builder/commit/00018e58c5bb4bf467cb3c15e061f32f7c72299e))
+
+
+### Continuous Integration
+
+* exempt automated release PRs from description lint ([#1308](https://github.com/HHS/simpler-grants-pdf-builder/issues/1308)) ([721cf38](https://github.com/HHS/simpler-grants-pdf-builder/commit/721cf388076185b75a4c4af2aa55099c9ec370be))
+
 ## [3.57.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.56.2...nofos-v3.57.0) (2026-11-06)
 
 
