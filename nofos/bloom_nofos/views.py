@@ -17,12 +17,12 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.views.decorators.http import require_http_methods
 
 from nofos.pdf_readability import (
-    MAX_UPLOAD_BYTES,
     PdfReadabilityError,
     PdfSizeLimitUploadHandler,
     analyze_uploaded_pdf,
 )
 from nofos.pdf_readability_metrics import record_attempt, retention_days
+from nofos.readability_upload_limits import MIB, PDF_UPLOAD_BYTES, WORD_UPLOAD_BYTES
 
 logger = logging.getLogger("django.request.pdf_readability")
 
@@ -153,7 +153,9 @@ def _pdf_readability_workflow(request, enabled, source):
 
     if request.method == "POST":
         # Must be installed before CSRF middleware reads multipart request.POST.
-        request.upload_handlers.insert(0, PdfSizeLimitUploadHandler(request))
+        request.upload_handlers.insert(
+            0, PdfSizeLimitUploadHandler(request, allow_word=source == "authenticated")
+        )
     request.pdf_readability_source = source
     request.pdf_readability_enabled = enabled
     try:
@@ -191,9 +193,16 @@ def _pdf_readability_form(request):
         if request.method == "POST":
             request.pdf_readability_outcome = "disabled"
         return render(request, "pdf_readability_unavailable.html", status=503)
-    max_upload_mb = MAX_UPLOAD_BYTES // (1024 * 1024)
     word_uploads_allowed = request.pdf_readability_source == "authenticated"
     file_types = "PDF or Word (.docx)" if word_uploads_allowed else "PDF"
+    pdf_size = f"{PDF_UPLOAD_BYTES // MIB} MiB"
+    word_size = f"{WORD_UPLOAD_BYTES // MIB} MiB"
+    size_hint = (
+        f"One PDF file up to {pdf_size} or Word (.docx) file up to {word_size}."
+        if word_uploads_allowed
+        else f"One PDF file, up to {pdf_size}."
+    )
+    size_error = f"This file is too large. {size_hint}"
     context = {
         "word_uploads_allowed": word_uploads_allowed,
         "file_label": (
@@ -216,9 +225,8 @@ def _pdf_readability_form(request):
             if request.pdf_readability_source == "authenticated"
             else settings.PDF_READABILITY_ATTEMPT_RECORDING_ENABLED
         ),
-        "max_upload_mb": max_upload_mb,
         "upload_hint": (
-            f"One {file_types} file, up to {max_upload_mb} MB. "
+            f"{size_hint} "
             "Scanned PDFs need optical character recognition (OCR) "
             "to make their text selectable before uploading."
         ),
@@ -241,9 +249,7 @@ def _pdf_readability_form(request):
             }.get(suffix, "unknown")
         if getattr(request, "pdf_upload_too_large", False):
             request.pdf_readability_outcome = "too_large"
-            context["error"] = (
-                f"This file is too large. Choose a file under {context['max_upload_mb']} MB."
-            )
+            context["error"] = size_error
             status = 413
         elif len(uploads) != 1 or len(request.FILES) != 1:
             request.pdf_readability_outcome = "invalid_pdf"
@@ -283,7 +289,9 @@ def _pdf_readability_form(request):
                 report = analyze_uploaded_pdf(upload)
             except PdfReadabilityError as error:
                 request.pdf_readability_outcome = error.code
-                context["error"] = error.message
+                context["error"] = (
+                    size_error if error.code == "too_large" else error.message
+                )
                 status = error.http_status
                 if error.code == "busy":
                     retry_after = "15"

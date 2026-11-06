@@ -15,6 +15,7 @@ from nofos.pdf_format_recognition import (
     recognize_nofo,
     validate_policy,
 )
+from nofos.readability_upload_limits import MIB, PDF_UPLOAD_BYTES
 
 TAGGED_PROFILE = "hhs-nofo-fy27-pdf-estimate@0.7.0"
 GENERIC_PROFILE = "hhs-nofo-fy27-generic-pdf-estimate@0.6.0"
@@ -267,14 +268,15 @@ def analyze_word(path: Path) -> dict:
 
 def main() -> int:
     try:
+        path = Path(sys.argv[1])
         if sys.platform.startswith("linux"):
             import resource
 
             resource.setrlimit(resource.RLIMIT_CPU, (20, 20))
             resource.setrlimit(resource.RLIMIT_AS, (1536 * 1024 * 1024,) * 2)
-            resource.setrlimit(resource.RLIMIT_FSIZE, (2 * 1024 * 1024,) * 2)
+            write_limit = PDF_UPLOAD_BYTES if path.suffix == ".pdf" else 2 * MIB
+            resource.setrlimit(resource.RLIMIT_FSIZE, (write_limit, write_limit))
             resource.setrlimit(resource.RLIMIT_NOFILE, (64, 64))
-        path = Path(sys.argv[1])
         report = (
             analyze_word(path)
             if path.suffix == ".docx"
