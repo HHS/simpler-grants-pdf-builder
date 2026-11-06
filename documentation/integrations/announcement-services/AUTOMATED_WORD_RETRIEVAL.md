@@ -6,6 +6,22 @@ The [manual pilot](https://github.com/HHS/simpler-grants-pdf-builder/issues/950)
 can proceed separately. [Dated findings and verification](../../review-evidence/1278/README.md)
 pin the source examined and distinguish existing capabilities from this proposal.
 
+## Flow at a glance
+
+An eligible user sends a Word document from GrantSolutions Announcement Services. Builder retrieves it automatically and prepares an editable draft using its existing import rules. A designer reviews the imported content, completes the design and uses the normal PDF workflow.
+
+```mermaid
+flowchart LR
+    A["User sends from Announcement Services"] --> B["AS makes the Word file available in S3"]
+    B --> C["Builder retrieves and imports it automatically"]
+    C --> D["Designer reviews and refines the Builder draft"]
+    D --> E["Generate PDF and return it manually"]
+```
+
+Identical repeat submissions reuse their existing draft. Each new AS source version creates a separate labeled draft, preserving earlier design work. Replacement requires an explicit human decision. Builder removes its temporary Word copy after processing, while AS retains the exchange copy according to the agreed retention approach.
+
+For current delivery dates, estimates and planning assumptions, see [#954’s estimate and proposed schedule](https://github.com/HHS/simpler-grants-pdf-builder/issues/954#estimate-and-proposed-schedule).
+
 ## Recommendation
 
 Build one narrow Announcement Services (AS) S3 retrieval adapter, run as a bounded
@@ -207,45 +223,21 @@ These are functional owners, not requests for an individual to find another owne
 | Discovery latency, volume, support and alerts | Select bounded cadence/batch/retry budget and private alert route; alert on missed job, oldest pending age, failure rate and exhausted retries. No content/keys in workflow inputs or logs. | Builder operations with AS support (#954) |
 | UAT cohort and rollout | Reconcile ACL staffed manual midpoint with HRSA end-to-end requirement; the deck's partner rollout is not Builder deployment approval. | Joint AS/Builder product and testing functions (#954), informed by #956 |
 
-## Implementation backlog and preliminary schedule
+## Implementation tracking and schedule
 
-Reuse existing issues, not a parallel epic. The estimates are judgment, not
-measured throughput: one experienced Builder engineer with infrastructure support,
-review capacity and an available AS counterpart; low-volume pilot; unchanged Word
-contract and existing manual design. **17–26 engineering days, roughly 4–7 working
-weeks elapsed with review/UAT**, after the enabling contract/access is usable.
-External approval, provisioning and partner availability have no reliable duration
-yet and are additional, potentially overlapping lead time. Confidence: medium-low.
+[#954](https://github.com/HHS/simpler-grants-pdf-builder/issues/954) owns the implementation backlog, current effort estimates, milestone descriptions, proposed calendar and planning assumptions. Maintain changes to those items in the epic and its child tickets. This guide maintains the technical workflow and design decisions.
 
-| Work package | Dependencies / deliverable | Engineering effort |
-| --- | --- | --- |
-| #888 / #952 | Shared contract and security coordination; external lead time unknown | 2–3 days |
-| [#1299](https://github.com/HHS/simpler-grants-pdf-builder/issues/1299) Track AS submission observations and durable processing attempts | #888/#952 decisions and #953 foundation | 3–4 days |
-| [#1300](https://github.com/HHS/simpler-grants-pdf-builder/issues/1300) Discover and retrieve AS Word submissions through S3 | #1299 | 3–5 days |
-| [#1301](https://github.com/HHS/simpler-grants-pdf-builder/issues/1301) Create source-linked Builder drafts atomically from AS submissions | #1299 | 4–6 days |
-| [#1302](https://github.com/HHS/simpler-grants-pdf-builder/issues/1302) Provision and operate the automated AS retrieval task | #1299 | 2–3 days |
-| [#1303](https://github.com/HHS/simpler-grants-pdf-builder/issues/1303) Validate automated AS integration, designer UAT and limited rollout | #1299, #1300, #1301, #1302 | 3–5 days |
+- [Current work packages and dependencies](https://github.com/HHS/simpler-grants-pdf-builder/issues/954#implementation-tickets-and-sequence)
+- [Current estimate, proposed schedule and IT Ops planning assumption](https://github.com/HHS/simpler-grants-pdf-builder/issues/954#estimate-and-proposed-schedule)
+- [Release acceptance criteria](https://github.com/HHS/simpler-grants-pdf-builder/issues/954#acceptance-criteria)
 
-#954 owns end-to-end delivery. Infrastructure coordination can start early. Full integration testing follows all four implementation packages and verified machine access. #955/#902 agent design and #951/#957 PDF return retain separate estimates.
-
-The November 6 decomposition revises 15–23 days to 17–26 days by explicitly allowing for database recovery/concurrency validation and full-import/fallback integration. Each package includes its implementation tests; the final package covers assembled integration and UAT engineering. Re-estimate after contract/interface review.
-
-**Deck-ready milestones:** contract/security and access ready → receipt/import
-foundation (about week 1–2) → synthetic integrated retrieval/draft review (week 3–4)
-→ partner UAT and bounded rollout (week 4–7), with manual S3 handoff retained as
-fallback. These are relative planning windows, not delivery promises. February/
-March 2027 is a plausible coordination target only after reconciling dependencies;
-it is not committed by this spike or the November deck.
+Establish the shared tracking interface first. Retrieval and draft import can then proceed in parallel where staffing permits, while infrastructure coordination begins early. Full integration testing follows the assembled implementation and verified machine access. The epic and child tickets track progress through this sequence.
 
 ### Proposed calendar for AS coordination
 
-| Milestone | Proposed window |
-| --- | --- |
-| Implementation and internal testing | January 2027 |
-| Joint integration testing and UAT | February 2027 |
-| Limited rollout | February–March 2027 |
+Use the [milestone table in #954](https://github.com/HHS/simpler-grants-pdf-builder/issues/954#estimate-and-proposed-schedule) when discussing timing with the GrantSolutions Announcement Services team or preparing the Agile Six schedule slide. Its planning assumption records how additional requirements identified by HHS ASFR IT Ops may affect timing.
 
-These planning windows are proposed for review with AS and subsequent inclusion in the Agile Six schedule slide. Retain the 17–26 engineering-day / approximately 4–7 working-week estimate above. Assumptions include engineering and reviewer availability, agreed requirements, and machine access ready for integration testing. External approval/provisioning and partner-calendar lead time remain unestimated. Confirm the machine-access provisioning owner and target date under #954 with the infrastructure/security functions. The November 17 milestone covers human-download access. Calendar dates become delivery commitments only after coordination and agreement.
+### Verification coverage
 
 Minimum verification includes wrong-role/group rejection; malformed/oversized/
 unsafe/expanded ZIP limits; changed object between observation and GET; duplicate
