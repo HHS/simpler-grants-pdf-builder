@@ -92,6 +92,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-027 | conversion | Tables | Any cell with `colspan`/`rowspan` ≠ 1 → whole table kept as raw HTML; header width classes auto-assigned | `nofo_markdown.py` |
 | IMPORT-057 | repair | Tables | Caption before the first row does not suppress the Markdown table separator | `nofo_markdown.py` |
 | IMPORT-054 | conversion | Tables | "Point value"/"Points" header + short point-value cells → header marked `{: .col--points }` (fit-to-content, no-wrap column) | `nofo_markdown.py` |
+| IMPORT-078 | repair | Links | File URLs ending in the displayed email address → mailto links | `content_processing.py` |
 | IMPORT-028 | repair | Links | Google Docs tracking-redirect URLs → unwrapped to real destination | `nofo.py` |
 | IMPORT-029 | repair | Links | Consecutive same-href links merged; whitespace before punctuation trimmed | `nofo.py` |
 | IMPORT-030 | repair | Links | Bookmark/heading/table-heading anchor IDs transferred to surviving parent elements | `nofo.py` |
@@ -120,6 +121,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-048 | repair | Non-Visual Tagging | PDF metadata field is a whole-field `{placeholder}` → normalized to empty | `pdf_metadata.py` |
 
 | IMPORT-075 | repair | Emphasis | Explicit line breaks inside bold/italic text survive Markdown conversion | `nofo_markdown.py` |
+| IMPORT-077 | repair | Emphasis | Unwrap isolated bold on trailing punctuation | `content_processing.py` |
 
 ---
 
@@ -323,11 +325,15 @@ The example that prompted this document: detecting a footnote/endnote list and f
 
 ### IMPORT-050 — Bracketed manual endnote reference/citation linking
 - **Type:** conversion
-- **Trigger:** The document has exactly one recognized Endnotes heading (after IMPORT-049), and contains a `[N]` marker in body text (a "reference") that unambiguously pairs with a `[N]` marker starting a paragraph under that heading (a "citation"): each number used exactly once as a reference and once as a citation, neither already linked, and not colliding with a native Word/Google note number already in the document.
-- **Action:** Wrap the in-body `[N]` marker in a forward link to its citation (rendered as a superscript), give the citation paragraph a matching target id, and append a `↑` return link back to the reference. Numbering gaps or out-of-sequence citations are only advisory and don't block linking an otherwise-valid pair. Anything ambiguous — a missing, duplicate, empty, or conflicting marker, or more than one candidate Endnotes heading — is left completely unlinked; NOFO Builder never silently renumbers or guesses at a bracketed reference. Conversion runs on both fresh import and reimport; it never modifies the original source Word file.
+- **Trigger:** The document has exactly one recognized Endnotes heading (after IMPORT-049), and contains a `[N]` marker in body text (a "reference") that unambiguously pairs with a `[N]` marker starting a paragraph under that heading (a "citation"): each number used one or more times as a reference and exactly once as a citation, neither already linked, and not colliding with a native Word/Google note number already in the document.
+- **Action:** Wrap the in-body `[N]` marker in a forward link to its citation (rendered as a superscript), give the citation paragraph one shared target id, and append a `↑` return link for each reference with its own unique ID. Numbering gaps or out-of-sequence citations are only advisory and don't block linking an otherwise-valid pair. Anything ambiguous — a missing, duplicate citation, empty, or conflicting marker, or more than one candidate Endnotes heading — is left completely unlinked; NOFO Builder never silently renumbers or guesses at a bracketed reference. Conversion runs on both fresh import and reimport; it never modifies the original source Word file.
 - **Source:** `content_processing.py::process_nofo_html` (via `endnotes.py::convert_bracketed_endnotes`, `_inspect`, `_scan`)
 - **Status:** active
 - **Note:** If note evidence exists only as non-structural text such as a bold "Endnotes" paragraph, the heading warning is associated with that text so the editor can direct the user to the content that needs a structural heading.
+
+- **Ambiguous existing IDs:** If a citation’s existing ID is duplicated elsewhere, leave its references and citation unchanged rather than adding links to that ambiguous destination. The validator reports a grouped destination warning for duplicated IDs on recognized manual citations regardless of ID prefix or incoming links. Unique existing manual citation IDs may be reused.
+
+- **Editor warnings:** Repeated source numbers are counted once for first-appearance numbering and citation order. Conflicting IDs and incoming ambiguous-destination warnings are grouped by ID; independent defects remain visible. Reference-count wording is limited to forward-reference anchors outside the citation section; duplicated citation backlinks use the generic destination message. See [Endnote warnings](ENDNOTE_WARNINGS.md) for exact messages and combinations. Viewing saved content does not repair IDs.
 
 ### IMPORT-051 — Manual endnote lists/links preserved as raw HTML in Markdown
 - **Type:** conversion
@@ -507,6 +513,12 @@ The example that prompted this document: detecting a footnote/endnote list and f
 
 ## Link Handling
 
+### IMPORT-078 — Restore email links stored as file URLs
+
+- **Trigger:** A `file:///` hyperlink without a query or fragment ends in an email address that exactly matches its visible text after trimming whitespace. The final path segment is URL-decoded and can follow a slash or backslash.
+- **Action:** Replace the destination with a `mailto:` link to that address. Links with ambiguous labels or destinations still go through normal link validation.
+- **Source:** `content_processing.py::repair_file_email_links`
+
 ### IMPORT-028 — Google tracking-link unwrapping
 - **Type:** repair
 - **Trigger:** An `<a href>` starts with `https://www.google.com/url?` (Google Docs export's link-tracking redirect wrapper).
@@ -604,6 +616,12 @@ The example that prompted this document: detecting a footnote/endnote list and f
 
 ---
 
+### IMPORT-077 — Unwrap isolated bold on trailing punctuation
+
+- **Trigger:** A `strong` or `b` run without an anchor contains only a period, comma, question mark, or colon, with optional following whitespace. The mark directly follows text in a sibling text node or inline element.
+- **Action:** Unwrap the punctuation run before Markdown conversion. Preserve the mark, whitespace, and any surrounding bold, including an outer bold wrapper around the full sentence.
+- **Source:** `content_processing.py::unwrap_bold_trailing_punctuation`.
+
 ## Content Extraction & Removal
 
 ### IMPORT-038 — "Before you begin" duplicate-section removal
@@ -648,7 +666,8 @@ The example that prompted this document: detecting a footnote/endnote list and f
 ### IMPORT-063 — Builder Metadata source consumption
 - **Type:** removal
 - **Trigger:** Explicit Builder import/re-import with one or more recognized Metadata blocks under IMPORT-041.
-- **Action:** Keep the intact extraction soup for field resolution, validation and the existing number-mismatch confirmation session. Use a separate content copy to resolve main heading level and build sections/subsections, removing every recognized Metadata heading and its bounded field/blank paragraphs. Preserve parent sections, incidental Metadata mentions and all following headings, prose, tables, lists, media and notes. A paragraph with images/media is not a blank separator. Links targeting only consumed IDs become plain text; links with a surviving destination are retained. No hidden subsection or new persistent field is added. Composer/Compare do not opt in; saved records are untouched outside authorized re-import.
+- **Action:** Keep the intact extraction soup for field resolution, validation and the existing number-mismatch confirmation session. Use a separate content copy to resolve main heading level and build sections/subsections, removing every recognized Metadata heading and its bounded field/blank paragraphs. Preserve parent sections, incidental Metadata mentions and all following headings, prose, tables, lists, media and notes. A paragraph with images/media is not a blank separator. Links targeting only consumed IDs become plain text; links with a surviving destination are retained. No hidden subsection is added. Composer/Compare do not opt in; saved records are untouched outside authorized re-import.
+- **Optional evidence:** A fresh `metadata_trace` list records detached hashes and processed-HTML element positions at the actual consumption step, including all recognized blocks, first/duplicate mapped labels, retained blanks and flattened dead-target links. Selection remains last-block/first-label. Supported intervening assistance-listing paragraphs contribute to block hashes but not mapped-field events; their independent extraction remains outside this trace. Only the isolated synthetic design host currently persists this sidecar; ordinary imports remain opt-out. It does not trace earlier Word conversion or cleanup and does not establish complete fidelity. See [Metadata provenance](design-pilot/DESIGN_METADATA_PROVENANCE.md).
 - **Source:** `content_processing.py::builder_import_content`, `_metadata_block`; `views.py::BaseNofoImportView`, `NofosConfirmReimportView`
 - **Status:** active (Builder only)
 
@@ -695,6 +714,8 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
 
   **Precedence and defaults.** The last recognized block wins; the first occurrence of a repeated label inside that block wins, including an empty value. Blocks are never combined. Missing or blank mapped fields use the existing empty/default behavior and do not borrow front-page values. The existing title-preservation rule on re-import, required OpDiv validation, and first-import-only theme/cover suggestions remain in force. Without a recognized block, the legacy scanner and guarded next-paragraph OpDiv continuation are unchanged. Tagline and assistance-listing labels keep their separate existing extraction paths. PDF author/subject/keywords alone normalize whole-field curly-brace placeholders per IMPORT-048; other placeholders remain visible for correction. See [Word metadata import](WORD_METADATA_IMPORT.md) for mappings and saved-record behavior.
 
+  **Optional evidence.** The isolated design host binds the IMPORT-063 sidecar to source/conversion hashes and compares directly assessable selected fields with saved destinations. Missing/defaulted source values remain not assessed. PDF fields reuse IMPORT-048; this evidence adds no field grammar, normalization or import behavior. Existing candidates have no reconstructed trace.
+
   **Builder tagline precedence.** If IMPORT-059 finds a scoped new-format Tagline heading, use that source even when blank. Otherwise retain this legacy `Tagline:` scanner and its underscore-only blank behavior. Composer and Compare keep their existing path.
 
   **Intervening assistance-listing fields.** The existing Assistance Listing,
@@ -731,7 +752,7 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
 
 ### IMPORT-043 — Cover style suggestion
 - **Type:** extraction
-- **Trigger:** Theme prefix is `acf-`/`acl-`/`cdc-`/`hrsa-`/`nih-`.
+- **Trigger:** Theme prefix is `acf-`/`acl-`/`cdc-`/`hrsa-`/`nih-`/`samhsa-`.
 - **Action:** On a new import, suggest a text-only cover for those themes, or the "medium" cover for other themes. Re-imports preserve the stored cover style, including when the existing opportunity number is blank or a placeholder. HRSA theme forms offer "Text only" and "Standard image", plus the record's current legacy "Full coverage with image" cover, if any; loading the form does not update the record.
 
   **CDC.** The `cdc-` prefix matches every CDC theme — the portrait defaults, the division themes (NCIPC, DGHP, DHP, IOD, ORR), and the retired `landscape-cdc-*` pair — so all of them start on the text-only cover. Unlike HRSA and NIH, CDC's theme form is not restricted: all three cover styles stay selectable, and a CDC writer can switch a NOFO to "Standard image" or "Full coverage with image" at any point. This is a starting value, not a constraint. Existing records are untouched: the suggestion only runs on a first-time import, so CDC NOFOs imported before this changed keep the "medium" cover they were given.

@@ -203,7 +203,10 @@ class HrsaBeforeYouBeginTests(TestCase):
         self.assertIsNone(page.select_one(".callout-box").find_next_sibling())
         paragraph = paragraph_tag.get_text()
         self.assertTrue(
-            paragraph.startswith("All activities proposed in your application")
+            paragraph.startswith(
+                "All activities proposed in your application and budget narrative "
+                "must align with applicable laws and policies, including"
+            )
         )
         self.assertTrue(paragraph.endswith("applicable court orders."))
         self.assertIn(

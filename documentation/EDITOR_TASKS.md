@@ -129,6 +129,9 @@ is needed, contact the SimplerNOFOs team.
   Redundant bold
   formatting imports as a single bold level. Review the result against Word;
   existing saved content receives this handling only when reimported.
+- Import removes isolated bold formatting from a period, comma, question mark,
+  or colon directly after text. If the whole sentence is bold, the punctuation
+  stays bold with the sentence.
 - Consecutive Word bullets at the same numbering level import as one list even
   when their internal list IDs differ, avoiding extra gaps between bullet groups.
   Paragraphs still separate lists; numbered-list restarts remain separate.
@@ -144,6 +147,8 @@ is needed, contact the SimplerNOFOs team.
   Appendix or Endnotes section afterward using the existing NOFO actions.
   This cleanup applies on new import and reimport; it does not remove sections
   from already saved NOFOs automatically.
+- Import repairs Word email links stored as file paths when the path ends in
+  the displayed email address. Other broken links still need review.
 - For an existing NOFO, reimport replaces sections and subsections and can lose
   manual edits. It is not a way to apply import repairs to saved edits in place.
   Reimport preserves saved theme, cover and introductory ownership choices.
@@ -644,7 +649,10 @@ internal links and are not requested over the network.
 2. Follow the affected subsection or section link and locate the reference
    and its matching citation entry.
 3. Check that each reference has an entry and each entry has a reference;
-   identify missing or repeated numbers and broken destinations.
+   identify missing entries, duplicate citation entries, and broken destinations.
+   Repeated body references may reuse one citation number. A grouped ID warning
+   covers all links sharing that ID; unrelated defects remain separate.
+   See the [warning catalog](ENDNOTE_WARNINGS.md) for combinations.
    For a content-format warning, use the quoted block to locate content that
    is not recognized as a citation. Keep valid citation continuation content.
 4. If the correction is unclear, contact your grants policy office first.
@@ -753,6 +761,9 @@ value. New HRSA imports start with **Text only**; choose **Standard image** here
 to use an image cover.
 
 **Notes**
+
+- New imports that identify SAMHSA start with **Text only**. To use an image
+  cover, choose **Standard image** in **Cover style**.
 
 - New ACL imports can select **ACL (Default)** from the OpDiv even with a blank
   or placeholder opportunity number. Previously imported records are not
@@ -884,7 +895,8 @@ If access is denied or the page is unavailable, contact the pilot operator.
 
 1. Open `/nofos/readability-checker/` and review **Document requirements** and
    **How we handle your document**. Use only documents authorized for this pilot.
-2. Choose one supported text-based HHS NOFO PDF or unlocked Word `.docx`, then
+2. Choose one supported text-based HHS NOFO PDF up to 5 MiB or unlocked Word
+   `.docx` up to 15 MiB, then
    select **Analyze document**. Legacy `.doc` and macro-enabled formats are not
    supported. For PDFs, keep genuine NOFO identifiers in the first five pages;
    recognition needs two distinct signal types, such as an agency name and an
@@ -1034,7 +1046,10 @@ and deletion are not available in this slice.
    Import processing is complete, but this is not a production NOFO or acceptance.
 2. Read each finding's evidence and next step. **Review affected section**
    opens the relevant read-only imported text. The retained Word conversion
-   output is also available below the sections.
+   output is also available below the sections. Converted-content comparisons
+   are bounded observations, not proof of Word fidelity. Unmatched elements may
+   reflect documented import/render changes; reconcile them rather than assume
+   they are defects. See [fidelity evidence limits](design-pilot/DESIGN_FIDELITY_EVIDENCE.md).
 3. For a nonblocking **Word conversion** warning only, compare the relevant
    source and enter **Why can this warning be acknowledged?** Then select
    **Acknowledge warning**. Confirm the recorded person, time and reason.

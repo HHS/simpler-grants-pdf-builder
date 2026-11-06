@@ -7,6 +7,8 @@ from django.db import transaction
 
 from . import design_pilot_host as host
 from .design_candidate import DesignRequestError
+from .design_fidelity import inspect as inspect_fidelity
+from .metadata_provenance import check_trace
 from .models import DesignPilotReviewDecision
 from .nofo import (
     find_broken_links,
@@ -17,7 +19,17 @@ from .nofo import (
 from .pdf_metadata import PDF_METADATA_FIELDS, is_missing_pdf_metadata_value
 
 
-def _finding(key, rule, status, severity, target, evidence, action, section=None):
+def _finding(
+    key,
+    rule,
+    status,
+    severity,
+    target,
+    evidence,
+    action,
+    section=None,
+    evidence_digest="",
+):
     data = dict(
         id=key,
         rule=rule,
@@ -28,6 +40,7 @@ def _finding(key, rule, status, severity, target, evidence, action, section=None
         action=action,
         section_id=str(section.pk) if section else "",
         human_required=severity in {"blocking", "warning"},
+        evidence_digest=evidence_digest,
     )
     data["digest"] = hashlib.sha256(
         json.dumps(data, sort_keys=True).encode()
@@ -37,7 +50,7 @@ def _finding(key, rule, status, severity, target, evidence, action, section=None
 
 def report(run):
     """Recheck current native HTML and reuse offline Builder diagnostics only."""
-    revision, _ = host.review_artifact(run)
+    revision, html = host.review_artifact(run)
     findings = [
         _finding(
             "baseline",
@@ -76,6 +89,51 @@ def report(run):
             "No local PDF is needed. This capability limit is not a blocker.",
         ),
     ]
+    for evidence in inspect_fidelity(run.conversion_html, html):
+        findings.append(
+            _finding(
+                f"fidelity-{evidence['id']}",
+                "DESIGN-001",
+                evidence["status"],
+                (
+                    "blocking"
+                    if evidence["status"] == "fail" or evidence["id"] == "inventory"
+                    else "info"
+                ),
+                evidence["target"],
+                evidence["evidence"],
+                evidence["action"],
+                evidence_digest=evidence.get("input_digest", ""),
+            )
+        )
+    provenance = check_trace(run)
+    findings.append(
+        _finding(
+            "metadata-trace",
+            "IMPORT-063",
+            "not_assessed",
+            "info",
+            "Metadata provenance",
+            (
+                f"Recognized Metadata blocks recorded: {len(provenance['trace'][0]['blocks'])}. Selected block (zero-based): {provenance['trace'][0]['selected_block']}. Flattened dead-target links: {len(provenance['trace'][0]['flattened_links'])}. Trace SHA-256: {hashlib.sha256(run.metadata_trace_json.encode()).hexdigest()}."
+                if provenance
+                else "This candidate predates Metadata provenance capture; no trace was reconstructed."
+            ),
+            "This records executed field consumption only, not independent Word extraction or complete source fidelity.",
+        )
+    )
+    for row in provenance["destinations"] if provenance else []:
+        findings.append(
+            _finding(
+                f"metadata-destination-{row['destination']}",
+                "IMPORT-041",
+                row["status"],
+                "blocking" if row["status"] == "fail" else "info",
+                f"Metadata destination: {row['destination']}",
+                f"Source key: {row['source_key']}. Processed-source block: {row['source_block']}; element: {row['source_element']}. Saved field bound to this candidate. Result: {row['status']}.",
+                "Defaults/missing sources remain not assessed. A matching field is not proof that all Word content was extracted.",
+            )
+        )
     checks = [
         (
             "headings",

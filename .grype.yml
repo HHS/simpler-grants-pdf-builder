@@ -22,6 +22,20 @@ ignore:
   - fix-state: wont-fix
   - fix-state: unknown
 
+  # Mirror the approved scoped SGG exception (PR #13179).
+  # Track patch availability and removal across both repos in SGG issue #13178.
+  # https://github.com/HHS/simpler-grants-gov/issues/13178
+  # https://github.com/python/cpython/pull/160926
+  # Review-by: 2026-11-12 (tracked review date, not automatic expiration).
+  # Remove after supported patched images are adopted and pass unsuppressed scans.
+  # Last checked: 2026-11-05
+  - vulnerability: CVE-2026-116566
+    reason: "Temporary Python 3.14.10 exception mirrored from SGG PR #13179; track removal in SGG #13178"
+    package:
+      name: python
+      version: "3.14.10"
+      type: binary
+
   # Not fixed in GA Python yet
   # https://github.com/HHS/simpler-grants-gov/issues/8109
   # Last checked: 05/13/26

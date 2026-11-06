@@ -6,6 +6,29 @@ Follow the workflow in [`documentation/CONTRIBUTION_WORKFLOW.md`](documentation/
 issue, branch, PR with a Conventional Commit title, CI, then squash and merge. It links to what to
 read at each step and lists the rules that apply only to agents.
 
+## Before drafting or editing an upstream issue or PR
+
+Read `AGENTS.md` and the relevant row in
+[What to read at each step](documentation/CONTRIBUTION_WORKFLOW.md#what-to-read-at-each-step)
+from current upstream `main`. Do this even if the checkout or task already supplies
+a copy of these instructions. Read the files on GitHub or run `git fetch upstream main`
+and inspect them with `git show upstream/main:<path>`. Compare the completed body
+with the current template before submitting.
+
+## Upstream PR preflight
+
+Complete these steps before running `gh pr create` or `gh pr edit`:
+
+1. Fetch upstream `main`. Read its [Open the PR workflow row](documentation/CONTRIBUTION_WORKFLOW.md#what-to-read-at-each-step),
+   linked guidance, and [PR template](.github/pull_request_template.md). For example,
+   run `git fetch upstream main` and `git show upstream/main:.github/pull_request_template.md`.
+2. Copy the upstream template to a temporary body file. Fill in Summary, Test plan,
+   UI evidence, and Checklist. Link the tracking issue, review Editor Tasks,
+   include applicable screenshots or explain their absence, and leave unverified
+   checks unchecked.
+3. Compare the completed body file with the upstream template, then pass that file
+   to `gh pr create --body-file` or `gh pr edit --body-file`.
+
 ## Before opening or editing a GitHub issue
 
 Before drafting, filing, or revising an issue, follow the
@@ -23,20 +46,6 @@ Before creating or relabeling an issue, inspect the repository's current labels 
 exact names, including capitalization and emoji. Do not create a new label or a synonym unless
 the user explicitly requests it. Preserve unrelated labels when updating an existing issue.
 See [issue labels](documentation/CONTRIBUTION_WORKFLOW.md#issue-labels) for the current conventions.
-
-## Read the upstream PR template before opening a PR
-
-Before creating or editing an upstream PR description, read the current
-[PR template](.github/pull_request_template.md) and the **Open the PR** row in the
-[contribution workflow](documentation/CONTRIBUTION_WORKFLOW.md#what-to-read-at-each-step)
-from upstream `main`. Fetch upstream and read the template with
-`git show upstream/main:.github/pull_request_template.md` if needed.
-
-Use the template as the starting point for the actual PR body. With GitHub CLI,
-copy it to a temporary file, fill in every section, and pass it with
-`gh pr create --body-file` or `gh pr edit --body-file`. Before submitting, compare
-the completed body with the upstream template, link the tracking issue, document
-UI evidence or explain its absence, and leave unverified checks unchecked.
 
 ## PR titles must follow Conventional Commits
 

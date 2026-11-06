@@ -4,12 +4,13 @@ This retains Builder's existing content rules and mutable parser objects.
 It performs no persistence or implicit debug capture. See DOCUMENT_PROCESSING.md.
 """
 
+import hashlib
 import logging
 import re
 import unicodedata
 from copy import deepcopy
 from dataclasses import dataclass
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 import cssutils
 from bs4 import BeautifulSoup, Comment, NavigableString, Tag
@@ -223,8 +224,10 @@ def process_nofo_html(soup, top_heading_level, *, debug_capture=None):
     clean_table_cells(soup)
     continue_table_row_numbering(soup)  # IMPORT-067
     unwrap_empty_elements(soup)
+    unwrap_bold_trailing_punctuation(soup)  # IMPORT-077
     decompose_empty_tags(soup)
     combine_consecutive_links(soup)
+    repair_file_email_links(soup)
     remove_google_tracking_info_from_links(soup)
     rename_footnotes_heading_to_endnotes(soup)
     add_endnotes_header_if_exists(soup, top_heading_level)
@@ -743,7 +746,7 @@ def metadata_block_fields(heading):
     return _metadata_block(heading)[0]
 
 
-def _metadata_block(heading):
+def _metadata_block(heading, *, observations=None):
     """One recognition grammar for extraction and bounded source consumption."""
     if (
         not (heading.name in ("h1", "h2", "h3", "h4", "h5", "h6") or is_h7(heading))
@@ -774,6 +777,8 @@ def _metadata_block(heading):
             break
         text = sanitize_imported_text(element.get_text())
         if not text:
+            if observations is not None:
+                observations.append({"kind": "blank", "element": element})
             elements.append(element)
             continue
         label, separator, value = text.partition(":")
@@ -784,6 +789,18 @@ def _metadata_block(heading):
         ):
             break
         if key in METADATA_BLOCK_LABELS:
+            if observations is not None:
+                observations.append(
+                    {
+                        "kind": "field",
+                        "element": element,
+                        "key": key,
+                        "first": key not in fields,
+                        "value_sha256": hashlib.sha256(
+                            sanitize_imported_text(value).encode()
+                        ).hexdigest(),
+                    }
+                )
             # First occurrence wins, including a blank, just like legacy scanning.
             fields.setdefault(key, sanitize_imported_text(value))
         # Known independent fields may appear between mapped fields without
@@ -792,7 +809,7 @@ def _metadata_block(heading):
     return fields or None, elements if fields else []
 
 
-def builder_import_content(soup):
+def builder_import_content(soup, *, metadata_trace=None):
     """Keep the extraction source intact; consume Metadata only in Builder content.
 
     Reusing the intact soup in the existing confirmation session preserves every
@@ -800,14 +817,50 @@ def builder_import_content(soup):
     This copy is used only to choose headings and construct incoming sections.
     """
     content = deepcopy(soup)
+    if metadata_trace is not None and (
+        type(metadata_trace) is not list or metadata_trace
+    ):
+        raise ValueError("Metadata trace must be a fresh list")
+    positions = (
+        {id(node): i for i, node in enumerate(content.find_all(True))}
+        if metadata_trace is not None
+        else {}
+    )
+    trace_blocks = []
+    before_digest = (
+        hashlib.sha256(str(content).encode()).hexdigest()
+        if metadata_trace is not None
+        else ""
+    )
     removed_ids = set()
     removed = []
     for heading in content.find_all(
         lambda tag: tag.name in ("h1", "h2", "h3", "h4", "h5", "h6") or is_h7(tag)
     ):
-        fields, elements = _metadata_block(heading)
+        observations = [] if metadata_trace is not None else None
+        fields, elements = _metadata_block(heading, observations=observations)
         if fields is None:
             continue
+        if metadata_trace is not None:
+            trace_blocks.append(
+                {
+                    "ordinal": len(trace_blocks),
+                    "heading_ordinal": positions[id(heading)],
+                    "source_sha256": hashlib.sha256(
+                        "".join(str(e) for e in elements).encode()
+                    ).hexdigest(),
+                    "fields": [
+                        {k: v for k, v in event.items() if k != "element"}
+                        | {
+                            "element_ordinal": positions[id(event["element"])],
+                            "source_sha256": hashlib.sha256(
+                                str(event["element"]).encode()
+                            ).hexdigest(),
+                        }
+                        for event in observations
+                    ],
+                }
+            )
         for element in elements:
             for target in [element] + element.find_all(id=True):
                 if target.get("id"):
@@ -815,12 +868,39 @@ def builder_import_content(soup):
             removed.append(element)
     for element in removed:
         element.decompose()
+    flattened = []
     # Do not guess another section destination or invent hidden duplicate
     # subsections. Preserve link text; leave genuinely surviving targets alone.
     for target_id in removed_ids:
         if content.find(id=target_id) is None:
             for link in content.find_all("a", href=f"#{target_id}"):
+                if metadata_trace is not None:
+                    flattened.append(
+                        {
+                            "element_ordinal": positions[id(link)],
+                            "before_sha256": hashlib.sha256(
+                                str(link).encode()
+                            ).hexdigest(),
+                            "text_sha256": hashlib.sha256(
+                                link.get_text().encode()
+                            ).hexdigest(),
+                        }
+                    )
                 link.unwrap()
+    if metadata_trace is not None:
+        metadata_trace.append(
+            {
+                "rule": "IMPORT-063",
+                "stage": "processed-html-to-content-copy",
+                "before_sha256": before_digest,
+                "after_sha256": hashlib.sha256(str(content).encode()).hexdigest(),
+                "blocks": trace_blocks,
+                "selected_block": len(trace_blocks) - 1 if trace_blocks else None,
+                "flattened_links": sorted(
+                    flattened, key=lambda row: row["element_ordinal"]
+                ),
+            }
+        )
     return content
 
 
@@ -1334,6 +1414,22 @@ def repair_eligibility_organization_lists(soup):
     return soup
 
 
+def repair_file_email_links(soup):
+    """Restore email links that Word saved as file URLs."""
+    for link in soup.find_all("a", href=True):
+        href = link["href"]
+        if not href.lower().startswith("file:///") or "?" in href or "#" in href:
+            continue
+
+        address = link.get_text().strip()
+        filename = re.split(r"[/\\]", unquote(href))[-1]
+        if filename == address and re.fullmatch(
+            r"[A-Za-z0-9_+%-]+(?:\.[A-Za-z0-9_+%-]+)*@(?:[A-Za-z0-9-]+\.)+[A-Za-z0-9-]+",
+            address,
+        ):
+            link["href"] = "mailto:" + address.replace("%", "%25")
+
+
 def remove_google_tracking_info_from_links(soup):
     """
     This function mutates the soup!
@@ -1786,6 +1882,29 @@ def add_strongs_to_soup(soup):
                 if parent_tr and parent_tr.find_previous_sibling() is None:
                     continue
                 element.wrap(soup.new_tag("strong"))
+
+
+def unwrap_bold_trailing_punctuation(soup):
+    inline_tags = {"a", "b", "em", "i", "span", "strong", "sub", "sup", "u"}
+    for bold in soup.find_all(["strong", "b"]):
+        if (
+            len(bold.contents) != 1
+            or type(bold.contents[0]) is not NavigableString
+            or bold.contents[0].rstrip() not in {".", ",", "?", ":"}
+            or bold.has_attr("id")
+            or bold.has_attr("name")
+        ):
+            continue
+
+        previous = bold.previous_sibling
+        while isinstance(previous, Tag) and previous.name in inline_tags:
+            previous = previous.contents[-1] if previous.contents else None
+        if (
+            type(previous) is NavigableString
+            and previous
+            and not previous[-1].isspace()
+        ):
+            bold.unwrap()
 
 
 def add_em_to_de_minimis(soup):
@@ -2377,10 +2496,19 @@ class ProcessedDocumentContent:
 
 
 def get_sections_and_subsections_from_soup(
-    soup, top_heading_level, *, consume_scoped_tagline=False, consume_metadata=False
+    soup,
+    top_heading_level,
+    *,
+    consume_scoped_tagline=False,
+    consume_metadata=False,
+    metadata_trace=None,
 ):
     """Extract content dictionaries, retaining the existing validation code."""
-    content = builder_import_content(soup) if consume_metadata else soup
+    content = (
+        builder_import_content(soup, metadata_trace=metadata_trace)
+        if consume_metadata
+        else soup
+    )
     sections = get_sections_from_soup(content, top_heading_level)
     if not len(sections):
         raise ContentProcessingError(
@@ -2412,6 +2540,7 @@ def process_document_content(
     extract_scoped_tagline=False,
     editable_intro="generated",
     debug_capture=None,
+    metadata_trace=None,
 ):
     """Normalize HTML and parse sections without a request, upload or ORM record.
 
@@ -2419,6 +2548,10 @@ def process_document_content(
     parser. Instruction attachment and consumer postprocessing stay with callers.
     Exceptions propagate unchanged for the caller to present or handle.
     """
+    if metadata_trace is not None and (
+        not builder_import or type(metadata_trace) is not list or metadata_trace
+    ):
+        raise ValueError("Metadata trace requires Builder processing and a fresh list")
     cleaned_content = replace_links(replace_chars(html))
     soup = BeautifulSoup(cleaned_content, "html.parser")
     # Private processing state is server-derived, never an input format signal.
@@ -2450,11 +2583,15 @@ def process_document_content(
     if section_parser is None:
         section_parser = get_sections_and_subsections_from_soup
     if builder_import or extract_scoped_tagline:
+        trace_options = (
+            {"metadata_trace": metadata_trace} if metadata_trace is not None else {}
+        )
         sections = section_parser(
             deepcopy(soup) if extract_scoped_tagline else soup,
             top_heading_level,
             consume_scoped_tagline=extract_scoped_tagline,
             consume_metadata=builder_import,
+            **trace_options,
         )
     else:
         sections = section_parser(soup, top_heading_level)

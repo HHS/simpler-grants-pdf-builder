@@ -185,9 +185,17 @@ is not automatically low priority.
 
 ## 6. Record an actionable finding
 
-Search the team's existing records before creating a duplicate. Use its agreed
-recording system and templates. Include the following information in the
-appropriate fields or headings:
+Track each actionable NOFO Builder product finding in GitHub. A finding is
+actionable when it warrants product investigation, a decision, or a change.
+Search existing issues first. Add relevant observations to a matching issue
+or file a new one using the appropriate template. Link supporting evidence
+and the fix PR from the issue when available. Keep routine checks that
+surface no actionable product finding in the review notes.
+
+Use an approved support channel for restricted evidence. When the finding can
+be described safely in public, track it in GitHub with a sanitized example.
+
+Include the following information in the appropriate fields or headings:
 
 - **Review area:** design/accessibility, application behavior/user experience,
   or both.

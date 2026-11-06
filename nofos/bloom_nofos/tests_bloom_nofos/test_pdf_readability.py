@@ -186,7 +186,7 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, 'for="pdf"')
         self.assertContains(response, "usa-file-input__input")
         self.assertContains(response, 'name="csrfmiddlewaretoken"')
-        self.assertContains(response, "One PDF file, up to 15 MB")
+        self.assertContains(response, "One PDF file, up to 5 MiB")
         self.assertContains(response, "Upload an HHS notice of funding opportunity")
         self.assertNotContains(response, "Upload one draft NOFO PDF")
         self.assertContains(
@@ -408,17 +408,26 @@ class PdfReadabilityPageTests(TestCase):
         self.assertIn("no-store", response["Cache-Control"])
 
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
-    def test_streaming_upload_limit_returns_413(self):
-        oversized = SimpleUploadedFile(
-            "oversized.pdf",
-            b"%PDF-1.4\n" + b"x" * (15 * 1024 * 1024),
-            content_type="application/pdf",
-        )
-        with patch("bloom_nofos.views.analyze_uploaded_pdf") as analyze:
-            response = self.client.post(self.url, {"pdf": oversized})
-        self.assertEqual(response.status_code, 413)
-        self.assertContains(response, "too large", status_code=413)
-        analyze.assert_not_called()
+    def test_streaming_upload_limit_accepts_exactly_five_mib(self):
+        limit = 5 * 1024 * 1024
+        for extra, expected_status in ((0, 429), (1, 413)):
+            with self.subTest(extra=extra):
+                upload = SimpleUploadedFile(
+                    "boundary.pdf",
+                    b"x" * (limit + extra),
+                    content_type="application/pdf",
+                )
+                with patch(
+                    "bloom_nofos.views.analyze_uploaded_pdf",
+                    side_effect=PdfReadabilityError("busy"),
+                ) as analyze:
+                    response = self.client.post(self.url, {"pdf": upload})
+                self.assertEqual(response.status_code, expected_status)
+                if extra:
+                    self.assertContains(response, "up to 5 MiB", status_code=413)
+                    analyze.assert_not_called()
+                else:
+                    analyze.assert_called_once()
 
     def test_filename_is_bounded_and_metric_values_must_be_finite(self):
         self.assertEqual(_safe_upload_name("C:\\private\\sample.pdf"), "sample.pdf")
