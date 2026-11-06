@@ -80,9 +80,14 @@
   <section id="section--cover-page" class="nofo--cover-page {{ nofo.cover }}">
     <div class="nofo--cover-page--header">
       <div class="nofo--cover-page--header--logo">
-        {% with "includes/logos/"|add:nofo_opdiv|add:"-logo.svg" as opdiv_logo_path %}
-          {% include opdiv_logo_path %}
-        {% endwith %}
+        {% if nofo_opdiv == 'onc' %}
+          <img class="onc-cover-logo" src="{% static 'img/onc-logo-inverse.png' %}"
+            width="487" height="46" alt="Office of the National Coordinator for Health Information Technology logo">
+        {% else %}
+          {% with "includes/logos/"|add:nofo_opdiv|add:"-logo.svg" as opdiv_logo_path %}
+            {% include opdiv_logo_path %}
+          {% endwith %}
+        {% endif %}
         <div class="nofo--cover-page--header--logo--subheading">
           {% if nofo.cover == 'nofo--cover-page--text' %}
             <p class="nofo--cover-page--header--agency">{{ nofo.agency }}</p>

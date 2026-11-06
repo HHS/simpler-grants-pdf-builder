@@ -1710,7 +1710,7 @@ def suggest_nofo_application_deadline(soup):
 def suggest_nofo_cover(nofo_theme):
     if any(
         prefix in nofo_theme.lower()
-        for prefix in ["acf-", "acl-", "cdc-", "hrsa-", "nih-", "samhsa-"]
+        for prefix in ["acf-", "acl-", "cdc-", "hrsa-", "nih-", "onc-", "samhsa-"]
     ):
         return "nofo--cover-page--text"
 
@@ -1913,9 +1913,11 @@ def suggest_all_nofo_fields(
 
     # do not reset these during import
     if first_time_import:
-        nofo.theme = suggest_nofo_theme(
-            nofo.number, opdiv=nofo.opdiv
-        )  # guess the NOFO theme
+        nofo.theme = (
+            "portrait-onc-navy"
+            if nofo.group == "onc"
+            else suggest_nofo_theme(nofo.number, opdiv=nofo.opdiv)
+        )
     if first_time_import:
         nofo.cover = suggest_nofo_cover(nofo.theme)  # guess the NOFO cover
     if first_time_import:

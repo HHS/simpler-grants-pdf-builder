@@ -108,6 +108,9 @@ is needed, contact the SimplerNOFOs team.
 
 **Notes**
 
+- New ONC-group imports start with the **ONC** theme and the **Text only** cover.
+  **NOFO theme options** also offers the **Standard image** cover and two icon
+  styles.
 - When the imported OpDiv identifies CMS, Builder suggests **CMS (Light)** under
   **NOFO theme options** on a new import, even if the opportunity number is blank
   or a placeholder.
