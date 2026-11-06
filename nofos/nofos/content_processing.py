@@ -18,6 +18,7 @@ from bs4 import BeautifulSoup, Comment, NavigableString, Tag
 from .content_text import clean_string
 from .endnotes import (
     convert_bracketed_endnotes,
+    has_note_reference_evidence,
     inline_native_note_return_links,
     is_endnotes_heading,
     linkify_endnote_citations,
@@ -109,6 +110,10 @@ def remove_empty_trailing_optional_headings(soup):
             or is_referenced(node)
             or any(child.name not in blank_tags for child in node.find_all(True))
         ):
+            break
+        if is_endnotes_heading(
+            node.get_text(" ", strip=True)
+        ) and has_note_reference_evidence(soup.body or soup):
             break
         node.decompose()
 
