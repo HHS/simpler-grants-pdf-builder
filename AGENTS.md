@@ -29,16 +29,22 @@ Complete these steps before running `gh pr create` or `gh pr edit`:
 3. Compare the completed body file with the upstream template, then pass that file
    to `gh pr create --body-file` or `gh pr edit --body-file`.
 
-## Before opening or editing a GitHub issue
+## Upstream issue preflight
 
 Before drafting, filing, or revising an issue, follow the
 [shared issue-drafting procedure](documentation/ISSUE_DRAFTING.md). If your agent
 supports repository skills, use the [issue-create skill](.agents/skills/issue-create/SKILL.md).
 
-Read the procedure, issue template, label guidance, and triage guidance from upstream
-`main`. If your checkout or local upstream reference lacks these files, read them
-directly on GitHub or fetch upstream `main`. Verify the template, labels, and duplicate
-search before posting.
+1. Read the issue-drafting procedure, selected issue template, label guidance, and
+   triage guidance from current upstream `main`.
+2. Copy the selected upstream template to a temporary body file, remove the YAML
+   front matter, and fill in the body. Compare the completed file with the template
+   to verify that the headings and order match. Check for duplicate issues, verify
+   the exact labels against the live repository, and screen the body for sensitive
+   information.
+3. For CLI submissions, pass that same file to `gh issue create --body-file` or
+   `gh issue edit --body-file`. When using the GitHub integration, submit the
+   same verified body.
 
 ## Reuse existing issue labels
 

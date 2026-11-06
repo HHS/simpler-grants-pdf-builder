@@ -143,8 +143,12 @@ is needed, contact the SimplerNOFOs team.
 - Empty **Appendix**, **Endnotes**, and **Footnotes** headings at Heading 1 or
   Heading 2 are omitted when they form an unused run at the end of the document.
   Capitalization and a trailing colon do not matter. Text, images, tables, lists,
-  child headings, and referenced bookmarks preserve the heading. You can add an
-  Appendix or Endnotes section afterward using the existing NOFO actions.
+  child headings, and referenced bookmarks preserve the heading. Builder also
+  keeps an empty **Endnotes** or **Footnotes** heading if the body has a native
+  note link, a numeric superscript, or two distinct bracketed note numbers
+  below 1000 at sentence or paragraph endings. If an empty notes section is
+  kept, compare the references with the source and supply any missing citations.
+  You can add an omitted Appendix or Endnotes section from **NOFO Actions**.
   This cleanup applies on new import and reimport; it does not remove sections
   from already saved NOFOs automatically.
 - Import repairs Word email links stored as file paths when the path ends in

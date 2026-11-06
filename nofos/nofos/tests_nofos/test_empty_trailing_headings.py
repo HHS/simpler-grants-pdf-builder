@@ -116,6 +116,36 @@ class EmptyTrailingHeadingTests(SimpleTestCase):
         )
         self.assertIn("Source.", str(result.sections))
 
+    def test_preserves_empty_note_heading_when_body_has_reference_evidence(self):
+        for body in (
+            '<p>Claim<a id="endnote-ref-1" href="#endnote-1">[1]</a>.</p>',
+            "<p>Claim<sup>1</sup>.</p>",
+            "<p>Claim<sup>[1]</sup>.</p>",
+            "<p>First claim [1]. Second claim [2]</p>",
+        ):
+            for heading in ("Endnotes", "Footnotes"):
+                with self.subTest(body=body, heading=heading):
+                    result = process_document_content(
+                        self.prefix + body + f"<h1>{heading}</h1><h1>Appendix</h1>"
+                    )
+                    self.assertEqual(
+                        [s["name"] for s in result.sections],
+                        ["Opportunity", "Endnotes"],
+                    )
+
+    def test_weak_bracketed_evidence_does_not_keep_empty_note_heading(self):
+        for body in (
+            "<p>One claim [1].</p>",
+            "<p>Repeated claim [1]. Another repeated claim [1]</p>",
+            "<p>See [1] and [2] for details.</p>",
+            "<p>Past years [2024]. More recently [2025]</p>",
+        ):
+            with self.subTest(body=body):
+                result = process_document_content(
+                    self.prefix + body + "<h1>Endnotes</h1>"
+                )
+                self.assertEqual([s["name"] for s in result.sections], ["Opportunity"])
+
     def test_native_note_list_preserves_heading_and_citation(self):
         for name in ("Endnotes", "Footnotes"):
             with self.subTest(name=name):

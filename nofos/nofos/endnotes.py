@@ -217,6 +217,31 @@ def _blocks(soup):
     return [t for t in soup.find_all(BLOCK_NAMES) if not t.find_parent(["pre", "code"])]
 
 
+def has_note_reference_evidence(soup):
+    """Recognize note references even when the corresponding citations are missing."""
+    if soup.find("a", id=NATIVE_REFERENCE_ID) or soup.find(
+        "a", href=NATIVE_TARGET_HREF
+    ):
+        return True
+
+    numbers = set()
+    for block in _blocks(soup):
+        for superscript in block.find_all("sup"):
+            text = superscript.get_text(strip=True)
+            if re.fullmatch(r"[1-9][0-9]*", text) or MARKER.fullmatch(text):
+                return True
+
+        text = block.get_text()
+        for match in MARKER.finditer(text):
+            following = text[match.end() :].lstrip()
+            # Ignore likely years, as in the unmatched manual-note scan.
+            if len(match[1]) < 4 and (not following or following[0] in ".!?"):
+                numbers.add(match[1])
+                if len(numbers) >= 2:
+                    return True
+    return False
+
+
 def remove_duplicate_native_note_custom_marks(soup):
     """Remove Mammoth's duplicate rendering of bracketed Word custom marks.
 
