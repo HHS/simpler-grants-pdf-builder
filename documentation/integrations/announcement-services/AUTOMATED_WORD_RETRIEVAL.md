@@ -79,6 +79,19 @@ new work and before committing a result. Keep credentials, fixed AWS identity,
 bucket configuration and network configuration in startup/infrastructure settings.
 Stopping intake must not delete or hide imported drafts or receipt history.
 
+### Infrastructure responsibilities
+
+These are proposed functional responsibilities. Confirm the specific owners, approval authority and handoff dates through #952 and #1302.
+
+| Team | Responsibility |
+| --- | --- |
+| GrantSolutions / Announcement Services | Configure source-side S3 access, bucket permissions and encryption-key access where needed. Confirm source-file availability, version preservation and exchange retention/cleanup. |
+| NOFO Builder / SGG infrastructure maintainers | Configure the scheduled task, machine identity, CPU/memory, network and database connection, private temporary storage, deployment and monitoring. Identify which changes the existing pipeline can apply and which require administrator intervention. |
+| System owners / security functions | Assess authorization impact and applicable controls, determine required agreements and approvals, and identify the responsible approval authority for each system. |
+| Both delivery teams | Verify cross-system access and end-to-end behavior, agree support handoffs and failure handling, and coordinate operational readiness and rollout. |
+
+NOFO Builder deployment infrastructure is maintained in the simpler-grants-gov repository. Repository maintenance responsibility and authority to approve or apply AWS changes must be confirmed separately. Track machine-access provisioning under #1302 and authorization decisions under #952.
+
 ### Discovery progress and import scheduling
 
 Use the existing Django/PostgreSQL database for discovery checkpoints and pending work. Each scheduled invocation has separate discovery and processing budgets. Discovery records metadata before any Word conversion starts. A failed or slow import therefore cannot consume the discovery budget of subsequent invocations.
