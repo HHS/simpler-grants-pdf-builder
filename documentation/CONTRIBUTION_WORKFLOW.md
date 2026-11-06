@@ -53,7 +53,7 @@ flowchart TD
     I --> I1[Fill in Summary, Test plan,<br/>UI evidence, and Checklist<br/>and link the issue]
     I1 --> I2[Compare the body with the template<br/>and check the Conventional Commit title]
     I2 --> I3[Open a PR targeting main]
-    I3 --> J[Wait for CI<br/>ci is required, PR title lint is advisory]
+    I3 --> J[Wait for CI<br/>ci is required, PR title and description lint are advisory]
     J --> K{CI green?}
     K -- No --> L[Fix the cause and push] --> J
     K -- Yes --> K1[Recheck Editor Tasks and documentation placement<br/>against final review changes]
