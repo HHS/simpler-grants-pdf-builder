@@ -49,10 +49,11 @@ flowchart TD
 
     H[Run checks locally<br/>make format, make lint, make test] --> H1[Review EDITOR_TASKS.md<br/>update affected tasks or explain no update]
     H1 --> H2[Check documentation placement,<br/>reuse, indexes and moved links]
-    H2 --> I[Open a PR targeting main]
-    I --> I1[Conventional Commit title<br/>feat: / fix: / docs: / chore: ...]
-    I1 --> I2[Fill in the PR template<br/>Summary, Test plan, Checklist,<br/>and link the issue]
-    I2 --> J[Wait for CI<br/>ci is required, PR title lint is advisory]
+    H2 --> I[Read the PR guidance and template<br/>from current upstream main]
+    I --> I1[Fill in Summary, Test plan,<br/>UI evidence, and Checklist<br/>and link the issue]
+    I1 --> I2[Compare the body with the template<br/>and check the Conventional Commit title]
+    I2 --> I3[Open a PR targeting main]
+    I3 --> J[Wait for CI<br/>ci is required, PR title lint is advisory]
     J --> K{CI green?}
     K -- No --> L[Fix the cause and push] --> J
     K -- Yes --> K1[Recheck Editor Tasks and documentation placement<br/>against final review changes]
