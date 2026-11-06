@@ -5,6 +5,27 @@ November 2, 2026. Follow-up to [the comparison](README.md) and
 Related to [#1263](https://github.com/HHS/simpler-grants-pdf-builder/issues/1263).
 **The November 2–3 sections below describe prototypes only.**
 
+## Dev validation, November 6
+
+[PR #1294](https://github.com/HHS/simpler-grants-pdf-builder/pull/1294) was
+[deployed to dev](https://github.com/HHS/simpler-grants-gov/actions/runs/42287617990).
+Both layouts were rendered using Preview PDF on the same synthetic FY27 IHS
+notice, with a Builder cover. The editor-selectable layout was accepted after
+reviewing the previews and the PDF Contents layout control in theme options.
+
+- **Two columns, page 2.** The introduction spans the columns and the first
+  two step groups appear side by side.
+- **Single-column continuation, page 3.** The page begins midway through
+  Step 3, and its footer reads “Contents: Step 3: Prepare your application.”
+
+![Dev PDF preview showing the two-column Contents](dev-contents-two-columns.jpg)
+
+![Dev PDF preview showing the single-column continuation and Step 3 footer](dev-contents-single-continuation.jpg)
+
+The dev flag was restored to off after testing. This visual check covers one
+synthetic notice. Representative-notice and screen-reader validation remain
+open in [#1263](https://github.com/HHS/simpler-grants-pdf-builder/issues/1263).
+
 ## Builder integration check, November 6
 
 Ben approved the [third prototype](https://github.com/HHS/simpler-grants-pdf-builder/pull/1268).
