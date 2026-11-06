@@ -27,21 +27,43 @@ Automatic draft creation is the selected policy for the implementation estimate.
 
 ```mermaid
 flowchart TD
-    A[AS publishes Word and agreed source metadata] --> B[Private AS exchange object]
-    B --> C[Bounded scheduled discovery and retrieval task]
-    C --> D[Pin object version or conditional read; validate and hash bytes]
-    D --> E[Private task-local temporary file; existing Word conversion and parsing]
-    E --> F[Atomic receipt attempt, new draft, source result and review warnings]
-    F --> G[Authorized human opens existing Builder draft screens]
-    G --> H[Human reviews content and completes design]
-    H --> I[Normal PDF actions only in a configured environment; manual return]
-    C -.-> X[Content-free failure state and bounded retry; source remains in AS]
-    D -.-> X
-    E -.-> X
-    F -.-> X
-    E --> J[Close and remove task-local Word/intermediate files]
-    F -.-> K[Optional later agent design uses existing design-pilot boundary]
+    A["Eligible AS user submits Word and source metadata"] --> B["AS private S3 exchange retains exact source for agreed recovery period"]
+    B --> C["Scheduled discovery lists the agreed incoming prefix"]
+    C --> D["Atomically save page observations and continuation token"]
+    D --> E["Pending submissions in Builder database"]
+    D --> S["Resume next page on next run"]
+    S --> C
+    C -. "Sweep complete or invalid token" .-> R["Restart sweep from beginning and reuse observations"]
+    R --> C
+    E --> F["Claim oldest eligible work with expiry and fencing"]
+    F --> G["Pin source or conditionally download to private temporary file"]
+    G --> H["Validate metadata and bytes, scanning evidence and resource limits; compute SHA-256"]
+    H --> Q{"Source identity and bytes?"}
+    Q -- "Same identity and matching completed result" --> U["Reuse existing draft and preserve designer edits"]
+    Q -- "Same identity with different bytes" --> V["Record conflict for authorized review"]
+    Q -- "New submission or distinct AM version" --> I["Convert and parse with existing Builder import rules"]
+    I --> J["Recheck claim, scope, switch and result under lock"]
+    J --> K["Atomically save new draft, import side effects and source-result link"]
+    K --> L["Designer reviews and refines the labeled draft"]
+    U --> L
+    L --> M["Explicit authorized decision for replacement or reimport"]
+    L --> N["Normal PDF workflow and manual return"]
+    G -. "Failure" .-> X["Persist failure and retry timing or intervention requirement"]
+    H -. "Failure" .-> X
+    I -. "Failure" .-> X
+    J -. "Failure" .-> X
+    K -. "Interrupted or uncertain commit" .-> X
+    X -. "Eligible retry checks existing result and fences stale workers" .-> F
+    K -.-> T["Clean temporary files on success, failure and task teardown"]
+    U -.-> T
+    V -.-> T
+    X -.-> T
+    K -.-> O["Acceptance event and acknowledgment to agree with AS"]
+    O -.-> P["AS exchange cleanup baseline: delete 30 days after acceptance; review unclaimed or failed at 60 days"]
 ```
+
+The diagram describes the proposed automated implementation. Discovery and import have independent bounded budgets. Database uniqueness and an atomic draft/result transaction protect concurrent retries. Distinct AM versions produce separate drafts while earlier design work remains available. File cleanup applies to every processing exit, including early validation failure. The acceptance event, acknowledgment, cleanup ownership and 60-day review-clock start require agreement with AS.
+
 
 Every solid arrow is proposed integration work, not evidence that an exchange or
 worker is deployed. Download is not handoff acceptance, and import is not design
