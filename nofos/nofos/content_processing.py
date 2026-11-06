@@ -10,7 +10,7 @@ import re
 import unicodedata
 from copy import deepcopy
 from dataclasses import dataclass
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 import cssutils
 from bs4 import BeautifulSoup, Comment, NavigableString, Tag
@@ -227,6 +227,7 @@ def process_nofo_html(soup, top_heading_level, *, debug_capture=None):
     unwrap_bold_trailing_punctuation(soup)  # IMPORT-077
     decompose_empty_tags(soup)
     combine_consecutive_links(soup)
+    repair_file_email_links(soup)
     remove_google_tracking_info_from_links(soup)
     rename_footnotes_heading_to_endnotes(soup)
     add_endnotes_header_if_exists(soup, top_heading_level)
@@ -1411,6 +1412,22 @@ def repair_eligibility_organization_lists(soup):
             item.name = "li"
             listing.append(item.extract())
     return soup
+
+
+def repair_file_email_links(soup):
+    """Restore email links that Word saved as file URLs."""
+    for link in soup.find_all("a", href=True):
+        href = link["href"]
+        if not href.lower().startswith("file:///") or "?" in href or "#" in href:
+            continue
+
+        address = link.get_text().strip()
+        filename = re.split(r"[/\\]", unquote(href))[-1]
+        if filename == address and re.fullmatch(
+            r"[A-Za-z0-9_+%-]+(?:\.[A-Za-z0-9_+%-]+)*@(?:[A-Za-z0-9-]+\.)+[A-Za-z0-9-]+",
+            address,
+        ):
+            link["href"] = "mailto:" + address.replace("%", "%25")
 
 
 def remove_google_tracking_info_from_links(soup):

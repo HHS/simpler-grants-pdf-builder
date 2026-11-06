@@ -92,6 +92,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-027 | conversion | Tables | Any cell with `colspan`/`rowspan` ≠ 1 → whole table kept as raw HTML; header width classes auto-assigned | `nofo_markdown.py` |
 | IMPORT-057 | repair | Tables | Caption before the first row does not suppress the Markdown table separator | `nofo_markdown.py` |
 | IMPORT-054 | conversion | Tables | "Point value"/"Points" header + short point-value cells → header marked `{: .col--points }` (fit-to-content, no-wrap column) | `nofo_markdown.py` |
+| IMPORT-078 | repair | Links | File URLs ending in the displayed email address → mailto links | `content_processing.py` |
 | IMPORT-028 | repair | Links | Google Docs tracking-redirect URLs → unwrapped to real destination | `nofo.py` |
 | IMPORT-029 | repair | Links | Consecutive same-href links merged; whitespace before punctuation trimmed | `nofo.py` |
 | IMPORT-030 | repair | Links | Bookmark/heading/table-heading anchor IDs transferred to surviving parent elements | `nofo.py` |
@@ -511,6 +512,12 @@ The example that prompted this document: detecting a footnote/endnote list and f
 ---
 
 ## Link Handling
+
+### IMPORT-078 — Restore email links stored as file URLs
+
+- **Trigger:** A `file:///` hyperlink without a query or fragment ends in an email address that exactly matches its visible text after trimming whitespace. The final path segment is URL-decoded and can follow a slash or backslash.
+- **Action:** Replace the destination with a `mailto:` link to that address. Links with ambiguous labels or destinations still go through normal link validation.
+- **Source:** `content_processing.py::repair_file_email_links`
 
 ### IMPORT-028 — Google tracking-link unwrapping
 - **Type:** repair
