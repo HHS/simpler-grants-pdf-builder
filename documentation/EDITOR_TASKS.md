@@ -853,8 +853,9 @@ See [history rollout and limitations](DOCUMENT_HISTORY.md).
 2. To download a copy, select **Download PDF**.
 
 When the FY27 PDF Contents layout is enabled, portrait PDFs for NOFOs using
-**Before you get started** use two Contents columns by default. If longer
-entries are hard to follow, edit **NOFO theme options**, choose **Single column**
+**Before you get started** use two Contents columns by default. The NOFO edit
+page shows the current **PDF Contents layout** under **NOFO theme options**. If
+longer entries are hard to follow, edit **NOFO theme options**, choose **Single column**
 under **PDF Contents layout**, and preview the PDF again. Contents can span
 more than one page. The choice does not change HTML or landscape PDFs.
 

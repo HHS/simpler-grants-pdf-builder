@@ -3,6 +3,7 @@ import uuid
 import cssutils
 from bloom_nofos.middleware import get_current_user
 from bs4 import BeautifulSoup
+from constance import config
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator
@@ -531,6 +532,10 @@ class Nofo(BaseNofo):
     @property
     def has_fy27_contents(self):
         return self.introductory_page_family == "get_started"
+
+    @property
+    def can_choose_pdf_contents_layout(self):
+        return self.has_fy27_contents and config.HHS_NOFO_FY27_PDF_CONTENTS_ENABLED
 
     def get_first_subsection(self):
         section = self.sections.exclude(role="introduction").order_by("order").first()
