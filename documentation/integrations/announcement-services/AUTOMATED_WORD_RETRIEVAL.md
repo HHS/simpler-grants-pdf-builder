@@ -78,6 +78,22 @@ new work and before committing a result. Keep credentials, fixed AWS identity,
 bucket configuration and network configuration in startup/infrastructure settings.
 Stopping intake must not delete or hide imported drafts or receipt history.
 
+### Discovery progress and import scheduling
+
+Use the existing Django/PostgreSQL database for discovery checkpoints and pending work. Each scheduled invocation has separate discovery and processing budgets. Discovery records metadata before any Word conversion starts. A failed or slow import therefore cannot consume the discovery budget of subsequent invocations.
+
+Persist one discovery checkpoint per configured exchange prefix. Serialize checkpoint updates with an expiring database claim and fencing revision. Fetch a page outside the database transaction, then atomically upsert its object observations and save its next S3 continuation token after verifying the claim. Commit the entire page before advancing the checkpoint. A crash before commit repeats the page safely. A crash after commit resumes at the next page. Use unique observation identities and leave completed results and retry counts intact when observations repeat.
+
+At the end of the listing, mark the sweep complete and clear its token so the next sweep begins at the prefix start. This catches arrivals whose keys sort before the saved position. If S3 rejects an invalid saved continuation token, reset that checkpoint and restart the sweep, preserving observations and import history. Authentication, permission and transient network errors retain the checkpoint and follow their respective intervention or retry paths. Record completed-sweep age and alert when discovery stops making progress.
+
+ListObjectsV2 discovers current keys. Capture VersionId through object metadata lookup before retrieval when versioning is available, or use a conditional read against the observed object. Persist the listing observation first so metadata lookup failures remain actionable pending work. AS must retain discoverable submissions until pickup and the exact observed source through the agreed recovery window. If every overwritten historical version must be discovered, agree version-aware listing or delivery events before implementation. A current-key sweep cannot guarantee discovery of versions overwritten between sweeps.
+
+Process eligible pending work in first-discovered order with a stable ID tie-breaker. Store next-attempt time separately. Claim each item exclusively with an expiring lease and fencing revision, and check for a completed result before downloading or importing. A failed item's backoff allows other eligible items to proceed. Repeated discovery cannot reset exhausted retries. Record SHA-256 of retrieved bytes and bind the result to that exact source. Same source identity with different bytes requires review.
+
+Recover expired processing claims through the durable attempt record. A stale worker must fail its fencing check before the atomic draft/result transaction. Database rollback and lookup of an existing committed result make retries safe across interruption. Temporary files are cleaned up on exit, with task-storage teardown covering abrupt termination.
+
+Verification under #954 must include multiple listing pages and more pending files than one invocation can import, completed files at the beginning of the prefix, an arrival before the current cursor, crashes on either side of checkpoint commit, an invalid token, overlapping runs, delayed retries, expired claims and stale workers. Verify eventual discovery and processing of every eligible retained submission without duplicate drafts. Validate concurrency and recovery against PostgreSQL.
+
 ### Exact source, retries and persistence
 
 - Map FON to generic `source_record_id`; preserve the actual AM version as an
@@ -121,7 +137,7 @@ Stopping intake must not delete or hide imported drafts or receipt history.
 
 | Copy or record | Proposed location and lifetime | Controls and recovery |
 | --- | --- | --- |
-| AS authoritative source and exchange Word | AS-controlled storage. Exchange copy remains the retry source until the agreed handoff/retention policy permits removal. | AS owns encryption, permissions, backups, versions and cleanup. Existing 30-day-after-acceptance/60-day-review ideas are proposals, not approved periods or task-local retention. Resolve exact pinning and availability first. |
+| AS authoritative source and exchange Word | AS-controlled storage. Exchange copy remains the retry source until the agreed handoff/retention policy permits removal. | AS owns encryption, permissions, backups, versions and cleanup. The agreed-in-principle baseline is deletion 30 days after design-handoff acceptance and review of unclaimed/failed submissions at 60 days. Confirm acceptance recording, cleanup ownership and the start of the 60-day clock. Resolve exact pinning and availability for retries. |
 | Downloaded original Word | Seekable temporary file in the single task's private ephemeral filesystem, only for that attempt. Stream with the 45 MB inbound Word limit recorded in [#950, phase one](https://github.com/HHS/simpler-grants-pdf-builder/issues/950); agree decimal/binary units and test boundaries. Do not rely on declared length alone. | Restricted directory/file permissions, encrypted approved task storage, no shared mount, persistent volume, public URL or backup. Always close/unlink in `finally`. Task termination ends crash leftovers; verify actual task storage and cleanup configuration. This is not a secure-erasure guarantee. |
 | Conversion buffers and intermediates | Process memory and the same attempt-local scratch directory, only until conversion/validation ends. | Word helpers can rebuild ZIPs and hold multiple copies in memory. Bound expanded ZIP size, entries, conversion memory/time and output size as well as compressed bytes. `DEBUG=False`; prohibit debug HTML dumps, crash payload dumps and content-bearing exception logs. |
 | Imported NOFO and embedded content/assets | Existing Builder database and approved asset locations after successful transaction. Persist intentionally as draft content, not as the original Word archive. | Normal Builder access, editing, retention and backups apply. Embedded images can survive as data in imported content; inspect/test all asset paths. Any external object writes need attempt ownership plus compensating cleanup; database rollback does not delete S3 objects. Never delete shared assets as compensation. |
@@ -135,6 +151,12 @@ over forcing a 45 MB original plus expanded conversions into RAM. If approved
 AS retention cannot support retries, revisit private staging explicitly with
 security/records owners; do not silently repurpose the existing image bucket.
 
+### Exchange retention baseline and acceptance
+
+The October 20 meeting and October 21 written follow-up record AS alignment in principle with deleting retrieved exchange copies 30 days after the design team accepts the handoff and reviewing unclaimed or failed submissions at 60 days before deciding cleanup. AS confirmed it can configure lifecycle rules. Carry these periods into implementation planning, subject to final records and operating agreement.
+
+Agree whether successful automated import constitutes acceptance or an authorized designer explicitly accepts afterward. Record the chosen event and timestamp durably, define how AS receives the acknowledgment, assign cleanup ownership, and confirm whether the 60-day review clock starts at submission. A 60-day review requires a cleanup decision. Task-local temporary files are removed after each attempt. Preserve access to the exact source version throughout the agreed recovery period.
+
 ## Decisions required before connectivity or enablement
 
 These are functional owners, not requests for an individual to find another owner.
@@ -147,7 +169,7 @@ These are functional owners, not requests for an individual to find another owne
 | Malware/untrusted ZIP resource risk | Reuse verified approved AS scanning if evidence covers the exact exported bytes. If not adequate, agree a downstream control before parsing. Format checks alone are not malware scanning; do not invent a duplicate scanner by default. | AS security and Builder security (#952/#954) |
 | Exchange/local/metadata retention and source expiry | Approve separate lifecycles; implement cleanup and recoverable failure, without a second Word bucket unless justified. | AS storage operations, Builder operations and records/security functions (#952) |
 | Discovery latency, volume, support and alerts | Select bounded cadence/batch/retry budget and private alert route; alert on missed job, oldest pending age, failure rate and exhausted retries. No content/keys in workflow inputs or logs. | Builder operations with AS support (#954) |
-| UAT cohort and rollout | Reconcile ACL staffed manual midpoint with HRSA end-to-end requirement; the deck's partner rollout is not Builder deployment approval. | Joint AS/Builder product and testing functions (#956) |
+| UAT cohort and rollout | Reconcile ACL staffed manual midpoint with HRSA end-to-end requirement; the deck's partner rollout is not Builder deployment approval. | Joint AS/Builder product and testing functions (#954), informed by #956 |
 
 ## Implementation backlog and preliminary schedule
 
@@ -165,7 +187,7 @@ yet and are additional, potentially overlapping lead time. Confidence: medium-lo
 | 2. [#953](https://github.com/HHS/simpler-grants-pdf-builder/issues/953) within [#954](https://github.com/HHS/simpler-grants-pdf-builder/issues/954) | Digest-bound observations, durable fenced attempts and atomic import/result service; tests for retries, conflicts, crashes and concurrency. Preserve immutable history. | 4–6 days |
 | 3. [#954](https://github.com/HHS/simpler-grants-pdf-builder/issues/954) | Bounded retrieval/validation and task-local cleanup; reuse converter and core; new draft with review warnings/source linkage; no auto replacement or PDF. | 4–6 days |
 | 4. [#954](https://github.com/HHS/simpler-grants-pdf-builder/issues/954) with infrastructure review | Dedicated task role, scheduler, default-off switch, private monitoring, kill/recovery runbook; synthetic integration and restart/cleanup tests. Can overlap step 3 after service contract. | 2–3 days |
-| 5. [#956](https://github.com/HHS/simpler-grants-pdf-builder/issues/956) | AS integration tests, authorized designer UI/UAT, failure recovery, limited cohort rollout and manual fallback. Update current manual-only scope with agreed automated coverage before scheduling. | 3–5 days, plus partner calendar |
+| 5. [#954](https://github.com/HHS/simpler-grants-pdf-builder/issues/954) | Own automated AS integration tests, authorized designer UI/UAT, failure recovery, limited cohort rollout and manual fallback. Use findings from the manual pilot under #956. | 3–5 days, plus partner calendar |
 | Later. [#955](https://github.com/HHS/simpler-grants-pdf-builder/issues/955) / [#902](https://github.com/HHS/simpler-grants-pdf-builder/issues/902) | Optional agent-assisted design and trusted human acceptance. Reuse the existing design pilot; not on the retrieval/import critical path. | Separate estimate after remaining pilot work is resolved |
 | Later. [#951](https://github.com/HHS/simpler-grants-pdf-builder/issues/951)/[#957](https://github.com/HHS/simpler-grants-pdf-builder/issues/957) | Automated PDF availability/return. | Outside this estimate |
 
@@ -175,6 +197,16 @@ foundation (about week 1–2) → synthetic integrated retrieval/draft review (w
 fallback. These are relative planning windows, not delivery promises. February/
 March 2027 is a plausible coordination target only after reconciling dependencies;
 it is not committed by this spike or the November deck.
+
+### Proposed calendar for AS coordination
+
+| Milestone | Proposed window |
+| --- | --- |
+| Implementation and internal testing | January 2027 |
+| Joint integration testing and UAT | February 2027 |
+| Limited rollout | February–March 2027 |
+
+These planning windows are proposed for review with AS and subsequent inclusion in the Agile Six schedule slide. Retain the 15–23 engineering-day / approximately 4–6 working-week estimate above. Assumptions include engineering and reviewer availability, agreed requirements, and machine access ready for integration testing. External approval/provisioning and partner-calendar lead time remain unestimated. Confirm the machine-access provisioning owner and target date under #954 with the infrastructure/security functions. The November 17 milestone covers human-download access. Calendar dates become delivery commitments only after coordination and agreement.
 
 Minimum verification includes wrong-role/group rejection; malformed/oversized/
 unsafe/expanded ZIP limits; changed object between observation and GET; duplicate
