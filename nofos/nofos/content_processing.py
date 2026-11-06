@@ -224,6 +224,7 @@ def process_nofo_html(soup, top_heading_level, *, debug_capture=None):
     clean_table_cells(soup)
     continue_table_row_numbering(soup)  # IMPORT-067
     unwrap_empty_elements(soup)
+    unwrap_bold_trailing_punctuation(soup)  # IMPORT-077
     decompose_empty_tags(soup)
     combine_consecutive_links(soup)
     remove_google_tracking_info_from_links(soup)
@@ -1864,6 +1865,29 @@ def add_strongs_to_soup(soup):
                 if parent_tr and parent_tr.find_previous_sibling() is None:
                     continue
                 element.wrap(soup.new_tag("strong"))
+
+
+def unwrap_bold_trailing_punctuation(soup):
+    inline_tags = {"a", "b", "em", "i", "span", "strong", "sub", "sup", "u"}
+    for bold in soup.find_all(["strong", "b"]):
+        if (
+            len(bold.contents) != 1
+            or type(bold.contents[0]) is not NavigableString
+            or bold.contents[0].rstrip() not in {".", ",", "?", ":"}
+            or bold.has_attr("id")
+            or bold.has_attr("name")
+        ):
+            continue
+
+        previous = bold.previous_sibling
+        while isinstance(previous, Tag) and previous.name in inline_tags:
+            previous = previous.contents[-1] if previous.contents else None
+        if (
+            type(previous) is NavigableString
+            and previous
+            and not previous[-1].isspace()
+        ):
+            bold.unwrap()
 
 
 def add_em_to_de_minimis(soup):

@@ -120,6 +120,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-048 | repair | Non-Visual Tagging | PDF metadata field is a whole-field `{placeholder}` → normalized to empty | `pdf_metadata.py` |
 
 | IMPORT-075 | repair | Emphasis | Explicit line breaks inside bold/italic text survive Markdown conversion | `nofo_markdown.py` |
+| IMPORT-077 | repair | Emphasis | Unwrap isolated bold on trailing punctuation | `content_processing.py` |
 
 ---
 
@@ -607,6 +608,12 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Status:** active
 
 ---
+
+### IMPORT-077 — Unwrap isolated bold on trailing punctuation
+
+- **Trigger:** A `strong` or `b` run without an anchor contains only a period, comma, question mark, or colon, with optional following whitespace. The mark directly follows text in a sibling text node or inline element.
+- **Action:** Unwrap the punctuation run before Markdown conversion. Preserve the mark, whitespace, and any surrounding bold, including an outer bold wrapper around the full sentence.
+- **Source:** `content_processing.py::unwrap_bold_trailing_punctuation`.
 
 ## Content Extraction & Removal
 
