@@ -25,6 +25,7 @@ publishing.
 - [Headings](#headings)
 - [Images](#images)
 - [Visual consistency](#visual-consistency)
+- [PDF Contents layout](#pdf-contents-layout)
 - [Line breaks](#line-breaks)
 - [Lists](#lists)
 - [Links](#links)
@@ -84,6 +85,20 @@ decorative images and requires alt text. In addition:
 
 NOFO Builder's design system applies consistent styling, so this matters most
 for NOFOs produced outside NOFO Builder.
+
+## PDF Contents layout
+
+This is a NOFO Builder layout pattern for eligible FY27 portrait PDFs. When
+the feature is enabled, Contents uses two columns by default. Choose the
+single-column layout when long labels or dense step groups make the columns
+hard to follow. Let Contents span pages when needed, and use the running step
+label to orient readers on continuation pages.
+
+In either layout, keep subsections grouped under their steps and give each
+entry its own link. In the exported PDF, check that page numbers match the
+destinations and that the reading and navigation order follows the heading
+hierarchy. See [Preview a NOFO](EDITOR_TASKS.md#task-preview) for how to select
+and preview the layout.
 
 ## Line breaks
 

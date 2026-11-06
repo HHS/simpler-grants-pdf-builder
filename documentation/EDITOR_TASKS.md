@@ -848,6 +848,17 @@ See [history rollout and limitations](DOCUMENT_HISTORY.md).
 1. On the NOFO edit page, select **Preview PDF**. It opens in a new tab.
 2. To download a copy, select **Download PDF**.
 
+When the FY27 PDF Contents layout is enabled, portrait PDFs for NOFOs using
+**Before you get started** use two Contents columns by default. If longer
+entries are hard to follow, edit **NOFO theme options**, choose **Single column**
+under **PDF Contents layout**, and preview the PDF again. Contents can span
+more than one page. The choice does not change HTML or landscape PDFs.
+
+An administrator can turn on **HHS_NOFO_FY27_PDF_CONTENTS_ENABLED** in
+**Django admin → Constance → Config** after checking representative exports
+with a screen reader and at higher magnification. It is off by default.
+Turn it off to return to the prior layout without losing saved choices.
+
 When readability metrics are enabled, a successful **Download PDF** also saves
 a PDF-download readability checkpoint, separate from an import, reimport or
 manual checkpoint for the same unchanged content. Repeating the same action on

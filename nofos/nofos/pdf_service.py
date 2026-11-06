@@ -4,9 +4,11 @@ from dataclasses import dataclass
 
 import docraptor
 from bloom_nofos.context_processors import template_context
+from constance import config
 from django.conf import settings
 from django.template.loader import render_to_string
 
+from .models import Nofo
 from .nofo_document_context import get_nofo_document_context
 
 
@@ -44,6 +46,16 @@ def generate_nofo_pdf(nofo, *, base_url: str, is_test_pdf: bool) -> GeneratedPDF
     # tokens, and credentials must never be sent to DocRaptor.
     document_context = {"object": nofo, "nofo": nofo}
     document_context.update(get_nofo_document_context(nofo))
+    if (
+        nofo.has_fy27_contents
+        and document_context["nofo_theme_orientation"] == "portrait"
+        and config.HHS_NOFO_FY27_PDF_CONTENTS_ENABLED
+    ):
+        document_context["pdf_contents_layout"] = (
+            Nofo.PdfContentsLayout.SINGLE
+            if nofo.pdf_contents_layout == Nofo.PdfContentsLayout.SINGLE
+            else Nofo.PdfContentsLayout.COLUMNS
+        )
     document_context.update(template_context(None))
     document_content = render_to_string("nofos/nofo_pdf.html", document_context)
 
