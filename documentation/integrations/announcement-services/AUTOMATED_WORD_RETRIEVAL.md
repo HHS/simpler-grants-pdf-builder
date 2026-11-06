@@ -14,13 +14,14 @@ metadata inference and draft editing. Do not build another integration platform,
 public upload API, permanent Word store, design agent or PDF-return service for
 this release.
 
-The proposed outcome is a **new, source-linked draft for human review**, not a
-published NOFO or an automatically replaced document. Enable only an agreed
-source/group cohort. Before enabling automatic creation, the Builder product
-function must confirm whether every eligible handoff should create a new draft
-or require a designer's selection first. The latter uses the same retrieval and
-receipt service but adds an authenticated import action; it changes the UI and
-estimate. Neither policy changes the current manual pilot by implication.
+The agreed product approach, confirmed November 6, 2026, is automatic creation of a new source-linked Builder draft after an eligible user submits through the AS handoff. Enable only the agreed source/group cohort. Reuse the existing import rules to prepare editable content for human review and design refinement.
+
+- Repeated delivery of the same source identity and matching file bytes returns the existing result. Preserve any subsequent designer edits.
+- A distinct AM source version creates a separate draft linked to the same funding opportunity and labeled with its source version. Preserve the earlier draft and its design work. Source version labels remain opaque.
+- The same source identity with different file bytes is a conflict requiring review.
+- Replacing or reimporting into existing design work requires an explicit authorized human decision.
+
+Automatic draft creation is the selected policy for the implementation estimate. The acceptance event that starts AS exchange cleanup still requires agreement with AS, including whether successful import or explicit designer acceptance supplies that event.
 
 ## Proposed flow
 
@@ -164,7 +165,7 @@ These are functional owners, not requests for an individual to find another owne
 | Decision / risk | Recommended handling | Responsible function |
 | --- | --- | --- |
 | Immutable retrieval, exact keys/metadata, FON/version correction and scan evidence | Confirm a pinned object or conditional-read contract, exact exported-byte validation and availability until recovery/acceptance. Resolve conflicting October overwrite/new-version proposals. | AS integration and Builder product functions (#888) |
-| Automatic new draft versus human-select-first | Agree eligible cohort and how a designer chooses among versions; never overwrite current work automatically. | Builder product/design operations (#954) |
+| Automatic draft creation, agreed November 6 | Confirm eligible cohort and version labels in the UI. Create a separate draft for each distinct source version; preserve prior design work and require explicit human authorization for replacement. | Builder product/design operations (#954) |
 | Machine identity, task/storage/data boundary, encryption and minimum permissions | Review dedicated role, private temporary disk, DB access, derived content/backups and content-free operational events. Existing app hosting is not proof this new path is approved. | Builder infrastructure/security and AS infrastructure (#952) |
 | Malware/untrusted ZIP resource risk | Reuse verified approved AS scanning if evidence covers the exact exported bytes. If not adequate, agree a downstream control before parsing. Format checks alone are not malware scanning; do not invent a duplicate scanner by default. | AS security and Builder security (#952/#954) |
 | Exchange/local/metadata retention and source expiry | Approve separate lifecycles; implement cleanup and recoverable failure, without a second Word bucket unless justified. | AS storage operations, Builder operations and records/security functions (#952) |
