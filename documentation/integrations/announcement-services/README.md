@@ -12,6 +12,12 @@ implementation or approval.
 
 ## Optional foundation code and proposals
 
+- [Automated Word retrieval](AUTOMATED_WORD_RETRIEVAL.md) proposes the smallest
+  retrieval/import release, temporary-byte lifecycle, functional decisions,
+  implementation backlog and preliminary schedule under #1278. It is not
+  deployed or approved. [November 4 evidence](../../review-evidence/1278/README.md)
+  pins the investigation and distinguishes existing code from missing integration.
+
 Status reviewed October 28, 2026 against main at `8cac8f60`:
 
 - [Word handoff identity](WORD_HANDOFF_IDENTITY.md) documents metadata-only receipt/result foundation code, its trust boundary and unresolved exchange contract.
