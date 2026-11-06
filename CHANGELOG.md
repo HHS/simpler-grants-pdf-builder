@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.57.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.56.2...nofos-v3.57.0) (2026-11-06)
+
+
+### Features
+
+* add bounded local design fidelity evidence ([#1164](https://github.com/HHS/simpler-grants-pdf-builder/issues/1164)) ([8dc3b0c](https://github.com/HHS/simpler-grants-pdf-builder/commit/8dc3b0c4ec5ef8bb0cd0934420753bf4b015486a))
+* add FY27 portrait PDF Contents layouts ([#1294](https://github.com/HHS/simpler-grants-pdf-builder/issues/1294)) ([681c4e6](https://github.com/HHS/simpler-grants-pdf-builder/commit/681c4e6600275c6935fb8e00ebc45410e98c8c67))
+* add NOFO group filters for Bloom users ([#1275](https://github.com/HHS/simpler-grants-pdf-builder/issues/1275)) ([afb3b59](https://github.com/HHS/simpler-grants-pdf-builder/commit/afb3b5957954816169dfc67dd533449144f90b45))
+* trace recognized Metadata consumption ([#1165](https://github.com/HHS/simpler-grants-pdf-builder/issues/1165)) ([75de4b0](https://github.com/HHS/simpler-grants-pdf-builder/commit/75de4b00189659cc6fb011ab7d72a1ba3c5bfd13))
+
+
+### Bug Fixes
+
+* align Readability Checker PDF limits at 5 MiB ([#1287](https://github.com/HHS/simpler-grants-pdf-builder/issues/1287)) ([51c8550](https://github.com/HHS/simpler-grants-pdf-builder/commit/51c8550ce1d58571955275030f32442c0b5daa44))
+* allow analysis of PDFs at the 5 MiB limit ([d08450b](https://github.com/HHS/simpler-grants-pdf-builder/commit/d08450bcebdfabf7feba7596488d2a4962c74c43))
+* consolidate endnote warnings and support repeated manual references ([#1282](https://github.com/HHS/simpler-grants-pdf-builder/issues/1282)) ([b82b71f](https://github.com/HHS/simpler-grants-pdf-builder/commit/b82b71fa10abdb7b61cceb73399a403dd75f3d43))
+* default SAMHSA imports to text-only covers ([#1285](https://github.com/HHS/simpler-grants-pdf-builder/issues/1285)) ([92f1753](https://github.com/HHS/simpler-grants-pdf-builder/commit/92f1753d4922876d8af3eb3227fe8d212a03b563))
+* install Trivy from verified GitHub release ([#1279](https://github.com/HHS/simpler-grants-pdf-builder/issues/1279)) ([a948dbe](https://github.com/HHS/simpler-grants-pdf-builder/commit/a948dbe27a6d80aa0e46ca3dba7c0649885ecb6b))
+* Remove isolated bold from trailing punctuation on NOFO import ([#1289](https://github.com/HHS/simpler-grants-pdf-builder/issues/1289)) ([0a90923](https://github.com/HHS/simpler-grants-pdf-builder/commit/0a90923bd0c613bfdaa9beabae0eec9ec8b879dc))
+* restore Word email links on import ([#1290](https://github.com/HHS/simpler-grants-pdf-builder/issues/1290)) ([0590543](https://github.com/HHS/simpler-grants-pdf-builder/commit/05905430a1f460c9c3a8f58522d8c57e462c5e21))
+* select CMS Light for CMS OpDiv imports ([#1277](https://github.com/HHS/simpler-grants-pdf-builder/issues/1277)) ([8b5b637](https://github.com/HHS/simpler-grants-pdf-builder/commit/8b5b6377371310861be9fc3cb4432aedef6ae7fc))
+* update HRSA Before You Begin requirements wording ([#1295](https://github.com/HHS/simpler-grants-pdf-builder/issues/1295)) ([74163dc](https://github.com/HHS/simpler-grants-pdf-builder/commit/74163dcf382a2807d214c29b345c965aff070b33))
+
+
+### Documentation
+
+* clarify how to track actionable review findings ([#1293](https://github.com/HHS/simpler-grants-pdf-builder/issues/1293)) ([3f7bfb1](https://github.com/HHS/simpler-grants-pdf-builder/commit/3f7bfb157baf9b1f34144ebc42e46a2e09a479ca))
+* propose bounded AS Word retrieval and delivery plan ([#1280](https://github.com/HHS/simpler-grants-pdf-builder/issues/1280)) ([b0dd1e2](https://github.com/HHS/simpler-grants-pdf-builder/commit/b0dd1e24376db4c602d40428b7c41745d0d9ed09))
+
+
+### Miscellaneous Chores
+
+* mirror approved scoped Python runtime exception ([#1284](https://github.com/HHS/simpler-grants-pdf-builder/issues/1284)) ([6c76a47](https://github.com/HHS/simpler-grants-pdf-builder/commit/6c76a47660bfd8085e736e12ed5fbc9b44fbd8c5))
+
 ## [3.56.2](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.56.1...nofos-v3.56.2) (2026-11-03)
 
 
