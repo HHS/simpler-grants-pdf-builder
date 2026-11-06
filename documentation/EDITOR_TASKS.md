@@ -147,6 +147,8 @@ is needed, contact the SimplerNOFOs team.
   Appendix or Endnotes section afterward using the existing NOFO actions.
   This cleanup applies on new import and reimport; it does not remove sections
   from already saved NOFOs automatically.
+- Import repairs Word email links stored as file paths when the path ends in
+  the displayed email address. Other broken links still need review.
 - For an existing NOFO, reimport replaces sections and subsections and can lose
   manual edits. It is not a way to apply import repairs to saved edits in place.
   Reimport preserves saved theme, cover and introductory ownership choices.
