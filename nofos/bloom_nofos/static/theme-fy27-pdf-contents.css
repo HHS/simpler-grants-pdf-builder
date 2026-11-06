@@ -1,0 +1,72 @@
+/* PDF export only. Keep the theme's fonts and the existing tagged list/links. */
+.toc--fy27-columns > ol {
+  columns: 2;
+  column-gap: 10mm;
+}
+
+.toc--fy27-columns > ol > li {
+  break-inside: avoid;
+}
+
+.toc--fy27-columns > ol > li.toc--before-you-begin {
+  column-span: all;
+  padding-left: 0;
+  margin-top: 0;
+  max-width: none;
+  width: 100%;
+}
+
+.toc--fy27-columns > ol > .toc--before-you-begin > a {
+  width: calc(50% - 5mm);
+}
+
+.toc--fy27-columns .toc--section-name--wrapper {
+  margin-top: 0;
+}
+
+.toc--fy27-columns a,
+.toc--fy27-single a {
+  box-sizing: border-box;
+  padding-right: 3em;
+  overflow-wrap: anywhere;
+}
+
+.toc--fy27-columns .toc--subsection-name,
+.toc--fy27-single .toc--subsection-name {
+  break-inside: avoid;
+}
+
+.toc--fy27-columns .toc--section-name--a,
+.toc--fy27-single .toc--section-name--a {
+  break-after: avoid;
+}
+
+.toc--fy27-single {
+  page: fy27-contents-single;
+}
+
+.toc--fy27-single > ol {
+  columns: auto;
+}
+
+/* Start with the existing heading, even when a cover precedes Contents.
+   Later pages get the first step or subsection actually on that page. */
+.toc--fy27-single > h2 {
+  string-set: sectiontitle content(), contents-context content();
+}
+
+.toc--fy27-single .toc--section-name--a,
+.toc--fy27-single > ol > .toc--no-icon:not(.toc--before-you-begin) > a {
+  string-set: contents-context "Contents: " content();
+}
+
+.toc--fy27-single .toc--subsection-name {
+  string-set: contents-context "Contents: " attr(data-contents-step);
+}
+
+@page fy27-contents-single {
+  @bottom-left {
+    content: string(contents-context, first);
+    -prince-pdf-tag-type: Artifact;
+  }
+}

@@ -27,6 +27,10 @@
     <link href="{% static filename %}" type="text/css" media="all" rel="stylesheet">
   {% endwith %}
 
+  {% if pdf_contents_layout %}
+    <link href="{% static 'theme-fy27-pdf-contents.css' %}" type="text/css" media="print" rel="stylesheet">
+  {% endif %}
+
   {% if nofo.inline_css %}
     <style>{{ nofo.inline_css|safe }}</style>
   {% endif %}
@@ -192,7 +196,7 @@
   </section>
 
   <!-- TABLE OF CONTENTS -->
-  <section id="section--toc" class="toc {{ nofo|add_classes_to_toc }}">
+  <section id="section--toc" class="toc {{ nofo|add_classes_to_toc }}{% if pdf_contents_layout %} toc--fy27-{{ pdf_contents_layout }}{% endif %}">
     <h2 id="section--toc--heading">Contents</h2>
     {% spaceless %}
     <ol class="usa-list usa-list--unstyled">
@@ -226,7 +230,7 @@
                   {% for subsection in section.subsections.all|dictsort:"order" %}
                     {% with tag=subsection.tag content=subsection.name id=subsection.html_id %}
                       {% if tag == 'h3' %}
-                        <li class="toc--subsection-name"><a href="#{{ subsection.html_id }}">{{ content|strip_br }}</a></li>
+                        <li class="toc--subsection-name"{% if pdf_contents_layout == "single" %} data-contents-step="{{ section.name|strip_br|force_escape }}"{% endif %}><a href="#{{ subsection.html_id }}">{{ content|strip_br }}</a></li>
                       {% endif %}
                     {% endwith %}
                   {% endfor %}

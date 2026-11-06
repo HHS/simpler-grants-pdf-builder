@@ -744,6 +744,11 @@ CONSTANCE_CONFIG = {
         "Whether to print PDFs with watermarks. If timestamp is older than 5 mins, documents will be watermarked.",
         bool,
     ),
+    "HHS_NOFO_FY27_PDF_CONTENTS_ENABLED": (
+        False,
+        "Use the FY27 Contents layout for portrait PDF previews and downloads of Before you get started NOFOs. Enable only after representative PDF and assistive-technology checks. Disable to restore the previous layout without losing saved choices.",
+        bool,
+    ),
     "HHS_NOFO_METRICS_ENABLED": (
         HHS_NOFO_METRICS_ENABLED_DEFAULT,
         "Whether the provisional readability metrics panel and endpoint are available. Metrics are calculated on demand and saved as revision-scoped snapshots.",

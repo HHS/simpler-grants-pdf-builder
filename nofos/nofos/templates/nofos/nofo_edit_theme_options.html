@@ -42,6 +42,12 @@ NOFO theme options
     {% include "includes/select.html" with id=id label=label value=value hint=hint choices=choices error=error only %}
   {% endwith %}
 
+  {% if form.pdf_contents_layout %}
+    {% with field=form.pdf_contents_layout %}
+      {% include "includes/select.html" with id=field.name label=field.label hint=field.help_text value=field.value choices=field.field.choices error=field.errors.0 only %}
+    {% endwith %}
+  {% endif %}
+
   <button class="usa-button margin-top-3" type="submit">Save theme options</button>
 </form>
 {% endblock %}

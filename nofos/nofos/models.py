@@ -451,6 +451,18 @@ class Nofo(BaseNofo):
         help_text="Defines the icon style on section cover pages.",
     )
 
+    class PdfContentsLayout(models.TextChoices):
+        COLUMNS = "columns", "Two columns"
+        SINGLE = "single", "Single column"
+
+    pdf_contents_layout = models.CharField(
+        "PDF Contents layout",
+        max_length=7,
+        choices=PdfContentsLayout.choices,
+        default=PdfContentsLayout.COLUMNS,
+        help_text="Applies to portrait PDFs only. Choose Single column if long Contents entries are hard to follow in two columns.",
+    )
+
     coach = models.CharField(
         max_length=16,
         validators=[MaxLengthValidator(16)],
@@ -515,6 +527,10 @@ class Nofo(BaseNofo):
     @property
     def has_imported_introduction(self):
         return self.introductory_content_mode == "imported"
+
+    @property
+    def has_fy27_contents(self):
+        return self.introductory_page_family == "get_started"
 
     def get_first_subsection(self):
         section = self.sections.exclude(role="introduction").order_by("order").first()

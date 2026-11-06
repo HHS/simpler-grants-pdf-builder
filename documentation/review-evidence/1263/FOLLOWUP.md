@@ -3,7 +3,50 @@
 November 2, 2026. Follow-up to [the comparison](README.md) and
 [the review on #1264](https://github.com/HHS/simpler-grants-pdf-builder/pull/1264#issuecomment-6585960991).
 Related to [#1263](https://github.com/HHS/simpler-grants-pdf-builder/issues/1263).
-**Design evidence only. No application behavior changes or implementation approval.**
+**The November 2–3 sections below describe prototypes only.**
+
+## Builder integration check, November 6
+
+Ben approved the [third prototype](https://github.com/HHS/simpler-grants-pdf-builder/pull/1268).
+The implementation retains the current Contents list and applies print styles
+only to generated portrait PDFs in the `get_started` import family, when
+the flag is on. The editor can choose a single column per NOFO in **NOFO theme
+options**. This is an explicit choice, not a prediction of how many pages will
+fit. See [preview steps and rollout](../../EDITOR_TASKS.md#task-preview).
+
+The integration check used Builder's actual PDF template, a synthetic record
+in a local database, the full Builder text-only cover and the IHS theme. The
+check submitted only invented text and repository assets to DocRaptor's public
+test mode (pipeline 11, Prince 15.1, PDF/UA-1). Static styles and local fonts
+were inlined for the test renderer, rather than using production assets or
+credentials. The cover is page 1 in each PDF.
+
+| Synthetic case | Contents pages | Verified links and printed counters |
+| --- | --- | ---: |
+| FY27 shape, switch off | 2–3 | 29 |
+| Same FY27 shape, two columns | 2 | 29 |
+| Oversized Step 3, single column | 2–5 | 62 |
+| Sparse prior-year shape, switch on | 2 | 15 |
+
+The link labels and tag order match the source list, each link reaches its
+own target, and the printed counters match their destination pages. The
+first two-column step headings align; the introduction spans the list and
+its page number aligns with the left column. The fallback puts the existing
+Contents heading in the first page footer even after a cover. Continuation
+footers name the first step represented on the page and are marked as artifacts.
+The original list retains a TOCI for each entry.
+
+![First Contents page before the change, using the same fixture](implementation-baseline.png)
+
+![Synthetic two-column Contents after the Builder cover](implementation-columns.png)
+
+![Synthetic single-column continuation with a running step label](implementation-single-continuation.png)
+
+The gray bands are test-renderer watermarks. This is not a screen-reader test
+or a conformance claim. Before enabling the default-off switch, validate the
+actual screen-reader reading/navigation order and PDF at higher magnification,
+then test approved representative FY27 and prior-year records across affected
+themes. The synthetic cases do not establish a fit rate for typical notices.
 
 **Correction, November 3:** the retained file named `followup-wrapped_intro-ihs-columns.pdf`
 uses a longer invented label, but that label remained on one line in its PDF.

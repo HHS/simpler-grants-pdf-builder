@@ -1,3 +1,4 @@
+from constance import config
 from django import forms
 from martor.fields import MartorFormField
 from users.models import BloomUser
@@ -167,10 +168,20 @@ HRSA_ALLOWED_COVERS = frozenset(["nofo--cover-page--text", "nofo--cover-page--me
 class NofoThemeOptionsForm(forms.ModelForm):
     class Meta:
         model = Nofo
-        fields = ["theme", "cover", "icon_style"]
+        fields = ["theme", "cover", "icon_style", "pdf_contents_layout"]
 
     def __init__(self, *args, user=None, **kwargs):
         super(NofoThemeOptionsForm, self).__init__(*args, **kwargs)
+
+        if (
+            self.instance.has_fy27_contents
+            and config.HHS_NOFO_FY27_PDF_CONTENTS_ENABLED
+        ):
+            # Accept submissions from a theme form loaded before this field
+            # was enabled, without replacing a previously saved choice.
+            self.fields["pdf_contents_layout"].required = False
+        else:
+            self.fields.pop("pdf_contents_layout")
 
         self.user = user
         existing_legacy_theme = None
@@ -268,6 +279,12 @@ class NofoThemeOptionsForm(forms.ModelForm):
                 for value, label in Nofo.COVER_CHOICES
                 if value in HRSA_ALLOWED_COVERS or value == legacy_cover
             ]
+
+    def clean_pdf_contents_layout(self):
+        return (
+            self.cleaned_data["pdf_contents_layout"]
+            or self.instance.pdf_contents_layout
+        )
 
     def clean(self):
         cleaned_data = super().clean()
