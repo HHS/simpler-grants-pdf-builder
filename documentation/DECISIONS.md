@@ -8,6 +8,25 @@ the shared [ADR template](template.md), and link the record here when relevant.
 
 ---
 
+## 2026-11-08 — Publish an accessibility statement with Section 508 as the minimum
+
+**Context:** The README described Builder's PDFs as accessible without naming a
+standard, how output is checked, or where to report a problem.
+[#1310](https://github.com/HHS/simpler-grants-pdf-builder/issues/1310) proposed
+an accessibility file that GitHub shows alongside the security policy.
+
+**Decision:** Add [ACCESSIBILITY.md](ACCESSIBILITY.md), with a short pointer in
+`.github/ACCESSIBILITY.md` so GitHub lists it, following the existing
+`SECURITY.md` pattern. Section 508, which incorporates WCAG 2.0 Level AA through
+the Revised 508 Standards, is the stated minimum for published PDFs and the web
+app; WCAG 2.2 Level AA is the goal where practical. The page states targets and
+known gaps, not a conformance claim: requesting the `PDF/UA-1` profile does not
+establish accessible output. Reports go through existing channels and the
+existing `A11y` label; no new label or tooling was added. Automated PDF checks
+remain with [#980](https://github.com/HHS/simpler-grants-pdf-builder/issues/980).
+
+---
+
 ## 2026-10-11 — State three HHS style guide points in the style guide
 
 **Context:** The [style guide](STYLE_GUIDE.md#lists) says it generally follows

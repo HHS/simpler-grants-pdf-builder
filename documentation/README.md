@@ -5,6 +5,7 @@ here—not in a top-level `docs/` directory—and use the placement rules below.
 Link durable guides or topic indexes from this page; individual evidence records are reached through their issue or topic guide.
 
 - [Admin styling](ADMIN_STYLING.md) — Keep admin assets aligned with Django and add scoped customizations
+- [ACCESSIBILITY.md](ACCESSIBILITY.md) — Accessibility standards for published PDFs and the web app, what Builder does, how output is checked, known gaps and how to report a problem
 - [SECURITY.md](SECURITY.md) — Security vulnerability reporting through HHS responsible disclosure, research scope and policy contacts
 - [ISSUE_DRAFTING.md](ISSUE_DRAFTING.md) — Shared agent procedure for drafting and filing GitHub issues
 - [QUALITY_REVIEW_AND_TRIAGE.md](QUALITY_REVIEW_AND_TRIAGE.md) — Design/accessibility and application-experience review, evidence gathering, triage, proposed priorities and assisted-review boundaries

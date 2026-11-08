@@ -190,6 +190,7 @@ Check the final PDF against this list.
 
 ## Related resources
 
+- [Accessibility](ACCESSIBILITY.md) — Standards that apply to Builder output, how it is checked, known gaps and how to report a problem
 - [Quality review and triage](QUALITY_REVIEW_AND_TRIAGE.md#review-design-accessibility) — Review output, investigate causes and route findings into document help or product improvements
 - [SimplerNOFOs Style Guide](STYLE_GUIDE.md)
 - [NOFO Builder FAQ](NOFO_BUILDER_FAQ.md) and [editor tasks](EDITOR_TASKS.md)
