@@ -16,8 +16,9 @@ standard, how output is checked, or where to report a problem.
 an accessibility file that GitHub shows alongside the security policy.
 
 **Decision:** Add [ACCESSIBILITY.md](ACCESSIBILITY.md), with a short pointer in
-`.github/ACCESSIBILITY.md` so GitHub lists it, following the existing
-`SECURITY.md` pattern. Section 508, which incorporates WCAG 2.0 Level AA through
+the repository root so GitHub lists it. The root is the location GitHub reads
+for every community health file; the full guide stays in `documentation/`, as
+with `SECURITY.md`. Section 508, which incorporates WCAG 2.0 Level AA through
 the Revised 508 Standards, is the stated minimum for published PDFs and the web
 app; WCAG 2.2 Level AA is the goal where practical. The page states targets and
 known gaps, not a conformance claim: requesting the `PDF/UA-1` profile does not
