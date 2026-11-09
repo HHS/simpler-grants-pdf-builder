@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.57.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.57.0...nofos-v3.57.1) (2026-11-09)
+
+
+### Bug Fixes
+
+* preserve empty note headings with reference evidence ([#1305](https://github.com/HHS/simpler-grants-pdf-builder/issues/1305)) ([780b2a6](https://github.com/HHS/simpler-grants-pdf-builder/commit/780b2a6c5951482bd789331448ccc259bedbb1fb))
+* reclaim abandoned Readability Checker uploads ([9b0817f](https://github.com/HHS/simpler-grants-pdf-builder/commit/9b0817f973cd355dd6d66a11366c99280d9b26ad))
+* show PDF Contents layout in NOFO theme summary ([#1309](https://github.com/HHS/simpler-grants-pdf-builder/issues/1309)) ([4dfd10d](https://github.com/HHS/simpler-grants-pdf-builder/commit/4dfd10db709b5def66f20f5dc28d57f01bf5ef7f))
+* upgrade zlib in the Builder image ([872cf9a](https://github.com/HHS/simpler-grants-pdf-builder/commit/872cf9acf635507e9f0754808dccd21f1beb05cf))
+
+
+### Documentation
+
+* clarify Readability Checker 429 responses ([74eed50](https://github.com/HHS/simpler-grants-pdf-builder/commit/74eed5047ca653f2b1e1844c692d17bd358567f0))
+* reconcile November 9 AS requirements proposal ([#1318](https://github.com/HHS/simpler-grants-pdf-builder/issues/1318)) ([8e660d2](https://github.com/HHS/simpler-grants-pdf-builder/commit/8e660d2580072376b242b1ef1d7bc0fabf8fc68a))
+* record dev PDF Contents validation ([#1306](https://github.com/HHS/simpler-grants-pdf-builder/issues/1306)) ([00018e5](https://github.com/HHS/simpler-grants-pdf-builder/commit/00018e58c5bb4bf467cb3c15e061f32f7c72299e))
+
+
+### Miscellaneous Chores
+
+* bump the python-minor-and-patch group with 3 updates ([#1314](https://github.com/HHS/simpler-grants-pdf-builder/issues/1314)) ([1c03e89](https://github.com/HHS/simpler-grants-pdf-builder/commit/1c03e89babacebad0946aa66afb80a29750dc76c))
+
+
+### Continuous Integration
+
+* exempt automated release PRs from description lint ([#1308](https://github.com/HHS/simpler-grants-pdf-builder/issues/1308)) ([721cf38](https://github.com/HHS/simpler-grants-pdf-builder/commit/721cf388076185b75a4c4af2aa55099c9ec370be))
+* exempt Dependabot PRs from description lint ([#1317](https://github.com/HHS/simpler-grants-pdf-builder/issues/1317)) ([04e0497](https://github.com/HHS/simpler-grants-pdf-builder/commit/04e0497e10cec976fee06ee563c52250a8b1225f))
+
 ## [3.57.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.56.2...nofos-v3.57.0) (2026-11-06)
 
 
