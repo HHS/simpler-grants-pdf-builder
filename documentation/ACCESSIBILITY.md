@@ -67,7 +67,8 @@ Aim for a PDF of 5 MB or less so applicants with slower connections can download
 it more easily. This is a SimplerNOFOs target. If you compress the PDF, keep the
 original, check that text and images are still readable, and repeat the
 accessibility checks on the copy you plan to publish. See **How do I check and
-reduce my NOFO PDF’s file size?** in the SharePoint NOFO Builder FAQ for steps.
+reduce my NOFO PDF’s file size?** on the NOFO Builder FAQ page in the
+SimplerNOFOs SharePoint site for steps.
 
 Reviewers can use [quality review and triage](QUALITY_REVIEW_AND_TRIAGE.md#review-design-accessibility)
 to investigate findings and route them to the right team.
