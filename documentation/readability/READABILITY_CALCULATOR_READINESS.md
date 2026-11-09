@@ -264,21 +264,12 @@ for emergency blocking, verification and restoration.
 
 ### Pause and reopen
 
-1. Turn off the public upload switch. If Builder is unresponsive, requests
-   still reach the checker, or the incident needs an independent block, use the
-   WAF emergency block. Allow for review and deployment time as described in
-   the runbook. Verify that new checker submissions are blocked and ordinary
-   Builder pages remain available. Coordinate any action on already running
-   analyses with infrastructure.
-2. Record the time, symptoms, actions and who is coordinating. Keep document
-   contents, raw logs, affected-user details and internal contacts in the
-   approved restricted location. Link only a sanitized status in public
-   trackers. For suspected exposure, follow HHS security/privacy direction on
-   preserving evidence, scoping the incident and notification.
-3. Keep uploads paused until the cause is addressed, relevant controls are
-   verified, and the release owner agrees to reopen with any required HHS
-   clearance. Restore the emergency block to its agreed baseline using the
-   runbook, then re-enable uploads only after the reopening decision.
+- **Pause.** Disable public uploads if there is a suspected exposure or upload
+  traffic is affecting Builder. Use the emergency block if the application
+  switch is insufficient, and follow the approved HHS incident process for
+  suspected exposure.
+- **Reopen.** Resume uploads after the cause is addressed, the relevant
+  safeguards are verified, and the release owner has any required HHS clearance.
 
 Track outstanding verification and approvals through the existing
 [release checklist](PDF_READABILITY_RELEASE_CHECKLIST.md) and its linked issues.
