@@ -20,7 +20,7 @@ Apply the Revised Section 508 Standards to published PDFs and the web app.
 Those standards include applicable WCAG 2.0 Level A and AA criteria. The
 project's goal is WCAG 2.2 Level AA where practical. The guide describes how
 editors review the final PDF and how readers can report barriers. Research on
-adding PDF checks to Builder remains in
+adding PDF checks to NOFO Builder remains in
 [issue #980](https://github.com/HHS/simpler-grants-pdf-builder/issues/980).
 
 ---
