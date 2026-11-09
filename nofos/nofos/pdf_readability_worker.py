@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import signal
 import sys
 from pathlib import Path
 
@@ -266,12 +267,26 @@ def analyze_word(path: Path) -> dict:
     return report
 
 
+def _exit_with_request_worker(request_worker_pid: int) -> None:
+    import ctypes
+
+    pr_set_pdeathsig = 1
+    prctl = ctypes.CDLL(None).prctl
+    prctl.argtypes = [ctypes.c_int, *([ctypes.c_ulong] * 4)]
+    if prctl(pr_set_pdeathsig, signal.SIGKILL, 0, 0, 0) != 0:
+        raise OSError("Could not monitor the request worker")
+    # Catch a worker that died before the kernel registered the signal.
+    if os.getppid() != request_worker_pid:
+        raise OSError("Request worker already exited")
+
+
 def main() -> int:
     try:
         path = Path(sys.argv[1])
         if sys.platform.startswith("linux"):
             import resource
 
+            _exit_with_request_worker(int(sys.argv[3]))
             resource.setrlimit(resource.RLIMIT_CPU, (20, 20))
             resource.setrlimit(resource.RLIMIT_AS, (1536 * 1024 * 1024,) * 2)
             # Linux fast copy can probe for EOF at the destination offset.

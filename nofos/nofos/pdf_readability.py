@@ -180,7 +180,7 @@ def _upload_limit(suffix):
     return WORD_UPLOAD_BYTES if suffix == ".docx" else MAX_UPLOAD_BYTES
 
 
-def _analyze_uploaded_pdf(upload) -> dict:
+def _analyze_uploaded_pdf(upload, *, workspace=None) -> dict:
     if upload is None or not hasattr(upload, "chunks"):
         raise PdfReadabilityError("invalid_pdf")
     suffix = Path(str(getattr(upload, "name", ""))).suffix.lower()
@@ -189,7 +189,9 @@ def _analyze_uploaded_pdf(upload) -> dict:
         raise PdfReadabilityError("too_large")
 
     with _analysis_slot():
-        with tempfile.TemporaryDirectory(prefix="pdf-readability-") as directory:
+        with tempfile.TemporaryDirectory(
+            prefix="pdf-readability-", dir=workspace
+        ) as directory:
             if suffix not in {".pdf", ".docx"}:
                 raise PdfReadabilityError("unsupported_file")
             pdf_path = Path(directory) / f"input{suffix}"
@@ -212,6 +214,7 @@ def _analyze_uploaded_pdf(upload) -> dict:
                     "nofos.pdf_readability_worker",
                     str(pdf_path),
                     str(MAX_PAGES),
+                    str(os.getpid()),
                 ]
                 try:
                     process = subprocess.run(
@@ -259,10 +262,10 @@ def _analyze_uploaded_pdf(upload) -> dict:
                 raise PdfReadabilityError("unavailable") from None
 
 
-def analyze_uploaded_pdf(upload) -> dict:
+def analyze_uploaded_pdf(upload, *, workspace=None) -> dict:
     """Analyze one PDF/DOCX upload and return safe fields; retain the legacy name."""
     try:
-        return _analyze_uploaded_pdf(upload)
+        return _analyze_uploaded_pdf(upload, workspace=workspace)
     finally:
         if upload is not None and hasattr(upload, "close"):
             try:

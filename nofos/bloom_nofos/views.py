@@ -9,6 +9,7 @@ from pathlib import Path
 from constance import config
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
+from django.core.files.uploadhandler import TemporaryFileUploadHandler
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -22,6 +23,7 @@ from nofos.pdf_readability import (
     analyze_uploaded_pdf,
 )
 from nofos.pdf_readability_metrics import record_attempt, retention_days
+from nofos.readability_scratch import CheckerDiskUploadHandler, request_workspace
 from nofos.readability_upload_limits import MIB, PDF_UPLOAD_BYTES, WORD_UPLOAD_BYTES
 
 logger = logging.getLogger("django.request.pdf_readability")
@@ -151,15 +153,29 @@ def _pdf_readability_workflow(request, enabled, source):
             _record_pdf_attempt(source, "disabled", response.status_code, started)
         return response
 
-    if request.method == "POST":
-        # Must be installed before CSRF middleware reads multipart request.POST.
-        request.upload_handlers.insert(
-            0, PdfSizeLimitUploadHandler(request, allow_word=source == "authenticated")
-        )
     request.pdf_readability_source = source
     request.pdf_readability_enabled = enabled
     try:
-        response = _pdf_readability_form(request)
+        if request.method == "POST":
+            # Install both handlers before CSRF reads multipart request.POST.
+            with request_workspace() as workspace:
+                request.readability_workspace = workspace
+                request.upload_handlers = [
+                    PdfSizeLimitUploadHandler(
+                        request, allow_word=source == "authenticated"
+                    ),
+                    *(
+                        (
+                            CheckerDiskUploadHandler(request, workspace)
+                            if isinstance(handler, TemporaryFileUploadHandler)
+                            else handler
+                        )
+                        for handler in request.upload_handlers
+                    ),
+                ]
+                response = _pdf_readability_form(request)
+        else:
+            response = _pdf_readability_form(request)
     except Exception:
         # Include unexpected formatting/rendering failures without relying on
         # the same template or exposing uploaded content in a debug response.
@@ -286,7 +302,9 @@ def _pdf_readability_form(request):
                         digest.update(chunk)
                     fingerprint = digest.hexdigest()
                     upload.seek(0)
-                report = analyze_uploaded_pdf(upload)
+                report = analyze_uploaded_pdf(
+                    upload, workspace=request.readability_workspace
+                )
             except PdfReadabilityError as error:
                 request.pdf_readability_outcome = error.code
                 context["error"] = (
