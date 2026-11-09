@@ -214,6 +214,7 @@ def _analyze_uploaded_pdf(upload, *, workspace=None) -> dict:
                     "nofos.pdf_readability_worker",
                     str(pdf_path),
                     str(MAX_PAGES),
+                    str(os.getpid()),
                 ]
                 try:
                     process = subprocess.run(

@@ -321,8 +321,9 @@ The SQLite development path uses a local file lock and is not a cross-host contr
 
 Standalone checker POSTs use a private, task-local scratch directory for disk-backed
 multipart uploads, analyzer inputs and the parser's nested copies. The request holds
-a lock on its own workspace through processing and normal cleanup. Each Gunicorn
-worker starts a background check at startup and checks again every 30 seconds,
+a lock on its own workspace through processing and normal cleanup. On Linux, the
+kernel terminates the parser if its request worker dies, closing any files it holds
+open. Each Gunicorn worker starts a background check at startup and checks again every 30 seconds,
 including when no uploads arrive. A check removes only checker request directories
 that it can lock. A surviving or replacement worker normally removes abandoned
 workspaces at its next check. This does not change upload limits or saved records.
@@ -332,8 +333,8 @@ filenames or document data and retries on the next check. Persistent warnings ne
 operator investigation; do not assume files are gone. If no worker is running,
 application cleanup waits for worker startup. Before enablement, use synthetic data
 to verify the container starts the cleanup hook, active uploads survive a check,
-abandoned files disappear after a worker interruption, and replacing the whole task
-does not carry files into the replacement. Check the actual storage backing; this
+the parser exits and abandoned files disappear after a worker interruption, and
+replacing the whole task does not carry files into the replacement. Check the actual storage backing; this
 is not a guarantee of immediate deletion or a substitute for deployed retention
 and handling approval. The usage-record cleanup command does not touch upload files.
 See the [local synthetic crash and recovery evidence](../review-evidence/1315/README.md).
