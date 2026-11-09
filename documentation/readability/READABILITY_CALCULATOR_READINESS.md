@@ -1,4 +1,4 @@
-# Readability Calculator: ready to launch with public uploads disabled
+# Readability Checker: public launch readiness
 
 Prepared October 28, 2026 for [SGG #12568](https://github.com/HHS/simpler-grants-gov/issues/12568)
 and Builder [#970](https://github.com/HHS/simpler-grants-pdf-builder/issues/970),
@@ -247,6 +247,48 @@ when required safeguards/handling approvals and tests are complete or their
 explicitly limited deferrals have been accepted by the release decision-maker.
 Office of Grants leadership launch approval remains separate; no automatic
 flag activation follows email setup, a successful deploy or a green test.
+
+## Launch risks and response
+
+Use this section for the public launch review. The SimplerNOFOs team owns
+alert triage and coordinates response. Follow the existing
+[infrastructure runbook](https://github.com/HHS/simpler-grants-gov/blob/main/documentation/infra/nofo-pdf-readability-waf.md)
+for emergency blocking, verification and restoration.
+
+| Risk | Safeguards and evidence today | First response |
+| --- | --- | --- |
+| A sensitive upload is exposed or retained unexpectedly. | Builder keeps no report history, and the usage records exclude document content. The [private temporary workspace and interruption cleanup](https://github.com/HHS/simpler-grants-pdf-builder/pull/1316) are [deployed in dev](https://github.com/HHS/simpler-grants-gov/actions/runs/42677257714). Review of deployed storage, cleanup after interruption, and logging access and retention is still open. | Pause public uploads, escalate through the approved HHS security/privacy incident channel, and preserve relevant evidence in the approved restricted location. Ask HHS to assess scope and direct any required notifications and recovery. |
+| A malicious PDF exploits the analyzer. | Analysis runs in a separate process with a restricted environment and resource limits. The deployed filesystem, network, and credential boundaries still need review. | Pause uploads and involve security and infrastructure. Determine what the process could access, fix the issue, and verify the affected boundaries before reopening. |
+| Upload traffic degrades Builder, or a rate limit blocks legitimate users on a shared network. | Builder caps PDF uploads at 5 MiB. Dev tests verified rate enforcement, emergency blocking and restoration. Production alarm delivery was verified. [Production enforcement](https://github.com/HHS/simpler-grants-gov/pull/13219) is pending. | Check Builder health, WAF metrics and support reports. Pause the checker if Builder is affected. For shared-network blocks, check rule counters and user impact before proposing a threshold change. |
+| A favorable score gives reviewers false confidence. | The checker labels scores as estimates. Use them alongside human review of clarity, repetition and whether applicants can follow the instructions. | Explain the measure's limits in support responses. Investigate reproducibly incorrect results and update guidance or the calculator as needed. |
+
+### Pause and reopen
+
+1. Turn off the public upload switch. If Builder is unresponsive, requests
+   still reach the checker, or the incident needs an independent block, use the
+   WAF emergency block. Allow for review and deployment time as described in
+   the runbook. Verify that new checker submissions are blocked and ordinary
+   Builder pages remain available. Coordinate any action on already running
+   analyses with infrastructure.
+2. Record the time, symptoms, actions and who is coordinating. Keep document
+   contents, raw logs, affected-user details and internal contacts in the
+   approved restricted location. Link only a sanitized status in public
+   trackers. For suspected exposure, follow HHS security/privacy direction on
+   preserving evidence, scoping the incident and notification.
+3. Keep uploads paused until the cause is addressed, relevant controls are
+   verified, and the release owner agrees to reopen with any required HHS
+   clearance. Restore the emergency block to its agreed baseline using the
+   runbook, then re-enable uploads only after the reopening decision.
+
+### Open before launch
+
+| Who | What to confirm or decide | Where it is tracked |
+| --- | --- | --- |
+| SimplerNOFOs team | Confirm which existing HHS channel to use for a suspected exposure and where responders should keep restricted evidence. Team-level primary and backup coverage is already recorded. | [Safeguards #970](https://github.com/HHS/simpler-grants-pdf-builder/issues/970) and [infrastructure handoff #12568](https://github.com/HHS/simpler-grants-gov/issues/12568) |
+| Builder and infrastructure | Run the [updated dev storage probe](https://github.com/HHS/simpler-grants-gov/pull/13221) after merge. Record what it establishes about storage and normal cleanup. Track interruption and task-replacement evidence, analyzer access boundaries, and deployed logging and retention separately. | [Safeguards #970](https://github.com/HHS/simpler-grants-pdf-builder/issues/970) and [verification #971](https://github.com/HHS/simpler-grants-pdf-builder/issues/971) |
+| Builder and infrastructure | Record the production rate setting, the shared-network tradeoff, and the decision on remaining slow or oversized upload risks. | [Infrastructure #12568](https://github.com/HHS/simpler-grants-gov/issues/12568) |
+| HHS security/privacy reviewers | Decide which documents public users may submit, including whether pre-decisional drafts are permitted. Confirm the handling safeguards, any required approvals or additional evidence, and whether the upload notice needs to change. | [Safeguards #970](https://github.com/HHS/simpler-grants-pdf-builder/issues/970) and [launch decision #968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968) |
+| Office of Grants leadership | Decide whether and when to enable public uploads after reviewing the evidence and any accepted limitations. | [Launch decision #968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968) |
 
 ## Evidence record and completion
 
