@@ -10,21 +10,18 @@ the shared [ADR template](template.md), and link the record here when relevant.
 
 ## 2026-11-08 — Publish an accessibility statement with Section 508 as the minimum
 
-**Context:** The README described Builder's PDFs as accessible without naming a
-standard, how output is checked, or where to report a problem.
-[#1310](https://github.com/HHS/simpler-grants-pdf-builder/issues/1310) proposed
-an accessibility file that GitHub shows alongside the security policy.
+**Context:** [Issue #1310](https://github.com/HHS/simpler-grants-pdf-builder/issues/1310)
+called for a clear statement of the standards, review steps, and reporting options.
 
-**Decision:** Add [ACCESSIBILITY.md](ACCESSIBILITY.md), with a short pointer in
-the repository root so GitHub lists it. The root is the location GitHub reads
-for every community health file; the full guide stays in `documentation/`, as
-with `SECURITY.md`. Section 508, which incorporates WCAG 2.0 Level AA through
-the Revised 508 Standards, is the stated minimum for published PDFs and the web
-app; WCAG 2.2 Level AA is the goal where practical. The page states targets and
-known gaps, not a conformance claim: requesting the `PDF/UA-1` profile does not
-establish accessible output. Reports go through existing channels and the
-existing `A11y` label; no new label or tooling was added. Automated PDF checks
-remain with [#980](https://github.com/HHS/simpler-grants-pdf-builder/issues/980).
+**Decision:** Keep the [full guide](ACCESSIBILITY.md) in `documentation/` and
+add a [short pointer](../ACCESSIBILITY.md) at the repository root for GitHub to
+display. [GitHub also supports other locations](https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/adding-an-accessibility-page-to-your-repository).
+Apply the Revised Section 508 Standards to published PDFs and the web app.
+Those standards include applicable WCAG 2.0 Level A and AA criteria. The
+project's goal is WCAG 2.2 Level AA where practical. The guide describes how
+editors review the final PDF and how readers can report barriers. Research on
+adding PDF checks to Builder remains in
+[issue #980](https://github.com/HHS/simpler-grants-pdf-builder/issues/980).
 
 ---
 

@@ -12,13 +12,16 @@
 
 ## About
 
-The NOFO Builder is a Word-2-PDF pipeline that ingests Word files and generates a tagged PDF file using a USWDS-based design that is both accessible and attractive for applicants. See [Accessibility](documentation/ACCESSIBILITY.md) for the standards that apply, how output is checked and known gaps. It is a tool to build publishable PDFs from reviewed and finalized NOFO documents.
+NOFO Builder turns reviewed Word documents into PDFs for publication. It requests
+a tagged PDF to help assistive technology read and navigate the document. See
+[Accessibility](documentation/ACCESSIBILITY.md) for what to check before publishing.
 
 The NOFO Builder is a Django app that can be run as a Python process or as a Docker container.
 
 ## What is a NOFO?
 
-A "Notice of Financial Opportunity" (NOFO) is a big document accouncing government funding for certain projects or activities (like an <abbr title="request for proposal">RFP</abbr>). Suppliers can bid on the NOFO for a chance to win funding for delivering the specified outcome.
+A Notice of Funding Opportunity (NOFO) announces available funding and explains
+who can apply and how.
 
 An example of a NOFO might be an announcement of funding to provide preschool services in Florida.
 
