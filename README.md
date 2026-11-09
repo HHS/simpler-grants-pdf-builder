@@ -12,9 +12,11 @@
 
 ## About
 
-NOFO Builder turns reviewed Word documents into PDFs for publication. It requests
-a tagged PDF to help assistive technology read and navigate the document. See
-[Accessibility](documentation/ACCESSIBILITY.md) for what to check before publishing.
+NOFO Builder turns reviewed Word documents into PDFs for publication. For fiscal
+year 2027, HHS is expanding use of NOFO Builder across its operating divisions.
+NOFO Builder requests a tagged PDF to help assistive technology read and
+navigate the document. See [Accessibility](documentation/ACCESSIBILITY.md) for
+what to check before publishing.
 
 The NOFO Builder is a Django app that can be run as a Python process or as a Docker container.
 
@@ -39,7 +41,7 @@ Once a NOFO is reviewed and approved, our workflow is:
 
 1. NOFO is approved to be published
 2. A NOFO designer receives the finalized .docx file
-3. The NOFO designer logs into the NOFO builder
+3. The NOFO designer signs in to NOFO Builder
 4. The NOFO designer uploads the .docx file to create an HTML representation of the NOFO
 5. The NOFO designer can view and make edits to the uploaded NOFO
 6. We use a PDF renderer to output the NOFO as a PDF, based on the HTML layout.
@@ -182,9 +184,8 @@ On a Mac, press `Control` + `C` to quit the running application.
 
 ### Adding users
 
-Currently, the NOFO Builder is an internal tool whose entire purpose is managing and printing NOFO documents, so the user features are pretty barebones. What this means is that we rely on the Django admin for user adminstration.
-
-During first-time setup, create a superuser account.
+Use the Django admin to create and manage NOFO Builder accounts. During
+first-time setup, create a superuser account.
 
 ```bash
 # create superuser account
