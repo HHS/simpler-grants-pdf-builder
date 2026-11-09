@@ -15,7 +15,8 @@ RUN apt-get update && \
   util-linux \
   gzip \
   libpcre2-8-0 \
-  libsqlite3-0 && \
+  libsqlite3-0 \
+  zlib1g && \
   apt-get install -y --no-install-recommends \
   build-essential \
   curl \
