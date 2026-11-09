@@ -310,7 +310,10 @@ service, or batch-processing system is part of this pilot.
 
 The application bounds for PDF are 5 MiB per upload, 150 pages, a 15-second analysis
 deadline, and one active analysis. The Linux child has a 1.5 GiB address-space
-ceiling, 20-second CPU ceiling, 5 MiB per-file write ceiling for PDF analysis (2 MiB for Word analysis), and 64 open-file ceiling.
+ceiling, a 20-second CPU ceiling, and a 64 open-file ceiling. Its per-file write
+ceiling is 5 MiB plus one byte for PDF analysis and 2 MiB for Word analysis. The
+extra byte lets the Linux fast copy check for end-of-file when staging a PDF
+exactly at the upload limit. The PDF upload limit remains 5 MiB.
 These conservative pilot choices must be tuned against approved representative
 PDFs and the target ECS capacity; byte size alone does not bound parser memory.
 PostgreSQL advisory locking provides the production cross-worker analysis slot.

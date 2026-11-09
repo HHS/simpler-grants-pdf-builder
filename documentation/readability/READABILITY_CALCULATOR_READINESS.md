@@ -94,6 +94,17 @@ how the deployed topology identifies the test source; do not publish client IPs
 or infer shared-IP fairness from a single-source test. Count/block counters and
 HTTP responses should corroborate each other, accounting for publication delay.
 
+### What users see and where to look
+
+Both responses use HTTP 429. The screen and the monitoring source depend on which component rejected the submission.
+
+| Cause | What the user sees | Where to look |
+| --- | --- | --- |
+| Builder analyzer busy | The upload form shows “The analyzer is busy. Please try again in a moment.” Builder returns `Retry-After: 15`. | In **Readability Checker usage**, look for **Analyzer busy** when attempt recording is enabled for that route. |
+| WAF upload rate limit in Block mode | WAF returns an empty 429 response before Builder receives the submission. The form navigates away and the browser may show its own error page. | Check the upload-rate rule's CloudWatch `BlockedRequests` metric and alarm. Builder has no usage record for a request intercepted by WAF. |
+
+In Count mode, the rate rule records over-limit traffic without returning a rate-limit 429. The [WAF runbook](https://github.com/HHS/simpler-grants-gov/blob/main/documentation/infra/nofo-pdf-readability-waf.md) covers rule configuration and monitoring. See the [local Chrome screenshots](../review-evidence/971/README.md) for examples of both responses.
+
 ### Control path and restoration requirement
 
 The existing approved control path is reviewed Terraform configuration plus
