@@ -280,15 +280,8 @@ for emergency blocking, verification and restoration.
    clearance. Restore the emergency block to its agreed baseline using the
    runbook, then re-enable uploads only after the reopening decision.
 
-### Open before launch
-
-| Who | What to confirm or decide | Where it is tracked |
-| --- | --- | --- |
-| SimplerNOFOs team | Confirm which existing HHS channel to use for a suspected exposure and where responders should keep restricted evidence. Team-level primary and backup coverage is already recorded. | [Safeguards #970](https://github.com/HHS/simpler-grants-pdf-builder/issues/970) and [infrastructure handoff #12568](https://github.com/HHS/simpler-grants-gov/issues/12568) |
-| Builder and infrastructure | Run the [updated dev storage probe](https://github.com/HHS/simpler-grants-gov/pull/13221) after merge. Record what it establishes about storage and normal cleanup. Track interruption and task-replacement evidence, analyzer access boundaries, and deployed logging and retention separately. | [Safeguards #970](https://github.com/HHS/simpler-grants-pdf-builder/issues/970) and [verification #971](https://github.com/HHS/simpler-grants-pdf-builder/issues/971) |
-| Builder and infrastructure | Record the production rate setting, the shared-network tradeoff, and the decision on remaining slow or oversized upload risks. | [Infrastructure #12568](https://github.com/HHS/simpler-grants-gov/issues/12568) |
-| HHS security/privacy reviewers | Decide which documents public users may submit, including whether pre-decisional drafts are permitted. Confirm the handling safeguards, any required approvals or additional evidence, and whether the upload notice needs to change. | [Safeguards #970](https://github.com/HHS/simpler-grants-pdf-builder/issues/970) and [launch decision #968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968) |
-| Office of Grants leadership | Decide whether and when to enable public uploads after reviewing the evidence and any accepted limitations. | [Launch decision #968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968) |
+Track outstanding verification and approvals through the existing
+[release checklist](PDF_READABILITY_RELEASE_CHECKLIST.md) and its linked issues.
 
 ## Evidence record and completion
 
