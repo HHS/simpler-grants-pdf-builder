@@ -220,6 +220,7 @@ Useful references:
 - [PDF upload page](../nofos/bloom_nofos/templates/pdf_readability.html)
 - [PDF interaction behavior](../nofos/bloom_nofos/static/js/pdf_readability.js)
 - [PDF page tests](../nofos/bloom_nofos/tests_bloom_nofos/test_pdf_readability.py)
+- [Readability Checker 429 responses](readability/READABILITY_CALCULATOR_READINESS.md#what-users-see-and-where-to-look), with screenshots and monitoring sources
 - [Import error codes](IMPORT_ERROR_CODES.md), for blocking NOFO import messages
 
 ## Loading progress modals
