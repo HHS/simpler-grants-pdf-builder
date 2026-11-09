@@ -1,7 +1,7 @@
 # Email link warning review
 
-Captured November 9, 2026 on the local `codex/email-link-warnings` branch, with
-upstream commit `8e660d25` as the baseline. This follows the email-link import
+Captured November 9, 2026 for [PR #1320](https://github.com/HHS/simpler-grants-pdf-builder/pull/1320),
+with upstream commit `8e660d25` as the baseline. This follows the email-link import
 repair in [#1291](https://github.com/HHS/simpler-grants-pdf-builder/issues/1291).
 
 A synthetic NOFO subsection contains `grants@example.gov` in plain text and an
