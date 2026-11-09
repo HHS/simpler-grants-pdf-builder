@@ -82,6 +82,10 @@ flowchart TD
 | Changelog and releases | [`DEPLOYMENT.md` § Releases](../DEPLOYMENT.md#releases) and [`release-please-config.json`](../release-please-config.json) (which title prefixes go in which changelog section) |
 | Urgent production fix | [`DEPLOYMENT.md` § Hotfixes](../DEPLOYMENT.md#hotfixes) |
 
+The [PR description lint](../.github/workflows/pr_description_lint.yml) skips
+Dependabot and qualifying Release Please PRs because those bots generate their
+own descriptions.
+
 ## Issue labels
 
 Before creating or relabeling an issue, inspect the repository's current labels in GitHub or run:
