@@ -334,7 +334,7 @@ Edit “{{ nofo|nofo_name }}”
               <button class="usa-button usa-button--outline usa-button--icon usa-button--icon--before usa-button--icon--usa-emergency usa-button--content_copy font-sans-2xs" type="button">Copy links</button>
             {% endif %}
             <details>
-              <summary><span>{{ link_warning_count }} link issue{{ link_warning_count|pluralize }} to review</span></summary>
+              <summary><span>{{ link_warning_count }} link issue{{ link_warning_count|pluralize }} to fix</span></summary>
               <ol class="usa-list usa-list--no-max-width">
                 {% for broken_link in broken_links %}
                   <li>Broken internal link: <a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{ broken_link.section.name }}, {{ broken_link.subsection|subsection_name_or_order }})</li>

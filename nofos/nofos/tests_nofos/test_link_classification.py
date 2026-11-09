@@ -69,7 +69,7 @@ class LinkClassificationViewTests(TestCase):
         panel = soup.find(id="tabpanel-1")
         self.assertIsNotNone(panel)
         panel_text = panel.get_text(" ", strip=True)
-        self.assertIn("1 link issue to review", panel_text)
+        self.assertIn("1 link issue to fix", panel_text)
         self.assertIsNone(panel.details.p)
         for absent in (
             "Google Docs link",
@@ -347,7 +347,7 @@ class LinkClassificationViewTests(TestCase):
             ["Warning: review links"],
         )
         self.assertEqual(len(panel.find_all("details")), 1)
-        self.assertEqual(panel.summary.get_text(), "3 link issues to review")
+        self.assertEqual(panel.summary.get_text(), "3 link issues to fix")
         broken, first_email, second_email = panel.select("details ol li")
         self.assertIn("Broken internal link", broken.get_text())
         self.assertEqual(broken.a["href"], "#links")

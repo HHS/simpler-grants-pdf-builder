@@ -632,8 +632,8 @@ You can make every table in a section use the full page width.
 
 1. On the NOFO edit page, open **Check links** under
    **Before publishing, address the following**.
-2. Expand the link issues, find the entry labeled **Email link needed for**
-   your address, and copy the Markdown from that list item.
+2. Expand the list (for example, **3 link issues to fix**). Find the entry
+   labeled **Email link needed for** your address and copy its Markdown.
 3. Follow the subsection link. Replace the address or its existing link
    with the copied Markdown, such as
    `[grants@example.gov](mailto:grants@example.gov)`.
