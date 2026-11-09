@@ -90,4 +90,4 @@ USER appuser
 
 # final container port + command
 EXPOSE ${PORT:-8000}
-CMD ["sh", "-c", "poetry run gunicorn --workers 8 --timeout 89 --chdir nofos --bind 0.0.0.0:${PORT:-8000} bloom_nofos.wsgi:application"]
+CMD ["sh", "-c", "poetry run gunicorn --config /app/gunicorn.conf.py --workers 8 --timeout 89 --chdir nofos --bind 0.0.0.0:${PORT:-8000} bloom_nofos.wsgi:application"]

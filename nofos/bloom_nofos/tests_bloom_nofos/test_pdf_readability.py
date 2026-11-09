@@ -1,5 +1,6 @@
 """Public PDF readability page; processing itself is tested in nofos tests."""
 
+import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
@@ -7,7 +8,7 @@ from bloom_nofos.views import _metric_rows, _safe_upload_name
 from constance.test import override_config
 from django.contrib.staticfiles import finders
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 
 from nofos.pdf_readability import PdfReadabilityError
@@ -59,6 +60,41 @@ REPORT = {
 
 
 class PdfReadabilityPageTests(TestCase):
+    @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
+    @override_settings(FILE_UPLOAD_MAX_MEMORY_SIZE=1)
+    def test_disk_upload_and_analysis_share_workspace(self):
+        from nofos.pdf_readability import analyze_uploaded_pdf
+        from nofos.tests_nofos.test_pdf_readability import synthetic_nofo_pdf
+
+        for payload, status in ((synthetic_nofo_pdf(), 200), (b"not a PDF", 400)):
+            with (
+                self.subTest(status=status),
+                tempfile.TemporaryDirectory() as directory,
+            ):
+                root = Path(directory)
+
+                def check_workspace(upload, *, workspace):
+                    self.assertEqual(workspace.parent, root)
+                    self.assertEqual(
+                        Path(upload.temporary_file_path()).parent, workspace
+                    )
+                    self.assertNotIn("synthetic.pdf", upload.temporary_file_path())
+                    return analyze_uploaded_pdf(upload, workspace=workspace)
+
+                with (
+                    patch("nofos.readability_scratch.scratch_root", return_value=root),
+                    patch(
+                        "bloom_nofos.views.analyze_uploaded_pdf",
+                        side_effect=check_workspace,
+                    ) as analyze,
+                ):
+                    response = self.client.post(
+                        self.url, {"pdf": SimpleUploadedFile("synthetic.pdf", payload)}
+                    )
+                analyze.assert_called_once()
+                self.assertEqual(response.status_code, status)
+                self.assertEqual(list(root.iterdir()), [])
+
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
     def test_public_route_remains_pdf_only_even_when_enabled(self):
         from nofos.tests_nofos.test_word_readability import synthetic_docx
@@ -127,11 +163,16 @@ class PdfReadabilityPageTests(TestCase):
             data=b"malformed synthetic multipart",
             content_type="multipart/form-data; boundary=missing",
         )
-        with patch.object(
-            request, "read", side_effect=AssertionError("body read")
-        ), patch(
-            "bloom_nofos.views._pdf_readability_form",
-            side_effect=AssertionError("form called"),
+        with (
+            patch.object(request, "read", side_effect=AssertionError("body read")),
+            patch(
+                "bloom_nofos.views.request_workspace",
+                side_effect=AssertionError("scratch opened"),
+            ),
+            patch(
+                "bloom_nofos.views._pdf_readability_form",
+                side_effect=AssertionError("form called"),
+            ),
         ):
             response = pdf_readability(request)
         self.assertEqual(response.status_code, 403)
