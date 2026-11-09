@@ -190,7 +190,7 @@ Verification under #954 must include multiple listing pages and more pending fil
 | Copy or record | Proposed location and lifetime | Controls and recovery |
 | --- | --- | --- |
 | AS authoritative source and exchange Word | AS-controlled storage. Exchange copy remains the retry source until the agreed handoff/retention policy permits removal. | AS owns encryption, permissions, backups, versions and cleanup. The agreed-in-principle baseline is deletion 30 days after design-handoff acceptance and review of unclaimed/failed submissions at 60 days. Confirm acceptance recording, cleanup ownership and the start of the 60-day clock. Resolve exact pinning and availability for retries. |
-| Downloaded original Word | Seekable temporary file in the single task's private ephemeral filesystem, only for that attempt. Stream with the 45 MB inbound Word limit recorded in [#950, phase one](https://github.com/HHS/simpler-grants-pdf-builder/issues/950); agree decimal/binary units and test boundaries. Do not rely on declared length alone. | Restricted directory/file permissions, encrypted approved task storage, no shared mount, persistent volume, public URL or backup. Always close/unlink in `finally`. Task termination ends crash leftovers; verify actual task storage and cleanup configuration. This is not a secure-erasure guarantee. |
+| Downloaded original Word | Seekable temporary file in the single task's private ephemeral filesystem, only for that attempt. Confirm the exported Word size limit and exact units with AS before automated rollout. The previously reported 45 MB AS attachment limit is a planning input; enforce and test the agreed export boundary. Do not rely on declared length alone. | Restricted directory/file permissions, encrypted approved task storage, no shared mount, persistent volume, public URL or backup. Always close/unlink in `finally`. Task termination ends crash leftovers; verify actual task storage and cleanup configuration. This is not a secure-erasure guarantee. |
 | Conversion buffers and intermediates | Process memory and the same attempt-local scratch directory, only until conversion/validation ends. | Word helpers can rebuild ZIPs and hold multiple copies in memory. Bound expanded ZIP size, entries, conversion memory/time and output size as well as compressed bytes. `DEBUG=False`; prohibit debug HTML dumps, crash payload dumps and content-bearing exception logs. |
 | Imported NOFO and embedded content/assets | Existing Builder database and approved asset locations after successful transaction. Persist intentionally as draft content, not as the original Word archive. | Normal Builder access, editing, retention and backups apply. Embedded images can survive as data in imported content; inspect/test all asset paths. Any external object writes need attempt ownership plus compensating cleanup; database rollback does not delete S3 objects. Never delete shared assets as compensation. |
 | Receipt, digest, attempts and result linkage | Builder database; minimal source/correlation IDs, object observation, digest, timestamps, state/error codes and result UUID. | Restricted access and approved retention. These are not automatically public or content-free simply because they are metadata. Keep raw keys/FONs out of ordinary operational logs and alerts. Existing tombstones are not a complete legal/records policy. |
@@ -199,7 +199,7 @@ Verification under #954 must include multiple listing pages and more pending fil
 The application cannot parse Word inside S3: it must download bytes into memory
 or a seekable local copy. “Use the exchange copy directly” therefore means **no
 second durable Word repository**, not zero local bytes. Prefer task-local disk
-over forcing a 45 MB original plus expanded conversions into RAM. If approved
+over forcing a large original plus expanded conversions into RAM. If approved
 AS retention cannot support retries, revisit private staging explicitly with
 security/records owners; do not silently repurpose the existing image bucket.
 
@@ -222,6 +222,14 @@ These are functional owners, not requests for an individual to find another owne
 | Exchange/local/metadata retention and source expiry | Approve separate lifecycles; implement cleanup and recoverable failure, without a second Word bucket unless justified. | AS storage operations, Builder operations and records/security functions (#952) |
 | Discovery latency, volume, support and alerts | Select bounded cadence/batch/retry budget and private alert route; alert on missed job, oldest pending age, failure rate and exhausted retries. No content/keys in workflow inputs or logs. | Builder operations with AS support (#954) |
 | UAT cohort and rollout | Reconcile ACL staffed manual midpoint with HRSA end-to-end requirement; the deck's partner rollout is not Builder deployment approval. | Joint AS/Builder product and testing functions (#954), informed by #956 |
+
+## November 9 requirements reconciliation
+
+NB returned v2 requirements to AS on November 9 with clarifications for manual pickup and later automated retrieval/import. The revised proposal aligns with separate drafts for new source versions, duplicate reuse, human-controlled replacement, temporary-file cleanup and manual fallback reconciliation. AS agreement on the revisions remains to be recorded under #888.
+
+The supplied document retains original result-writing/source-deletion and archive instructions alongside later qualifications about retry availability, acceptance and cleanup. Keep the current retrieval design while resolving result contents, acknowledgment, folder movement, archive meaning and corresponding permissions under #888/#952/#1302. Final contract decisions must be reflected here before implementation.
+
+The 45 MB figure comes from an earlier AS attachment limit. Confirm its applicability to exported Word, exact units and NB handling before automated rollout. Human-download access and machine provisioning are separate milestones. #956 owns manual validation; #954/#1303 own automated integration and UAT.
 
 ## Implementation tracking and schedule
 
