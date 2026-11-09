@@ -13,9 +13,10 @@ permissions: {}
 jobs:
   lint-pr-description:
     # Advisory only. Do not add this job to the required merge checks.
-    # Release Please generates the release notes in place of the template.
+    # Dependabot and Release Please generate their own PR descriptions.
     if: >-
-      ${{ !(github.event.pull_request.user.type == 'Bot' &&
+      ${{ github.event.pull_request.user.login != 'dependabot[bot]' &&
+        !(github.event.pull_request.user.type == 'Bot' &&
         github.event.pull_request.head.repo.full_name == github.repository &&
         startsWith(github.head_ref, 'release-please--branches--') &&
         startsWith(github.event.pull_request.title, 'chore(')) }}
