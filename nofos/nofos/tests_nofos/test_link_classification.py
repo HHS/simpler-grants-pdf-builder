@@ -70,6 +70,7 @@ class LinkClassificationViewTests(TestCase):
         self.assertIsNotNone(panel)
         panel_text = panel.get_text(" ", strip=True)
         self.assertIn("1 link issue to review", panel_text)
+        self.assertIsNone(panel.details.p)
         for absent in (
             "Google Docs link",
             "empty link",
@@ -336,21 +337,29 @@ class LinkClassificationViewTests(TestCase):
     def test_email_warnings_keep_broken_internal_links_in_the_same_panel(self):
         response = self.save_body(
             self.section.subsections.get(),
-            "Contact grants@example.gov or [see eligibility](#missing).",
+            "Contact grants@example.gov or team@example.gov. [See eligibility](#missing).",
         )
         soup = BeautifulSoup(response.content, "html.parser")
-        self.assertEqual(soup.find(id="tab-1")["aria-label"], "Check links (2)")
+        self.assertEqual(soup.find(id="tab-1")["aria-label"], "Check links (3)")
         panel = soup.find(id="tabpanel-1")
         self.assertEqual(
             [heading.get_text() for heading in panel.find_all("h3")],
             ["Warning: review links"],
         )
         self.assertEqual(len(panel.find_all("details")), 1)
-        self.assertEqual(panel.summary.get_text(), "2 link issues to review")
-        broken, email = panel.select("details ol li")
+        self.assertEqual(panel.summary.get_text(), "3 link issues to review")
+        broken, first_email, second_email = panel.select("details ol li")
         self.assertIn("Broken internal link", broken.get_text())
         self.assertEqual(broken.a["href"], "#links")
-        self.assertIn("Email link needed for", email.get_text())
+        self.assertIn("Email link needed for", first_email.get_text())
         self.assertEqual(
-            email.code.get_text(), "[grants@example.gov](mailto:grants@example.gov)"
+            first_email.code.get_text(),
+            "[grants@example.gov](mailto:grants@example.gov)",
         )
+        self.assertEqual(
+            second_email.code.get_text(),
+            "[team@example.gov](mailto:team@example.gov)",
+        )
+        self.assertEqual(len(panel.details.find_all("p")), 1)
+        self.assertEqual(panel.details.ol.find_next_sibling().name, "p")
+        self.assertIn("use the Markdown in that list item", panel.details.p.get_text())

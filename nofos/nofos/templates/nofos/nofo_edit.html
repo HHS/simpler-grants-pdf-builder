@@ -335,9 +335,6 @@ Edit “{{ nofo|nofo_name }}”
             {% endif %}
             <details>
               <summary><span>{{ link_warning_count }} link issue{{ link_warning_count|pluralize }} to review</span></summary>
-              {% if email_link_warnings %}
-                <p class="usa-alert__text">To fix an email link, open the subsection and replace the address or its existing link with the Markdown shown.</p>
-              {% endif %}
               <ol class="usa-list usa-list--no-max-width">
                 {% for broken_link in broken_links %}
                   <li>Broken internal link: <a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{ broken_link.section.name }}, {{ broken_link.subsection|subsection_name_or_order }})</li>
@@ -350,6 +347,9 @@ Edit “{{ nofo|nofo_name }}”
                   </li>
                 {% endfor %}
               </ol>
+              {% if email_link_warnings %}
+                <p class="usa-alert__text">For each email link issue, open the linked subsection and use the Markdown in that list item to replace the address or its existing link.</p>
+              {% endif %}
             </details>
           </div>
         </div>

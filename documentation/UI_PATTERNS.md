@@ -89,7 +89,8 @@ above.
 In the NOFO edit page's publishing checks, use one alert heading and one
 expandable list per warning panel. **Check links** uses short labels in its
 list to distinguish broken internal links from email link issues. The email
-repair instructions appear once inside the list disclosure when needed.
+repair instructions appear once after the numbered list, inside the disclosure.
+Broken internal links appear first, followed by email link issues.
 See the [link warning review](review-evidence/email-link-warnings/README.md).
 
 ## Form save feedback
