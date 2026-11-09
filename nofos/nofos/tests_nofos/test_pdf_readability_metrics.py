@@ -79,7 +79,11 @@ class AttemptTests(TestCase):
         from nofos.pdf_readability import _analysis_slot
         from nofos.pdf_readability_metrics import record_attempt
 
-        def analyze(upload):
+        workspaces = []
+
+        def analyze(upload, *, workspace):
+            self.assertTrue(workspace.is_dir())
+            workspaces.append(workspace)
             with _analysis_slot():
                 return {
                     "metrics": {"word_count": {"value": 987654}},
@@ -90,6 +94,8 @@ class AttemptTests(TestCase):
         def record(*args, **kwargs):
             # A second slot acquisition would raise busy if recording ran under
             # the analysis lock. Exercise the real slot, not just call ordering.
+            self.assertEqual(len(workspaces), 1)
+            self.assertFalse(workspaces[0].exists())
             with _analysis_slot():
                 record_attempt(*args, **kwargs)
 
