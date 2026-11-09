@@ -271,3 +271,77 @@ class LinkClassificationViewTests(TestCase):
         self.assertEqual(len(self.missing_rows(response)), 1)
         self.assertContains(response, "Before publishing, address the following:")
         request.assert_not_called()
+
+    def test_email_warning_links_to_subsection_and_clears_after_save(self):
+        self.nofo.status = "review"
+        self.nofo.title = "title@example.gov"
+        self.nofo.author = "Test author"
+        self.nofo.subject = "Funding"
+        self.nofo.keywords = "test"
+        self.nofo.save()
+        subsection = self.section.subsections.get()
+        subsection.name = "heading@example.gov"
+        subsection.save()
+
+        response = self.save_body(
+            subsection,
+            "Contact **grants+help@example.gov**. Again: grants+help@example.gov. "
+            "[team@example.org](https://example.org/contact) "
+            r"\_grants%team@example.gov. "
+            "[wrong@example.gov](mailto:other@example.gov) "
+            "[staff@example.gov][staff] and <auto@example.gov>. "
+            "[Email us](mailto:hidden@example.gov) "
+            "https://example.gov/?email=url@example.gov "
+            "`code@example.gov`\n\n"
+            "[staff]: mailto:staff@example.gov?subject=Grants",
+        )
+        self.assertTrue(response.context["has_warnings"])
+        self.assertFalse(response.context["has_broken_links"])
+        self.assertFalse(response.context["has_external_links"])
+        self.assertEqual(
+            [issue["address"] for issue in response.context["email_link_warnings"]],
+            [
+                "grants+help@example.gov",
+                "team@example.org",
+                "_grants%team@example.gov",
+                "wrong@example.gov",
+            ],
+        )
+
+        soup = BeautifulSoup(response.content, "html.parser")
+        self.assertEqual(soup.find(id="tab-1")["aria-label"], "Check links (4)")
+        panel = soup.find(id="tabpanel-1")
+        self.assertEqual(panel.h3.get_text(), "Email addresses need links")
+        self.assertEqual(
+            panel.li.a["href"],
+            reverse(
+                "nofos:subsection_edit",
+                args=[self.nofo.pk, self.section.pk, subsection.pk],
+            ),
+        )
+        self.assertEqual(
+            panel.li.code.get_text(),
+            "[grants+help@example.gov](mailto:grants+help@example.gov)",
+        )
+
+        response = self.save_body(
+            subsection,
+            "\n\n".join(
+                issue["markdown"] for issue in response.context["email_link_warnings"]
+            ),
+        )
+        self.assertFalse(response.context["has_warnings"])
+        self.assertNotContains(response, "Email addresses need links")
+
+    def test_email_warnings_keep_broken_internal_links_in_the_same_panel(self):
+        response = self.save_body(
+            self.section.subsections.get(),
+            "Contact grants@example.gov or [see eligibility](#missing).",
+        )
+        soup = BeautifulSoup(response.content, "html.parser")
+        self.assertEqual(soup.find(id="tab-1")["aria-label"], "Check links (2)")
+        panel = soup.find(id="tabpanel-1")
+        self.assertEqual(
+            [heading.get_text() for heading in panel.find_all("h3")],
+            ["Warning: some internal links are broken", "Email addresses need links"],
+        )

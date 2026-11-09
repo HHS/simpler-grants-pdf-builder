@@ -1296,6 +1296,10 @@ label.usa-label {
   color: var(--color--med-grey);
 }
 
+.nofo_edit--email-link-markdown {
+  overflow-wrap: anywhere;
+}
+
 /* broken link error + tooltip */
 .nofo_edit .nofo-edit-table--subsection--body a.nofo_edit--broken-link,
 .nofo_edit

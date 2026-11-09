@@ -321,7 +321,7 @@ Use this when a subsection covers more than one topic or is too long to scan.
 **Notes**
 
 - Other parts of the NOFO may link to this heading. After renaming, check the
-  **Check broken links** tab on the NOFO edit page if it appears. Renaming
+  **Check links** tab on the NOFO edit page if it appears. Renaming
   a subsection keeps its existing heading ID.
 - A subsection with no heading shows as **(#`<number>`)**. Its name field
   can't be edited.
@@ -613,9 +613,9 @@ You can make every table in a section use the full page width.
 
 **Steps**
 
-1. On the NOFO edit page, open the **Check broken links** tab under
-   **Before publishing, address the following**. It lists each broken link
-   and where it is.
+1. On the NOFO edit page, open the **Check links** tab under
+   **Before publishing, address the following**. Expand the broken internal links
+   warning to see each link and where it is.
 2. Open that subsection ([TASK-SUBSECTION-EDIT](#task-subsection-edit)).
 3. In the content editor, find the link. It looks like `[link text](#some-id)`.
 4. To get the target heading ID, open that heading's subsection and select
@@ -623,6 +623,25 @@ You can make every table in a section use the full page width.
    Return to the broken link and replace its entire destination with the
    copied ID (which already starts with `#`); do not add another `#`.
 5. Select **Save subsection**.
+
+<a id="task-link-fix-email"></a>
+
+### TASK-LINK-FIX-EMAIL — Add a link to an email address
+
+**Steps**
+
+1. On the NOFO edit page, open **Check links** under
+   **Before publishing, address the following**.
+2. Under **Email addresses need links**, expand the email link issues and
+   copy the Markdown shown for the address.
+3. Follow the subsection link. Replace the address or its existing link
+   with the copied Markdown, such as
+   `[grants@example.gov](mailto:grants@example.gov)`.
+4. Select **Save subsection**. The issue clears once every instance of that
+   address in the subsection has a matching email link.
+
+The check runs on saved subsection content, including imported content and
+later edits. You can preview and download the NOFO while the warning is present.
 
 <a id="task-link-check-external"></a>
 

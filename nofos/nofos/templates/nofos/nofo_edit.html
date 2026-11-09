@@ -250,17 +250,17 @@ Edit “{{ nofo|nofo_name }}”
     {% endif %}
 
     <div role="tablist" aria-labelledby="tablist-1" class="automatic">
-      {% if has_broken_links %}
+      {% if link_warning_count %}
         <button id="tab-1"
                 type="button"
                 role="tab"
                 class="accent-warm-dark"
                 aria-selected="true"
                 aria-controls="tabpanel-1"
-                aria-label="Check broken links ({{ broken_links|length }})">
+                aria-label="Check links ({{ link_warning_count }})">
           <span class="focus">
-            <span class="nofo_edit--tab-label">Check broken links</span>
-            <span class="nofo_edit--tab-count">({{ broken_links|length }})</span>
+            <span class="nofo_edit--tab-label">Check links</span>
+            <span class="nofo_edit--tab-count">({{ link_warning_count }})</span>
           </span>
         </button>
       {% endif %}
@@ -269,9 +269,9 @@ Edit “{{ nofo|nofo_name }}”
                 type="button"
                 role="tab"
                 class="accent-warm-dark"
-                aria-selected="{% if has_broken_links %}false{% else %}true{% endif %}"
+                aria-selected="{% if link_warning_count %}false{% else %}true{% endif %}"
                 aria-controls="tabpanel-5"
-                {% if has_broken_links %}tabindex="-1"{% endif %}
+                {% if link_warning_count %}tabindex="-1"{% endif %}
                 aria-label="Check missing link destinations ({{ missing_destination_links|length }})">
           <span class="focus">
             <span class="nofo_edit--tab-label">Check missing link destinations</span>
@@ -325,37 +325,59 @@ Edit “{{ nofo|nofo_name }}”
         </button>
       {% endif %}
     </div>
-    {% if has_broken_links %}
+    {% if link_warning_count %}
       <div id="tabpanel-1" role="tabpanel" class="accent-warm-dark" tabindex="0" aria-labelledby="tab-1">
-        <div class="usa-alert">
-          <div class="usa-alert__body">
-            <h3 class="usa-alert__heading">Warning: some internal links are broken</h3>
-            <button class="usa-button usa-button--outline usa-button--icon usa-button--icon--before usa-button--icon--usa-emergency usa-button--content_copy font-sans-2xs" type="button">Copy links</button>
-            <div>
+        {% if has_broken_links %}
+          <div class="usa-alert">
+            <div class="usa-alert__body">
+              <h3 class="usa-alert__heading">Warning: some internal links are broken</h3>
+              <button class="usa-button usa-button--outline usa-button--icon usa-button--icon--before usa-button--icon--usa-emergency usa-button--content_copy font-sans-2xs" type="button">Copy links</button>
+              <div>
+                <details>
+                  <summary>
+                    {% if broken_links|length == 1 %}
+                    <span>There is 1 broken link</span>
+                    {% else %}
+                    <span>There are {{ broken_links|length }} broken links</span>
+                    {% endif %}
+                  </summary>
+                  <div>
+                    <ol class="usa-list usa-list--no-max-width">
+                      {% for broken_link in broken_links %}
+                      <li><a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{ broken_link.section.name }}, {{ broken_link.subsection|subsection_name_or_order }})</li>
+                      {% endfor %}
+                    </ol>
+                  </div>
+                </details>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+        {% if email_link_warnings %}
+          <div class="usa-alert">
+            <div class="usa-alert__body">
+              <h3 class="usa-alert__heading">Email addresses need links</h3>
+              <p class="usa-alert__text">Open the subsection and replace the address or its existing link with the Markdown shown below.</p>
               <details>
-                <summary>
-                  {% if broken_links|length == 1 %}
-                  <span>There is 1 broken link</span>
-                  {% else %}
-                  <span>There are {{ broken_links|length }} broken links</span>
-                  {% endif %}
-                </summary>
-                <div>
-                  <ol class="usa-list usa-list--no-max-width">
-                    {% for broken_link in broken_links %}
-                    <li><a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{ broken_link.section.name }}, {{ broken_link.subsection|subsection_name_or_order }})</li>
-                    {% endfor %}
-                  </ol>
-                </div>
+                <summary><span>{{ email_link_warnings|length }} email link issue{{ email_link_warnings|pluralize }}</span></summary>
+                <ol class="usa-list usa-list--no-max-width">
+                  {% for issue in email_link_warnings %}
+                    <li>
+                      <strong>{{ issue.address }}</strong> in
+                      <a href="{% url 'nofos:subsection_edit' nofo.id issue.section.id issue.subsection.id %}">{{ issue.section.name }}, {{ issue.subsection|subsection_name_or_order }}</a>
+                      <div class="nofo_edit--email-link-markdown"><code>{{ issue.markdown }}</code></div>
+                    </li>
+                  {% endfor %}
+                </ol>
               </details>
             </div>
           </div>
-        </div>
+        {% endif %}
       </div>
     {% endif %}
 
     {% if has_missing_destinations %}
-      <div id="tabpanel-5" role="tabpanel" class="accent-warm-dark{% if has_broken_links %} is-hidden{% endif %}" tabindex="0" aria-labelledby="tab-5">
+      <div id="tabpanel-5" role="tabpanel" class="accent-warm-dark{% if link_warning_count %} is-hidden{% endif %}" tabindex="0" aria-labelledby="tab-5">
         <div class="usa-alert">
           <div class="usa-alert__body">
             <h3 class="usa-alert__heading">Warning: link destinations are missing</h3>
