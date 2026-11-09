@@ -127,10 +127,10 @@ document and are easier to fix there:
 - **Internal links:** select the **Check links** tab. Many broken links
   usually mean anchor links in the Word document point to headings or bookmarks
   that don't exist or weren't imported.
-- **Email addresses:** in **Check links**, look for **Email addresses need
-  links**. Open the listed subsection and replace the address or its existing
-  link with the Markdown shown. See [Add a link to an email
-  address](EDITOR_TASKS.md#task-link-fix-email).
+- **Email addresses:** in **Check links**, expand the link issues and look for an
+  entry labeled **Email link needed for**. Open the listed subsection and
+  replace the address or its existing link with the Markdown shown. See
+  [Add a link to an email address](EDITOR_TASKS.md#task-link-fix-email).
 
 The **Copy links** and **Copy endnote issues** buttons copy the full list of
 problems, so you can share it with whoever maintains the Word document.

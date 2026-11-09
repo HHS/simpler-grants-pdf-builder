@@ -614,8 +614,8 @@ You can make every table in a section use the full page width.
 **Steps**
 
 1. On the NOFO edit page, open the **Check links** tab under
-   **Before publishing, address the following**. Expand the broken internal links
-   warning to see each link and where it is.
+   **Before publishing, address the following**. Expand the link issues and look for
+   entries labeled **Broken internal link**.
 2. Open that subsection ([TASK-SUBSECTION-EDIT](#task-subsection-edit)).
 3. In the content editor, find the link. It looks like `[link text](#some-id)`.
 4. To get the target heading ID, open that heading's subsection and select
@@ -632,8 +632,8 @@ You can make every table in a section use the full page width.
 
 1. On the NOFO edit page, open **Check links** under
    **Before publishing, address the following**.
-2. Under **Email addresses need links**, expand the email link issues and
-   copy the Markdown shown for the address.
+2. Expand the link issues, find the entry labeled **Email link needed for**
+   your address, and copy the Markdown shown.
 3. Follow the subsection link. Replace the address or its existing link
    with the copied Markdown, such as
    `[grants@example.gov](mailto:grants@example.gov)`.

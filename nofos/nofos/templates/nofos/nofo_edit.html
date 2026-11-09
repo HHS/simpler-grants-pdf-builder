@@ -327,52 +327,32 @@ Edit “{{ nofo|nofo_name }}”
     </div>
     {% if link_warning_count %}
       <div id="tabpanel-1" role="tabpanel" class="accent-warm-dark" tabindex="0" aria-labelledby="tab-1">
-        {% if has_broken_links %}
-          <div class="usa-alert">
-            <div class="usa-alert__body">
-              <h3 class="usa-alert__heading">Warning: some internal links are broken</h3>
+        <div class="usa-alert">
+          <div class="usa-alert__body">
+            <h3 class="usa-alert__heading">Warning: review links</h3>
+            {% if has_broken_links %}
               <button class="usa-button usa-button--outline usa-button--icon usa-button--icon--before usa-button--icon--usa-emergency usa-button--content_copy font-sans-2xs" type="button">Copy links</button>
-              <div>
-                <details>
-                  <summary>
-                    {% if broken_links|length == 1 %}
-                    <span>There is 1 broken link</span>
-                    {% else %}
-                    <span>There are {{ broken_links|length }} broken links</span>
-                    {% endif %}
-                  </summary>
-                  <div>
-                    <ol class="usa-list usa-list--no-max-width">
-                      {% for broken_link in broken_links %}
-                      <li><a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{ broken_link.section.name }}, {{ broken_link.subsection|subsection_name_or_order }})</li>
-                      {% endfor %}
-                    </ol>
-                  </div>
-                </details>
-              </div>
-            </div>
+            {% endif %}
+            <details>
+              <summary><span>{{ link_warning_count }} link issue{{ link_warning_count|pluralize }} to review</span></summary>
+              {% if email_link_warnings %}
+                <p class="usa-alert__text">To fix an email link, open the subsection and replace the address or its existing link with the Markdown shown.</p>
+              {% endif %}
+              <ol class="usa-list usa-list--no-max-width">
+                {% for broken_link in broken_links %}
+                  <li>Broken internal link: <a href="#{{ broken_link.subsection.html_id }}">{{ broken_link.link_text }}</a> ({{ broken_link.section.name }}, {{ broken_link.subsection|subsection_name_or_order }})</li>
+                {% endfor %}
+                {% for issue in email_link_warnings %}
+                  <li>
+                    Email link needed for <strong>{{ issue.address }}</strong> in
+                    <a href="{% url 'nofos:subsection_edit' nofo.id issue.section.id issue.subsection.id %}">{{ issue.section.name }}, {{ issue.subsection|subsection_name_or_order }}</a>
+                    <div class="nofo_edit--email-link-markdown"><code>{{ issue.markdown }}</code></div>
+                  </li>
+                {% endfor %}
+              </ol>
+            </details>
           </div>
-        {% endif %}
-        {% if email_link_warnings %}
-          <div class="usa-alert">
-            <div class="usa-alert__body">
-              <h3 class="usa-alert__heading">Email addresses need links</h3>
-              <p class="usa-alert__text">Open the subsection and replace the address or its existing link with the Markdown shown below.</p>
-              <details>
-                <summary><span>{{ email_link_warnings|length }} email link issue{{ email_link_warnings|pluralize }}</span></summary>
-                <ol class="usa-list usa-list--no-max-width">
-                  {% for issue in email_link_warnings %}
-                    <li>
-                      <strong>{{ issue.address }}</strong> in
-                      <a href="{% url 'nofos:subsection_edit' nofo.id issue.section.id issue.subsection.id %}">{{ issue.section.name }}, {{ issue.subsection|subsection_name_or_order }}</a>
-                      <div class="nofo_edit--email-link-markdown"><code>{{ issue.markdown }}</code></div>
-                    </li>
-                  {% endfor %}
-                </ol>
-              </details>
-            </div>
-          </div>
-        {% endif %}
+        </div>
       </div>
     {% endif %}
 

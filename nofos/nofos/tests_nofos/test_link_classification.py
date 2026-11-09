@@ -69,7 +69,7 @@ class LinkClassificationViewTests(TestCase):
         panel = soup.find(id="tabpanel-1")
         self.assertIsNotNone(panel)
         panel_text = panel.get_text(" ", strip=True)
-        self.assertIn("There is 1 broken link", panel_text)
+        self.assertIn("1 link issue to review", panel_text)
         for absent in (
             "Google Docs link",
             "empty link",
@@ -311,7 +311,7 @@ class LinkClassificationViewTests(TestCase):
         soup = BeautifulSoup(response.content, "html.parser")
         self.assertEqual(soup.find(id="tab-1")["aria-label"], "Check links (4)")
         panel = soup.find(id="tabpanel-1")
-        self.assertEqual(panel.h3.get_text(), "Email addresses need links")
+        self.assertEqual(panel.h3.get_text(), "Warning: review links")
         self.assertEqual(
             panel.li.a["href"],
             reverse(
@@ -331,7 +331,7 @@ class LinkClassificationViewTests(TestCase):
             ),
         )
         self.assertFalse(response.context["has_warnings"])
-        self.assertNotContains(response, "Email addresses need links")
+        self.assertNotContains(response, 'id="tabpanel-1"')
 
     def test_email_warnings_keep_broken_internal_links_in_the_same_panel(self):
         response = self.save_body(
@@ -343,5 +343,14 @@ class LinkClassificationViewTests(TestCase):
         panel = soup.find(id="tabpanel-1")
         self.assertEqual(
             [heading.get_text() for heading in panel.find_all("h3")],
-            ["Warning: some internal links are broken", "Email addresses need links"],
+            ["Warning: review links"],
+        )
+        self.assertEqual(len(panel.find_all("details")), 1)
+        self.assertEqual(panel.summary.get_text(), "2 link issues to review")
+        broken, email = panel.select("details ol li")
+        self.assertIn("Broken internal link", broken.get_text())
+        self.assertEqual(broken.a["href"], "#links")
+        self.assertIn("Email link needed for", email.get_text())
+        self.assertEqual(
+            email.code.get_text(), "[grants@example.gov](mailto:grants@example.gov)"
         )
