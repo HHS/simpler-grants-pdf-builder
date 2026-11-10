@@ -30,12 +30,13 @@
   color: inherit;
 }
 
-.section--content--right-col > .callout-box {
+.callout-box:not(.nofo--cover-page--callout-box) {
   background-color: #e0f2ff;
   color: var(--color--onc-navy);
 }
 
-.section--content--right-col > .callout-box a {
+.callout-box:not(.nofo--cover-page--callout-box) .callout-box--title,
+.callout-box:not(.nofo--cover-page--callout-box) a {
   color: inherit;
 }
 
