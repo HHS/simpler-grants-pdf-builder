@@ -144,11 +144,12 @@ using an authenticated experience as evidence for that path.
 | Logging | Restricted search for synthetic body marker/fixture names and inspection of actual logging destinations and retention/access. | Public report contains only presence/counts and a decision; raw messages stay restricted. No match is limited to the destinations/time window searched. |
 | Request-size and slow-upload protection | Reuse the assessment in [SGG #12678](https://github.com/HHS/simpler-grants-gov/pull/12678) and identify remaining deployment-dependent checks before any bounded ingress test. | Rate limiting does not establish these controls. No pathological PDF, resource-exhaustion or unbounded upload test. |
 
-These are proposed probes, **not claims that an approved runtime runner exists**.
-The inspection cannot read temporary storage or run container commands. Confirm
-an existing mechanism first; otherwise include only the missing probes in the
-consolidated reviewed verification change. Required security/privacy reviewers
-must accept the actual runtime handling boundary, not just the test outputs.
+The [November 10 disposable dev task](../review-evidence/971/README.md#november-10-dev-temporary-storage-and-cleanup)
+records the completed synthetic processing, temporary storage, cleanup,
+Linux analyzer and PostgreSQL checks. Use reviewed mechanisms for the remaining
+target-runtime checks. The infrastructure inspection workflow cannot read
+temporary storage or run container commands. Required security/privacy reviewers
+must accept the actual runtime handling boundary.
 
 The enabled signed-out form, recognition messages and browser-saved report still
 need end-to-end validation if equivalent evidence is unavailable. Mark these
