@@ -26,6 +26,7 @@
   --color--ihs-blue: #012f52;
   --color--nih-blue: var(--color--acl-blue);
   --color--nih-grey: #65666a;
+  --color--onc-navy: #081f7a;
   --color--samhsa-blue: #1e384b;
   --color--staging-coral: #f08080;
 }
@@ -174,6 +175,10 @@
 
 .bg-group--nih {
   background-color: var(--color--nih-grey);
+}
+
+.bg-group--onc {
+  background-color: var(--color--onc-navy);
 }
 
 .bg-group--samhsa {

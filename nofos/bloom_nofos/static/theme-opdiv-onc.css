@@ -1,0 +1,39 @@
+/* ONC typography uses the fonts bundled with Builder. */
+@font-face {
+  font-family: "Source Sans Pro Web";
+  src: url("fonts/source-sans-pro/sourcesanspro-regular-webfont.woff2") format("woff2");
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Source Sans Pro Web";
+  src: url("fonts/source-sans-pro/sourcesanspro-bold-webfont.woff2") format("woff2");
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "Source Sans Pro Web";
+  src: url("fonts/source-sans-pro/sourcesanspro-italic-webfont.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Source Sans Pro Web";
+  src: url("fonts/source-sans-pro/sourcesanspro-bolditalic-webfont.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 700;
+}
+
+body {
+  font-family: "Source Sans Pro Web", sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Public Sans Web", sans-serif;
+}

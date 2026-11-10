@@ -162,6 +162,7 @@ NIH_ALLOWED_CHOICES = {
 }
 
 HRSA_ALLOWED_COVERS = frozenset(["nofo--cover-page--text", "nofo--cover-page--medium"])
+ONC_ALLOWED_COVERS = frozenset(["nofo--cover-page--text", "nofo--cover-page--medium"])
 
 
 class NofoThemeOptionsForm(forms.ModelForm):
@@ -198,7 +199,21 @@ class NofoThemeOptionsForm(forms.ModelForm):
             if value not in RETIRED_THEME_CHOICES or value == existing_legacy_theme
         ]
 
-        if user_is_nih_group(user):
+        is_onc = self.instance.group == "onc"
+        group_key = user.group.upper() if user and hasattr(user, "group") else None
+        is_bloom = group_key == "BLOOM"
+        if is_onc and not is_bloom:
+            self.fields["theme"].choices = [
+                (
+                    "ONC",
+                    [
+                        (value, label)
+                        for value, label in selectable_theme_choices
+                        if value == "portrait-onc-navy"
+                    ],
+                )
+            ]
+        elif user_is_nih_group(user):
             # NIH users see a restricted set of choices for all three fields.
             self.fields["theme"].choices = [
                 (
@@ -224,16 +239,12 @@ class NofoThemeOptionsForm(forms.ModelForm):
             # -------- Filter theme choices into optgroups by OpDiv
             theme_categories_dict = {}
             for value, label in selectable_theme_choices:
+                if value == "portrait-onc-navy" and not is_bloom:
+                    continue
                 opdiv = label.split(" ")[0]
                 theme_categories_dict.setdefault(opdiv, []).append((value, label))
 
-            group_key = user.group.upper() if user and hasattr(user, "group") else None
-
-            if (
-                group_key
-                and group_key != "BLOOM"
-                and group_key in theme_categories_dict
-            ):
+            if group_key and not is_bloom and group_key in theme_categories_dict:
                 theme_categories = {group_key: theme_categories_dict[group_key]}
             else:
                 theme_categories = theme_categories_dict
@@ -255,10 +266,26 @@ class NofoThemeOptionsForm(forms.ModelForm):
         selected_theme = (
             self.data.get(self.add_prefix("theme"), "") if self.is_bound else ""
         )
-        if not user_is_nih_group(user) and (
-            "hrsa-" in self.instance.theme
-            or "hrsa-" in selected_theme
-            or self.instance.group == "hrsa"
+        uses_onc_options = (
+            is_onc or (selected_theme or self.instance.theme) == "portrait-onc-navy"
+        )
+        if uses_onc_options:
+            self.fields["cover"].choices = [
+                (value, label)
+                for value, label in Nofo.COVER_CHOICES
+                if value in ONC_ALLOWED_COVERS
+            ]
+            self.fields["icon_style"].choices = get_icon_path_choices(
+                "portrait-onc-navy"
+            )
+        if (
+            not uses_onc_options
+            and not user_is_nih_group(user)
+            and (
+                "hrsa-" in self.instance.theme
+                or "hrsa-" in selected_theme
+                or self.instance.group == "hrsa"
+            )
         ):
             legacy_cover = (
                 self.instance.cover if not self.instance._state.adding else None
