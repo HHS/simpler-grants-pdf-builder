@@ -62,3 +62,24 @@ After the approved deployment, a superuser can create the agreed initial
 accounts. Grant OpDiv Admin only to designated staff. Then verify sign-in,
 import and group isolation with the approved rollout accounts. No accounts
 were provisioned for this local test.
+
+## Current Builder screenshots
+
+Chrome captured the rendered HTML at a 1,200 CSS pixel viewport. The same
+synthetic Word NOFO was imported as an ONC user and used throughout. The
+import selected ONC and Text only. The sample includes a long title, a
+bundled cover image for the Standard image option, and synthetic Key facts
+and Key dates callouts. The theme picker exposed one theme, two cover
+options and two icon styles.
+
+| View | Text only / Outlined | Standard image / Filled |
+| --- | --- | --- |
+| Cover | [Text only, the import default](onc-cover-text.jpg) | [Standard image](onc-cover-image.jpg) |
+| Contents | [Outlined icons](onc-contents-outlined.jpg) | [Filled icons](onc-contents-filled.jpg) |
+| Step 1 opener | [Outlined icon](onc-step-1.jpg) | [Filled icon](onc-step-1-filled.jpg) |
+
+- [Page after the Step 1 opener, with the right column callouts](onc-step-1-callouts.jpg)
+- [Theme options as an ONC editor](onc-theme-options.jpg)
+
+These are browser screenshots. The earlier tagged PDF cover renders remain
+available above.
