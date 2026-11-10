@@ -59,6 +59,7 @@ from .document_processing import (
     get_sections_and_subsections_from_soup,
     process_document_content,
 )
+from .email_link_warnings import find_email_link_warnings
 from .forms import (
     NIH_ALLOWED_CHOICES,
     NIH_THEME_DEFAULTS,
@@ -569,6 +570,10 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
             config.HHS_NOFO_ASSISTANCE_LISTING_ENABLED
         )
         context["broken_links"] = find_broken_links(self.object)
+        context["email_link_warnings"] = find_email_link_warnings(self.object)
+        context["link_warning_count"] = len(context["broken_links"]) + len(
+            context["email_link_warnings"]
+        )
         context["external_links"] = find_external_links(self.object, with_status=False)
         context["missing_destination_links"] = [
             {
@@ -625,7 +630,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
         ) and self.object.status in ("draft", "active", "ready-for-qa", "paused")
         context["has_warnings"] = (
             context["has_missing_metadata"]
-            or context["has_broken_links"]
+            or context["link_warning_count"]
             or context["has_missing_destinations"]
             or context["has_heading_errors"]
             or context["has_unconverted_footnotes"]

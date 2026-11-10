@@ -12,6 +12,7 @@ from unittest.mock import patch
 from bs4 import BeautifulSoup
 from django.test import Client, TestCase
 from django.urls import reverse
+from martor.utils import markdownify
 from users.models import BloomUser
 
 from nofos.models import Nofo, Section, Subsection
@@ -69,7 +70,8 @@ class LinkClassificationViewTests(TestCase):
         panel = soup.find(id="tabpanel-1")
         self.assertIsNotNone(panel)
         panel_text = panel.get_text(" ", strip=True)
-        self.assertIn("There is 1 broken link", panel_text)
+        self.assertIn("1 link issue to fix", panel_text)
+        self.assertIsNone(panel.details.p)
         for absent in (
             "Google Docs link",
             "empty link",
@@ -271,3 +273,144 @@ class LinkClassificationViewTests(TestCase):
         self.assertEqual(len(self.missing_rows(response)), 1)
         self.assertContains(response, "Before publishing, address the following:")
         request.assert_not_called()
+
+    def test_email_warning_links_to_subsection_and_clears_after_save(self):
+        self.nofo.status = "review"
+        self.nofo.title = "title@example.gov"
+        self.nofo.author = "Test author"
+        self.nofo.subject = "Funding"
+        self.nofo.keywords = "test"
+        self.nofo.save()
+        subsection = self.section.subsections.get()
+        subsection.name = "heading@example.gov"
+        subsection.save()
+
+        response = self.save_body(
+            subsection,
+            "Contact **grants+help@example.gov**. Again: grants+help@example.gov. "
+            "[team@example.org](https://example.org/contact) "
+            r"\_grants%team@example.gov. "
+            "[wrong@example.gov](mailto:other@example.gov) "
+            "[staff@example.gov][staff] and <auto@example.gov>. "
+            "[Email us](mailto:hidden@example.gov) "
+            "https://example.gov/?email=url@example.gov "
+            "`code@example.gov`\n\n"
+            "[staff]: mailto:staff@example.gov?subject=Grants",
+        )
+        self.assertTrue(response.context["has_warnings"])
+        self.assertFalse(response.context["has_broken_links"])
+        self.assertFalse(response.context["has_external_links"])
+        self.assertEqual(
+            [issue["address"] for issue in response.context["email_link_warnings"]],
+            [
+                "grants+help@example.gov",
+                "team@example.org",
+                "_grants%team@example.gov",
+                "wrong@example.gov",
+            ],
+        )
+
+        soup = BeautifulSoup(response.content, "html.parser")
+        self.assertEqual(soup.find(id="tab-1")["aria-label"], "Check links (4)")
+        panel = soup.find(id="tabpanel-1")
+        self.assertEqual(panel.h3.get_text(), "Warning: review links")
+        self.assertEqual(panel.find("button").get_text(strip=True), "Copy links")
+        self.assertEqual(
+            panel.li.a["href"],
+            reverse(
+                "nofos:subsection_edit",
+                args=[self.nofo.pk, self.section.pk, subsection.pk],
+            ),
+        )
+        self.assertEqual(
+            panel.li.code.get_text(),
+            "[grants+help@example.gov](mailto:grants+help@example.gov)",
+        )
+
+        response = self.save_body(
+            subsection,
+            "\n\n".join(
+                issue["markdown"] for issue in response.context["email_link_warnings"]
+            ),
+        )
+        self.assertFalse(response.context["has_warnings"])
+        self.assertNotContains(response, 'id="tabpanel-1"')
+
+    def test_email_repairs_preserve_the_complete_recipient(self):
+        subsection = self.section.subsections.get()
+        response = self.save_body(
+            subsection,
+            "Contact o'connor@example.gov, ann&lee@example.gov, "
+            "or intake--team@example.gov. Skip help!desk@example.gov and "
+            'someone’s@example.gov and "old@example.gov"@example.org. '
+            'Ordinary punctuation: (parentheses@example.gov), "quoted@example.gov". '
+            "These already have email links: "
+            "[o'connor@example.org](mailto:o'connor@example.org), "
+            "[ann&lee@example.org](mailto:ann%26lee@example.org), "
+            "[grants@example.gov](mailto:grants@example.gov,team@example.gov).",
+        )
+        repairs = response.context["email_link_warnings"]
+        self.assertEqual(
+            [(repair["address"], repair["markdown"]) for repair in repairs],
+            [
+                (
+                    "o'connor@example.gov",
+                    "[o&#39;connor@example.gov](mailto:o%27connor@example.gov)",
+                ),
+                (
+                    "ann&lee@example.gov",
+                    "[ann&lee@example.gov](mailto:ann%26lee@example.gov)",
+                ),
+                (
+                    "intake--team@example.gov",
+                    "[intake&#45;&#45;team@example.gov](mailto:intake--team@example.gov)",
+                ),
+                (
+                    "parentheses@example.gov",
+                    "[parentheses@example.gov](mailto:parentheses@example.gov)",
+                ),
+                (
+                    "quoted@example.gov",
+                    "[quoted@example.gov](mailto:quoted@example.gov)",
+                ),
+            ],
+        )
+
+        for repair in repairs:
+            link = BeautifulSoup(markdownify(repair["markdown"]), "html.parser").a
+            self.assertEqual(link.get_text(), repair["address"])
+
+        response = self.save_body(
+            subsection, "\n\n".join(repair["markdown"] for repair in repairs)
+        )
+        self.assertEqual(response.context["email_link_warnings"], [])
+
+    def test_email_warnings_keep_broken_internal_links_in_the_same_panel(self):
+        response = self.save_body(
+            self.section.subsections.get(),
+            "Contact grants@example.gov or team@example.gov. [See eligibility](#missing).",
+        )
+        soup = BeautifulSoup(response.content, "html.parser")
+        self.assertEqual(soup.find(id="tab-1")["aria-label"], "Check links (3)")
+        panel = soup.find(id="tabpanel-1")
+        self.assertEqual(
+            [heading.get_text() for heading in panel.find_all("h3")],
+            ["Warning: review links"],
+        )
+        self.assertEqual(len(panel.find_all("details")), 1)
+        self.assertEqual(panel.summary.get_text(), "3 link issues to fix")
+        broken, first_email, second_email = panel.select("details ol li")
+        self.assertIn("Broken internal link", broken.get_text())
+        self.assertEqual(broken.a["href"], "#links")
+        self.assertIn("Email link needed for", first_email.get_text())
+        self.assertEqual(
+            first_email.code.get_text(),
+            "[grants@example.gov](mailto:grants@example.gov)",
+        )
+        self.assertEqual(
+            second_email.code.get_text(),
+            "[team@example.gov](mailto:team@example.gov)",
+        )
+        self.assertEqual(len(panel.details.find_all("p")), 1)
+        self.assertEqual(panel.details.ol.find_next_sibling().name, "p")
+        self.assertIn("use the Markdown in that list item", panel.details.p.get_text())

@@ -86,6 +86,13 @@ or changing alerts, compare their heading-to-body and paragraph spacing at wide
 and narrow widths, and check for page-specific typography overrides described
 above.
 
+In the NOFO edit page's publishing checks, use one alert heading and one
+expandable list per warning panel. **Check links** uses short labels in its
+list to distinguish broken internal links from email link issues. The email
+repair instructions appear once after the numbered list, inside the disclosure.
+Broken internal links appear first, followed by email link issues.
+See the [link warning review](review-evidence/email-link-warnings/README.md).
+
 ## Form save feedback
 
 **Design decision — October 29, 2026, reviewed in [#1249](https://github.com/HHS/simpler-grants-pdf-builder/pull/1249):**
