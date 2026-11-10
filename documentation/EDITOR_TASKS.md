@@ -642,6 +642,8 @@ You can make every table in a section use the full page width.
 
 The check runs on saved subsection content, including imported content and
 later edits. You can preview and download the NOFO while the warning is present.
+Select **Copy links** to share the full list of link issues, including when
+the list only contains email issues.
 
 <a id="task-link-check-external"></a>
 

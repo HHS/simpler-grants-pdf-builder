@@ -12,6 +12,7 @@ from unittest.mock import patch
 from bs4 import BeautifulSoup
 from django.test import Client, TestCase
 from django.urls import reverse
+from martor.utils import markdownify
 from users.models import BloomUser
 
 from nofos.models import Nofo, Section, Subsection
@@ -313,6 +314,7 @@ class LinkClassificationViewTests(TestCase):
         self.assertEqual(soup.find(id="tab-1")["aria-label"], "Check links (4)")
         panel = soup.find(id="tabpanel-1")
         self.assertEqual(panel.h3.get_text(), "Warning: review links")
+        self.assertEqual(panel.find("button").get_text(strip=True), "Copy links")
         self.assertEqual(
             panel.li.a["href"],
             reverse(
@@ -333,6 +335,55 @@ class LinkClassificationViewTests(TestCase):
         )
         self.assertFalse(response.context["has_warnings"])
         self.assertNotContains(response, 'id="tabpanel-1"')
+
+    def test_email_repairs_preserve_the_complete_recipient(self):
+        subsection = self.section.subsections.get()
+        response = self.save_body(
+            subsection,
+            "Contact o'connor@example.gov, ann&lee@example.gov, "
+            "or intake--team@example.gov. Skip help!desk@example.gov and "
+            'someone’s@example.gov and "old@example.gov"@example.org. '
+            'Ordinary punctuation: (parentheses@example.gov), "quoted@example.gov". '
+            "These already have email links: "
+            "[o'connor@example.org](mailto:o'connor@example.org), "
+            "[ann&lee@example.org](mailto:ann%26lee@example.org), "
+            "[grants@example.gov](mailto:grants@example.gov,team@example.gov).",
+        )
+        repairs = response.context["email_link_warnings"]
+        self.assertEqual(
+            [(repair["address"], repair["markdown"]) for repair in repairs],
+            [
+                (
+                    "o'connor@example.gov",
+                    "[o&#39;connor@example.gov](mailto:o%27connor@example.gov)",
+                ),
+                (
+                    "ann&lee@example.gov",
+                    "[ann&lee@example.gov](mailto:ann%26lee@example.gov)",
+                ),
+                (
+                    "intake--team@example.gov",
+                    "[intake&#45;&#45;team@example.gov](mailto:intake--team@example.gov)",
+                ),
+                (
+                    "parentheses@example.gov",
+                    "[parentheses@example.gov](mailto:parentheses@example.gov)",
+                ),
+                (
+                    "quoted@example.gov",
+                    "[quoted@example.gov](mailto:quoted@example.gov)",
+                ),
+            ],
+        )
+
+        for repair in repairs:
+            link = BeautifulSoup(markdownify(repair["markdown"]), "html.parser").a
+            self.assertEqual(link.get_text(), repair["address"])
+
+        response = self.save_body(
+            subsection, "\n\n".join(repair["markdown"] for repair in repairs)
+        )
+        self.assertEqual(response.context["email_link_warnings"], [])
 
     def test_email_warnings_keep_broken_internal_links_in_the_same_panel(self):
         response = self.save_body(

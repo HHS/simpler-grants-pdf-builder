@@ -330,9 +330,7 @@ Edit “{{ nofo|nofo_name }}”
         <div class="usa-alert">
           <div class="usa-alert__body">
             <h3 class="usa-alert__heading">Warning: review links</h3>
-            {% if has_broken_links %}
-              <button class="usa-button usa-button--outline usa-button--icon usa-button--icon--before usa-button--icon--usa-emergency usa-button--content_copy font-sans-2xs" type="button">Copy links</button>
-            {% endif %}
+            <button class="usa-button usa-button--outline usa-button--icon usa-button--icon--before usa-button--icon--usa-emergency usa-button--content_copy font-sans-2xs" type="button">Copy links</button>
             <details>
               <summary><span>{{ link_warning_count }} link issue{{ link_warning_count|pluralize }} to fix</span></summary>
               <ol class="usa-list usa-list--no-max-width">
