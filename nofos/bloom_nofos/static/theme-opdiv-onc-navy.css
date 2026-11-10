@@ -38,6 +38,24 @@ h3,
   color: var(--color--onc-navy);
 }
 
+/* The shared icon artwork uses currentColor for the glyph and circle. */
+:is(.toc--section-name--img, .section--before-you-begin--icon, .section--title-page--icon) svg {
+  color: var(--color--onc-navy);
+}
+
+:is(.toc--section-name--img, .section--before-you-begin--icon, .section--title-page--icon) svg > circle {
+  fill: var(--color--white);
+}
+
+.nofo--icons--border :is(.toc--section-name--img, .section--before-you-begin--icon, .section--title-page--icon) svg {
+  color: var(--color--white);
+}
+
+.nofo--icons--border :is(.toc--section-name--img, .section--before-you-begin--icon, .section--title-page--icon) svg > circle {
+  fill: var(--color--onc-navy);
+  stroke: var(--color--onc-navy);
+}
+
 @media screen and (max-width: 40em) {
   .nofo--cover-page--header,
   .nofo--cover-page--title {

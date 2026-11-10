@@ -200,7 +200,9 @@ class NofoThemeOptionsForm(forms.ModelForm):
         ]
 
         is_onc = self.instance.group == "onc"
-        if is_onc:
+        group_key = user.group.upper() if user and hasattr(user, "group") else None
+        is_bloom = group_key == "BLOOM"
+        if is_onc and not is_bloom:
             self.fields["theme"].choices = [
                 (
                     "ONC",
@@ -211,14 +213,6 @@ class NofoThemeOptionsForm(forms.ModelForm):
                     ],
                 )
             ]
-            self.fields["cover"].choices = [
-                (value, label)
-                for value, label in Nofo.COVER_CHOICES
-                if value in ONC_ALLOWED_COVERS
-            ]
-            self.fields["icon_style"].choices = get_icon_path_choices(
-                "portrait-onc-navy"
-            )
         elif user_is_nih_group(user):
             # NIH users see a restricted set of choices for all three fields.
             self.fields["theme"].choices = [
@@ -245,18 +239,12 @@ class NofoThemeOptionsForm(forms.ModelForm):
             # -------- Filter theme choices into optgroups by OpDiv
             theme_categories_dict = {}
             for value, label in selectable_theme_choices:
-                if value == "portrait-onc-navy":
+                if value == "portrait-onc-navy" and not is_bloom:
                     continue
                 opdiv = label.split(" ")[0]
                 theme_categories_dict.setdefault(opdiv, []).append((value, label))
 
-            group_key = user.group.upper() if user and hasattr(user, "group") else None
-
-            if (
-                group_key
-                and group_key != "BLOOM"
-                and group_key in theme_categories_dict
-            ):
+            if group_key and not is_bloom and group_key in theme_categories_dict:
                 theme_categories = {group_key: theme_categories_dict[group_key]}
             else:
                 theme_categories = theme_categories_dict
@@ -278,8 +266,20 @@ class NofoThemeOptionsForm(forms.ModelForm):
         selected_theme = (
             self.data.get(self.add_prefix("theme"), "") if self.is_bound else ""
         )
+        uses_onc_options = (
+            is_onc or (selected_theme or self.instance.theme) == "portrait-onc-navy"
+        )
+        if uses_onc_options:
+            self.fields["cover"].choices = [
+                (value, label)
+                for value, label in Nofo.COVER_CHOICES
+                if value in ONC_ALLOWED_COVERS
+            ]
+            self.fields["icon_style"].choices = get_icon_path_choices(
+                "portrait-onc-navy"
+            )
         if (
-            not is_onc
+            not uses_onc_options
             and not user_is_nih_group(user)
             and (
                 "hrsa-" in self.instance.theme

@@ -93,6 +93,7 @@ class ONCOnboardingTests(TestCase):
         self.client.force_login(self.bloom)
         self.assertContains(self.client.get(view_url), self.logo_alt)
         theme_url = reverse("nofos:nofo_edit_theme_options", args=[nofo.pk])
+        self.client.force_login(self.onc)
         theme_soup = BeautifulSoup(self.client.get(theme_url).content, "html.parser")
         self.assertEqual(
             [option["value"] for option in theme_soup.select("select#theme option")],
@@ -140,7 +141,10 @@ class ONCOnboardingTests(TestCase):
             }
             form = NofoThemeOptionsForm(invalid, user=user, instance=nofo)
             self.assertFalse(form.is_valid())
-            self.assertEqual(set(form.errors), {"theme", "cover", "icon_style"})
+            expected_errors = {"cover", "icon_style"}
+            if user == self.onc:
+                expected_errors.add("theme")
+            self.assertEqual(set(form.errors), expected_errors)
 
     def test_onc_theme_is_not_selectable_on_another_groups_record(self):
         nofo = Nofo(title="Another record", opdiv="CDC", group="cdc")
@@ -149,8 +153,31 @@ class ONCOnboardingTests(TestCase):
             "cover": "nofo--cover-page--text",
             "icon_style": "nofo--icons--solid",
         }
-        for user in (self.bloom, self.onc, self.cdc):
+        for user in (self.onc, self.cdc):
             with self.subTest(group=user.group):
                 form = NofoThemeOptionsForm(data, user=user, instance=nofo)
                 self.assertFalse(form.is_valid())
                 self.assertIn("theme", form.errors)
+
+    def test_bloom_can_select_onc_theme_across_groups(self):
+        for group in ("onc", "cdc"):
+            with self.subTest(group=group):
+                nofo = Nofo(
+                    title="Synthetic notice", group=group, theme="portrait-cdc-blue"
+                )
+                form = NofoThemeOptionsForm(
+                    {
+                        "theme": "portrait-onc-navy",
+                        "cover": "nofo--cover-page--text",
+                        "icon_style": "nofo--icons--solid",
+                    },
+                    user=self.bloom,
+                    instance=nofo,
+                )
+                self.assertTrue(form.is_valid(), form.errors)
+                themes = {
+                    value
+                    for _, options in form.fields["theme"].choices
+                    for value, _ in options
+                }
+                self.assertIn("portrait-cdc-blue", themes)

@@ -35,6 +35,26 @@ and [group setup](../../GROUPS.md) for current instructions.
 | Text only | [Before](text-before.jpg) | [After](text-after.jpg) | [Local PDF render](text-pdf.jpg) |
 | Standard image | [Before](image-before.jpg) | [After](image-after.jpg) | [Local PDF render](image-pdf.jpg) |
 
+## Cover and icon contrast matrix
+
+ONC has one theme. The two cover options and two icon styles give four
+combinations. Chrome verified the computed header and icon colors in a local
+fixture using the Builder stylesheets and shared SVG artwork. The same ONC icon
+rules apply to screen and print. The icons supplement visible section labels.
+
+| Cover | Icon style | Cover header text | Icon glyph and fill |
+| --- | --- | --- | --- |
+| Text only | Outlined | White on navy, 14.12:1 | Navy on white, 14.12:1 |
+| Text only | Filled | White on navy, 14.12:1 | White on navy, 14.12:1 |
+| Standard image | Outlined | White on navy, 14.12:1 | Navy on white, 14.12:1 |
+| Standard image | Filled | White on navy, 14.12:1 | White on navy, 14.12:1 |
+
+These solid-color pairs exceed 4.5:1 for normal text and 3:1 for graphics.
+Both cover layouts place the title on white and keep the image separate from
+the text. The gold cover rule is decorative. This matrix covers the ONC theme
+colors and icon treatment. The PDF cover renders above cover both layouts.
+A full export check with the revised icons remains part of rollout validation.
+
 ## Rollout checks
 
 Verify a live Builder export in an environment where DocRaptor is authorized.
