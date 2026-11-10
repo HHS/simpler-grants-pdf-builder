@@ -69,7 +69,7 @@ Chrome captured the rendered HTML at a 1,200 CSS pixel viewport. The same
 synthetic Word NOFO was imported as an ONC user and used throughout. The
 import selected ONC and Text only. The sample includes a long title, a
 bundled cover image for the Standard image option, and synthetic Key facts
-and Key dates callouts. The theme picker exposed one theme, two cover
+Key dates, and Have questions? callouts. The theme picker exposed one theme, two cover
 options and two icon styles.
 
 | View | Text only / Outlined | Standard image / Filled |
@@ -83,3 +83,9 @@ options and two icon styles.
 
 These are browser screenshots. The earlier tagged PDF cover renders remain
 available above.
+
+The three right-column callouts use separate pale-blue cards with navy text
+and links (12.31:1). Chrome verified the colors in screen and print media.
+At 1,200 pixels the cards sit alongside Basic information and Summary. At
+390 pixels they stack within the content width. These checks do not constitute
+a new PDF export.

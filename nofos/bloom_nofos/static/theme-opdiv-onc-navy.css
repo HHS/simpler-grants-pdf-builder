@@ -30,6 +30,15 @@
   color: inherit;
 }
 
+.section--content--right-col > .callout-box {
+  background-color: #e0f2ff;
+  color: var(--color--onc-navy);
+}
+
+.section--content--right-col > .callout-box a {
+  color: inherit;
+}
+
 h1,
 h2,
 h3,
@@ -56,7 +65,32 @@ h3,
   stroke: var(--color--onc-navy);
 }
 
+@media screen {
+  .section--content:has(> .section--content--right-col) {
+    display: flow-root;
+  }
+
+  .section--content:has(> .section--content--right-col) > :not(.section--content--right-col) {
+    width: 67%;
+  }
+
+  .section--content > .section--content--right-col {
+    width: 30%;
+  }
+
+  .section--content > .section--content--right-col > .callout-box {
+    width: 100%;
+    overflow-wrap: anywhere;
+  }
+}
+
 @media screen and (max-width: 40em) {
+  .section--content:has(> .section--content--right-col) > :not(.section--content--right-col),
+  .section--content > .section--content--right-col {
+    float: none;
+    width: 100%;
+  }
+
   .nofo--cover-page--header,
   .nofo--cover-page--title {
     padding-inline: 1rem;
