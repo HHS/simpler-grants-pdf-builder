@@ -68,9 +68,9 @@ were provisioned for this local test.
 Chrome captured the rendered HTML at a 1,200 CSS pixel viewport. The same
 synthetic Word NOFO was imported as an ONC user and used throughout. The
 import selected ONC and Text only. The sample includes a long title, a
-bundled cover image for the Standard image option, and synthetic Key facts
-Key dates, and Have questions? callouts. The theme picker exposed one theme, two cover
-options and two icon styles.
+bundled cover image for the Standard image option, and synthetic callouts
+for Key facts, Key dates, and Have questions? The theme picker exposed one
+theme, two cover options and two icon styles.
 
 | View | Text only / Outlined | Standard image / Filled |
 | --- | --- | --- |

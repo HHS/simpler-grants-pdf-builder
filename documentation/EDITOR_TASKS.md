@@ -109,8 +109,7 @@ is needed, contact the SimplerNOFOs team.
 **Notes**
 
 - New ONC-group imports start with the **ONC** theme and the **Text only** cover.
-  **NOFO theme options** also offers the **Standard image** cover and two icon
-  styles. Bloom editors can select ONC alongside other OpDiv themes.
+  See [Change theme, cover style, or icon style](#task-theme) for the available options.
 - When the imported OpDiv identifies CMS, Builder suggests **CMS (Light)** under
   **NOFO theme options** on a new import, even if the opportunity number is blank
   or a placeholder.
@@ -789,6 +788,10 @@ value. New HRSA imports start with **Text only**; choose **Standard image** here
 to use an image cover.
 
 **Notes**
+
+- ONC editors see one theme, **ONC**. For ONC notices, choose **Text only** or
+  **Standard image** and either **Filled** or **Outlined** icons. Bloom editors
+  can select ONC alongside other OpDiv themes.
 
 - New imports that identify SAMHSA start with **Text only**. To use an image
   cover, choose **Standard image** in **Cover style**.
