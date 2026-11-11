@@ -248,20 +248,25 @@ change a shared environment as part of local testing.
 
 ## Upload privacy notice
 
-The upload page always shows a **Your file and your privacy** notice directly
-above the file input. The page invites draft or published NOFOs and asks users to
+The upload page always shows the upload notice directly above the file input,
+below the page introduction. The notice is a slim informational alert
+(`#readability-privacy-notice`) with one paragraph: "Only upload documents
+you’re authorized to share. Your document is processed temporarily on
+HHS-operated systems; no report history is kept." A **How we handle your
+document** disclosure follows it, also before the file input, and asks users to
 follow their agency's rules for sharing pre-decisional content. There is one
-version of this notice; it does not change when the pilot is enabled.
+version of this notice; it does not change when the pilot is enabled. See the
+[UI pattern](../UI_PATTERNS.md#readability-checker-upload-notice).
 
-Every statement in the notice is limited to what the application code
-establishes: the PDF is processed temporarily on HHS-operated systems, upload
-processing does not call an outside service, and nothing is added to NOFO Builder
-or kept as report history. The notice links to the
-[HHS Privacy Policy](https://www.hhs.gov/privacy/privacy-policy/index.html) and
-uses the same support path as the unavailable page: the user's agency grants
-policy office, then the NOFO Builder Feedback Form.
+Every statement in the notice and its disclosure is limited to what the
+application code establishes: the document is processed temporarily on
+HHS-operated systems, upload processing does not call an outside service, and
+nothing is added to NOFO Builder or kept as report history. The disclosure links
+to the [HHS Privacy Policy](https://www.hhs.gov/privacy/privacy-policy/index.html).
+The page's **Need help?** text uses the same support path as the unavailable
+page: the user's agency grants policy office, then the NOFO Builder Feedback Form.
 
-When outcome recording is enabled, the notice also describes the content-free
+When outcome recording is enabled, the disclosure also describes the content-free
 usage/error records, including the attempted PDF/DOCX/unknown category, and their retention: no automatic expiration by default, or
 the configured number of days if a future expiration policy is introduced.
 

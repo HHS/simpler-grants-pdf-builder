@@ -258,8 +258,23 @@ class PdfReadabilityPageTests(TestCase):
             "<summary><span>How we handle your document</span></summary>",
             html=True,
         )
+        # The upload condition and its handling details are read before the
+        # file input, as a non-interrupting slim informational alert (#1329).
+        self.assertContains(
+            response,
+            '<div class="usa-alert usa-alert--info usa-alert--slim margin-top-0" '
+            'role="note" id="readability-privacy-notice">',
+        )
+        notice_start = content.index('id="readability-privacy-notice"')
         self.assertLess(
-            content.index('id="pdf"'), content.index('id="readability-privacy-notice"')
+            notice_start, content.index("<summary><span>How we handle your document")
+        )
+        self.assertLess(
+            content.index("<summary><span>How we handle your document"),
+            content.index('id="pdf"'),
+        )
+        self.assertLess(
+            content.index('id="pdf"'), content.index('id="analyze-pdf-button"')
         )
         self.assertContains(
             response,

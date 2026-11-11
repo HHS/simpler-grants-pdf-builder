@@ -126,8 +126,11 @@
 
       <form method="post" enctype="multipart/form-data" class="usa-form readability-form" id="pdf-readability-form">
         {% csrf_token %}
-        {% include "includes/file_input.html" with id="pdf" label=file_label hint=upload_hint accept=file_accept error=error only %}
-        <p class="margin-top-2" id="readability-privacy-notice">Only upload documents you’re authorized to share. Your document is processed temporarily on HHS-operated systems; no report history is kept.</p>
+        <div class="usa-alert usa-alert--info usa-alert--slim margin-top-0" role="note" id="readability-privacy-notice">
+          <div class="usa-alert__body">
+            <p class="usa-alert__text">Only upload documents you’re authorized to share. Your document is processed temporarily on HHS-operated systems; no report history is kept.</p>
+          </div>
+        </div>
         <details class="readability-additional-info margin-top-2">
           <summary><span>How we handle your document</span></summary>
           <div id="readability-privacy-details" class="usa-prose">
@@ -139,6 +142,7 @@
             <p>Read the <a class="usa-link usa-link--external" href="https://www.hhs.gov/privacy/privacy-policy/index.html" target="_blank" rel="noopener noreferrer">HHS Privacy Policy<span class="usa-sr-only"> (opens in a new tab)</span></a>.</p>
           </div>
         </details>
+        {% include "includes/file_input.html" with id="pdf" label=file_label hint=upload_hint accept=file_accept error=error only %}
         <button type="submit" class="usa-button margin-top-3" id="analyze-pdf-button">Analyze document</button>
         <p id="pdf-submit-status" role="status" aria-live="polite" class="margin-top-2"></p>
       </form>
