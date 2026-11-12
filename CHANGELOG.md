@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.58.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.58.0...nofos-v3.58.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* ignore CVE-2026-119170 for Python 3.14.10 in Grype scan ([#1338](https://github.com/HHS/simpler-grants-pdf-builder/issues/1338)) ([8c62497](https://github.com/HHS/simpler-grants-pdf-builder/commit/8c624979d3787a702abb09b27d17c14c820e4606))
+* show Readability Checker upload notice as a slim info alert above the file input ([#1332](https://github.com/HHS/simpler-grants-pdf-builder/issues/1332)) ([9989781](https://github.com/HHS/simpler-grants-pdf-builder/commit/9989781f1b5bb12401cff7698c1b2dd484ef78cd))
+* stack Readability Checker and Builder footer links in one column on small screens ([#1340](https://github.com/HHS/simpler-grants-pdf-builder/issues/1340)) ([32e99f8](https://github.com/HHS/simpler-grants-pdf-builder/commit/32e99f8394245ff0957c2cc55d79c02d13a802d9))
+
 ## [3.58.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.57.1...nofos-v3.58.0) (2026-11-12)
 
 
