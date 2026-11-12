@@ -24,11 +24,7 @@
       <div class="usa-navbar">
         <div class="usa-logo">
           <em class="usa-logo__text">
-            {% if request.resolver_match.url_name == 'authenticated_pdf_readability' %}
-              <a href="{% url 'index' %}">NOFO Builder</a>
-            {% else %}
-              <span>NOFO Builder</span>
-            {% endif %}
+            <a href="{% url 'index' %}">NOFO Builder</a>
           </em>
         </div>
       </div>
