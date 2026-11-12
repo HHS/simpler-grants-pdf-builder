@@ -457,6 +457,30 @@ This entry covers the readability reliability notice. Add other verified
 alert patterns here as they are reviewed; a site-wide alert audit is not
 required to extend this catalog.
 
+## Readability Checker upload notice
+
+The [Readability Checker upload page](../nofos/bloom_nofos/templates/pdf_readability.html)
+states its upload condition in a slim informational alert directly above the
+file input, below the page introduction. Users should read a condition for
+uploading before they choose a file, so place it before the field it governs
+rather than between the field and the submit button.
+
+Reuse the slim info alert already used on the Builder readability panel
+([readability_automatic_notice.html](../nofos/nofos/templates/nofos/includes/readability_automatic_notice.html)):
+`usa-alert usa-alert--info usa-alert--slim`, no heading, and `usa-alert__text`
+on its one paragraph. Use `role="note"`. Do not use `role="alert"` or
+`usa-alert--warning`; the notice is non-critical information, and `role="alert"`
+would interrupt screen readers on page load.
+
+The **How we handle your document** disclosure follows the alert, still before
+the file input, so the notice and its details stay together. The file input and
+**Analyze document** then keep the standard 1.5rem button spacing. Because the
+form uses `usa-form`, USWDS's `.usa-form .usa-button` rule would otherwise reduce
+that margin to 0.5rem below 30em and override `margin-top-3`; `pdf_readability.css`
+keeps 1.5rem at every width. The notice's wording is
+limited by the [upload privacy notice](readability/PDF_READABILITY_PILOT.md#upload-privacy-notice)
+rules. See [the before-and-after review](review-evidence/1329/README.md).
+
 ## Leftover template instruction warning after Word import
 
 This is a fallback review warning for a successful Word import, not an import

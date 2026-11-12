@@ -434,6 +434,13 @@ matched. See [TABLES.md](TABLES.md) and IMPORT-054 in
 
 ## 2026-09-25 — Always show a privacy notice on the PDF readability upload page
 
+**2026-11-11 amendment (#1329):** #1035 had reduced the notice to a plain
+paragraph after the file input, followed by a **How we handle your document**
+disclosure. Show that paragraph as a slim informational alert (`role="note"`,
+no heading) and move it and the disclosure back above the file input, so users
+read the upload condition before choosing a file. The wording is unchanged and
+the #968 limits below still apply. The original decision follows.
+
 **Context:** The public `/readability-checker/` page invited users to upload a draft NOFO,
 but its only data-handling text was a plain paragraph among several others above
 the form. It named no privacy policy or support path, and the pilot runbook
