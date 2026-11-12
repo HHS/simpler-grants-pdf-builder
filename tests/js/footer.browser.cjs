@@ -15,7 +15,7 @@ const root = resolve(__dirname, '../..');
     return url.pathname.startsWith('/static/') && existsSync(path)
       ? route.fulfill({path}) : route.abort();
   });
-  const output = resolve(root, 'documentation/review-evidence/footer-two-columns');
+  const output = resolve(root, 'documentation/review-evidence/footer-small-screen-column');
   mkdirSync(output, {recursive:true});
   for (const {template, authenticated} of [
     {template: 'base.html', authenticated: true},
@@ -28,7 +28,7 @@ const root = resolve(__dirname, '../..');
     const html = result.slice(result.indexOf('<!DOCTYPE html>')).replace('<head>', '<head><base href="http://local.test/">');
     await page.setContent(html);
     await page.evaluate(() => document.fonts.ready);
-    for (const width of [320,375,480,576,768,1023,1024,1280]) {
+    for (const width of [320,375,480,576,639,640,768,1023,1024,1280]) {
       await page.setViewportSize({width,height:700});
       const dimensions = await page.evaluate(() => ({width:innerWidth, scroll:document.documentElement.scrollWidth}));
       console.log({template, authenticated, ...dimensions});
@@ -39,16 +39,14 @@ const root = resolve(__dirname, '../..');
           const {x, y, width} = item.getBoundingClientRect();
           return {x, y, width};
         }));
-      if (width < 1024) {
-        assert.equal(items[0].y, items[1].y);
-        assert.ok(items[2].y > items[0].y);
-        if (authenticated) {
-          assert.equal(items[2].y, items[3].y);
-          assert.equal(items[0].x, items[2].x);
-          assert.equal(items[1].x, items[3].x);
-        }
+      if (width < 640) {
+        // Small screens: one left-aligned column, in source order.
+        assert.ok(items.every(item => item.x === items[0].x));
+        items.slice(1).forEach((item, i) => assert.ok(item.y > items[i].y));
       } else {
+        // Tablet and up: one row.
         assert.ok(items.every(item => item.y === items[0].y));
+        assert.ok(items[0].x < items[1].x);
       }
       const labels = await page.locator('footer nav a').evaluateAll(links =>
         links.map(link => link.textContent.trim().replace(/\s+/g, ' ')));
@@ -56,7 +54,6 @@ const root = resolve(__dirname, '../..');
         ...(authenticated ? ['Submit a support ticket'] : []),
         'Latest updates', 'Privacy policy (opens in a new window)', 'Back to top',
       ]);
-      assert.ok(items[0].x < items[1].x);
       const identifier = page.getByRole('region', {name: 'Agency identifier'});
       assert.equal(await identifier.count(), 1);
       const agencyLink = identifier.getByRole('link', {name: 'U.S. Department of Health and Human Services'});
@@ -75,7 +72,7 @@ const root = resolve(__dirname, '../..');
       await page.keyboard.press('Shift+Tab');
       assert.equal(await agencyLink.evaluate(el => el === document.activeElement), true);
       assert.notEqual(await agencyLink.evaluate(el => getComputedStyle(el).outlineStyle), 'none');
-      if(authenticated && [320,1280].includes(width)) {
+      if(authenticated && [320,768,1280].includes(width)) {
         await page.screenshot({path:resolve(output,`after-${width}.png`),fullPage:true});
         await agencyLink.blur();
         await page.locator('footer').screenshot({path:resolve(output,`footer-${width}.png`)});

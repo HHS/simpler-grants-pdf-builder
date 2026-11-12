@@ -660,9 +660,15 @@ decorative because the adjacent text identifies the agency. Give its SVG title a
 footer-specific ID so it does not collide with other uses of the logo.
 
 Keep the identifier in the application shell; NOFO document and PDF templates
-continue to use their own branding. Verify signed-in and signed-out layouts,
-keyboard focus, and wrapping at mobile and desktop widths with
-`tests/js/footer.browser.cjs`.
+continue to use their own branding.
+
+Footer navigation links use `grid-col-12 tablet:grid-col-auto`: one
+left-aligned column in source order below the USWDS tablet breakpoint (640px),
+and one row from tablet width up. Don't use a two-column grid; four links don't
+fit on one row below about 600px, so keep the column until tablet width.
+
+Verify signed-in and signed-out layouts, keyboard focus, and wrapping at mobile
+and desktop widths with `tests/js/footer.browser.cjs`.
 
 ## Metrics page headings and back navigation
 
