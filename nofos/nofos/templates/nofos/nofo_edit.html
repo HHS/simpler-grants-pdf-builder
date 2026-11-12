@@ -755,8 +755,7 @@ Edit “{{ nofo|nofo_name }}”
   </thead>
   <tbody>
     {% for subsection in section.subsections.all|dictsort:"order" %}
-    {# Ignore "Basic information" subsection #}
-      {% if subsection.name != "Basic information" %}
+      {% if not subsection.is_cover_basic_information %}
         <tr>
           <th scope="row"
             class="nofo-edit-table--subsection--name{% if subsection|has_heading_error:heading_errors %} nofo_edit--heading-error{% endif %}{% if subsection.html_class %} {{ subsection.html_class }}{% endif %}"

@@ -580,7 +580,7 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
                 **link,
                 "location_html_id": (
                     link["subsection"].html_id
-                    if link["subsection"].name != "Basic information"
+                    if not link["subsection"].is_cover_basic_information
                     and link["subsection"].html_id
                     else link["section"].html_id
                 ),

@@ -227,6 +227,10 @@ an invitation to review, not evidence that all highlighted content is disposable
 
 All subsection-level tasks start here.
 
+The leading **Basic information** in Step 1 is managed through the separate
+**Basic information** table. A subsection with the same name elsewhere is edited
+in its own section table like any other subsection.
+
 **Steps**
 
 1. On the NOFO edit page, find the section table that contains

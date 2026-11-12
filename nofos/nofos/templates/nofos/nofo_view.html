@@ -339,9 +339,11 @@
         {% if section.is_first_main_section %}
           <div class="section--content--basic-information">
             {% with first_subsection=nofo.get_first_subsection %}
-              {% with tag=first_subsection.tag content=first_subsection.name id=first_subsection.html_id %}
-                {% include "includes/heading.html" with tag=tag content=content id=id only %}
-              {% endwith %}
+              {% if first_subsection.is_cover_basic_information %}
+                {% with tag=first_subsection.tag content=first_subsection.name id=first_subsection.html_id %}
+                  {% include "includes/heading.html" with tag=tag content=content id=id only %}
+                {% endwith %}
+              {% endif %}
                 <div class="section--content--intro{% if not nofo.tagline %} section--content--intro--without-tagline{% endif %}">
                   <p><strong>{{ nofo.opdiv }}</strong></p>
                   <p>{{ nofo.agency }}</p>
@@ -372,7 +374,9 @@
 
         <!-- loop through remaining subsections as usual -->
         {% for subsection in section.subsections.all|dictsort:"order" %}
-          {% if subsection.callout_box %}
+          {% if subsection.is_cover_basic_information %}
+            {# The leading Step 1 Basic information heading is rendered with metadata above. #}
+          {% elif subsection.callout_box %}
             {% if nofo_theme_orientation == 'portrait' %}
               {% if not section.is_first_main_section or not subsection|is_floating_callout_box %}
                 {% include "includes/callout_box.html" with subsection=subsection nofo=nofo break_colons=False only %}
@@ -381,17 +385,15 @@
               {% include "includes/callout_box.html" with subsection=subsection nofo=nofo only %}
             {% endif %}
           {% else %}
-            {% if subsection.name|lower != 'basic information' %}
-              {% spaceless %}
-              {% if 'page-break-before' in subsection.html_class %}
-                {{ '<p>page-break-before</p>'|convert_paragraphs_to_hrs }}
+            {% spaceless %}
+            {% if 'page-break-before' in subsection.html_class %}
+              {{ '<p>page-break-before</p>'|convert_paragraphs_to_hrs }}
               {% endif %}
-              {% endspaceless %}
-              {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
-                {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
-              {% endwith %}
-                {{ subsection.body|safe_markdown|introductory_page_links:nofo|add_classes_to_tables|replace_unicode_with_icon|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
-              {% endif %}
+            {% endspaceless %}
+            {% with tag=subsection.tag content=subsection.name id=subsection.html_id class=subsection.html_class %}
+              {% include "includes/heading.html" with tag=tag content=content id=id class=class only %}
+            {% endwith %}
+            {{ subsection.body|safe_markdown|introductory_page_links:nofo|add_classes_to_tables|replace_unicode_with_icon|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs }}
           {% endif %}
         {% endfor %}
       </div>

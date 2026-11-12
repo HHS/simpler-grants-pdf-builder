@@ -1029,6 +1029,15 @@ class Subsection(BaseSubsection):
         Section, on_delete=models.CASCADE, related_name="subsections"
     )
 
+    @property
+    def is_cover_basic_information(self):
+        """Only the leading Step 1 subsection is replaced by cover metadata."""
+        return (
+            self.order == 1
+            and (self.name or "").casefold() == "basic information"
+            and self.section.is_first_main_section
+        )
+
     POLICY_LANGUAGE_STATUS_CHOICES = [
         ("none", "Not policy language"),
         ("intact", "Matches current canonical text"),
