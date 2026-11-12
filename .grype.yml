@@ -36,6 +36,20 @@ ignore:
       version: "3.14.10"
       type: binary
 
+  # CPython hashlib FIPS enforcement regression; only 3.14.10 and only with
+  # OpenSSL in FIPS mode (not enabled in our images).
+  # Fixed in 3.14.11, which has no python:3.14-slim image yet. Remove once
+  # python:3.14-slim ships 3.14.11 or later and the scan passes without this entry.
+  # Mirrors the entry in HHS/simpler-grants-gov .grype.yml.
+  # Advisory: https://github.com/python/cpython/issues/160923
+  # https://github.com/HHS/simpler-grants-gov/issues/8109
+  # Last checked: 11/12/2026
+  - vulnerability: CVE-2026-119170
+    package:
+      name: python
+      version: "3.14.10"
+      type: binary
+
   # Not fixed in GA Python yet
   # https://github.com/HHS/simpler-grants-gov/issues/8109
   # Last checked: 05/13/26
