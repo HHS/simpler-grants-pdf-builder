@@ -1,5 +1,7 @@
 .readability-page { width: 100%; }
 .readability-form { max-width: 35rem; }
+/* USWDS reduces .usa-form .usa-button to 0.5rem below 30em, overriding margin-top-3. Keep the standard 1.5rem at every width (#1329). */
+.readability-form .usa-button { margin-top: 1.5rem; }
 .readability-report-heading { border-bottom: 2px solid #005ea2; padding-bottom: 1rem; }
 .readability-report-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 1rem; margin: 1.5rem 0; }
 .readability-report-meta dt { font-weight: 700; }
