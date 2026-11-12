@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.58.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.57.1...nofos-v3.58.0) (2026-11-12)
+
+
+### Features
+
+* onboard ONC with a group and branded NOFO theme ([#1324](https://github.com/HHS/simpler-grants-pdf-builder/issues/1324)) ([13617f2](https://github.com/HHS/simpler-grants-pdf-builder/commit/13617f221c426fe76ed8eba394784f0e7dbd997a))
+* warn when subsection email addresses need links ([#1320](https://github.com/HHS/simpler-grants-pdf-builder/issues/1320)) ([68cf22c](https://github.com/HHS/simpler-grants-pdf-builder/commit/68cf22caa65a48b85d37c44824c7633c73c9c719))
+
+
+### Bug Fixes
+
+* link NOFO Builder header on the public Readability Checker ([#1334](https://github.com/HHS/simpler-grants-pdf-builder/issues/1334)) ([4b33ac5](https://github.com/HHS/simpler-grants-pdf-builder/commit/4b33ac52b26cf07f85bc71cdcf04ad118f045ffa))
+
+
+### Documentation
+
+* add a Readability Checker launch risk and response plan ([#1319](https://github.com/HHS/simpler-grants-pdf-builder/issues/1319)) ([ec8862b](https://github.com/HHS/simpler-grants-pdf-builder/commit/ec8862b58d7234072d1f55d7b4876fb0d216df18))
+* clarify AS November 10 integration assumptions ([#1323](https://github.com/HHS/simpler-grants-pdf-builder/issues/1323)) ([1777bda](https://github.com/HHS/simpler-grants-pdf-builder/commit/1777bda3e570d4d1f83867647713ae01dfa4f8f6))
+* record Readability Checker dev storage evidence ([#1322](https://github.com/HHS/simpler-grants-pdf-builder/issues/1322)) ([c5aee10](https://github.com/HHS/simpler-grants-pdf-builder/commit/c5aee10ec63b4cde554046f03331517787a7977d))
+* record signed-out dev logging evidence ([#1325](https://github.com/HHS/simpler-grants-pdf-builder/issues/1325)) ([5831b6f](https://github.com/HHS/simpler-grants-pdf-builder/commit/5831b6f878e50592126e35fe4902d635ccecdcba))
+
 ## [3.57.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.57.0...nofos-v3.57.1) (2026-11-09)
 
 
