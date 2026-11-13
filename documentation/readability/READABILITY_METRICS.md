@@ -115,8 +115,9 @@ Deleting a user retains their snapshots with a null requesting user.
 ## Edit-screen panel
 
 When the feature flag is enabled, the normal NOFO edit screen shows a compact,
-collapsed readability accordion after the primary NOFO status. A **Beta** tag
-identifies the feature as experimental. Expanding the accordion starts an
+collapsed readability accordion after the primary NOFO status. The heading
+has no **Beta** tag: the metrics and targets follow the published FY27 NOFO
+Content and Clearance Guidance. Expanding the accordion starts an
 on-demand calculation, and each later expansion calculates again. There is no
 manual recalculate control: saving an edit reloads the edit page, and **Save
 these results** rechecks the NOFO before saving. A **Try again** button appears
