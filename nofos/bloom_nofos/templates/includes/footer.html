@@ -1,0 +1,43 @@
+{% comment %}
+  Shared application footer: HHS identifier, then two rows of links (#1343).
+  Row 1 holds NOFO Builder links; row 2 holds HHS-wide policy links like the
+  simpler.grants.gov footer. Pass show_support_link=True to show the support
+  ticket link to signed-in users.
+{% endcomment %}
+<footer class="usa-footer builder-footer">
+  {% include "includes/hhs_identifier.html" %}
+  <div class="builder-footer__primary">
+    <nav class="builder-footer__container" aria-label="Footer navigation">
+      <ul class="builder-footer__list builder-footer__list--primary">
+        <li>
+          <a class="builder-footer__link usa-link--external" href="https://www.hhs.gov/about/agencies/asfr/grants/index.html" target="_blank" rel="noopener noreferrer">About Office of Grants<span class="usa-sr-only"> (opens in a new window)</span></a>
+        </li>
+        {% if show_support_link and user.is_authenticated %}
+          <li>
+            {% include "includes/feedback_link.html" with html_class="builder-footer__link" link_text="Submit a support ticket" only %}
+          </li>
+        {% endif %}
+        <li>
+          <a class="builder-footer__link usa-link--external" href="https://github.com/HHS/simpler-grants-pdf-builder/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Latest updates<span class="usa-sr-only"> (opens in a new window)</span></a>
+        </li>
+        <li class="builder-footer__item--back-to-top">
+          <a class="builder-footer__link back-to-top" href="#back-to-top">Back to top</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+  <div class="builder-footer__secondary">
+    <nav class="builder-footer__container" aria-label="HHS policies and resources">
+      <ul class="builder-footer__list builder-footer__list--secondary">
+        <li><a class="builder-footer__link usa-link--external" href="https://www.hhs.gov/about/index.html" target="_blank" rel="noopener noreferrer">About HHS<span class="usa-sr-only"> (opens in a new window)</span></a></li>
+        <li><a class="builder-footer__link usa-link--external" href="https://www.grants.gov/accessibility-compliance" target="_blank" rel="noopener noreferrer">Accessibility support<span class="usa-sr-only"> (opens in a new window)</span></a></li>
+        <li><a class="builder-footer__link usa-link--external" href="https://www.hhs.gov/foia/index.html" target="_blank" rel="noopener noreferrer">FOIA requests<span class="usa-sr-only"> (opens in a new window)</span></a></li>
+        <li><a class="builder-footer__link usa-link--external" href="https://www.hhs.gov/about/agencies/asa/eeo/no-fear-act/index.html" target="_blank" rel="noopener noreferrer">No FEAR Act data<span class="usa-sr-only"> (opens in a new window)</span></a></li>
+        <li><a class="builder-footer__link usa-link--external" href="https://oig.hhs.gov/" target="_blank" rel="noopener noreferrer">Office of the Inspector General<span class="usa-sr-only"> (opens in a new window)</span></a></li>
+        <li><a class="builder-footer__link usa-link--external" href="https://www.hhs.gov/about/budget/budget-in-brief/index.html" target="_blank" rel="noopener noreferrer">Performance reports<span class="usa-sr-only"> (opens in a new window)</span></a></li>
+        <li><a class="builder-footer__link usa-link--external" href="https://www.hhs.gov/privacy/privacy-policy/index.html" target="_blank" rel="noopener noreferrer">Privacy policy<span class="usa-sr-only"> (opens in a new window)</span></a></li>
+        <li><a class="builder-footer__link usa-link--external" href="https://www.hhs.gov/vulnerability-disclosure-policy/index.html" target="_blank" rel="noopener noreferrer">Vulnerability disclosure policy<span class="usa-sr-only"> (opens in a new window)</span></a></li>
+      </ul>
+    </nav>
+  </div>
+</footer>
