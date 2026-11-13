@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.59.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.58.1...nofos-v3.59.0) (2026-11-13)
+
+
+### Features
+
+* add Office of Grants and HHS policy link rows to the footer ([#1344](https://github.com/HHS/simpler-grants-pdf-builder/issues/1344)) ([144f057](https://github.com/HHS/simpler-grants-pdf-builder/commit/144f057e1d1501766cfa5345aa168c37dcd78a16))
+
+
+### Miscellaneous Chores
+
+* bump soupsieve from 2.9.2 to 4.0 ([#1342](https://github.com/HHS/simpler-grants-pdf-builder/issues/1342)) ([83fdc9a](https://github.com/HHS/simpler-grants-pdf-builder/commit/83fdc9a686aa46e3108a5f4c034b69c86874eec2))
+
 ## [3.58.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.58.0...nofos-v3.58.1) (2026-11-12)
 
 
