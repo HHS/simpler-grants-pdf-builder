@@ -183,7 +183,7 @@ class AuthenticatedPilotTests(TestCase):
         self.assertContains(response, "Missing or changed text can affect the results")
         self.assertContains(response, "Keep important text in the main document body")
         self.assertContains(
-            response, "Remove template instructions and unused draft options"
+            response, "Remove other writer notes and unused draft options"
         )
         self.assertNotContains(response, "Review the measurement scope")
         self.assertNotContains(response, "usa-alert--info readability-reliability")
