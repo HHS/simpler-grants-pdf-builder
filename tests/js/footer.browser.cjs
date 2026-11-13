@@ -15,12 +15,21 @@ const root = resolve(__dirname, '../..');
     return url.pathname.startsWith('/static/') && existsSync(path)
       ? route.fulfill({path}) : route.abort();
   });
-  const output = resolve(root, 'documentation/review-evidence/footer-small-screen-column');
+  const output = resolve(root, 'documentation/review-evidence/1343');
   mkdirSync(output, {recursive:true});
-  for (const {template, authenticated} of [
-    {template: 'base.html', authenticated: true},
-    {template: 'base.html', authenticated: false},
-    {template: 'pdf_readability_base.html', authenticated: false},
+  const newWindow = ' (opens in a new window)';
+  const policyLinks = ['About HHS', 'Accessibility support', 'FOIA requests', 'No FEAR Act data',
+    'Office of the Inspector General', 'Performance reports', 'Privacy policy'].map(text => text + newWindow);
+  const rows = [
+    {selector: '.builder-footer__primary', background: 'rgb(11, 71, 120)'},
+    {selector: '.builder-footer__secondary', background: 'rgb(0, 35, 64)'},
+  ];
+  for (const {template, authenticated, support} of [
+    {template: 'base.html', authenticated: true, support: true},
+    {template: 'base.html', authenticated: false, support: false},
+    // The Readability Checker footer omits the support link even when signed in.
+    {template: 'pdf_readability_base.html', authenticated: true, support: false},
+    {template: 'pdf_readability_base.html', authenticated: false, support: false},
   ]) {
     const result = execFileSync(process.env.PYTHON || 'python', ['manage.py', 'shell', '-c',
       `from django.template.loader import render_to_string; from types import SimpleNamespace; print(render_to_string('${template}', {'user': SimpleNamespace(is_authenticated=${authenticated?'True':'False'}, email='sample@example.com')}))`
@@ -28,32 +37,50 @@ const root = resolve(__dirname, '../..');
     const html = result.slice(result.indexOf('<!DOCTYPE html>')).replace('<head>', '<head><base href="http://local.test/">');
     await page.setContent(html);
     await page.evaluate(() => document.fonts.ready);
-    for (const width of [320,375,480,576,639,640,768,1023,1024,1280]) {
+    const primaryLabels = [
+      'About Office of Grants' + newWindow,
+      ...(support ? ['Submit a support ticket' + newWindow] : []),
+      'Latest updates' + newWindow, 'Back to top',
+    ];
+    for (const width of [320,375,480,576,639,640,768,879,880,1023,1024,1280]) {
       await page.setViewportSize({width,height:700});
       const dimensions = await page.evaluate(() => ({width:innerWidth, scroll:document.documentElement.scrollWidth}));
       console.log({template, authenticated, ...dimensions});
       assert.equal(dimensions.scroll, width);
-      assert.equal(await page.locator('footer nav a').count(), authenticated ? 4 : 3);
-      const items = await page.locator('footer nav li').evaluateAll(items =>
-        items.map(item => {
-          const {x, y, width} = item.getBoundingClientRect();
-          return {x, y, width};
-        }));
-      if (width < 640) {
-        // Small screens: one left-aligned column, in source order.
-        assert.ok(items.every(item => item.x === items[0].x));
-        items.slice(1).forEach((item, i) => assert.ok(item.y > items[i].y));
-      } else {
-        // Tablet and up: one row.
-        assert.ok(items.every(item => item.y === items[0].y));
-        assert.ok(items[0].x < items[1].x);
-      }
-      const labels = await page.locator('footer nav a').evaluateAll(links =>
+      const labels = selector => page.locator(`${selector} a`).evaluateAll(links =>
         links.map(link => link.textContent.trim().replace(/\s+/g, ' ')));
-      assert.deepEqual(labels, [
-        ...(authenticated ? ['Submit a support ticket'] : []),
-        'Latest updates', 'Privacy policy (opens in a new window)', 'Back to top',
-      ]);
+      assert.deepEqual(await labels('.builder-footer__primary'), primaryLabels);
+      assert.deepEqual(await labels('.builder-footer__secondary'), policyLinks);
+      for (const {selector, background} of rows) {
+        const row = page.locator(selector);
+        assert.equal(await row.evaluate(el => getComputedStyle(el).backgroundColor), background);
+        const colors = await row.locator('a').evaluateAll(links => links.map(link => getComputedStyle(link).color));
+        assert.ok(colors.every(color => color === 'rgb(255, 255, 255)'));
+        const items = await row.locator('li').evaluateAll(items =>
+          items.map(item => {
+            const {x, y} = item.getBoundingClientRect();
+            return {x, y};
+          }));
+        // Row 2 flows from tablet (640px); row 1 from tablet-lg (880px).
+        const breakpoint = selector === '.builder-footer__primary' ? 880 : 640;
+        if (width < breakpoint) {
+          // One left-aligned column, in source order.
+          assert.ok(items.every(item => item.x === items[0].x));
+          items.slice(1).forEach((item, i) => assert.ok(item.y > items[i].y));
+        } else {
+          // Tablet and up: links flow left to right and may wrap.
+          assert.ok(items[0].x < items[1].x);
+          assert.ok(Math.abs(items[0].y - items[1].y) < 2);
+        }
+      }
+      if (width >= 880) {
+        // Row 1 fits on one line, with Back to top at its right edge.
+        const primary = await page.locator('.builder-footer__primary li').evaluateAll(items =>
+          items.map(item => item.getBoundingClientRect()));
+        const last = primary[primary.length - 1];
+        assert.ok(primary.slice(0, -1).every(item => item.right < last.left));
+        assert.ok(primary.every(item => Math.abs(item.y - primary[0].y) < 2));
+      }
       const identifier = page.getByRole('region', {name: 'Agency identifier'});
       assert.equal(await identifier.count(), 1);
       const agencyLink = identifier.getByRole('link', {name: 'U.S. Department of Health and Human Services'});
@@ -62,8 +89,10 @@ const root = resolve(__dirname, '../..');
       assert.equal(await identifier.locator('svg').evaluate(el => getComputedStyle(el).fill), 'rgb(255, 255, 255)');
       assert.equal(await page.locator('.builder-identifier').evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(0, 52, 94)');
       const identifierBounds = await identifier.boundingBox();
-      const navBounds = await page.locator('footer nav').boundingBox();
-      assert.ok(identifierBounds.y + identifierBounds.height <= navBounds.y);
+      const primaryBounds = await page.locator('.builder-footer__primary').boundingBox();
+      const secondaryBounds = await page.locator('.builder-footer__secondary').boundingBox();
+      assert.ok(identifierBounds.y + identifierBounds.height <= primaryBounds.y);
+      assert.ok(primaryBounds.y + primaryBounds.height <= secondaryBounds.y);
       const logo = identifier.locator('svg');
       assert.equal(await logo.evaluate(el => el.getBoundingClientRect().height), 48);
       assert.equal(await logo.evaluate(el => getComputedStyle(el).marginTop), '4px');
@@ -72,7 +101,7 @@ const root = resolve(__dirname, '../..');
       await page.keyboard.press('Shift+Tab');
       assert.equal(await agencyLink.evaluate(el => el === document.activeElement), true);
       assert.notEqual(await agencyLink.evaluate(el => getComputedStyle(el).outlineStyle), 'none');
-      if(authenticated && [320,768,1280].includes(width)) {
+      if(support && [320,768,1280].includes(width)) {
         await page.screenshot({path:resolve(output,`after-${width}.png`),fullPage:true});
         await agencyLink.blur();
         await page.locator('footer').screenshot({path:resolve(output,`footer-${width}.png`)});

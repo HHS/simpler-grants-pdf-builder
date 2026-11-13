@@ -138,14 +138,6 @@ details[open].explainer-box summary {
   border-top: 1px solid var(--color--text-default);
 }
 
-footer .usa-footer__primary-link {
-  text-decoration: none;
-}
-
-footer .usa-footer__primary-link:visited {
-  color: var(--color--text-default);
-}
-
 .usa-combo-box__input,
 .usa-input,
 .usa-input-group,
@@ -417,29 +409,6 @@ table td.col--points {
   .usa-header--basic .usa-navbar {
     width: 42%;
   }
-}
-
-.usa-footer__nav--reverse ul {
-  flex-direction: row-reverse;
-}
-
-/* Below the footer's USWDS breakpoint, its nav has no horizontal padding
-   to absorb the grid's negative gutter margins. */
-@media (max-width: 29.999em) {
-  .usa-footer__nav > .grid-row.grid-gap {
-    margin-left: 0;
-    margin-right: 0;
-  }
-}
-
-a.back-to-top::before {
-  height: 12px;
-  width: 18px;
-  margin-right: 5px;
-}
-
-.usa-footer__nav a.back-to-top {
-  color: var(--color--text-default);
 }
 
 .usa-logo {
@@ -2024,6 +1993,115 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
   color: var(--color--white);
 }
 
+/* Footer link rows below the HHS identifier (#1343). The identifier band uses
+   --color--dark-blue; row 1 is a step lighter and row 2 a step darker, so the
+   three bands read as one family of blues. White link text stays above 9:1. */
+.builder-footer {
+  --builder-footer--row-1: #0b4778;
+  --builder-footer--row-2: #002340;
+  --builder-footer--divider: rgba(255, 255, 255, 0.18);
+}
+
+.builder-footer__primary {
+  background-color: var(--builder-footer--row-1);
+  border-top: 1px solid var(--builder-footer--divider);
+}
+
+.builder-footer__secondary {
+  background-color: var(--builder-footer--row-2);
+}
+
+/* Match the identifier container's width and gutters. */
+.builder-footer__container {
+  max-width: 64rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+.builder-footer__list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.builder-footer__list--primary {
+  padding-block: 0.5rem;
+}
+
+.builder-footer__list--primary > li + li {
+  border-top: 1px solid var(--builder-footer--divider);
+}
+
+.builder-footer__list--secondary {
+  gap: 0.5rem;
+  padding-block: 1rem;
+}
+
+.builder-footer .builder-footer__link,
+.builder-footer .builder-footer__link:visited {
+  color: var(--color--white);
+  text-decoration: none;
+}
+
+.builder-footer .builder-footer__link:hover {
+  color: var(--color--white);
+  text-decoration: underline;
+}
+
+.builder-footer__list--primary .builder-footer__link {
+  display: block;
+  padding-block: 0.75rem;
+  font-weight: 700;
+}
+
+.builder-footer__list--secondary .builder-footer__link {
+  font-size: 0.9375rem;
+}
+
+.builder-footer .builder-footer__link.usa-link--external::after {
+  margin-left: 6px;
+}
+
+/* USWDS tablet breakpoint (640px): row 2 becomes a wrapping row of links. */
+@media (min-width: 40em) {
+  .builder-footer__container {
+    padding-inline: 2rem;
+  }
+
+  .builder-footer__list--secondary {
+    flex-direction: row;
+    flex-wrap: wrap;
+    column-gap: 1.5rem;
+    row-gap: 0.5rem;
+  }
+}
+
+/* USWDS tablet-lg breakpoint (880px): row 1's four links fit on one line from
+   about 760px, so it stays a column until this breakpoint. */
+@media (min-width: 55em) {
+  .builder-footer__list--primary {
+    flex-direction: row;
+    align-items: center;
+    column-gap: 2rem;
+    padding-block: 1.25rem;
+  }
+
+  .builder-footer__list--primary > li + li {
+    border-top: 0;
+  }
+
+  .builder-footer__list--primary .builder-footer__link {
+    display: inline-block;
+    padding-block: 0.25rem;
+  }
+
+  .builder-footer__item--back-to-top {
+    margin-left: auto;
+  }
+}
+
 .usa-footer__not-actually-a-link {
   color: var(--color--med-grey);
   font-weight: 400;
@@ -2031,10 +2109,6 @@ details.usa-accordion .usa-accordion__content ul li:not(:last-of-type) {
 
 .usa-footer__not-actually-a-link:hover {
   text-decoration: none;
-}
-
-.usa-footer__primary-link.usa-link--external::after {
-  margin-left: 6px;
 }
 
 .usa-error-message {

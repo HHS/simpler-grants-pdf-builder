@@ -649,11 +649,14 @@ References:
   [save handler](../nofos/nofos/views.py), and [regression tests](../nofos/nofos/tests_nofos/test_subsection_edit.py)
 - [Deployment considerations](../DEPLOYMENT.md#subsection-conflict-protection-rollout)
 
-## HHS footer identifier
+## HHS footer identifier and link rows
 
 Application pages extending `base.html` or `pdf_readability_base.html` use the shared
+[`footer.html`](../nofos/bloom_nofos/templates/includes/footer.html). It renders the
 [`hhs_identifier.html`](../nofos/bloom_nofos/templates/includes/hhs_identifier.html)
-above the existing footer navigation. Reuse the bundled USWDS identifier masthead,
+band followed by two rows of links. Change footer links there, not in the base templates.
+
+The identifier reuses the bundled USWDS identifier masthead,
 the existing HHS SVG, and Builder's `--color--dark-blue` background with a white
 logo, sized to 3rem with 0.25rem vertical margins around the crest. The agency name links to `https://www.hhs.gov/` in the same tab. The logo is
 decorative because the adjacent text identifies the agency. Give its SVG title a
@@ -662,13 +665,31 @@ footer-specific ID so it does not collide with other uses of the logo.
 Keep the identifier in the application shell; NOFO document and PDF templates
 continue to use their own branding.
 
-Footer navigation links use `grid-col-12 tablet:grid-col-auto`: one
-left-aligned column in source order below the USWDS tablet breakpoint (640px),
-and one row from tablet width up. Don't use a two-column grid; four links don't
-fit on one row below about 600px, so keep the column until tablet width.
+Below the identifier, the bands go one step lighter, then one step darker, so the
+footer reads as one family of blues. White link text stays above 9:1 contrast on both.
+
+- **Row 1 (`Footer navigation`, `#0b4778`):** bold links to About Office of Grants,
+  Submit a support ticket, Latest updates and Back to top. The support ticket link
+  appears only for signed-in users and only when the page passes
+  `show_support_link=True`; `base.html` does, the Readability Checker does not.
+  The links form one left-aligned column, separated by thin dividers, below the USWDS tablet-lg
+  breakpoint (880px). They fit on one line from about 760px, so don't move this
+  breakpoint lower without rechecking. From 880px they form one row with Back to top at
+  the right edge.
+- **Row 2 (`HHS policies and resources`, `#002340`):** smaller, regular-weight links
+  modeled on the simpler.grants.gov footer: About HHS, Accessibility support, FOIA
+  requests, No FEAR Act data, Office of the Inspector General, Performance reports
+  and Privacy policy. One column below the tablet breakpoint (640px); a wrapping row
+  from there up.
+
+External links use `usa-link--external` (icon after the text), open in a new window
+and include the visually hidden text " (opens in a new window)". Back to top is an
+in-page link with no icon.
 
 Verify signed-in and signed-out layouts, keyboard focus, and wrapping at mobile
-and desktop widths with `tests/js/footer.browser.cjs`.
+and desktop widths with `tests/js/footer.browser.cjs`. Link order and destinations
+are covered by `nofos/bloom_nofos/tests_bloom_nofos/test_footer.py`.
+[Issue #1343 evidence](review-evidence/1343/README.md) has before-and-after screenshots.
 
 ## Metrics page headings and back navigation
 
