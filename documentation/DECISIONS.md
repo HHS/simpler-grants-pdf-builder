@@ -61,7 +61,8 @@ the save-conflict message reads "The NOFO changed while saving. Save again to
 check the current NOFO.", and the save error no longer says "Recalculate and
 try again." [`EDITOR_TASKS.md`](EDITOR_TASKS.md#task-readability-save) and
 [`READABILITY_METRICS.md`](readability/READABILITY_METRICS.md#edit-screen-panel)
-describe the new behavior. Screenshots are in
+describe the new behavior, and [`UI_PATTERNS.md`](UI_PATTERNS.md#automatic-calculation-in-a-disclosure-panel)
+records it as a reusable pattern. Screenshots are in
 [`review-evidence/readability-try-again/`](review-evidence/readability-try-again/README.md).
 
 The retry button is hidden with the USWDS `display-none` utility class, not the

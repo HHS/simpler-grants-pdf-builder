@@ -723,6 +723,67 @@ For example, resolve nofos:builder_metrics into metrics_href and use
 back_text="Back to usage &amp; quality metrics". Check the arrow, link focus,
 title spacing and wrapping on desktop and narrow layouts.
 
+## Automatic calculation in a disclosure panel
+
+Use this when opening a collapsed panel (USWDS accordion on a native
+`<details>` element) is itself the request for a result, such as the NOFO edit
+page's **Readability metrics** panel. Opening the panel is the action, so do
+not add a separate button that does the same thing.
+
+### What the user sees
+
+- **While calculating:** a one-line status beside where results will appear,
+  such as **Calculating metrics…**, in a polite live region. No button.
+- **On success:** the status line describes the result (**Calculated for the
+  current NOFO. Save these results to keep a snapshot.**) and the results
+  appear. No calculate or recalculate button: closing and reopening the panel
+  calculates again, and edits reload the edit page.
+- **On failure:** the status line says what failed (**Metrics could not be
+  calculated.** followed by the server's reason, or **The calculation took
+  too long.**) and a **Try again** outline button appears beside it. A
+  successful retry hides the button again. Reopening the panel also retries.
+- The collapsed accordion heading keeps a short state (**Calculated** or
+  **Unable to calculate**) so the result is visible without opening the panel.
+
+Keep the panel's primary action (for readability, **Save these results**) as
+the only solid button. Do not use the failure-only button for anything else.
+
+### Implementation
+
+- Start the calculation from the `<details>` element's `toggle` event when it
+  opens. Track an in-flight request with a variable, not a button's
+  `disabled` state, so reopening the panel cannot start a second request and
+  other actions can check the same flag.
+- Show and hide the retry button with the USWDS `display-none` utility class.
+  Do not use the `hidden` attribute on a `usa-button`: `.usa-button` sets
+  `display: inline-block`, which overrides `hidden`, so the button stays
+  visible.
+- Do not tell users to "recalculate" in status or error messages; name the
+  action that exists (**Try again**, **Save again**).
+
+Reference: [readability_metrics_panel.html](../nofos/nofos/templates/nofos/includes/readability_metrics_panel.html),
+[nofo_readability_metrics.js](../nofos/bloom_nofos/static/js/nofos/nofo_readability_metrics.js),
+and the [review evidence](review-evidence/readability-try-again/README.md).
+
+### Verify before shipping
+
+1. Open the panel: the calculation starts and no button is shown.
+2. On success, confirm no retry or recalculate button is visible in a real
+   browser, not only in unit tests: a hidden-attribute bug passes DOM tests.
+3. Force a server error or timeout: the status names the failure and
+   **Try again** appears.
+4. Select **Try again** after the failure clears: results appear and the
+   button hides.
+5. Close and reopen the panel during a calculation: only one request is sent.
+
+### Known gap
+
+The failure message is plain status text, not the red error styling that
+[Errors and verification](#errors-and-verification) recommends for operational
+failures. That styling predates this pattern. Whether to use a slim error alert
+inside the panel is an open design question; decide it for the panel as a
+whole rather than for the retry button alone.
+
 ## Saved readability tables
 
 Use the saved NOFO readability history as the reference for saved-result tables.
