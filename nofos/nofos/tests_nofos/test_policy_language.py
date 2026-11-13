@@ -4,9 +4,15 @@ from django.core.management import call_command
 from django.db import IntegrityError
 from django.test import TestCase
 from django.urls import reverse
-
-from nofos.models import Nofo, PolicyLanguageSlot, PolicyLanguageVariant, Section, Subsection
 from users.models import BloomUser
+
+from nofos.models import (
+    Nofo,
+    PolicyLanguageSlot,
+    PolicyLanguageVariant,
+    Section,
+    Subsection,
+)
 from nofos.policy_language import (
     detect_policy_language_status,
     get_missing_required_slots,
@@ -23,7 +29,7 @@ class NormalizeForComparisonTests(TestCase):
     def test_normalizes_smart_quotes_and_dashes(self):
         self.assertEqual(
             normalize_for_comparison("“Hello” — it’s a test"),
-            "\"Hello\" - it's a test",
+            '"Hello" - it\'s a test',
         )
 
     def test_none_input_is_empty_string(self):
@@ -157,7 +163,9 @@ class SupersessionVersioningTests(TestCase):
             slot_type="fixed",
             template_version="v1",
         )
-        PolicyLanguageVariant.objects.create(slot=old, canonical_text="Old canonical text.")
+        PolicyLanguageVariant.objects.create(
+            slot=old, canonical_text="Old canonical text."
+        )
 
         old.is_current = False
         old.save(update_fields=["is_current"])
@@ -167,11 +175,15 @@ class SupersessionVersioningTests(TestCase):
             slot_type="fixed",
             template_version="v2",
         )
-        PolicyLanguageVariant.objects.create(slot=new, canonical_text="New canonical text.")
+        PolicyLanguageVariant.objects.create(
+            slot=new, canonical_text="New canonical text."
+        )
         old.superseded_by = new
         old.save(update_fields=["superseded_by"])
 
-        status, slot = detect_policy_language_status("Versioned Slot", "Old canonical text.")
+        status, slot = detect_policy_language_status(
+            "Versioned Slot", "Old canonical text."
+        )
         self.assertEqual(status, "matches_prior_version")
         # The current revision is returned, not the stale row that matched.
         self.assertEqual(slot, new)
@@ -188,7 +200,9 @@ class SupersessionVersioningTests(TestCase):
             match_scope="span_within_subsection",
             template_version="v1",
         )
-        PolicyLanguageVariant.objects.create(slot=old, canonical_text="Old span fragment text.")
+        PolicyLanguageVariant.objects.create(
+            slot=old, canonical_text="Old span fragment text."
+        )
         old.is_current = False
         old.save(update_fields=["is_current"])
         new = PolicyLanguageSlot.objects.create(
@@ -198,7 +212,9 @@ class SupersessionVersioningTests(TestCase):
             match_scope="span_within_subsection",
             template_version="v2",
         )
-        PolicyLanguageVariant.objects.create(slot=new, canonical_text="New span fragment text.")
+        PolicyLanguageVariant.objects.create(
+            slot=new, canonical_text="New span fragment text."
+        )
         old.superseded_by = new
         old.save(update_fields=["superseded_by"])
 
@@ -216,7 +232,9 @@ class SupersessionVersioningTests(TestCase):
             match_scope="span_within_subsection",
             template_version="v1",
         )
-        PolicyLanguageVariant.objects.create(slot=old, canonical_text="Old span fragment text.")
+        PolicyLanguageVariant.objects.create(
+            slot=old, canonical_text="Old span fragment text."
+        )
         old.is_current = False
         old.save(update_fields=["is_current"])
         new = PolicyLanguageSlot.objects.create(
@@ -226,7 +244,9 @@ class SupersessionVersioningTests(TestCase):
             match_scope="span_within_subsection",
             template_version="v2",
         )
-        PolicyLanguageVariant.objects.create(slot=new, canonical_text="New span fragment text.")
+        PolicyLanguageVariant.objects.create(
+            slot=new, canonical_text="New span fragment text."
+        )
         old.superseded_by = new
         old.save(update_fields=["superseded_by"])
 
@@ -277,19 +297,25 @@ class MultipleSlotKeysShareNameTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.slot_a = PolicyLanguageSlot.objects.create(
-            slot_key="TEST-SHARED-A", name="Cost sharing", slot_type="fixed",
+            slot_key="TEST-SHARED-A",
+            name="Cost sharing",
+            slot_type="fixed",
             template_version="v1",
         )
         PolicyLanguageVariant.objects.create(
-            slot=cls.slot_a, canonical_text="This program has no cost sharing requirement."
+            slot=cls.slot_a,
+            canonical_text="This program has no cost sharing requirement.",
         )
 
         cls.slot_b = PolicyLanguageSlot.objects.create(
-            slot_key="TEST-SHARED-B", name="Cost sharing", slot_type="fixed",
+            slot_key="TEST-SHARED-B",
+            name="Cost sharing",
+            slot_type="fixed",
             template_version="v1",
         )
         PolicyLanguageVariant.objects.create(
-            slot=cls.slot_b, canonical_text="This program requires you to contribute 15%."
+            slot=cls.slot_b,
+            canonical_text="This program requires you to contribute 15%.",
         )
 
     def test_content_matching_second_slot_is_intact_not_altered(self):
@@ -320,16 +346,27 @@ class MultipleSlotKeysShareNameTests(TestCase):
 class MissingRequiredSlotsTests(TestCase):
     def test_required_slot_with_no_matching_subsection_is_missing(self):
         required_slot = PolicyLanguageSlot.objects.create(
-            slot_key="TEST-REQUIRED", name="Required Slot", slot_type="fixed",
-            required=True, template_version="v1",
+            slot_key="TEST-REQUIRED",
+            name="Required Slot",
+            slot_type="fixed",
+            required=True,
+            template_version="v1",
         )
-        PolicyLanguageVariant.objects.create(slot=required_slot, canonical_text="Required text.")
+        PolicyLanguageVariant.objects.create(
+            slot=required_slot, canonical_text="Required text."
+        )
 
         nofo = Nofo.objects.create(
-            title="Missing slot test", short_name="missing-slot-test",
-            number="TEST-MISSING-001", opdiv="TEST", group="bloom", status="draft",
+            title="Missing slot test",
+            short_name="missing-slot-test",
+            number="TEST-MISSING-001",
+            opdiv="TEST",
+            group="bloom",
+            status="draft",
         )
-        section = Section.objects.create(nofo=nofo, name="Section", html_id="section", order=1)
+        section = Section.objects.create(
+            nofo=nofo, name="Section", html_id="section", order=1
+        )
         Subsection.objects.create(
             section=section, name="Something Else", tag="h4", body="Unrelated.", order=1
         )
@@ -339,19 +376,35 @@ class MissingRequiredSlotsTests(TestCase):
 
     def test_matched_required_slot_is_not_missing(self):
         required_slot = PolicyLanguageSlot.objects.create(
-            slot_key="TEST-REQUIRED-2", name="Required Slot 2", slot_type="fixed",
-            required=True, template_version="v1",
+            slot_key="TEST-REQUIRED-2",
+            name="Required Slot 2",
+            slot_type="fixed",
+            required=True,
+            template_version="v1",
         )
-        PolicyLanguageVariant.objects.create(slot=required_slot, canonical_text="Required text.")
+        PolicyLanguageVariant.objects.create(
+            slot=required_slot, canonical_text="Required text."
+        )
 
         nofo = Nofo.objects.create(
-            title="Matched slot test", short_name="matched-slot-test",
-            number="TEST-MATCHED-001", opdiv="TEST", group="bloom", status="draft",
+            title="Matched slot test",
+            short_name="matched-slot-test",
+            number="TEST-MATCHED-001",
+            opdiv="TEST",
+            group="bloom",
+            status="draft",
         )
-        section = Section.objects.create(nofo=nofo, name="Section", html_id="section", order=1)
+        section = Section.objects.create(
+            nofo=nofo, name="Section", html_id="section", order=1
+        )
         Subsection.objects.create(
-            section=section, name="Required Slot 2", tag="h4", body="Required text.", order=1,
-            policy_language_status="intact", policy_language_slot=required_slot,
+            section=section,
+            name="Required Slot 2",
+            tag="h4",
+            body="Required text.",
+            order=1,
+            policy_language_status="intact",
+            policy_language_slot=required_slot,
         )
 
         missing = get_missing_required_slots(nofo)
@@ -361,16 +414,30 @@ class MissingRequiredSlotsTests(TestCase):
 class PolicyLanguageExportNoteTests(TestCase):
     def test_intact_and_none_have_no_note(self):
         nofo = Nofo.objects.create(
-            title="Note test", short_name="note-test", number="TEST-NOTE-001",
-            opdiv="TEST", group="bloom", status="draft",
+            title="Note test",
+            short_name="note-test",
+            number="TEST-NOTE-001",
+            opdiv="TEST",
+            group="bloom",
+            status="draft",
         )
-        section = Section.objects.create(nofo=nofo, name="Section", html_id="section", order=1)
+        section = Section.objects.create(
+            nofo=nofo, name="Section", html_id="section", order=1
+        )
         intact_sub = Subsection.objects.create(
-            section=section, name="A", tag="h4", body="x", order=1,
+            section=section,
+            name="A",
+            tag="h4",
+            body="x",
+            order=1,
             policy_language_status="intact",
         )
         none_sub = Subsection.objects.create(
-            section=section, name="B", tag="h4", body="y", order=2,
+            section=section,
+            name="B",
+            tag="h4",
+            body="y",
+            order=2,
             policy_language_status="none",
         )
         self.assertIsNone(get_policy_language_export_note(intact_sub))
@@ -378,17 +445,31 @@ class PolicyLanguageExportNoteTests(TestCase):
 
     def test_routine_flag_note_for_non_prominent_slot(self):
         slot = PolicyLanguageSlot.objects.create(
-            slot_key="TEST-ROUTINE", name="Routine Slot", slot_type="fixed",
-            flag_prominently=False, template_version="v1",
+            slot_key="TEST-ROUTINE",
+            name="Routine Slot",
+            slot_type="fixed",
+            flag_prominently=False,
+            template_version="v1",
         )
         nofo = Nofo.objects.create(
-            title="Routine note test", short_name="routine-note-test",
-            number="TEST-ROUTINE-001", opdiv="TEST", group="bloom", status="draft",
+            title="Routine note test",
+            short_name="routine-note-test",
+            number="TEST-ROUTINE-001",
+            opdiv="TEST",
+            group="bloom",
+            status="draft",
         )
-        section = Section.objects.create(nofo=nofo, name="Section", html_id="section", order=1)
+        section = Section.objects.create(
+            nofo=nofo, name="Section", html_id="section", order=1
+        )
         sub = Subsection.objects.create(
-            section=section, name="Routine Slot", tag="h4", body="altered", order=1,
-            policy_language_status="may_be_altered", policy_language_slot=slot,
+            section=section,
+            name="Routine Slot",
+            tag="h4",
+            body="altered",
+            order=1,
+            policy_language_status="may_be_altered",
+            policy_language_slot=slot,
         )
         note = get_policy_language_export_note(sub)
         self.assertIn("Review:", note)
@@ -399,16 +480,29 @@ class PolicyLanguageExportNoteTests(TestCase):
         slot = PolicyLanguageSlot.objects.create(
             slot_key="TEST-PROMINENT",
             name="Prominent Slot",
-            slot_type="fixed_with_placeholders", flag_prominently=True, template_version="v1",
+            slot_type="fixed_with_placeholders",
+            flag_prominently=True,
+            template_version="v1",
         )
         nofo = Nofo.objects.create(
-            title="Elevated note test", short_name="elevated-note-test",
-            number="TEST-ELEVATED-001", opdiv="TEST", group="bloom", status="draft",
+            title="Elevated note test",
+            short_name="elevated-note-test",
+            number="TEST-ELEVATED-001",
+            opdiv="TEST",
+            group="bloom",
+            status="draft",
         )
-        section = Section.objects.create(nofo=nofo, name="Section", html_id="section", order=1)
+        section = Section.objects.create(
+            nofo=nofo, name="Section", html_id="section", order=1
+        )
         sub = Subsection.objects.create(
-            section=section, name="Prominent Slot", tag="h4", body="altered", order=1,
-            policy_language_status="may_be_altered", policy_language_slot=slot,
+            section=section,
+            name="Prominent Slot",
+            tag="h4",
+            body="altered",
+            order=1,
+            policy_language_status="may_be_altered",
+            policy_language_slot=slot,
         )
         note = get_policy_language_export_note(sub)
         self.assertIn("Priority review", note)
@@ -417,31 +511,56 @@ class PolicyLanguageExportNoteTests(TestCase):
 class PolicyLanguageExportSummaryTests(TestCase):
     def test_summary_counts_flags_and_missing_slots(self):
         required_slot = PolicyLanguageSlot.objects.create(
-            slot_key="TEST-SUMMARY-REQ", name="Required Summary Slot",
-            slot_type="fixed", required=True, template_version="v1",
+            slot_key="TEST-SUMMARY-REQ",
+            name="Required Summary Slot",
+            slot_type="fixed",
+            required=True,
+            template_version="v1",
         )
         PolicyLanguageVariant.objects.create(slot=required_slot, canonical_text="text")
 
         matched_slot = PolicyLanguageSlot.objects.create(
-            slot_key="TEST-SUMMARY-MATCHED", name="Matched Slot", slot_type="fixed",
+            slot_key="TEST-SUMMARY-MATCHED",
+            name="Matched Slot",
+            slot_type="fixed",
             template_version="v1",
         )
 
         nofo = Nofo.objects.create(
-            title="Summary test", short_name="summary-test", number="TEST-SUMMARY-001",
-            opdiv="TEST", group="bloom", status="draft",
+            title="Summary test",
+            short_name="summary-test",
+            number="TEST-SUMMARY-001",
+            opdiv="TEST",
+            group="bloom",
+            status="draft",
         )
-        section = Section.objects.create(nofo=nofo, name="Section", html_id="section", order=1)
+        section = Section.objects.create(
+            nofo=nofo, name="Section", html_id="section", order=1
+        )
         Subsection.objects.create(
-            section=section, name="Intact", tag="h4", body="x", order=1,
-            policy_language_status="intact", policy_language_slot=matched_slot,
+            section=section,
+            name="Intact",
+            tag="h4",
+            body="x",
+            order=1,
+            policy_language_status="intact",
+            policy_language_slot=matched_slot,
         )
         flagged_sub = Subsection.objects.create(
-            section=section, name="Flagged", tag="h4", body="y", order=2,
-            policy_language_status="may_be_altered", policy_language_slot=matched_slot,
+            section=section,
+            name="Flagged",
+            tag="h4",
+            body="y",
+            order=2,
+            policy_language_status="may_be_altered",
+            policy_language_slot=matched_slot,
         )
         Subsection.objects.create(
-            section=section, name="Ordinary", tag="h4", body="z", order=3,
+            section=section,
+            name="Ordinary",
+            tag="h4",
+            body="z",
+            order=3,
             policy_language_status="none",
         )
 
@@ -471,9 +590,7 @@ SAMPLE_SLOTS = [
 ]
 
 
-@patch(
-    "nofos.management.commands.ingest_canonical_policy_language.SLOTS", SAMPLE_SLOTS
-)
+@patch("nofos.management.commands.ingest_canonical_policy_language.SLOTS", SAMPLE_SLOTS)
 @patch(
     "nofos.management.commands.ingest_canonical_policy_language.TEMPLATE_VERSION",
     "TEST-SAMPLE-V1",
