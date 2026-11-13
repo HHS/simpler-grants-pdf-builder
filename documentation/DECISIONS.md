@@ -8,6 +8,35 @@ the shared [ADR template](template.md), and link the record here when relevant.
 
 ---
 
+## 2026-11-13 — Say "current NOFO" rather than "version" in readability copy
+
+**Context:** Readability copy described the same idea three ways. The panel
+status line says "Calculated for the current NOFO", but the panel intro, the
+automatic-save alert, the history page and the Builder metrics page said
+"Each action saves once per NOFO version" (or "per version"), snapshots matching
+the NOFO were tagged **Current version**, and the re-import message said "compare
+this version with earlier ones." Editors do not see NOFO versions anywhere else
+in Builder, so "version" reads as a feature they cannot find. This supersedes
+the 2026-09 choice of "current version" for the status line, which the panel
+had already moved away from.
+
+**Decision:** Use "current NOFO" for the NOFO as it is now, in every
+editor-facing readability string:
+
+- "Each action saves once for the current NOFO." (panel intro, automatic-save
+  alert, history page, Builder metrics page)
+- The **Current version** tag on saved snapshots and in the history table
+  becomes **Current NOFO**.
+- Re-import: "...so you can compare the current NOFO with earlier snapshots."
+- Save conflict: "The NOFO changed while saving. Save again to check the
+  current NOFO."
+
+"Version" is kept where it names the metrics package rather than the NOFO
+(**Calculation version**, "Metrics v…"). `revision` stays an internal field and
+API name that editors do not read.
+
+---
+
 ## 2026-11-13 — Remove the readability panel's Recalculate button
 
 **Context:** On the NOFO edit page, the readability metrics panel calculates
@@ -29,7 +58,7 @@ the panel during a calculation still does not start a second request.
 
 Copy that told editors to "Recalculate" now points to the action that exists:
 the save-conflict message reads "The NOFO changed while saving. Save again to
-check the latest version.", and the save error no longer says "Recalculate and
+check the current NOFO.", and the save error no longer says "Recalculate and
 try again." [`EDITOR_TASKS.md`](EDITOR_TASKS.md#task-readability-save) and
 [`READABILITY_METRICS.md`](readability/READABILITY_METRICS.md#edit-screen-panel)
 describe the new behavior. Screenshots are in

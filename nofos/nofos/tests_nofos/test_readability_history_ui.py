@@ -124,7 +124,7 @@ class ReadabilityHistoryUiTests(TestCase):
         self.assertNotIn("Partial results", html)
         self.assertIn("Unavailable", html)
         self.assertNotIn("Flesch Reading Ease", html)
-        self.assertIn("Current version", html)
+        self.assertIn("Current NOFO", html)
 
     @override_config(HHS_NOFO_METRICS_ENABLED=True)
     def test_empty_panel_has_no_history_link_and_saved_panel_omits_status_and_completeness(

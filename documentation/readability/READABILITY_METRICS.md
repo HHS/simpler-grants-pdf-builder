@@ -301,12 +301,12 @@ ran, **Preview PDF** was used, or the NOFO was edited.
   snapshot was saved when one was.
 - **New imports:** the checkpoint describes the document as uploaded. Naming the
   NOFO afterward advances its revision, so this checkpoint is not marked
-  **Current version**. It is the as-imported baseline. After the user names the
+  **Current NOFO**. It is the as-imported baseline. After the user names the
   NOFO, the success message reads "View NOFO: *name*. Readability snapshot
   saved."
 - **Re-imports:** the success message adds "Readability metrics were saved
-  automatically as a snapshot, so you can compare this version with earlier
-  ones." The checkpoint is compared with the previous saved checkpoint like any
+  automatically as a snapshot, so you can compare the current NOFO with
+  earlier snapshots." The checkpoint is compared with the previous saved checkpoint like any
   other.
 - **Not backfilled:** NOFOs imported before this change have no import
   checkpoint.

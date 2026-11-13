@@ -1304,7 +1304,7 @@ class NofosImportOverwriteView(
             if checkpoint:
                 message += (
                     ". Readability metrics were saved automatically as a snapshot,"
-                    " so you can compare this version with earlier ones."
+                    " so you can compare the current NOFO with earlier snapshots."
                 )
             messages.success(request, message)
             return redirect("nofos:nofo_edit", pk=nofo.id)
