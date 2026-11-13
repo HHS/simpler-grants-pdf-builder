@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.59.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.59.0...nofos-v3.59.1) (2026-11-13)
+
+
+### Bug Fixes
+
+* remove readability panel Recalculate button, show Try again only on failure ([#1346](https://github.com/HHS/simpler-grants-pdf-builder/issues/1346)) ([e46014e](https://github.com/HHS/simpler-grants-pdf-builder/commit/e46014eabe277f95c5288f00f204080fb1577156))
+
 ## [3.59.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.58.1...nofos-v3.59.0) (2026-11-13)
 
 
