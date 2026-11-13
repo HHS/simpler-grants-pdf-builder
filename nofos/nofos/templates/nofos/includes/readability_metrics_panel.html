@@ -27,23 +27,28 @@
       Save these results to keep a snapshot. Saving checks the current NOFO
       and recalculates if it has changed. A snapshot is also saved
       automatically when a NOFO is imported or re-imported, and when its PDF is
-      downloaded. Each action saves once per NOFO version.
+      downloaded. Each action saves once for the current NOFO.
     </p>
     <div class="display-flex flex-align-center flex-wrap margin-top-2">
-      <button
-        id="calculate-readability-metrics"
-        class="usa-button margin-right-2"
-        type="button"
-      >
-        Calculate metrics
-      </button>
       <p
         id="readability-metrics-status"
-        class="font-sans-xs text-base-dark margin-y-1"
+        class="font-sans-xs text-base-dark margin-y-1 margin-right-2"
         aria-live="polite"
       >
         Not calculated yet.
       </p>
+      {% comment %}
+        Opening the panel calculates automatically, so this button is only
+        shown after a failed calculation. USWDS .usa-button overrides the
+        hidden attribute, so visibility uses the display-none utility class.
+      {% endcomment %}
+      <button
+        id="retry-readability-metrics"
+        class="usa-button usa-button--outline display-none"
+        type="button"
+      >
+        Try again
+      </button>
     </div>
 
     <div id="readability-metrics-results" hidden>

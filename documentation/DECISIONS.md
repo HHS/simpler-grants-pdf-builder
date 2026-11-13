@@ -8,6 +8,75 @@ the shared [ADR template](template.md), and link the record here when relevant.
 
 ---
 
+## 2026-11-13 — Say "current NOFO" rather than "version" in readability copy
+
+**Context:** Readability copy described the same idea three ways. The panel
+status line says "Calculated for the current NOFO", but the panel intro, the
+automatic-save alert, the history page and the Builder metrics page said
+"Each action saves once per NOFO version" (or "per version"), snapshots matching
+the NOFO were tagged **Current version**, and the re-import message said "compare
+this version with earlier ones." Editors do not see NOFO versions anywhere else
+in Builder, so "version" reads as a feature they cannot find. This supersedes
+the 2026-09 choice of "current version" for the status line, which the panel
+had already moved away from.
+
+**Decision:** Use "current NOFO" for the NOFO as it is now, in every
+editor-facing readability string:
+
+- "Each action saves once for the current NOFO." (panel intro, automatic-save
+  alert, history page, Builder metrics page)
+- The **Current version** tag on saved snapshots and in the history table
+  becomes **Current NOFO**.
+- Re-import: "...so you can compare the current NOFO with earlier snapshots."
+- Save conflict: "The NOFO changed while saving. Save again to check the
+  current NOFO."
+
+"Version" is kept where it names the metrics package rather than the NOFO
+(**Calculation version**, "Metrics v…"). `revision` stays an internal field and
+API name that editors do not read.
+
+---
+
+## 2026-11-13 — Remove the readability panel's Recalculate button
+
+**Context:** On the NOFO edit page, the readability metrics panel calculates
+automatically each time it is opened. After a successful calculation, the
+**Calculate metrics** button turned into an outlined **Recalculate** button.
+Recalculating could only return the same numbers: the panel shows the NOFO as
+it was when the page loaded, saving any edit reloads the edit page, and
+**Save these results** already rechecks the NOFO and recalculates before
+saving if it has changed. The button added a control with no useful effect next
+to the panel's real action, Save these results.
+
+**Decision:** Remove the Calculate metrics/Recalculate button. Opening the
+panel remains the way to calculate. Keep one manual control for the case where
+it matters: a **Try again** button appears beside the error only when a
+calculation fails, and is hidden again once a calculation succeeds. Closing and
+reopening the panel also still calculates again. The panel's in-progress lock
+moves from the button's `disabled` state to a `calculating` flag, so reopening
+the panel during a calculation still does not start a second request.
+
+Copy that told editors to "Recalculate" now points to the action that exists:
+the save-conflict message reads "The NOFO changed while saving. Save again to
+check the current NOFO.", and the save error no longer says "Recalculate and
+try again." [`EDITOR_TASKS.md`](EDITOR_TASKS.md#task-readability-save) and
+[`READABILITY_METRICS.md`](readability/READABILITY_METRICS.md#edit-screen-panel)
+describe the new behavior, and [`UI_PATTERNS.md`](UI_PATTERNS.md#automatic-calculation-in-a-disclosure-panel)
+records it as a reusable pattern. Screenshots are in
+[`review-evidence/readability-try-again/`](review-evidence/readability-try-again/README.md).
+
+The retry button is hidden with the USWDS `display-none` utility class, not the
+`hidden` attribute: `.usa-button` sets `display: inline-block`, which overrides
+`hidden`, and the button rendered on every successful calculation during
+review until this was changed.
+
+Removing the button outright, with no retry control, was rejected. Reopening the
+panel does retry, but nothing tells an editor that after an error, and the
+timeout message ("The calculation took too long. Try again.") would have
+pointed at a control that no longer existed.
+
+---
+
 ## 2026-10-11 — State three HHS style guide points in the style guide
 
 **Context:** The [style guide](STYLE_GUIDE.md#lists) says it generally follows

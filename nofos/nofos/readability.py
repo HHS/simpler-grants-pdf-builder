@@ -331,7 +331,7 @@ def save_readability_checkpoint(nofo, user, trigger="manual"):
     payload, score = record_readability_snapshot(nofo, user=user)
     if score is None:
         raise ReadabilityRevisionChanged(
-            "The NOFO changed. Recalculate and save again."
+            "The NOFO changed while saving. Save again to check the current NOFO."
         )
     with transaction.atomic():
         current = Nofo.objects.select_for_update().get(pk=nofo.pk)
@@ -339,7 +339,7 @@ def save_readability_checkpoint(nofo, user, trigger="manual"):
             raise PermissionDenied("You don’t have permission to save this NOFO.")
         if current.updated != score.nofo_revision:
             raise ReadabilityRevisionChanged(
-                "The NOFO changed. Recalculate and save again."
+                "The NOFO changed while saving. Save again to check the current NOFO."
             )
         checkpoint, created = NofoReadabilityCheckpoint.objects.get_or_create(
             score=score,

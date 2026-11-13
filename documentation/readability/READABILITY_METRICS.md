@@ -117,7 +117,10 @@ Deleting a user retains their snapshots with a null requesting user.
 When the feature flag is enabled, the normal NOFO edit screen shows a compact,
 collapsed readability accordion after the primary NOFO status. A **Beta** tag
 identifies the feature as experimental. Expanding the accordion starts an
-on-demand calculation; the button allows retries or **Recalculate**. The result
+on-demand calculation, and each later expansion calculates again. There is no
+manual recalculate control: saving an edit reloads the edit page, and **Save
+these results** rechecks the NOFO before saving. A **Try again** button appears
+only when a calculation fails. The result
 displays the four Tier 2 clearance metrics: word count, words per sentence,
 Flesch-Kincaid grade level, and passive sentences, plus sentences per paragraph
 (target: 3 or lower), a Tier 1 drafting measure. It also displays any
@@ -298,12 +301,12 @@ ran, **Preview PDF** was used, or the NOFO was edited.
   snapshot was saved when one was.
 - **New imports:** the checkpoint describes the document as uploaded. Naming the
   NOFO afterward advances its revision, so this checkpoint is not marked
-  **Current version**. It is the as-imported baseline. After the user names the
+  **Current NOFO**. It is the as-imported baseline. After the user names the
   NOFO, the success message reads "View NOFO: *name*. Readability snapshot
   saved."
 - **Re-imports:** the success message adds "Readability metrics were saved
-  automatically as a snapshot, so you can compare this version with earlier
-  ones." The checkpoint is compared with the previous saved checkpoint like any
+  automatically as a snapshot, so you can compare the current NOFO with
+  earlier snapshots." The checkpoint is compared with the previous saved checkpoint like any
   other.
 - **Not backfilled:** NOFOs imported before this change have no import
   checkpoint.

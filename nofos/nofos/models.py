@@ -1229,7 +1229,7 @@ class NofoReadabilityScoreQuerySet(models.QuerySet):
 class NofoReadabilityScore(models.Model):
     """
     A stored hhs-nofo-metrics result for one NOFO revision, written when a user
-    runs "Calculate metrics".
+    opens the readability metrics panel.
 
     Append-only: rows are never updated, so the table doubles as the readability
     history for a NOFO. At most one row exists per (NOFO revision, measurement

@@ -4,7 +4,7 @@
   if (!panel) return;
 
   const summary = panel.querySelector(":scope > summary");
-  const button = document.getElementById("calculate-readability-metrics");
+  const retryButton = document.getElementById("retry-readability-metrics");
   const status = document.getElementById("readability-metrics-status");
   const results = document.getElementById("readability-metrics-results");
   const goalPolicyElement = document.getElementById("readability-metric-goals");
@@ -21,6 +21,7 @@
   const savedHistory = panel.querySelector("[data-readability-saved-history]");
   let displayedResult = null;
   let saving = false;
+  let calculating = false;
   let downloading = false;
   let goalPolicy = {};
   if (goalPolicyElement) {
@@ -213,10 +214,9 @@
   };
 
   const saveMetrics = async () => {
-    if (!displayedResult || downloading || saving || saveButton.disabled || button.disabled) return;
+    if (!displayedResult || downloading || saving || saveButton.disabled || calculating) return;
     saving = true;
     saveButton.setAttribute("aria-disabled", "true");
-    button.disabled = true;
     saveStatus.textContent = "Saving results…";
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -229,7 +229,7 @@
       let payload = {};
       try { payload = await response.json(); } catch { /* Use the HTTP fallback below. */ }
       if (!response.ok) throw new Error(payload.message || `Request failed (${response.status}).`);
-      if (!payload.result?.metrics || !payload.checkpoint) throw new Error("The server did not return saved results. Recalculate and try again.");
+      if (!payload.result?.metrics || !payload.checkpoint) throw new Error("The server did not return saved results. Try again.");
       const changed = displayedResult.source?.revision !== payload.result.source?.revision;
       showResult(payload.result);
       status.textContent = "Calculated for the current NOFO. Save these results to keep a snapshot.";
@@ -264,13 +264,13 @@
       window.clearTimeout(timeoutId);
       saving = false;
       saveButton.setAttribute("aria-disabled", "false");
-      button.disabled = false;
     }
   };
 
   const calculateMetrics = async () => {
-    if (downloading || saving || button.disabled) return;
-    button.disabled = true;
+    if (downloading || saving || calculating) return;
+    calculating = true;
+    retryButton.classList.add("display-none");
     if (saveButton) { saveButton.disabled = true; saveButton.hidden = true; }
     if (saveStatus) saveStatus.textContent = "";
     displayedResult = null;
@@ -308,21 +308,22 @@
       if (summarySaved?.textContent.trim().startsWith("Last saved")) {
         summarySaved.textContent = `· ${summarySaved.textContent.trim()}`;
       }
-      button.textContent = "Recalculate";
-      button.classList.add("usa-button--outline");
     } catch (error) {
       results.hidden = true;
       scopeContainer.hidden = true;
       showWarnings([]);
       const message =
         error.name === "AbortError"
-          ? "The calculation took too long. Try again."
+          ? "The calculation took too long."
           : error.message;
       status.textContent = `Metrics could not be calculated. ${message}`;
       summaryStatus.textContent = "Unable to calculate";
+      // Opening the panel calculates automatically; the retry button is the
+      // only manual control and appears only after a failure.
+      retryButton.classList.remove("display-none");
     } finally {
       window.clearTimeout(timeoutId);
-      button.disabled = false;
+      calculating = false;
       if (saveButton) saveButton.disabled = false;
     }
   };
@@ -393,10 +394,10 @@
     });
   }
 
-  button.addEventListener("click", calculateMetrics);
+  retryButton.addEventListener("click", calculateMetrics);
   if (saveButton) saveButton.addEventListener("click", saveMetrics);
   panel.addEventListener("toggle", () => {
-    if (panel.open && !downloading && !saving && !button.disabled) {
+    if (panel.open && !downloading && !saving && !calculating) {
       void calculateMetrics();
     }
   });
