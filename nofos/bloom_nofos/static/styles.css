@@ -1152,8 +1152,11 @@ label.usa-label {
   z-index: 1000;
 
   text-decoration: none;
-  padding: 10px 14px 10px 10px;
+  /* 1px less padding than before offsets the border, so the size is unchanged. */
+  padding: 9px 13px 9px 9px;
   background-color: var(--color--usa-link);
+  /* White edge keeps the button distinct over the dark footer bands (#1343). */
+  border: 1px solid var(--color--white);
   border-radius: 0.25rem;
 
   color: var(--color--white);

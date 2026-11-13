@@ -689,12 +689,13 @@ in-page link with no icon.
 The floating **Top** button
 ([`scroll_to_top_button.html`](../nofos/bloom_nofos/templates/includes/scroll_to_top_button.html),
 shown when a view sets `include_scroll_to_top`) is separate from the footer and
-unchanged by the link rows. At the bottom of a page it can sit over the dark footer
-bands. Its `--color--usa-link` background has 2.38:1 against row 2 and 1.43:1 against
-row 1, compared with 5.9:1 against the earlier grey footer. Its white label stays
-about 7:1, which identifies the button, so it has no border.
-If the button needs a stronger edge over the footer, add a 1px white border
-to `.back-to-top--container a` rather than changing the footer colors.
+otherwise unaffected by the link rows. At the bottom of a page it can sit over the dark
+footer bands, where its `--color--usa-link` background alone has only 2.38:1 against
+row 2 and 1.43:1 against row 1 (5.9:1 against the earlier grey footer). A 1px white
+border, with 1px less padding so the size is unchanged, gives it a visible edge there:
+the white border has 9.6:1 to 16:1 against the footer bands. Against the white page
+background the border doesn't show, so the button looks the same as before elsewhere.
+Keep the border if the footer or button colors change.
 
 Verify signed-in and signed-out layouts, keyboard focus, and wrapping at mobile
 and desktop widths with `tests/js/footer.browser.cjs`. Link order and destinations
