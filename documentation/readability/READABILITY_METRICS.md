@@ -117,7 +117,10 @@ Deleting a user retains their snapshots with a null requesting user.
 When the feature flag is enabled, the normal NOFO edit screen shows a compact,
 collapsed readability accordion after the primary NOFO status. A **Beta** tag
 identifies the feature as experimental. Expanding the accordion starts an
-on-demand calculation; the button allows retries or **Recalculate**. The result
+on-demand calculation, and each later expansion calculates again. There is no
+manual recalculate control: saving an edit reloads the edit page, and **Save
+these results** rechecks the NOFO before saving. A **Try again** button appears
+only when a calculation fails. The result
 displays the four Tier 2 clearance metrics: word count, words per sentence,
 Flesch-Kincaid grade level, and passive sentences, plus sentences per paragraph
 (target: 3 or lower), a Tier 1 drafting measure. It also displays any

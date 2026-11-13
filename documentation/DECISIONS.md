@@ -8,6 +8,45 @@ the shared [ADR template](template.md), and link the record here when relevant.
 
 ---
 
+## 2026-11-13 — Remove the readability panel's Recalculate button
+
+**Context:** On the NOFO edit page, the readability metrics panel calculates
+automatically each time it is opened. After a successful calculation, the
+**Calculate metrics** button turned into an outlined **Recalculate** button.
+Recalculating could only return the same numbers: the panel shows the NOFO as
+it was when the page loaded, saving any edit reloads the edit page, and
+**Save these results** already rechecks the NOFO and recalculates before
+saving if it has changed. The button added a control with no useful effect next
+to the panel's real action, Save these results.
+
+**Decision:** Remove the Calculate metrics/Recalculate button. Opening the
+panel remains the way to calculate. Keep one manual control for the case where
+it matters: a **Try again** button appears beside the error only when a
+calculation fails, and is hidden again once a calculation succeeds. Closing and
+reopening the panel also still calculates again. The panel's in-progress lock
+moves from the button's `disabled` state to a `calculating` flag, so reopening
+the panel during a calculation still does not start a second request.
+
+Copy that told editors to "Recalculate" now points to the action that exists:
+the save-conflict message reads "The NOFO changed while saving. Save again to
+check the latest version.", and the save error no longer says "Recalculate and
+try again." [`EDITOR_TASKS.md`](EDITOR_TASKS.md#task-readability-save) and
+[`READABILITY_METRICS.md`](readability/READABILITY_METRICS.md#edit-screen-panel)
+describe the new behavior. Screenshots are in
+[`review-evidence/readability-try-again/`](review-evidence/readability-try-again/README.md).
+
+The retry button is hidden with the USWDS `display-none` utility class, not the
+`hidden` attribute: `.usa-button` sets `display: inline-block`, which overrides
+`hidden`, and the button rendered on every successful calculation during
+review until this was changed.
+
+Removing the button outright, with no retry control, was rejected. Reopening the
+panel does retry, but nothing tells an editor that after an error, and the
+timeout message ("The calculation took too long. Try again.") would have
+pointed at a control that no longer existed.
+
+---
+
 ## 2026-10-11 — State three HHS style guide points in the style guide
 
 **Context:** The [style guide](STYLE_GUIDE.md#lists) says it generally follows

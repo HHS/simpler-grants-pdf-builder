@@ -909,7 +909,7 @@ If the panel is absent, this task is unavailable there.
 **Steps**
 
 1. On the NOFO edit page, expand **Readability metrics**. Opening it checks the
-   current NOFO; use **Calculate metrics** to request another calculation.
+   current NOFO. If the calculation fails, select **Try again**.
 2. Review the results, scope and any **Calculation notes** before interpreting
    the scores.
 3. Select **Save these results** to keep a manual checkpoint. Saving checks the
