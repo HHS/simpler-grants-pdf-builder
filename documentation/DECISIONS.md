@@ -8,6 +8,23 @@ the shared [ADR template](template.md), and link the record here when relevant.
 
 ---
 
+## 2026-11-08 — Publish an accessibility statement with Section 508 as the minimum
+
+**Context:** [Issue #1310](https://github.com/HHS/simpler-grants-pdf-builder/issues/1310)
+called for a clear statement of the standards, review steps, and reporting options.
+
+**Decision:** Keep the [full guide](ACCESSIBILITY.md) in `documentation/` and
+add a [short pointer](../ACCESSIBILITY.md) at the repository root for GitHub to
+display. [GitHub also supports other locations](https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/adding-an-accessibility-page-to-your-repository).
+Apply the Revised Section 508 Standards to published PDFs and the web app.
+Those standards include applicable WCAG 2.0 Level A and AA criteria. The
+project's goal is WCAG 2.2 Level AA where practical. The guide describes how
+editors review the final PDF and how readers can report barriers. Research on
+adding PDF checks to NOFO Builder remains in
+[issue #980](https://github.com/HHS/simpler-grants-pdf-builder/issues/980).
+
+---
+
 ## 2026-10-11 — State three HHS style guide points in the style guide
 
 **Context:** The [style guide](STYLE_GUIDE.md#lists) says it generally follows
