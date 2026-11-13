@@ -1,13 +1,15 @@
 # Source-native readability metrics
 
-The standalone Readability Checker's Word upload profile does not change
-the Builder editor panel's input, profile, or saved history.
+Only standalone Word uploads select the Word-derived profile. The Builder
+editor panel continues to use the same HTML input and profile. The metrics
+package is shared: when its version changes, existing snapshots are kept in
+history, and the next calculation records the installed package version.
 
 NOFO Builder has a contained integration boundary for the standalone
 [`hhs-nofo-metrics`](https://github.com/agilesix/hhs-nofo-metrics) package.
-The package is pinned to the Agile Six `v0.7.0` release. The feature remains
-disabled by default so environments can opt into the provisional metrics UI
-independently.
+The package version is pinned in Builder's dependency lock. The feature
+remains disabled by default so environments can opt into the provisional
+metrics UI independently.
 
 ## Source contract
 
@@ -36,13 +38,13 @@ configured targets are unchanged. Earlier stored results retain their original
 package/profile identities and remain available in history; they are not reused
 as current calculations under the new measurement contract.
 
-## Measurement version 0.7.0
+## What changed in package 0.7.0
 
-The saved Builder panel and standalone Word checker use HTML profile `0.6.0`.
-PDF uploads select tagged profile `0.7.0` or generic profile `0.6.0` automatically,
-and tagged support inspection uses adapter `0.1.8`. Users do not choose a
-measurement profile. “Opt-in” in package notes describes application configuration;
-this upgrade makes that choice for Builder's paths.
+Package 0.7.0 moved the Builder panel and the then-current standalone Word
+checker to HTML profile `0.6.0`. It moved PDF uploads to tagged profile `0.7.0`
+or generic profile `0.6.0` automatically, with adapter `0.1.8` for tagged support
+inspection. Users do not choose a measurement profile. “Opt-in” in package
+notes describes application configuration.
 
 The passive classifier no longer treats “as defined by” alone as a passive match.
 It retains finite passives such as “The award is defined by the agreement” and
@@ -60,12 +62,14 @@ or clearance approval.
 No data migration or new operational switch is required. Existing Constance
 availability controls remain in effect. New package/profile identities prevent
 reuse of older results as current measurements; history remains available.
-Calculate or upload again after deployment to obtain 0.7.0 results. Compare
-content revisions using the same measurement version and input format.
+After a package upgrade, calculate or upload again to obtain results from the
+installed package. Compare content revisions using the same measurement
+version and input format.
 
-To roll back, deploy the preceding Builder commit, restoring the 0.6.0 package
-and its prior profile/adapter references together. Do not rewrite history.
-Verify the report version and a fresh Builder calculation after rollout or rollback.
+To roll back a package upgrade, restore the prior Builder release so the
+package and its profile/adapter references roll back together. Do not rewrite
+history. Verify the report version and a fresh Builder calculation after
+rollout or rollback.
 
 [Consumer-upgrade validation and deployment handoff](../review-evidence/1231/README.md)
 record the synthetic checks and operator steps.
