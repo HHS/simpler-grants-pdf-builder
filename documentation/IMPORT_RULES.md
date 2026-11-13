@@ -122,6 +122,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 
 | IMPORT-075 | repair | Emphasis | Explicit line breaks inside bold/italic text survive Markdown conversion | `nofo_markdown.py` |
 | IMPORT-077 | repair | Emphasis | Unwrap isolated bold on trailing punctuation | `content_processing.py` |
+| IMPORT-080 | repair | Emphasis | Paragraph-opening applicant note labels → bold `Note:` | `note_paragraphs.py` |
 
 ---
 
@@ -615,6 +616,13 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Status:** active
 
 ---
+
+### IMPORT-080 — Applicant note labels
+
+- **Type:** repair
+- **Trigger:** A Builder import or reimport contains a paragraph beginning with a note label such as `Please note:`, `Note -` or `N.B.`, including paragraphs in table cells. Matching ignores case and handles labels split across plain formatting runs. Ordinary sentences and embedded labels are not matches.
+- **Action:** Standardize the label and its separator to bold `Note:`. Preserve remaining text and inline markup. Skip prefixes that cross links, bookmarks, breaks, or other structural content.
+- **Source:** `note_paragraphs.py::normalize_note_labels`, called by the Builder import path in `content_processing.py`. Compare and Composer do not opt in.
 
 ### IMPORT-077 — Unwrap isolated bold on trailing punctuation
 
