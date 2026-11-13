@@ -1,6 +1,6 @@
 import io
 import zipfile
-from unittest.mock import ANY, call, mock_open, patch
+from unittest.mock import ANY, call, patch
 
 from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
 
@@ -51,15 +51,15 @@ class DocxTransportTests(SimpleTestCase):
             export_url="https://synthetic.example/export",
             target_element="#download_target",
             filename_base="synthetic",
-            tmp_name="synthetic",
         )
 
-    @patch("bloom_nofos.utils.os.remove")
-    @patch("bloom_nofos.utils.open", new_callable=mock_open, read_data=VALID_DOCX)
+    def provider_returns(self, client_class, result):
+        client_class.return_value.SaveTo.return_value = result
+
     @patch("bloom_nofos.utils.GrabzItClient.GrabzItClient")
-    def test_tls_is_enabled_before_all_provider_operations(
-        self, client_class, file_open, remove
-    ):
+    def test_tls_is_enabled_before_all_provider_operations(self, client_class):
+        self.provider_returns(client_class, VALID_DOCX)
+
         response = self.export()
 
         client_class.assert_called_once_with("synthetic-key", "synthetic-secret")
@@ -70,11 +70,28 @@ class DocxTransportTests(SimpleTestCase):
                 call.SetCookie("sessionid", "synthetic.example", "synthetic-session"),
                 call.SetCookie("csrftoken", "synthetic.example", "synthetic-csrf"),
                 call.URLToDOCX("https://synthetic.example/export", ANY),
-                call.SaveTo("/tmp/synthetic.docx"),
+                call.SaveTo(),
             ],
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, VALID_DOCX)
+
+    @patch("bloom_nofos.utils.open", create=True)
+    @patch("bloom_nofos.utils.GrabzItClient.GrabzItClient")
+    def test_result_is_kept_in_memory_not_written_to_disk(
+        self, client_class, file_open
+    ):
+        # Concurrent exports of one document used to share /tmp/<pk>.docx.
+        self.provider_returns(client_class, VALID_DOCX)
+
+        first = self.export()
+        second = self.export()
+
+        self.assertEqual(first.content, VALID_DOCX)
+        self.assertEqual(second.content, VALID_DOCX)
+        for save_call in client_class.return_value.SaveTo.call_args_list:
+            self.assertEqual(save_call, call())
+        file_open.assert_not_called()
 
     @override_settings(GRABZIT_WORD_EXPORT_ALLOWED_HOSTS=("nofos.simpler.grants.gov",))
     @patch("bloom_nofos.utils.GrabzItClient.GrabzItClient")
@@ -96,10 +113,10 @@ class DocxTransportTests(SimpleTestCase):
         self.assertEqual(response.status_code, 503)
         client_class.assert_not_called()
 
-    @patch("bloom_nofos.utils.os.remove")
-    @patch("bloom_nofos.utils.open", new_callable=mock_open, read_data=b"")
     @patch("bloom_nofos.utils.GrabzItClient.GrabzItClient")
-    def test_blank_provider_result_returns_error(self, client_class, file_open, remove):
+    def test_blank_provider_result_returns_error(self, client_class):
+        self.provider_returns(client_class, b"")
+
         response = self.export()
 
         self.assertEqual(response.status_code, 502)
@@ -108,29 +125,33 @@ class DocxTransportTests(SimpleTestCase):
             b"Word export could not be completed. Please try again later.",
         )
 
-    @patch("bloom_nofos.utils.os.remove")
-    @patch("bloom_nofos.utils.open", new_callable=mock_open, read_data=make_docx(""))
     @patch("bloom_nofos.utils.GrabzItClient.GrabzItClient")
-    def test_structurally_valid_but_empty_docx_returns_error(
-        self, client_class, file_open, remove
-    ):
+    def test_structurally_valid_but_empty_docx_returns_error(self, client_class):
+        self.provider_returns(client_class, make_docx(""))
+
         response = self.export()
 
         self.assertEqual(response.status_code, 502)
 
-    @patch("bloom_nofos.utils.os.remove")
-    @patch("bloom_nofos.utils.open", new_callable=mock_open, read_data=b"not-a-docx")
     @patch("bloom_nofos.utils.GrabzItClient.GrabzItClient")
-    def test_malformed_provider_result_returns_error(
-        self, client_class, file_open, remove
-    ):
+    def test_malformed_provider_result_returns_error(self, client_class):
+        self.provider_returns(client_class, b"not-a-docx")
+
         response = self.export()
 
         self.assertEqual(response.status_code, 502)
 
-    @patch("bloom_nofos.utils.os.remove")
     @patch("bloom_nofos.utils.GrabzItClient.GrabzItClient")
-    def test_provider_failure_returns_error_and_cleans_up(self, client_class, remove):
+    def test_missing_provider_result_returns_error(self, client_class):
+        # The SDK returns False when GrabzIt does not give back a capture ID.
+        self.provider_returns(client_class, False)
+
+        response = self.export()
+
+        self.assertEqual(response.status_code, 502)
+
+    @patch("bloom_nofos.utils.GrabzItClient.GrabzItClient")
+    def test_provider_failure_returns_error(self, client_class):
         client_class.return_value.SaveTo.side_effect = RuntimeError(
             "synthetic provider failure"
         )
@@ -138,7 +159,28 @@ class DocxTransportTests(SimpleTestCase):
         response = self.export()
 
         self.assertEqual(response.status_code, 502)
-        remove.assert_called_once_with("/tmp/synthetic.docx")
+
+    def test_real_sdk_save_to_without_path_returns_bytes(self):
+        from GrabzIt.GrabzItClient import GrabzItClient as RealClient
+
+        class Status:
+            Cached = True
+            Processing = False
+            Message = ""
+
+        with (
+            patch.object(RealClient, "SetCookie", return_value=True),
+            patch.object(RealClient, "Save", return_value="synthetic-id"),
+            patch.object(RealClient, "GetStatus", return_value=Status()),
+            patch.object(RealClient, "GetResult", return_value=VALID_DOCX),
+            patch("GrabzIt.GrabzItClient.sleep"),
+            patch("bloom_nofos.utils.open", create=True) as file_open,
+        ):
+            response = self.export()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, VALID_DOCX)
+        file_open.assert_not_called()
 
     def test_real_sdk_selects_https_before_first_cookie_request(self):
         class StopBeforeNetwork(Exception):

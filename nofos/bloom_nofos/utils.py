@@ -1,6 +1,5 @@
 import io
 import logging
-import os
 import re
 import zipfile
 from socket import gaierror, gethostbyname, gethostname
@@ -95,7 +94,6 @@ def generate_docx_download_response(
     export_url: str,
     target_element: str,
     filename_base: str,
-    tmp_name: str,
 ):
     """
     Convert a URL to DOCX using GrabzIt and return it as an attachment response.
@@ -156,14 +154,13 @@ def generate_docx_download_response(
     options = GrabzItDOCXOptions.GrabzItDOCXOptions()
     options.targetElement = target_element
 
-    file_path = f"/tmp/{tmp_name}.docx"
     try:
         grabzit.URLToDOCX(export_url, options)
-        if not grabzit.SaveTo(file_path):
-            raise RuntimeError("GrabzIt did not save the DOCX result")
-
-        with open(file_path, "rb") as f:
-            content = f.read()
+        # With no path, SaveTo returns the DOCX bytes instead of writing a file,
+        # so concurrent exports of the same document can't share a temp file.
+        content = grabzit.SaveTo()
+        if not isinstance(content, (bytes, bytearray)):
+            raise RuntimeError("GrabzIt did not return the DOCX result")
     except Exception:
         logger.exception(
             "GrabzIt Word export request failed",
@@ -172,11 +169,6 @@ def generate_docx_download_response(
         return HttpResponse(
             "Word export could not be completed. Please try again later.", status=502
         )
-    finally:
-        try:
-            os.remove(file_path)
-        except OSError:
-            pass
 
     if not is_valid_docx(content):
         logger.error(

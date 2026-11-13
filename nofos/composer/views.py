@@ -1019,7 +1019,6 @@ class ComposerExportView(
             export_url=export_url,
             target_element="#download_target",
             filename_base=(document.title or "content-guide"),
-            tmp_name=str(document.pk),
         )
 
 
@@ -1887,7 +1886,6 @@ class WriterInstancePreviewView(BaseComposerPreviewView):
                 export_url=export_url,
                 target_element="#download_target",
                 filename_base=document.short_name or document.title,
-                tmp_name=str(document.pk),
             )
 
         return HttpResponseBadRequest("Unknown action.")

@@ -61,7 +61,9 @@ class MetricsExcludeInternalGroupsTests(TestCase):
         self.assertEqual(active_users_by_month(self.months), [1])
 
     def test_nofos_created_excludes_bloom_and_staging(self):
-        Nofo.objects.create(title="CDC Nofo", number="CDC-001", opdiv="CDC", group="cdc")
+        Nofo.objects.create(
+            title="CDC Nofo", number="CDC-001", opdiv="CDC", group="cdc"
+        )
         Nofo.objects.create(
             title="Bloom Nofo", number="BLOOM-001", opdiv="ACF", group="bloom"
         )
