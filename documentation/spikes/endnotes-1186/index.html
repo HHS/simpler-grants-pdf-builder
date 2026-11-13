@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Endnote placement study | Synthetic prototype</title>
+  <link rel="stylesheet" href="../../../nofos/bloom_nofos/static/uswds/uswds.css">
+  <link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+<main class="grid-container padding-y-4">
+  <p class="text-bold">NOFO Builder research / #1186</p>
+  <h1 class="font-heading-xl text-bold">Place an endnote without editing HTML</h1>
+  <div class="usa-alert usa-alert--info" role="note"><div class="usa-alert__body">
+    <h2 class="usa-alert__heading text-bold">Synthetic prototype, not a Builder feature</h2>
+    <p class="usa-alert__text">No upload, login, server save or real documents. Changes last only until you reload. Both approaches use the same in-memory citation logic. The cursor view is a plain-text stand-in, not the actual Martor editor.</p>
+  </div></div>
+  <div class="grid-row grid-gap margin-top-4">
+  <section class="tablet:grid-col-6" aria-labelledby="place-title">
+    <h2 id="place-title" class="font-heading-lg text-bold">1. Choose a placement approach</h2>
+    <fieldset class="usa-fieldset"><legend class="usa-legend">Start from the paragraph or editor</legend>
+      <div class="usa-radio"><input class="usa-radio__input" type="radio" name="approach" id="paragraph-mode" value="paragraph" checked><label class="usa-radio__label" for="paragraph-mode">A. Pick a paragraph in a preview</label></div>
+      <div class="usa-radio"><input class="usa-radio__input" type="radio" name="approach" id="cursor-mode" value="cursor"><label class="usa-radio__label" for="cursor-mode">B. Insert at the editor cursor</label></div>
+    </fieldset>
+    <label class="usa-label" for="block">Paragraph</label><select class="usa-select" id="block"></select>
+    <div id="paragraph-panel"><p class="margin-top-2">The reference goes at the end of this paragraph. Select another paragraph to compare locations.</p><blockquote id="paragraph-preview"></blockquote></div>
+    <div id="cursor-panel" hidden><label class="usa-label" for="cursor-text">Click or use arrow keys to position the cursor</label><p id="cursor-hint">This is a placement test, not the real editor. Text typed here is not saved and prevents insertion until you choose the paragraph again. Use the synthetic text-edit control below to test a later edit.</p><textarea class="usa-textarea" id="cursor-text" aria-describedby="cursor-hint" rows="5"></textarea><p id="cursor-position">Position: 0</p></div>
+    <h2 class="font-heading-lg text-bold margin-top-4">2. Choose or add a citation</h2>
+    <label class="usa-label" for="note">Citation</label><select class="usa-select" id="note"></select>
+    <label class="usa-label" for="citation">Citation text (plain text in this prototype)</label><textarea class="usa-textarea" id="citation" rows="3"></textarea>
+    <button class="usa-button margin-top-2" id="place" type="button">Add citation and place reference</button>
+    <label class="usa-label" for="relocate">Or place a changed reference again</label><select class="usa-select" id="relocate"><option value="">Choose a reference</option></select>
+    <button class="usa-button usa-button--outline margin-top-2" id="replace-position" type="button">Confirm new reference position</button>
+    <details class="margin-top-3"><summary>Test an edit to the paragraph</summary><p>This simulates a later text edit. Existing reference locations are not silently moved.</p><label class="usa-label" for="changed-text">Changed paragraph text</label><textarea class="usa-textarea" id="changed-text" rows="3"></textarea><button class="usa-button usa-button--outline margin-top-2" id="change-text" type="button">Apply synthetic text edit</button></details>
+  </section>
+  <section class="tablet:grid-col-6" aria-labelledby="preview-title">
+    <h2 id="preview-title" class="font-heading-lg text-bold">3. Review references and citations</h2>
+    <div id="status" role="status" aria-live="polite" class="status margin-y-2">Choose a paragraph and enter a citation.</div>
+    <ul id="issues" class="usa-list"></ul>
+    <div id="preview" class="preview"></div>
+    <h3 class="font-heading-md text-bold">Manage a citation</h3>
+    <p>Choose an existing citation on the left. Its stable ID stays the same when its displayed number changes.</p>
+    <button class="usa-button usa-button--outline" id="edit" type="button">Update citation text</button>
+    <div class="margin-top-2"><button class="usa-button usa-button--outline" id="up" type="button">Move citation up</button><button class="usa-button usa-button--outline" id="down" type="button">Move citation down</button></div>
+    <button class="usa-button usa-button--secondary margin-top-2" id="delete" type="button">Delete citation and its references</button>
+    <details class="margin-top-3"><summary>Generated HTML shape (not saved or imported)</summary><pre id="html-output"></pre></details>
+  </section>
+  </div>
+</main>
+<script type="module" src="prototype.mjs"></script>
+</body></html>

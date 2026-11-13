@@ -29,6 +29,7 @@ Link durable guides or topic indexes from this page; individual evidence records
 - [EDITABLE_INTRODUCTION.md](EDITABLE_INTRODUCTION.md) — Imported introductory ownership, compatibility, editing, output policy and resolving template guidance before the introduction
 - [ENDNOTE_WARNINGS.md](ENDNOTE_WARNINGS.md) — Editor warning messages, triggers, grouping, combinations, and shared instructions
 - [endnote-import.md](endnote-import.md) — Windows Word author FAQ, native note/cross-reference import fallbacks, and manually bracketed reference conventions
+- [Endnote editor spike](ENDNOTES_EDITOR_SPIKE.md) - Two placement approaches, a synthetic local prototype, reuse boundaries and a smaller-helper recommendation; not a shipped editor
 - [DOCUMENT_PROCESSING.md](DOCUMENT_PROCESSING.md) — Shared content-processing boundary, application responsibilities and remaining portability limits
 - [NOFO_BUILDER_FAQ.md](NOFO_BUILDER_FAQ.md) — Answers to common questions about designing a NOFO in NOFO Builder: importing, Markdown, tables, page layout, endnotes, appendices, metadata, and status; links to the editor tasks for step-by-step instructions
 - [UI_PATTERNS.md](UI_PATTERNS.md) — Reusable interface patterns, including alert text and spacing, compact form-save success feedback, shared file-upload error states, loading progress modals, readability reliability alerts, and subsection save-conflict recovery
