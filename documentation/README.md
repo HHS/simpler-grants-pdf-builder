@@ -19,6 +19,7 @@ Link durable guides or topic indexes from this page; individual evidence records
 - [DECISIONS.md](DECISIONS.md) — Product, architectural, and implementation decision log
 - [Agent design pilot boundary ADR](adr/2026-10-20-agent-design-pilot-boundary.md) - Accepted HTML-only local synthetic-proof direction and human acceptance boundary for #902/#1145
 - [EDITOR_TASKS.md](EDITOR_TASKS.md) — Instructions for common NOFO Builder tasks, including prerequisites and support contacts
+- [DOCX_EXPORT.md](DOCX_EXPORT.md) — How Word (DOCX) export works with GrabzIt, and where data is stored
 - [GROUPS.md](GROUPS.md) — How user groups and permissions work
 - [DOCUMENT_HISTORY.md](DOCUMENT_HISTORY.md) - Indexed history pagination, deleted-item retention, backfill and rollout verification
 - [IMPORT_ERROR_CODES.md](IMPORT_ERROR_CODES.md) — What each blocking import error code (`IMPORT-NO-SECTIONS`, `IMPORT-OPDIV-BLANK`, …) means and what to tell someone who hits one
