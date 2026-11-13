@@ -678,8 +678,8 @@ footer reads as one family of blues. White link text stays above 9:1 contrast on
   the right edge.
 - **Row 2 (`HHS policies and resources`, `#002340`):** smaller, regular-weight links
   modeled on the simpler.grants.gov footer: About HHS, Accessibility support, FOIA
-  requests, No FEAR Act data, Office of the Inspector General, Performance reports
-  and Privacy policy. One column below the tablet breakpoint (640px); a wrapping row
+  requests, No FEAR Act data, Office of the Inspector General, Performance reports,
+  Privacy policy and Vulnerability disclosure policy. One column below the tablet breakpoint (640px); a wrapping row
   from there up.
 
 External links use `usa-link--external` (icon after the text), open in a new window

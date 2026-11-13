@@ -35,6 +35,10 @@ ROW_2 = [
         "https://www.hhs.gov/about/budget/budget-in-brief/index.html",
     ),
     ("Privacy policy", "https://www.hhs.gov/privacy/privacy-policy/index.html"),
+    (
+        "Vulnerability disclosure policy",
+        "https://www.hhs.gov/vulnerability-disclosure-policy/index.html",
+    ),
 ]
 
 

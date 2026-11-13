@@ -14,7 +14,8 @@ template renders, not a deployed environment.
 
 The footer now has three bands: the HHS identifier, row 1 with Builder links,
 and row 2 with HHS policy links like the simpler.grants.gov footer. Privacy policy
-moves from row 1 to row 2. Both base templates include the shared
+moves from row 1 to row 2, and row 2 ends with the HHS Vulnerability disclosure
+policy. Both base templates include the shared
 `includes/footer.html`; the Readability Checker still omits the support ticket link.
 The current pattern is documented in
 [UI Patterns](../../UI_PATTERNS.md#hhs-footer-identifier-and-link-rows).

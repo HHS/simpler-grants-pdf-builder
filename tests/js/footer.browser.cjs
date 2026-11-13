@@ -19,7 +19,8 @@ const root = resolve(__dirname, '../..');
   mkdirSync(output, {recursive:true});
   const newWindow = ' (opens in a new window)';
   const policyLinks = ['About HHS', 'Accessibility support', 'FOIA requests', 'No FEAR Act data',
-    'Office of the Inspector General', 'Performance reports', 'Privacy policy'].map(text => text + newWindow);
+    'Office of the Inspector General', 'Performance reports', 'Privacy policy',
+    'Vulnerability disclosure policy'].map(text => text + newWindow);
   const rows = [
     {selector: '.builder-footer__primary', background: 'rgb(11, 71, 120)'},
     {selector: '.builder-footer__secondary', background: 'rgb(0, 35, 64)'},
