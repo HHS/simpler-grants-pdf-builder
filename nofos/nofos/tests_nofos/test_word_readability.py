@@ -247,7 +247,7 @@ class WordReadabilityTests(SimpleTestCase):
         )
         self.assertEqual(after.method.version, "0.4.0-provisional")
         report = analyze_word(self.path)
-        self.assertEqual(report["version"], "0.7.0")
+        self.assertEqual(report["version"], metrics.PACKAGE_VERSION)
         self.assertEqual(
             report["metrics"]["passive_sentence_percentage"]["value"], after.value
         )
@@ -303,7 +303,7 @@ class WordReadabilityTests(SimpleTestCase):
             if key != "passive_sentence_percentage":
                 self.assertEqual(old.metrics[key].to_dict(), new.metrics[key].to_dict())
         report = analyze_word(self.path)
-        self.assertEqual(report["version"], "0.7.0")
+        self.assertEqual(report["version"], metrics.PACKAGE_VERSION)
         self.assertEqual(
             report["metrics"]["passive_sentence_percentage"]["value"], after.value
         )

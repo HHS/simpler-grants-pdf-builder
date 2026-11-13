@@ -499,7 +499,7 @@ class NofoReadabilityMetricsTests(TestCase):
         new = analyze_nofo_readability(self.nofo)
         before = old["metrics"]["passive_sentence_percentage"]
         after = new["metrics"]["passive_sentence_percentage"]
-        self.assertEqual(new["engine"]["version"], "0.7.0")
+        self.assertEqual(new["engine"]["version"], metrics.PACKAGE_VERSION)
         self.assertEqual(new["profile"]["version"], "0.6.0")
         self.assertEqual(after["method"]["version"], "0.5.0-provisional")
         # Builder also renders standard applicant text. Exactly one of the
