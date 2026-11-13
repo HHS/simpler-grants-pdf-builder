@@ -685,6 +685,60 @@ def get_subsections_from_sections(
     return sections
 
 
+STEP_1_SECTION_PATTERN = re.compile(r"^\s*step\s*1\b", re.IGNORECASE)
+TAGLINE_LABEL_PATTERN = re.compile(r"^\s*tagline\s*:", re.IGNORECASE)
+
+
+def remove_step_1_tagline_subsections(sections):
+    """Drop untitled Step 1 subsections that begin with ``Tagline:`` (IMPORT-079).
+
+    Some Word documents repeat the legacy ``Tagline:`` metadata line as body
+    content in Step 1, where it becomes an untitled subsection and shows the
+    tagline twice. The Tagline field is still suggested from the full source
+    (IMPORT-041/IMPORT-059), so the whole subsection is redundant.
+
+    Accepts section dicts, not Section objects. A subsection is removed when it
+    sits in a section whose name starts with "Step 1", has no name, and the
+    text of its first non-empty body element starts with ``Tagline:``
+    (case- and whitespace-insensitive). Remaining subsections are renumbered.
+    Mutates ``sections`` in place and returns the removed subsection dicts.
+    """
+
+    def _text(element):
+        if isinstance(element, Tag):
+            return element.get_text(" ")
+        return BeautifulSoup(str(element), "html.parser").get_text(" ")
+
+    def _starts_with_tagline(body):
+        if isinstance(body, Tag):
+            # Callout box subsections hold one div as their body.
+            body = [body]
+        for element in body or []:
+            text = sanitize_imported_text(_text(element))
+            if text:
+                return bool(TAGLINE_LABEL_PATTERN.match(text))
+        return False
+
+    removed = []
+    for section in sections:
+        if not STEP_1_SECTION_PATTERN.match(section.get("name", "")):
+            continue
+        subsections = section.get("subsections", [])
+        kept = []
+        for subsection in subsections:
+            if not clean_string(subsection.get("name", "")) and _starts_with_tagline(
+                subsection.get("body")
+            ):
+                removed.append(subsection)
+            else:
+                kept.append(subsection)
+        if len(kept) != len(subsections):
+            for order, subsection in enumerate(kept, 1):
+                subsection["order"] = order
+            section["subsections"] = kept
+    return removed
+
+
 END_NOTES_SECTION_NAME = "Endnotes"
 
 
@@ -2522,6 +2576,9 @@ def get_sections_and_subsections_from_soup(
     parsed = get_subsections_from_sections(
         sections, top_heading_level, consume_scoped_tagline=consume_scoped_tagline
     )
+    if consume_scoped_tagline:
+        # Builder imports only; Composer and Compare do not opt in.
+        remove_step_1_tagline_subsections(parsed)  # IMPORT-079
     from .introductory_page import INTRO_ANCHOR, imported_introduction
 
     if imported_introduction(soup):

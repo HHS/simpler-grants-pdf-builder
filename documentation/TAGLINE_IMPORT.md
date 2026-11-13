@@ -18,6 +18,16 @@ is retained as body content rather than converted into a tagline.
 Links to the consumed Tagline heading lead to Basic information, which remains
 visible even when the field is blank.
 
+Some Word documents also repeat the legacy `Tagline: value` line as body
+content in Step 1, where it would become an untitled subsection and show the
+tagline twice. On Builder import and re-import, a subsection in a Step 1
+section that has no title and whose first non-empty text begins with
+`Tagline:` (ignoring case and spacing) is omitted entirely, along with any
+content that follows it in that subsection. The Tagline field is still filled in
+from the document as described above. Titled subsections, subsections where
+`Tagline:` is not the first text, and other sections are kept. No warning is
+shown.
+
 Use the existing Tagline row in Basic information on the NOFO editor to edit the
 saved value. It appears through the existing dedicated tagline presentation;
 a blank value produces no empty tagline block.
@@ -32,4 +42,6 @@ Opening, editing other fields, or exporting an existing record never extracts
 or removes stored Tagline subsections. No migration/backfill is included.
 Composer and Compare keep their existing import behavior.
 
-Implementation details: [IMPORT-041 and IMPORT-059](IMPORT_RULES.md#import-059--scoped-basic-information-tagline-extraction).
+Implementation details: [IMPORT-041 and IMPORT-059](IMPORT_RULES.md#import-059--scoped-basic-information-tagline-extraction),
+and [IMPORT-079](IMPORT_RULES.md#import-079--duplicate-tagline-subsection-in-step-1)
+for the duplicate Step 1 subsection.
