@@ -26,6 +26,7 @@ from .endnotes import (
     remove_duplicate_native_note_custom_marks,
 )
 from .nofo_markdown import MISSING_ALT_TEXT_ATTR, PRESERVE_BOOKMARK_TARGET_ATTR, md
+from .note_paragraphs import normalize_note_labels
 from .typed_bullets import repair_typed_bullets
 
 
@@ -2585,6 +2586,8 @@ def process_document_content(
     )
     if extract_scoped_tagline:
         imported_tagline = consume_tagline_paragraph(soup, imported_tagline)
+    if builder_import:
+        normalize_note_labels(soup)  # IMPORT-080
     if section_parser is None:
         section_parser = get_sections_and_subsections_from_soup
     if builder_import or extract_scoped_tagline:
