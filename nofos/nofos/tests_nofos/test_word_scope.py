@@ -12,6 +12,29 @@ from nofos.tests_nofos.test_word_instruction_boxes import alternate, docx, parag
 
 
 class WordScopeConversionTests(SimpleTestCase):
+    def test_complex_toc_field_excludes_entries_but_keeps_plain_lookalike(self):
+        field_start = (
+            '<w:p><w:r><w:fldChar w:fldCharType="begin"/></w:r>'
+            "<w:r><w:instrText> TOC </w:instrText></w:r>"
+            '<w:r><w:fldChar w:fldCharType="separate"/></w:r></w:p>'
+        )
+        field_end = '<w:p><w:r><w:fldChar w:fldCharType="end"/></w:r></w:p>'
+        body = (
+            paragraph("HRSA notice of funding opportunity on Grants.gov.")
+            + paragraph("Opportunity number: HRSA-27-123")
+            + field_start
+            + paragraph("Eligibility 3")
+            + field_end
+            + paragraph("Eligibility 3")
+            + paragraph("Applicants should file the form.")
+        )
+        with TemporaryDirectory() as scratch:
+            path = Path(scratch) / "synthetic.docx"
+            path.write_bytes(docx(body).read())
+            report = analyze_word(path)
+        self.assertEqual(report["word_exclusions"]["table_of_contents"], 2)
+        self.assertEqual(report["metrics"]["word_count"]["value"], 17)
+
     def test_position_only_cover_is_distinguished_from_unrecognized_opening(self):
         for following_style, expected in (("Heading1", 2), ("Normal", 0)):
             with self.subTest(style=following_style), TemporaryDirectory() as scratch:
