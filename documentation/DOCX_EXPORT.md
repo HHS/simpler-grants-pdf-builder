@@ -89,7 +89,7 @@ flowchart LR
 | --- | --- | --- | --- |
 | NOFO or content guide content | NOFO Builder database | Permanent (normal app data) | Export does not change it. |
 | Rendered export page | Produced on request for GrabzIt's renderer | Not stored by us | Sent to GrabzIt over HTTPS. |
-| User's `sessionid` and `csrftoken` | GrabzIt account cookie store, keyed by host | **Until the next export replaces them.** The code does not call `DeleteCookie`. | The token stops working when the Django session expires. |
+| User's `sessionid` and `csrftoken` | GrabzIt account cookie store, keyed by host | Until replaced or removed. The code does not call `DeleteCookie`. | See [#1330](https://github.com/HHS/simpler-grants-pdf-builder/issues/1330) for account cleanup. |
 | Generated DOCX | GrabzIt servers (capture cache) | Retention period set by GrabzIt | We don't set the SDK's `encryptionKey` option. See the [GrabzIt Trust Center](https://grabz.it/trust/). |
 | Generated DOCX (temporary copy) | ECS task `/tmp/<document pk>.docx` | Removed right after it is read | If removal fails, the file stays until the task is replaced. |
 | Generated DOCX (download) | User's browser or device | Up to the user | The final file. |
@@ -101,10 +101,9 @@ We do not store the generated Word file in our database, S3 or logs.
 These are open as of the source baseline above:
 
 - **Failure logs are discarded in deployed environments.** `generate_docx_download_response` logs through the `bloom_nofos.utils` logger. That logger has no handler of its own, so its records reach the root logger, which uses a `NullHandler` outside tests. "GrabzIt Word export request failed", "GrabzIt returned an invalid or empty DOCX" and "GrabzIt Word export blocked for unconfigured host" therefore never reach the console or log aggregation. Users still see the modal's error message.
-- **Session cookies stay with GrabzIt after the export.** Calling `DeleteCookie` afterwards is not a safe fix on its own. Cookies are shared across the GrabzIt account per host, so deleting them could log out another user's export that is still running. That user's Word file could then contain the login page instead of the document. Safer options are a short `expires` on `SetCookie`, or a short-lived signed export URL instead of cookies.
-- **Concurrent exports share cookies.** Two users exporting at the same moment can have one conversion run with the other user's session. The POST view has already checked the requesting user's permissions, so the likely result is a failed or wrong-permission render, not access to another document.
+- **Session cookies and cached documents stay with GrabzIt after the export.** Cleaning up the account's stored cookies and choosing a cache retention suitable for pre-decisional content are tracked in [#1330](https://github.com/HHS/simpler-grants-pdf-builder/issues/1330).
 - **No customer encryption key.** The ADR lists encryption at rest with a customer-provided key as a reason for choosing GrabzIt. The code does not set `encryptionKey`.
-- **Temporary file names can collide.** Concurrent exports of the same document on the same task share `/tmp/<pk>.docx`, for example the standard and clearance copies of one NOFO.
+- **Temporary file names can collide.** Exports of the same document running at the same time on one task share `/tmp/<pk>.docx`, for example the standard and clearance copies of one NOFO.
 
 ## Configuration
 
