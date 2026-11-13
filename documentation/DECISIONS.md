@@ -8,6 +8,24 @@ the shared [ADR template](template.md), and link the record here when relevant.
 
 ---
 
+## 2026-11-13 — Remove the Beta tag from the readability metrics panel
+
+**Context:** The readability metrics accordion on the NOFO edit page showed a
+gold **Beta** tag beside its heading. The tag marked the panel as experimental
+while the metrics and their targets were provisional. The FY27 NOFO Content and
+Clearance Guidance is now published, and the panel's metrics and targets follow
+it, so the tag no longer tells editors anything useful and adds noise to the
+edit page.
+
+**Decision:** Remove the **Beta** tag from the readability panel heading and
+from the description in
+[`READABILITY_METRICS.md`](readability/READABILITY_METRICS.md#edit-screen-panel).
+The feature flag (`HHS_NOFO_METRICS_ENABLED`) is unchanged: environments that
+have not enabled readability metrics still do not show the panel. The **Beta**
+tag on the NOFO compare page is a separate feature and is unchanged.
+
+---
+
 ## 2026-11-13 — Say "current NOFO" rather than "version" in readability copy
 
 **Context:** Readability copy described the same idea three ways. The panel
