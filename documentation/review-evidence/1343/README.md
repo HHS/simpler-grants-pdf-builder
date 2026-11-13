@@ -43,13 +43,17 @@ becomes a row at the tablet breakpoint (640px).
   1024 and 1280px. It checks for no horizontal scrolling, link text and order per row, row
   backgrounds, white link text, column versus row layout at each breakpoint, Back
   to top on the right of row 1, band order and the existing identifier checks.
+  It also fails if the keyboard focus ring drops below 3:1, or link text below
+  4.5:1, against the identifier band or either row. The USWDS focus color
+  `#2491ff` measures 3.97:1, 3.004:1 and 5.00:1 on the three bands, so row 1 has
+  almost no margin. A temporary run with row 1 lightened to `#0e4c80` failed at 2.78:1.
   The script launches the `chrome` channel; locally it ran against Playwright's
   bundled Chromium with that option removed.
 - `nofos/bloom_nofos/tests_bloom_nofos/test_footer.py` checks link order, URLs,
   `target="_blank"` and the screen reader new-window text on the login page, a
   signed-in NOFO list and the Readability Checker.
-- Contrast for white text was calculated, not measured with a tool: about 9.6:1 on `#0b4778`
-  and about 15:1 on `#002340`.
+- Contrast is calculated from browser-computed colors with the WCAG formula: white
+  text is 12.71:1 on the identifier, 9.60:1 on row 1 and 15.98:1 on row 2.
 - **Not checked:** screen reader output, a deployed environment, and whether the
   external destinations resolve.
 

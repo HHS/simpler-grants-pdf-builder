@@ -21,6 +21,26 @@ const root = resolve(__dirname, '../..');
   const policyLinks = ['About HHS', 'Accessibility support', 'FOIA requests', 'No FEAR Act data',
     'Office of the Inspector General', 'Performance reports', 'Privacy policy',
     'Vulnerability disclosure policy'].map(text => text + newWindow);
+  // WCAG 2.x contrast ratio between two computed rgb() colors.
+  const contrast = (a, b) => {
+    const luminance = color => {
+      const [r, g, bl] = color.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number).map(v => {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+      });
+      return 0.2126 * r + 0.7152 * g + 0.0722 * bl;
+    };
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+  };
+  // Focus the first link in a band; return its focus ring color and the band background.
+  const focusRing = async (band, link) => {
+    await page.locator(link).first().focus();
+    return {
+      ring: await page.locator(link).first().evaluate(el => getComputedStyle(el).outlineColor),
+      background: await page.locator(band).evaluate(el => getComputedStyle(el).backgroundColor),
+    };
+  };
   const rows = [
     {selector: '.builder-footer__primary', background: 'rgb(11, 71, 120)'},
     {selector: '.builder-footer__secondary', background: 'rgb(0, 35, 64)'},
@@ -102,6 +122,21 @@ const root = resolve(__dirname, '../..');
       await page.keyboard.press('Shift+Tab');
       assert.equal(await agencyLink.evaluate(el => el === document.activeElement), true);
       assert.notEqual(await agencyLink.evaluate(el => getComputedStyle(el).outlineStyle), 'none');
+      // The USWDS focus ring (#2491ff) clears 3:1 on row 1 by only a small margin.
+      // Fail if a color change pushes it, or white link text, below WCAG AA on any band.
+      for (const [band, link] of [
+        ['.builder-identifier', '.builder-identifier a'],
+        ['.builder-footer__primary', '.builder-footer__primary a'],
+        ['.builder-footer__secondary', '.builder-footer__secondary a'],
+      ]) {
+        const {ring, background} = await focusRing(band, link);
+        assert.ok(contrast(ring, background) >= 3,
+          `${band} focus ring ${ring} on ${background} is ${contrast(ring, background).toFixed(2)}:1`);
+        const text = await page.locator(link).first().evaluate(el => getComputedStyle(el).color);
+        assert.ok(contrast(text, background) >= 4.5,
+          `${band} link text ${text} on ${background} is ${contrast(text, background).toFixed(2)}:1`);
+      }
+      await page.locator('.builder-footer__primary a').first().blur();
       if(support && [320,768,1280].includes(width)) {
         await page.screenshot({path:resolve(output,`after-${width}.png`),fullPage:true});
         await agencyLink.blur();
