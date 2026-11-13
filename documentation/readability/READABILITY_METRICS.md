@@ -1,5 +1,8 @@
 # Source-native readability metrics
 
+The standalone Readability Checker's Word upload profile does not change
+the Builder editor panel's input, profile, or saved history.
+
 NOFO Builder has a contained integration boundary for the standalone
 [`hhs-nofo-metrics`](https://github.com/agilesix/hhs-nofo-metrics) package.
 The package is pinned to the Agile Six `v0.7.0` release. The feature remains

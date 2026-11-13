@@ -948,7 +948,9 @@ If access is denied or the page is unavailable, contact the pilot operator.
 4. Read **Measurement scope**, reliability information and any **Calculation
    notes**. For Word, **Why “Estimated”?** under Measurement scope explains the
    metric labels. Word conversion may omit text boxes, headers, footers and image text;
-   template instructions and unused draft options can be counted.
+   the report lists recognized cover, contents, template instructions and
+   Builder metadata it excluded. Other writer notes and unused options may
+   still count.
    A Word report without a reliability rating explains the tool's limitation;
    it does not mean a problem was detected in your upload.
 5. Select **Copy metrics** or **Print / Save as PDF** before leaving the report.
