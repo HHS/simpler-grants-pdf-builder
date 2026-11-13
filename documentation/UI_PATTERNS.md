@@ -686,6 +686,16 @@ External links use `usa-link--external` (icon after the text), open in a new win
 and include the visually hidden text " (opens in a new window)". Back to top is an
 in-page link with no icon.
 
+The floating **Top** button
+([`scroll_to_top_button.html`](../nofos/bloom_nofos/templates/includes/scroll_to_top_button.html),
+shown when a view sets `include_scroll_to_top`) is separate from the footer and
+unchanged by the link rows. At the bottom of a page it can sit over the dark footer
+bands. Its `--color--usa-link` background has 2.38:1 against row 2 and 1.43:1 against
+row 1, compared with 5.9:1 against the earlier grey footer. Its white label stays
+about 7:1, which identifies the button, so it has no border.
+If the button needs a stronger edge over the footer, add a 1px white border
+to `.back-to-top--container a` rather than changing the footer colors.
+
 Verify signed-in and signed-out layouts, keyboard focus, and wrapping at mobile
 and desktop widths with `tests/js/footer.browser.cjs`. Link order and destinations
 are covered by `nofos/bloom_nofos/tests_bloom_nofos/test_footer.py`.

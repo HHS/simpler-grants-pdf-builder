@@ -36,6 +36,17 @@ wrapped onto two lines with Back to top alone on the second, so row 1 stays a
 column until the USWDS tablet-lg breakpoint (880px). Row 2 wraps naturally and
 becomes a row at the tablet breakpoint (640px).
 
+## Floating Top button
+
+The floating **Top** button on composer and NOFO edit pages is unchanged; the CSS
+removed in this change only styled the old footer "Back to top" link. At 390px on
+this branch it still appears after scrolling, fixed 32px from the bottom and 16px
+from the right. Scrolled to the bottom, it sits over row 2
+([screenshot](floating-top-button-390.png)). Contrast between the button
+(`#005ea2`) and what's behind it drops from 5.9:1 on the earlier grey footer to
+2.38:1 on row 2 and 1.43:1 on row 1. Its white label stays about 7:1. We kept the
+button as is; a 1px white border is the suggested fix if its edge needs to stand out more.
+
 ## Validation
 
 - `tests/js/footer.browser.cjs` passes for signed-in and signed-out Builder and
