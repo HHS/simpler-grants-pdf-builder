@@ -5,6 +5,7 @@
 {% include "includes/page_heading.html" with title="Passive sentence comparisons" back_text="Back to Readability Checker usage" back_href=usage_href only %}
 <p>Saved comparisons of passive sentence percentages from the Readability Checker and Microsoft Word for Windows. Differences are Readability Checker minus Microsoft Word for Windows, in percentage points.</p>
 {% if not comparison_submissions_enabled %}<p>New comparison submissions are disabled.</p>{% endif %}
+{% if mixed_word_profiles %}<p><strong>Different calculation profiles:</strong> These results may count different Word content. Check the calculation version before comparing rows over time.</p>{% endif %}
 {% include "nofos/includes/word_comparison_trend.html" %}
 <div style="overflow-x:auto" tabindex="0" role="region" aria-label="Saved passive sentence comparisons table">
 <table class="usa-table" style="width:100%">

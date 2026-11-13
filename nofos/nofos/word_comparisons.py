@@ -46,7 +46,7 @@ def stage_run(request, report, filename, fingerprint):
             "version": report.get("version") or "Unavailable",
             "checker": {
                 **report,
-                "input_processing": f"Word body → Mammoth {package_version('mammoth')} HTML → Word readability profile (v1)",
+                "input_processing": f"Word body → Mammoth {package_version('mammoth')} HTML → Readability Checker",
             },
             "passive": report.get("metrics", {})
             .get("passive_sentence_percentage", {})
@@ -193,6 +193,10 @@ def difference_trend(records):
 def comparison_list(request):
     records = WordComparison.objects.order_by("-saved_at", "-pk")
     page = Paginator(records, 25).get_page(request.GET.get("page"))
+    profiles = {
+        checker.get("profile_id") or "unknown"
+        for checker in records.values_list("checker", flat=True).iterator()
+    }
     return render(
         request,
         "nofos/word_comparisons.html",
@@ -200,6 +204,7 @@ def comparison_list(request):
             "page": page,
             "trend": difference_trend(records),
             "comparison_submissions_enabled": enabled(),
+            "mixed_word_profiles": len(profiles) > 1,
         },
     )
 

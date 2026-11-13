@@ -272,7 +272,7 @@ def _conversion_copy(document, box):
     return pict
 
 
-def clean_instruction_boxes(upload):
+def clean_instruction_boxes(upload, *, mark_instruction_boxes=None):
     """Return a seekable conversion copy and content-free review warnings.
 
     Remove only the shape/compatibility container, never its enclosing paragraph
@@ -372,7 +372,13 @@ def clean_instruction_boxes(upload):
                 and (unit.namespaceURI != MC or link_keys[0] == link_keys[1])
                 and not adjacent_text
             ):
-                unit.parentNode.removeChild(unit)
+                if mark_instruction_boxes is None:
+                    unit.parentNode.removeChild(unit)
+                else:
+                    # Reuse the import eligibility decision without removing
+                    # the text: the checker measures excluded word counts.
+                    for box in contents:
+                        mark_instruction_boxes(box)
                 removed = True
             elif (unit.namespaceURI == MC and not paired_agreement) or any(
                 _blue(fill)

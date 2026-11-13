@@ -1,5 +1,10 @@
 # Word report scope and reliability
 
+The standalone Word checker reports aggregate counts for recognized covers,
+contents, writer instructions, and Builder metadata. A position-only cover is
+identified separately. Unrecognized content may still count; this is not a
+conversion completeness or accuracy assessment.
+
 Investigation for #1169, against Builder's pinned `hhs-nofo-metrics` 0.6.0.
 This changes report presentation, not formulas, source recognition, permissions
 or upload handling.

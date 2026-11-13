@@ -37,21 +37,34 @@
             {{ report.pages_analyzed }} of {{ report.pages_total }} page{{ report.pages_total|pluralize }} processed.
             {% endif %}
           </p>
-          <p id="readability-scope-method">{% if source_word %}Word body text was converted to HTML and measured with the existing HTML readability profile. Template instructions and draft options that convert to text are included. This is not a saved Builder import or a PDF conversion.{% elif report.profile == 'generic' %}Text was reconstructed from page layout because usable PDF tags were unavailable.{% else %}Text was extracted using the PDF’s usable structure tags.{% endif %}</p>
+          <p id="readability-scope-method">{% if source_word %}We measure recovered Word text and skip recognized covers, tables of contents and template instructions. Other instructions and draft options may still count. This is not a saved Builder import or a PDF conversion.{% elif report.profile == 'generic' %}Text was reconstructed from page layout because usable PDF tags were unavailable.{% else %}Text was extracted using the PDF’s usable structure tags.{% endif %}</p>
+          {% if source_word %}
+            <div id="readability-word-exclusions">
+              <p><strong>Not counted (recognized content)</strong></p>
+              <ul>
+                <li>Cover page: {{ report.word_exclusions.cover_total|default:"0" }} words</li>
+                <li>Table of contents: {{ report.word_exclusions.table_of_contents|default:"0" }} words</li>
+                <li>Template instructions: {{ report.word_exclusions.instruction|default:"0" }} words</li>
+                <li>Builder metadata: {{ report.word_exclusions.metadata|default:"0" }} words</li>
+              </ul>
+              {% if report.word_exclusions.cover_position %}<p>{{ report.word_exclusions.cover_position }} words in the opening section were treated as cover text based on their position.</p>{% endif %}
+              <p><strong>How this compares to NOFO Builder:</strong> Builder’s metrics panel includes the designed introduction, which its Word download may omit. A Word upload can therefore give different results.</p>
+            </div>
+          {% endif %}
           {% if not source_word %}
           <p id="readability-draft-scope">Writer instructions and placeholders left in your PDF may be included in these measures. The checker does not automatically separate them from applicant-facing content. For a check of applicant-facing writing, remove writer-only notes and template prompts from a copy before exporting it. Keep instructions that applicants need.</p>
           {% endif %}
           <p id="readability-draft-readiness">A short or incomplete draft is not necessarily ready for publication, even if its readability scores meet your target. Compare drafts with the same content scope.</p>
           {% if report.coverage %}<p id="readability-coverage">{{ report.coverage }}</p>{% endif %}
           {% if report.scope.recovered_word_count or report.scope.recovered_word_count == 0 %}
-            <p id="readability-word-scope">Word count includes all text recovered from the {% if source_word %}Word conversion{% else %}PDF{% endif %}: {{ report.scope.recovered_word_count }} words.
+            <p id="readability-word-scope">{% if source_word %}Word count includes recovered text after the exclusions above, including headings and fragments{% else %}Word count includes all text recovered from the PDF{% endif %}: {{ report.scope.recovered_word_count }} words.
               {% if report.scope.sentence_word_count or report.scope.sentence_word_count == 0 %}{% if report.scope.complete_sentence_count or report.scope.complete_sentence_count == 0 %}{% if report.scope.excluded_word_count or report.scope.excluded_word_count == 0 %}
                 Sentence-based formulas use {{ report.scope.sentence_word_count }} words in {{ report.scope.complete_sentence_count }} complete sentences. The remaining {{ report.scope.excluded_word_count }} words{% if report.scope.excluded_word_percentage or report.scope.excluded_word_percentage == 0 %} ({{ report.scope.excluded_word_percentage }}%){% endif %} are in text that does not form complete sentences, such as some headings, labels, list items, table cells, and other fragments, so sentence-based scores exclude them.
               {% endif %}{% endif %}{% endif %}
             </p>
           {% endif %}
           {% if source_word %}
-            <p id="readability-word-guidance"><strong>Why “Estimated”?</strong> These measures describe text recovered from your Word document. Missing or changed text can affect the results. The tool may miss text in text boxes, headers, and footers, and cannot read text in images. Keep important text in the main document body. Remove template instructions and unused draft options from the copy you upload so they aren’t counted as part of your NOFO.</p>
+            <p id="readability-word-guidance"><strong>Why “Estimated”?</strong> These measures describe text recovered from your Word document. Missing or changed text can affect the results. The tool may miss text in text boxes, headers, and footers, and cannot read text in images. Keep important text in the main document body. Remove other writer notes and unused draft options from the copy you upload.</p>
           {% endif %}
           {% if source_word and not report.reliability %}
             <p id="readability-reliability">This analysis does not check how completely the Word document was converted, so it does not assign a reliability rating. This does not mean a problem was detected in your upload. Any conversion warnings appear in Calculation notes.</p>
@@ -152,7 +165,7 @@
           <p>Use a text-based HHS NOFO PDF. Keep the agency name, opportunity number, Assistance Listing number, and Grants.gov reference in the first five pages when possible.</p>
           <p>You can check an in-progress draft; it does not need to be designed for publication. Export a copy containing the writing you want to measure. Writer-only notes and template prompts may affect the results. Blank templates without identifying details may not be recognized.</p>
           <p>Scanned or image-only pages need OCR before analysis. Untagged PDFs can receive a report, but their estimates have lower reliability.</p>
-          {% if word_uploads_allowed %}<p>For Word, use an unlocked .docx file with NOFO details near the beginning. HHS NOFO templates can use placeholder identifiers if they identify the agency, identify themselves as a NOFO template or notice of funding opportunity, and reference Grants.gov. Legacy .doc and macro-enabled files are not supported. Word conversion can omit headers, footers, text boxes and images; template instructions and draft options may be counted.</p>{% endif %}
+          {% if word_uploads_allowed %}<p>For Word, use an unlocked .docx file with NOFO details near the beginning. HHS NOFO templates can use placeholder identifiers if they identify the agency, identify themselves as a NOFO template or notice of funding opportunity, and reference Grants.gov. Legacy .doc and macro-enabled files are not supported. The checker skips recognized covers, tables of contents and template instructions. Other writer notes and draft options may count.</p>{% endif %}
         </div>
         </details>
       <p class="margin-top-3"><strong>Need help?</strong> Contact your agency’s grants policy office first, or submit a request through the <a class="usa-link usa-link--external" href="https://forms.office.com/r/KH4icQuZ0S" target="_blank" rel="nofollow noopener noreferrer">NOFO Builder Feedback Form<span class="usa-sr-only"> (opens in a new tab)</span></a>.</p>
@@ -186,6 +199,6 @@
 {% endblock %}
 
 {% block js_footer %}
-<script src="{% static 'js/pdf_readability.js' %}"></script>
+<script src="{% static 'js/pdf_readability.js' %}?v=word-scope-1"></script>
 <script src="{% static 'js/word_comparison.js' %}"></script>
 {% endblock %}

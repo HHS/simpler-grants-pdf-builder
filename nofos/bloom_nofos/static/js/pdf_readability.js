@@ -75,6 +75,7 @@
       "Measurement scope",
       text("readability-scope-pages"),
       text("readability-scope-method"),
+      text("readability-word-exclusions"),
       text("readability-draft-scope"),
       text("readability-draft-readiness"),
       text("readability-coverage"),
