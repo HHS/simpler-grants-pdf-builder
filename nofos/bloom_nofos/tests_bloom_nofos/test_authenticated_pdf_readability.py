@@ -53,6 +53,33 @@ class AuthenticatedPilotTests(TestCase):
             content_type="application/pdf",
         )
 
+    def test_word_scope_report_distinguishes_recognized_and_position_only_cover(self):
+        self.login()
+        for cover, position, toc in ((0, 0, 0), (3, 0, 5), (0, 7, 0)):
+            with self.subTest(cover=cover, position=position, toc=toc):
+                report = {
+                    **REPORT,
+                    "profile": "word",
+                    "word_exclusions": {
+                        "cover_total": cover + position,
+                        "cover_position": position,
+                        "table_of_contents": toc,
+                    },
+                }
+                with patch(
+                    "bloom_nofos.views.analyze_uploaded_pdf", return_value=report
+                ):
+                    response = self.client.post(
+                        self.url, {"pdf": SimpleUploadedFile("synthetic.docx", b"docx")}
+                    )
+                self.assertContains(response, f"Cover page: {cover + position} words")
+                self.assertContains(response, f"Table of contents: {toc} words")
+                self.assertEqual(
+                    b"were treated as cover text based on their position"
+                    in response.content,
+                    bool(position),
+                )
+
     def test_authentication_and_explicit_permission_before_analysis(self):
         with patch("bloom_nofos.views.analyze_uploaded_pdf") as analyze:
             for method in ("get", "post"):
