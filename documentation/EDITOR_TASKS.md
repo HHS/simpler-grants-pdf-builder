@@ -155,6 +155,10 @@ is needed, contact the SimplerNOFOs team.
   from already saved NOFOs automatically.
 - Import repairs Word email links stored as file paths when the path ends in
   the displayed email address. Other broken links still need review.
+- Builder standardizes paragraph-opening labels such as **PLEASE NOTE:** or
+  **N.B.** to bold **Note:** on import or reimport, including in tables. The
+  text after the label is preserved. Use the subsection's **Edit** action to
+  revise the label or note, and preview the PDF when a note follows a table.
 - For an existing NOFO, reimport replaces sections and subsections and can lose
   manual edits. It is not a way to apply import repairs to saved edits in place.
   Reimport preserves saved theme, cover and introductory ownership choices.
