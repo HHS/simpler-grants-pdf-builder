@@ -793,8 +793,8 @@ dev = ["build (>=1.2,<2)", "jsonschema (>=4.23,<5)", "pre-commit (>=4.6,<5)", "p
 [package.source]
 type = "git"
 url = "https://github.com/agilesix/hhs-nofo-metrics.git"
-reference = "db8fcf6"
-resolved_reference = "db8fcf6fe8e958290e920ba67a6f6dcea73588b5"
+reference = "d8e257d695b8ccb0dad1f3e548d1f251dd8a9cac"
+resolved_reference = "d8e257d695b8ccb0dad1f3e548d1f251dd8a9cac"
 
 [[package]]
 name = "identify"
@@ -1888,4 +1888,4 @@ type = ["pytest-mypy (>=1.0.1) ; platform_python_implementation != \"PyPy\""]
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.14"
-content-hash = "fdea4fd9353b3d5f92e367f7a2ab6bcacb3e4eb30713d8a95184f6fd1175e2fa"
+content-hash = "8e2b2df03c8b2321a1790323be3994053bb427c32bbc5c9fae63ea227591610e"

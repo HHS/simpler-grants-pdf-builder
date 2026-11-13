@@ -33,7 +33,7 @@ diff-match-patch = "^20241021"
 pre-commit = "^4.6.0"
 grabzit = "^3.5.8"
 cssutils = ">=2.11.1,<2.13.0"
-hhs-nofo-metrics = { git = "https://github.com/agilesix/hhs-nofo-metrics.git", rev = "db8fcf6fe8e958290e920ba67a6f6dcea73588b5" }
+hhs-nofo-metrics = { git = "https://github.com/agilesix/hhs-nofo-metrics.git", rev = "d8e257d695b8ccb0dad1f3e548d1f251dd8a9cac" }
 
 [tool.poetry.group.dev.dependencies]
 black = "^26.10.1"
