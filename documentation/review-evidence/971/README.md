@@ -1,6 +1,17 @@
 # Readability Checker deployment verification evidence
 
-Captured in Chrome on November 9, 2026 for [deployment verification issue #971](https://github.com/HHS/simpler-grants-pdf-builder/issues/971). See the [readiness guide](../../readability/READABILITY_CALCULATOR_READINESS.md#what-users-see-and-where-to-look) for current behavior and monitoring.
+This record supports [deployment verification #971](https://github.com/HHS/simpler-grants-pdf-builder/issues/971) and the [public launch decision #968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968). See the [readiness guide](../../readability/READABILITY_CALCULATOR_READINESS.md#what-users-see-and-where-to-look) for current behavior and monitoring. The screenshots below were captured in Chrome on November 9, 2026.
+
+## Dated launch evidence
+
+| Check | Result | Scope |
+| --- | --- | --- |
+| September 29 signed-out PDF smoke and browser save | A synthetic PDF generated a report, and an unrelated PDF was rejected. The browser displayed copy confirmation and saved a complete report as a PDF. [Upload and rejection](https://github.com/HHS/simpler-grants-pdf-builder/issues/971#issuecomment-5889879072) · [Browser follow-up](https://github.com/HHS/simpler-grants-pdf-builder/issues/971#issuecomment-5890322354) | Historical dev evidence with metrics 0.5.4. Clipboard contents were unverified. |
+| November 3 paced upload | One normal and one paced synthetic PDF upload returned HTTP 200 through the signed-in dev route. All five post-test health and page checks returned HTTP 200. [Test results](https://github.com/HHS/simpler-grants-gov/issues/12568#issuecomment-6609694463) | One paced request. The test left the buffering layer, total upload deadline, and concurrent slow requests unverified. |
+| November 4 production email delivery | The intended inbox received both alarm and recovery messages from a controlled test alarm. [Delivery receipt](https://github.com/HHS/simpler-grants-gov/issues/12568#issuecomment-6643739707) | Verifies delivery through the production monitoring topic for the test alarm. |
+| November 9 search indexing | The disabled production page sent the same crawler directives in its HTTP header and HTML. The site-wide robots file also disallowed crawling. [Production observation](https://github.com/HHS/simpler-grants-pdf-builder/issues/971) | The observation covered the disabled page. The directives depend on crawler compliance. |
+| November 10 isolated interruption | In a disposable dev task, the parser exited after the test stopped its own request process and the startup hook removed the abandoned workspace. [Workflow run](https://github.com/HHS/simpler-grants-gov/actions/runs/42856640416) | Covers the isolated scenario. Full service task replacement and production storage remain unverified. |
+| November 12 production firewall logging configuration | The read-only check observed the expected CloudWatch destination, 1,827-day retention, zero subscription filters, and no configured log redaction or WAF logging filter. [Inspection](https://github.com/HHS/simpler-grants-gov/actions/runs/43233515647) · [Findings](https://github.com/HHS/simpler-grants-gov/issues/12568#issuecomment-6825800300) | The check covered configured settings. Individual log records, request samples, log access, and downstream retention remain unverified. |
 
 ## Builder analyzer busy
 
