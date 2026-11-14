@@ -454,7 +454,6 @@ class NOFOsExportView(DetailView):
             export_url=export_url,
             target_element="#download_target",
             filename_base=filename_base,
-            tmp_name=str(nofo.pk),
         )
 
 

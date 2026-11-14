@@ -152,7 +152,9 @@ def get_candidate_slots():
     return grouped
 
 
-def detect_policy_language_status(subsection_name, subsection_body, candidate_slots=None):
+def detect_policy_language_status(
+    subsection_name, subsection_body, candidate_slots=None
+):
     """
     Determine the (policy_language_status, matched_slot) for one subsection,
     given its name and raw Markdown body. Pure function of its inputs so it
