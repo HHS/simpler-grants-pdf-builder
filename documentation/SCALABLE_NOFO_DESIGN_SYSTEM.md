@@ -224,10 +224,12 @@ loss. Retirement needs the reverse plan, including existing drafts and outputs.
 
 **Verify.** Exercise create/edit/copy/delete, missing information, unsupported
 nesting, long content, old stored examples and every output path. Check that the
-same meaning reaches the PDF. Builder's points-column feature demonstrates a
-compatibility limit: previously unmarked tables do not gain the feature merely
-because rendering code changes (E2). In-app authoring could capture column meaning
-directly; any backfill is a separate decision requiring evidence.
+same meaning reaches the PDF. Builder's points-column feature demonstrated a
+compatibility limit: previously unmarked tables did not gain the feature merely
+because rendering code changed (E2). #1138 later chose render-time detection with
+an explicit `col--wrap` opt-out instead of a backfill (see
+[TABLES.md](TABLES.md#points-columns)). In-app authoring could capture column
+meaning directly; any backfill is a separate decision requiring evidence.
 
 #### C. Add an approved OpDiv branding variant
 

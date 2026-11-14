@@ -160,6 +160,8 @@ POINTS_COLUMN_CELL_PATTERN = re.compile(
     r"^(up to\s+)?\d+(\s*[-–—]\s*\d+)?(\s*(points?|pts\.?))?$"
 )
 POINTS_COLUMN_CLASS = "col--points"
+# Added by users to a points column header to keep it wrapping normally
+POINTS_COLUMN_OPT_OUT_CLASS = "col--wrap"
 
 
 def _normalize_points_cell_text(cell):
@@ -213,9 +215,7 @@ def get_points_column_indexes(table):
 
     indexes = []
     for index, header_cell in enumerate(rows[0]):
-        if not POINTS_COLUMN_HEADER_PATTERN.match(
-            _normalize_points_cell_text(header_cell)
-        ):
+        if not _is_points_header(header_cell):
             continue
 
         column_cells = [cells[index] for cells in rows[1:]]
@@ -228,22 +228,29 @@ def get_points_column_indexes(table):
     return indexes
 
 
+def _is_points_header(cell):
+    return bool(POINTS_COLUMN_HEADER_PATTERN.match(_normalize_points_cell_text(cell)))
+
+
 def add_class_to_points_columns(table):
     """
-    Styles points columns that were marked on import. Used when rendering.
+    Styles points columns when rendering, so cells like "10 points" stay on one line.
 
-    On import, a points column's header gets a "col--points" class in the
-    Markdown (eg, "| Point value {: .col--points } |"). Here, we copy that class
-    to the column's body cells, so the CSS can keep them on one line.
+    A column is styled when its header either:
+    - has the "col--points" class written on import (eg, "| Point value {: .col--points } |"), or
+    - reads like "Point value", "Points", "Maximum points", etc. This covers NOFOs
+      imported before the marker existed, and tables pasted into the editor.
+
+    We copy "col--points" to the header and the column's non-empty body cells, and
+    the CSS shrinks the column to fit and keeps body cells on one line.
 
     Users control this in the Markdown editor:
-    - remove "{: .col--points }" to turn it off
+    - add "{: .col--wrap }" to the header to keep the column wrapping normally
     - add a width class (eg, "{: .w-25 }") to set a width instead; the width class wins
 
-    If a body cell is edited to hold longer text, the class is dropped from the
-    whole column so it goes back to normal wrapping (no overflow past the page edge).
-
-    Tables without the class (including every NOFO imported before this rule) are unchanged.
+    The column wraps normally (no class) when a body cell holds longer text, so
+    nowrap can't push a table past the page edge, or when the table has
+    colspan/rowspan cells. Unmarked columns also need at least one point value.
     """
 
     def _remove_points_class(cell):
@@ -258,19 +265,27 @@ def add_class_to_points_columns(table):
         return
 
     header_cells = rows[0].find_all(["th", "td"], recursive=False)
-    points_headers = [
-        (index, cell)
-        for index, cell in enumerate(header_cells)
-        if POINTS_COLUMN_CLASS in cell.get("class", [])
-    ]
+    points_headers = []
+    for index, cell in enumerate(header_cells):
+        classes = cell.get("class", [])
+        is_marked = POINTS_COLUMN_CLASS in classes
+        if is_marked or (
+            POINTS_COLUMN_OPT_OUT_CLASS not in classes and _is_points_header(cell)
+        ):
+            points_headers.append((index, cell, is_marked))
     if not points_headers:
         return
 
     rows = _get_points_table_rows(table)
 
-    for index, header_cell in points_headers:
-        if not rows or any(c.startswith("w-") for c in header_cell.get("class", [])):
-            # a user-set width wins, and we can't line up columns with spans
+    for index, header_cell, is_marked in points_headers:
+        header_classes = header_cell.get("class", [])
+        if (
+            not rows
+            or POINTS_COLUMN_OPT_OUT_CLASS in header_classes
+            or any(c.startswith("w-") for c in header_classes)
+        ):
+            # the user's choice wins, and we can't line up columns with spans
             _remove_points_class(header_cell)
             continue
 
@@ -278,10 +293,13 @@ def add_class_to_points_columns(table):
         non_empty_cells = [
             cell for cell in column_cells if _normalize_points_cell_text(cell)
         ]
-        if not all(is_points_cell_text(cell) for cell in non_empty_cells):
+        if not all(is_points_cell_text(cell) for cell in non_empty_cells) or (
+            not is_marked and not non_empty_cells
+        ):
             _remove_points_class(header_cell)
             continue
 
+        _add_class_if_not_exists_to_tags(header_cell, POINTS_COLUMN_CLASS, "th|td")
         for cell in non_empty_cells:
             _add_class_if_not_exists_to_tags(cell, POINTS_COLUMN_CLASS, "th|td")
 
