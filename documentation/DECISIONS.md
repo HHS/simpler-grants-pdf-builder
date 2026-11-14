@@ -489,6 +489,15 @@ work rather than restoring this code, which was never used in production.
 
 ## 2026-10-01 — Auto-size "Point value" columns in scoring tables
 
+**2026-11-14 amendment (#1138):** Also style recognizable points columns at
+render time, without a marker, so NOFOs imported before October 1 and tables
+pasted into the editor stop wrapping "10 points". Import still writes the marker,
+and the same header and cell checks, long-text fallback and span guard apply. A
+`w-*` class still wins. Because an unmarked header is now detected, removing the
+marker no longer opts out; users add `{: .col--wrap }` instead. Columns whose
+header matches but have no point values are left alone. The original decision
+follows.
+
 **Context:** Merit review scoring tables usually end with a narrow **Point value**
 or **Points** column. That column had no width rule, so short cells like
 "10 points" wrapped onto two lines in the PDF. The column's width also changed
