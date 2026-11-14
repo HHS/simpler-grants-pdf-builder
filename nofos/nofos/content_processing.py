@@ -686,6 +686,68 @@ def get_subsections_from_sections(
     return sections
 
 
+STEP_1_SECTION_PATTERN = re.compile(r"^\s*step\s*1\b", re.IGNORECASE)
+TAGLINE_LABEL_PATTERN = re.compile(r"^\s*tagline\s*:", re.IGNORECASE)
+
+
+def remove_step_1_tagline_subsections(sections):
+    """Remove duplicate tagline paragraphs and return discarded subsections (IMPORT-079)."""
+
+    def substantive(node):
+        if isinstance(node, Comment):
+            return False
+        if isinstance(node, Tag):
+            return (
+                node.name != "p"
+                or sanitize_imported_text(node.get_text())
+                or node.has_attr("id")
+                or node.find(["img", "a", "svg", "math", "object"])
+            )
+        return bool(sanitize_imported_text(str(node)))
+
+    removed = []
+    for section in sections:
+        if not STEP_1_SECTION_PATTERN.match(section.get("name", "")):
+            continue
+        subsections = section.get("subsections", [])
+        kept = []
+        for subsection in subsections:
+            body = subsection.get("body")
+            if clean_string(subsection.get("name", "")) or subsection.get("tag"):
+                kept.append(subsection)
+                continue
+
+            nodes = list(body.children) if isinstance(body, Tag) else body or []
+            content = [node for node in nodes if substantive(node)]
+            first = content[0] if content else None
+            paragraph = first
+            if isinstance(first, str) and not isinstance(first, NavigableString):
+                parsed = BeautifulSoup(first, "html.parser")
+                blocks = [node for node in parsed.contents if substantive(node)]
+                paragraph = blocks[0] if len(blocks) == 1 else None
+            if (
+                isinstance(paragraph, Tag)
+                and paragraph.name == "p"
+                and not paragraph.find(["br", "img", "svg", "math", "object"])
+                and TAGLINE_LABEL_PATTERN.match(
+                    sanitize_imported_text(paragraph.get_text())
+                )
+            ):
+                if len(content) == 1:
+                    removed.append(subsection)
+                    continue
+                if isinstance(body, Tag):
+                    first.extract()
+                else:
+                    subsection["body"] = [node for node in nodes if node is not first]
+            kept.append(subsection)
+        if len(kept) != len(subsections):
+            for order, subsection in enumerate(kept, 1):
+                subsection["order"] = order
+            section["subsections"] = kept
+    return removed
+
+
 END_NOTES_SECTION_NAME = "Endnotes"
 
 
@@ -2523,6 +2585,9 @@ def get_sections_and_subsections_from_soup(
     parsed = get_subsections_from_sections(
         sections, top_heading_level, consume_scoped_tagline=consume_scoped_tagline
     )
+    if consume_scoped_tagline:
+        # Builder imports only; Composer and Compare do not opt in.
+        remove_step_1_tagline_subsections(parsed)  # IMPORT-079
     from .introductory_page import INTRO_ANCHOR, imported_introduction
 
     if imported_introduction(soup):

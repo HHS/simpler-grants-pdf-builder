@@ -155,6 +155,10 @@ is needed, contact the SimplerNOFOs team.
   from already saved NOFOs automatically.
 - Import repairs Word email links stored as file paths when the path ends in
   the displayed email address. Other broken links still need review.
+- In Step 1, Builder removes a leading standalone `Tagline:` paragraph from an
+  untitled subsection on import and reimport. Following content is kept, and
+  a subsection with no substantive content left is omitted. The **Tagline**
+  field under **Basic information** is still filled in from the document.
 - Builder standardizes paragraph-opening labels such as **PLEASE NOTE:** or
   **N.B.** to bold **Note:** on import or reimport, including in tables. The
   text after the label is preserved. Use the subsection's **Edit** action to
@@ -852,7 +856,9 @@ Author, subject, and keywords are required by the NOFO metadata guidance.
 ### TASK-BASIC-INFO — Change the title, number, deadline, agency, or tagline
 
 New-template Tagline headings are imported into this existing field, not a
-Tagline subsection. See [tagline import and re-import behavior](TAGLINE_IMPORT.md).
+Tagline subsection. Builder also removes a leading standalone `Tagline:`
+paragraph from an untitled Step 1 subsection while preserving following content.
+See [tagline import and re-import behavior](TAGLINE_IMPORT.md).
 
 **Steps**
 
