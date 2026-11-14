@@ -42,12 +42,11 @@
             <div id="readability-word-exclusions">
               <p><strong>Not counted (recognized content)</strong></p>
               <ul>
-                <li>Cover page: {{ report.word_exclusions.cover_total|default:"0" }} words</li>
+                <li>Cover page: {{ report.word_exclusions.cover|default:"0" }} words</li>
                 <li>Table of contents: {{ report.word_exclusions.table_of_contents|default:"0" }} words</li>
                 <li>Template instructions: {{ report.word_exclusions.instruction|default:"0" }} words</li>
                 <li>Builder metadata: {{ report.word_exclusions.metadata|default:"0" }} words</li>
               </ul>
-              {% if report.word_exclusions.cover_position %}<p>{{ report.word_exclusions.cover_position }} words in the opening section were treated as cover text based on their position.</p>{% endif %}
               <p><strong>How this compares to NOFO Builder:</strong> Builder’s metrics panel includes the designed introduction, which its Word download may omit. A Word upload can therefore give different results.</p>
             </div>
           {% endif %}
@@ -165,7 +164,7 @@
           <p>Use a text-based HHS NOFO PDF. Keep the agency name, opportunity number, Assistance Listing number, and Grants.gov reference in the first five pages when possible.</p>
           <p>You can check an in-progress draft; it does not need to be designed for publication. Export a copy containing the writing you want to measure. Writer-only notes and template prompts may affect the results. Blank templates without identifying details may not be recognized.</p>
           <p>Scanned or image-only pages need OCR before analysis. Untagged PDFs can receive a report, but their estimates have lower reliability.</p>
-          {% if word_uploads_allowed %}<p>For Word, use an unlocked .docx file with NOFO details near the beginning. HHS NOFO templates can use placeholder identifiers if they identify the agency, identify themselves as a NOFO template or notice of funding opportunity, and reference Grants.gov. Legacy .doc and macro-enabled files are not supported. The checker skips recognized covers, tables of contents and template instructions. Other writer notes and draft options may count.</p>{% endif %}
+          {% if word_uploads_allowed %}<p>For Word, use an unlocked .docx file with NOFO details near the beginning. HHS NOFO templates can use placeholder identifiers if they identify the agency, identify themselves as a NOFO template or notice of funding opportunity, and reference Grants.gov. Legacy .doc and macro-enabled files are not supported. The checker skips covers marked with Word’s Cover Pages gallery, recognized tables of contents, and recognized template instructions. Other writer notes and draft options may count.</p>{% endif %}
         </div>
         </details>
       <p class="margin-top-3"><strong>Need help?</strong> Contact your agency’s grants policy office first, or submit a request through the <a class="usa-link usa-link--external" href="https://forms.office.com/r/KH4icQuZ0S" target="_blank" rel="nofollow noopener noreferrer">NOFO Builder Feedback Form<span class="usa-sr-only"> (opens in a new tab)</span></a>.</p>
