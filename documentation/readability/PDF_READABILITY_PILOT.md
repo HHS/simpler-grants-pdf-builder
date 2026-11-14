@@ -1,26 +1,24 @@
-# PDF readability pilot
+# Readability Checker
 
-This pilot provides an unlinked `/readability-checker/` route: upload one PDF, receive an
-immediate readability report, and use the browser's **Print / save as PDF** dialog
-to keep a copy. It does not create a NOFO or saved report history. An unlinked URL
-is still public; direct distribution is not access control.
+The public Readability Checker has an unlinked `/readability-checker/` route.
+Users can upload one PDF or Word (.docx) document, receive an immediate readability report, and use the
+browser's **Print / save as PDF** dialog to keep a copy. The checker does not
+create a NOFO or save report history. Anyone with the URL can reach the page.
 
 Saved readability checkpoints, per-NOFO history, and the saved-results overview
-(#1009 / #1014) belong only to the authenticated Builder feature documented in
+(#1009 / #1014) belong only to the authenticated NOFO Builder feature documented in
 [Readability metrics](READABILITY_METRICS.md#saved-review-checkpoints). They are
-outside this pilot and its release epic (#968), must not be exposed through
-`/readability-checker/`, and do not satisfy the pilot's release acceptance criteria.
-Content-free pilot usage monitoring does not store metric results or report
+outside the public checker's scope and release epic (#968), and must stay on
+authenticated routes.
+Content-free checker usage monitoring does not store metric results or report
 history. Browser **Print / save as PDF** saves a local copy, not server-side history.
 
 ## Word uploads (#1111)
 
-Only the authorized `/nofos/readability-checker/` route also accepts unlocked `.docx`
-files. The existing public `/readability-checker/` route remains PDF-only, even when its
-independent flag is enabled. Existing flag and permission names retain `PDF` for compatibility;
-their values and access checks are unchanged. This addition does not enable a
-route or authorize a new deployment/document classification. Legacy `.doc`,
-macro-enabled documents and other file types are not supported.
+Both the public `/readability-checker/` route and the authorized
+`/nofos/readability-checker/` route accept unlocked Word (`.docx`) files and PDFs.
+Each route has its own availability setting. Legacy `.doc`, macro-enabled
+documents and other file types are unsupported.
 
 The existing isolated worker validates the ZIP container before using the
 already installed Mammoth converter. It permits at most 2,000 entries and
@@ -33,7 +31,7 @@ External file access and embedded style maps are disabled, and images are not
 loaded. The existing pure Word table transform is reused; the saved-NOFO import
 workflow, its custom style map and instruction-box cleanup are not invoked.
 
-Word recognition reuses the PDF pilot's loose signals over the first
+Word recognition reuses the PDF recognition signals over the first
 50,000 characters of converted text. For unfilled templates, one additional
 compound signal requires both an HHS agency name (including the explicit
 “HHS-wide” alias) and “Notice of funding opportunity” or “NOFO [master] template.”
@@ -50,7 +48,7 @@ PDF, saved NOFO or report-history record is created.
 Reports identify the Word source and explain that conversion may omit headers,
 footers, text boxes and images. Template instructions and draft options that
 convert to text are included. Paragraphs, lists, tables and notes are measured
-according to the existing HTML profile. Word, PDF and Builder draft scores can
+according to the existing HTML profile. Word, PDF and NOFO Builder draft scores can
 differ because they measure different recovered content. Public output contains
 only the existing safe metric projection, fixed warnings and scope counts, never
 converted document text. Conversion messages are reduced to a fixed warning.
@@ -79,16 +77,15 @@ safeguards below still apply and are not replaced by ZIP validation.
 
 Metrics viewers can open **Readability Checker usage** at
 `/nofos/metrics/readability-checker-usage` from **Other metrics**
-on `/nofos/metrics`, including while the pilot is disabled. The page shows the
-stored pilot flag, recording state, retained daily/weekly attempts, all-attempt
+on `/nofos/metrics`, including while the public checker is disabled. The page shows the
+stored public checker setting, recording state, retained daily/weekly attempts, all-attempt
 success and capacity rates, nearest-rank durations, outcome meanings, and pages
 of 50 recent attempts. JSON uses the same permission and `private, no-store`.
 No OpDiv or user attribution is possible. It is a support trend source, not an
 infrastructure alarm or evidence that #970's safeguards are deployed.
 
 Totals combine recorded attempts unless filtered by upload route or file category.
-The authenticated `/nofos/readability-checker/` tool supports PDF and Word (.docx);
-public `/readability-checker/` remains PDF-only. The source filter selects the upload
+Both routes accept PDF and Word (.docx). The source filter selects the upload
 route (public, authenticated or unknown), not the visitor's login state.
 The separate `file_category` filter accepts `all`, `pdf`, `docx` or `unknown`
 and applies with the route filter to counts, rates, charts, durations and recent
@@ -112,7 +109,7 @@ Public and authenticated content-free usage/error records are retained indefinit
 with no automatic age-based expiration. Ben confirmed this choice on October 26,
 2026 for the public records as well as the existing authenticated approach. It
 supersedes the proposed 13-month window and the requirement to schedule deletion
-of outcome records under #985. This records the pilot's retention decision, not
+of outcome records under #985. This records the checker's retention decision, not
 a claim about HHS-wide policy or completion of any separately required review.
 
 Leave `PDF_READABILITY_ATTEMPT_RETENTION_DAYS` and
@@ -182,12 +179,12 @@ OpenAPI examples](https://api.staging.simpler.grants.gov/docs#/Opportunity%20v1/
 `assistance_listing_number`. Its Assistance Listing search filter accepts two
 digits, a period, and two or three alphanumeric characters, including documented
 examples such as `45.C9` and `45.1C9`; its search documentation also shows the
-longer opportunity number `EPA-R9-SFUND-23-003`. The pilot uses this contract as
+longer opportunity number `EPA-R9-SFUND-23-003`. The checker uses this contract as
 a format reference only; upload processing does not call the Simpler.Grants.gov
 API or send document-derived values to another service.
 
-This gate is modest abuse deterrence for the unlinked public pilot. It can admit
-an unrelated document that contains two signals and can reject an unusually
+This gate is modest abuse deterrence for the public Readability Checker. It can
+admit an unrelated document that contains two signals and can reject an unusually
 formatted NOFO that contains fewer than two. Passing means only "likely HHS
 NOFO"; it is **not** template compliance, accessibility, policy, or clearance
 approval. The policy and its threshold remain immutable application code in the
@@ -254,8 +251,7 @@ below the page introduction. The notice is a slim informational alert
 you’re authorized to share. Your document is processed temporarily on
 HHS-operated systems; no report history is kept." A **How we handle your
 document** disclosure follows it, also before the file input, and asks users to
-follow their agency's rules for sharing pre-decisional content. There is one
-version of this notice; it does not change when the pilot is enabled. See the
+follow their agency's rules for sharing pre-decisional content. See the
 [UI pattern](../UI_PATTERNS.md#readability-checker-upload-notice).
 
 Every statement in the notice and its disclosure is limited to what the
@@ -278,11 +274,12 @@ are recorded in #968.
 
 ## Measurement scope
 
-Reuse the pinned `hhs-nofo-metrics` package. PDF results are extraction-based
-estimates, not identical to Builder's semantic-HTML metrics or a compliance
-determination. Untagged PDFs need particularly clear reliability caveats.
+Reuse the pinned `hhs-nofo-metrics` package. PDF results estimate readability
+from extracted text. NOFO Builder's semantic-HTML metrics use a different input.
+Untagged PDFs need particularly clear reliability caveats. Use the estimates to
+guide readability review. Assess compliance separately.
 
-The dependency is pinned to 0.6.0. Builder-native HTML and authenticated DOCX
+The dependency is pinned to 0.6.0. NOFO Builder HTML and authenticated DOCX
 select HTML profile `hhs-nofo-fy27-html@0.5.0`; tagged PDFs select
 `hhs-nofo-fy27-pdf-estimate@0.6.0`, and generic PDFs select
 `hhs-nofo-fy27-generic-pdf-estimate@0.5.0`. These profiles opt into passive
@@ -290,17 +287,17 @@ classifier `0.4.0-provisional`, correcting unambiguous be contractions and the
 `need`/`indeed` false positives. Ambiguous pronoun `'s` forms remain a known
 limitation. Sentence-count rules, other metric formulas and targets are unchanged.
 
-The update from Builder's prior 0.5.4 pin also includes the 0.5.5 tagged-PDF
+The update from NOFO Builder's prior 0.5.4 pin also includes the 0.5.5 tagged-PDF
 table-cell continuation correction, through tagged adapter `0.1.7`. Therefore
 extracted PDF content and resulting nonpassive estimates can change even though
 the formulas did not. The passive-method tests compare identical extracted
-sentences; they do not establish that every PDF result matches 0.5.4. In Builder's stored
-readability snapshots, package identity distinguishes previous scores from new
-calculations. The PDF pilot does not store report history; each report identifies
-its measurement version. This dependency update does not enable the
-pilot or replace the deployment checks above.
+sentences; they do not establish that every PDF result matches 0.5.4. In NOFO
+Builder's stored readability snapshots, package identity distinguishes previous
+scores from new calculations. Each standalone Readability Checker report
+identifies its measurement version. See the deployment checks above before
+enabling the public checker.
 
-## Stop the pilot
+## Pause public uploads
 
 Turn `HHS_NOFO_PDF_METRICS_PILOT_ENABLED` off to prevent new analyses. Investigate
 timeouts, sustained busy responses, unexpected parser failures, or resource
@@ -309,7 +306,7 @@ infrastructure incident procedure to block the route. Disabling new requests doe
 not cancel an already-running bounded analysis.
 
 No navigation/login-page link, account flow, report archive, external PDF-generation
-service, or batch-processing system is part of this pilot.
+service, or batch-processing system is part of the public Readability Checker.
 
 ## Temporary processing limits
 
@@ -319,8 +316,8 @@ ceiling, a 20-second CPU ceiling, and a 64 open-file ceiling. Its per-file write
 ceiling is 5 MiB plus one byte for PDF analysis and 2 MiB for Word analysis. The
 extra byte lets the Linux fast copy check for end-of-file when staging a PDF
 exactly at the upload limit. The PDF upload limit remains 5 MiB.
-These conservative pilot choices must be tuned against approved representative
-PDFs and the target ECS capacity; byte size alone does not bound parser memory.
+Review these limits against approved representative PDFs and the target ECS
+capacity. Parser memory also depends on the content of the PDF.
 PostgreSQL advisory locking provides the production cross-worker analysis slot.
 The SQLite development path uses a local file lock and is not a cross-host control.
 

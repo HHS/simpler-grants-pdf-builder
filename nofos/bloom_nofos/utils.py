@@ -161,10 +161,11 @@ def generate_docx_download_response(
         content = grabzit.SaveTo()
         if not isinstance(content, (bytes, bytearray)):
             raise RuntimeError("GrabzIt did not return the DOCX result")
-    except Exception:
-        logger.exception(
+    except Exception as exc:
+        # Provider error text can contain sensitive request data.
+        logger.error(
             "GrabzIt Word export request failed",
-            extra={"export_host": export_host},
+            extra={"export_host": export_host, "error_type": type(exc).__name__},
         )
         return HttpResponse(
             "Word export could not be completed. Please try again later.", status=502

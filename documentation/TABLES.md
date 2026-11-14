@@ -35,19 +35,21 @@ These run in the `add_classes_to_tables` and `add_captions_to_tables` template f
 
 ### Points columns
 
-The column is marked once, on import (see [Points columns on import](#points-columns-on-import) below). At render time, `add_class_to_points_columns()` styles marked columns only. It copies `col--points` from the header to the column's non-empty body cells. The CSS then shrinks the column to fit its content (`width: 1%`) and keeps body cells on one line (`white-space: nowrap`), so "10 points" doesn't wrap onto two lines. The header can still wrap.
+At render time, `add_class_to_points_columns()` styles a scoring column when its header either:
 
-The saved-content preview on the NOFO edit page uses the same points-cell CSS
-as the PDF. Martor's live subsection Preview does not run this table-class
-filter, so its body cells do not receive the copied marker. Do not assume the
-live Preview fully matches the saved-content or PDF rendering.
+- has the `col--points` marker written on import (see [Points columns on import](#points-columns-on-import) below), or
+- reads like a points header ("Point value", "Points", "Maximum points", and so on, using the same header pattern as import). This covers NOFOs imported before the marker existed and tables pasted into the editor.
 
-The class is dropped from the column, so it wraps normally again, when:
-- the header also has a width class (`w-*`), so the user's width wins
-- a body cell no longer looks like a point value, for example after an edit to "Up to 5 points, see the budget section", so long text can't push the table past the page edge
+It copies `col--points` to the header and the column's non-empty body cells. The CSS then shrinks the column to fit its content (`width: 1%`) and keeps body cells on one line (`white-space: nowrap`), so "10 points" doesn't wrap onto two lines. The header can still wrap. The PDF, HTML view and saved-content preview on the NOFO edit page all use this CSS.
+
+Martor's live subsection Preview does not run this table-class filter, so its body cells do not receive the class. Do not assume the live Preview fully matches the saved-content or PDF rendering.
+
+The column is left to wrap normally (no `col--points` class) when:
+- the header has `col--wrap`, which users add to opt out
+- the header has a width class (`w-*`), so the user's width wins
+- a body cell doesn't look like a point value, for example "Up to 5 points, see the budget section", so long text can't push the table past the page edge
+- the column is unmarked and has no point values at all
 - the table has `colspan`/`rowspan` cells
-
-Tables without the marker are never changed. That includes every NOFO imported before this rule existed.
 
 ---
 
@@ -81,5 +83,5 @@ A points column gets `col--points` instead of these.
 ## How users can override these
 
 - **Set a column width:** add a width class to a header cell in the Markdown editor, for example `| Point value {: .w-25 } |`. Any class from `w-5` to `w-100` (in steps of 5, plus `w-33` and `w-66`) works.
-- **Points columns:** remove `{: .col--points }` to turn it off, or replace it with a width class such as `{: .w-25 }` to set a fixed width. If both are there, the width class wins. To turn it on for a NOFO imported before this rule, add `{: .col--points }` to the points column's header.
+- **Points columns:** add `{: .col--wrap }` to the points column's header to keep it wrapping normally, or add a width class such as `{: .w-25 }` to set a fixed width. Either one wins over `col--points`. Removing `{: .col--points }` alone no longer turns styling off when the header still reads like a points header. Recognizable points columns are styled without a marker, so older NOFOs and pasted tables need no edits. A column whose header doesn't match the pattern can be turned on by adding `{: .col--points }`.
 - **Make every table in a section full width:** on the section page, check **Use full-width tables for this section**. This adds `section--tables-full-width` to the section, which makes `table--small`, `table--large` and `table--criterion` tables 100% wide. Points columns still shrink to fit inside a full-width table.

@@ -58,3 +58,31 @@ reported table through import conversion, verifies the marker and rendered body
 classes, removes the marker, and verifies that repeated rendering leaves it off
 without calling the detector. Existing tests cover unmarked content, explicit
 widths, long text, empty cells and merged cells.
+
+---
+
+## Follow-up: render-time detection for unmarked tables
+
+November 14, 2026. This follow-up styles recognizable points columns that have
+no `{: .col--points }` marker: NOFOs imported before #1008 and tables pasted into
+the editor. Users opt out with `{: .col--wrap }`; a `w-*` class still wins.
+
+Capture: the real Django `nofo_view` template (`portrait-cdc-blue` theme),
+rendered with the test client against a throwaway test database holding one
+synthetic NOFO, then printed in Chromium at an 816px (8.5in) viewport with print
+media. "Before" temporarily restored the upstream helper; content was identical.
+This is not a DocRaptor PDF.
+
+| Table | Before | After |
+| --- | --- | --- |
+| Unmarked #1138 table | no `col--points` classes | header and 4 body cells styled |
+| Unmarked #1007 table | "10 points" on two lines | one line |
+| `{: .col--wrap }` opt-out | "10 points" on two lines | unchanged (two lines) |
+
+Chromium kept every #1138 value on one line even before the change, because
+table layout differs from DocRaptor, which wrapped them in the reported PDF. The
+#1007 table shows the wrap in Chromium.
+
+![Unmarked tables before render-time detection](unmarked-view-before.jpg)
+
+![Unmarked tables after render-time detection, with opt-out below](unmarked-view-after.jpg)
