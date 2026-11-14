@@ -21,7 +21,7 @@ Each export template wraps the document in `<div id="download_target">`. GrabzIt
 
 ## How it works
 
-**We do not send NOFO HTML to GrabzIt.** We send GrabzIt a URL, along with the user's own session cookies. GrabzIt's servers then load that page from our app as the user, render it, and turn the `#download_target` element into a DOCX.
+**We do not send NOFO HTML to GrabzIt.** We send GrabzIt a URL, along with the user's own session cookies. GrabzIt's servers then fetch the page using the cookies registered for the export host and turn the `#download_target` element into a DOCX.
 
 ```mermaid
 sequenceDiagram
@@ -42,7 +42,7 @@ sequenceDiagram
     App->>GZ: takedocx with export URL (HTTPS)
     GZ-->>App: capture ID
 
-    R->>App: GET export page over HTTPS, using the user's cookies
+    R->>App: GET export page over HTTPS with the registered cookies
     App-->>R: Export page HTML (full document content)
     Note over R: Converts download_target to DOCX.<br/>Result is cached on GrabzIt servers.
 
@@ -66,7 +66,7 @@ Step by step:
 3. The helper needs the `sessionid` and `csrftoken` cookies, an `https` export URL, and a request host that matches the export URL host. The host check means cookies are only handed over for the host they came from.
 4. `UseSSL(True)` switches the GrabzIt client to HTTPS before any call. The SDK defaults to HTTP; this was fixed in [#883](https://github.com/HHS/simpler-grants-pdf-builder/pull/883).
 5. The helper registers the user's `sessionid` and `csrftoken` with GrabzIt for that host (`SetCookie`), then asks GrabzIt to convert the URL (`URLToDOCX`).
-6. GrabzIt's renderer fetches the export page **from our app**, logged in as the user through those cookies. The page goes through the usual permission checks, so GrabzIt sees exactly what that user could see.
+6. GrabzIt's renderer fetches the export page from our app using the cookies registered for that host. The app applies its usual permission checks to the session GrabzIt presents.
 7. `SaveTo` waits about 3 seconds, then checks status every 3 seconds until the result is ready, and downloads it. The request is **synchronous**: the gunicorn worker is busy for the whole conversion, and gunicorn stops requests after 89 seconds (see the `Dockerfile`).
 8. The bytes are written to `/tmp/<document pk>.docx`, read back, and the file is deleted in a `finally` block.
 9. `is_valid_docx` rejects an empty or malformed result with `502`. Otherwise the DOCX is returned as an attachment.
@@ -96,11 +96,13 @@ flowchart LR
 
 We do not store the generated Word file in our database, S3 or logs.
 
+## Troubleshooting
+
+Once [#1354](https://github.com/HHS/simpler-grants-pdf-builder/pull/1354) is deployed, Word export warnings and errors appear in the application console as JSON. See [Word export environment isolation](../DEPLOYMENT.md#word-export-environment-isolation) for the messages to search for.
+
 ## Known gaps
 
-These are open as of the source baseline above:
-
-- **Failure logs are discarded in deployed environments.** `generate_docx_download_response` logs through the `bloom_nofos.utils` logger. That logger has no handler of its own, so its records reach the root logger, which uses a `NullHandler` outside tests. "GrabzIt Word export request failed", "GrabzIt returned an invalid or empty DOCX" and "GrabzIt Word export blocked for unconfigured host" therefore never reach the console or log aggregation. Users still see the modal's error message. Tracked in [#1353](https://github.com/HHS/simpler-grants-pdf-builder/issues/1353).
+- **Overlapping exports can use a different session.** Exports on the same host register cookies under the same names on the GrabzIt account. If another export overwrites those cookies before the renderer fetches the first export page, the app can evaluate its permissions against the other session.
 - **Session cookies and cached documents stay with GrabzIt after the export.** Cleaning up the account's stored cookies and choosing a cache retention suitable for pre-decisional content are tracked in [#1330](https://github.com/HHS/simpler-grants-pdf-builder/issues/1330).
 - **No customer encryption key.** The ADR lists encryption at rest with a customer-provided key as a reason for choosing GrabzIt. The code does not set `encryptionKey`.
 - **Temporary file names can collide.** Exports of the same document running at the same time on one task share `/tmp/<pk>.docx`, for example the standard and clearance copies of one NOFO.
