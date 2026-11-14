@@ -11,20 +11,40 @@ from django.test import SimpleTestCase
 PROGRAM = r"""
 import logging
 import os
+from unittest.mock import Mock, patch
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "bloom_nofos.settings"
 
 import django
+
+from django.test import override_settings
+
+from bloom_nofos.utils import generate_docx_download_response
 
 django.setup()
 
 utils_logger = logging.getLogger("bloom_nofos.utils")
 utils_logger.info("bloom_nofos info should be filtered")
 utils_logger.warning("GrabzIt Word export blocked for unconfigured host")
-try:
-    raise RuntimeError("synthetic provider failure")
-except RuntimeError:
-    utils_logger.exception("GrabzIt Word export request failed")
+host = "example.test"
+request = Mock(COOKIES={"sessionid": "fake-session", "csrftoken": "fake-csrf"})
+request.get_host.return_value = host
+with (
+    override_settings(
+        GRABZIT_WORD_EXPORT_ALLOWED_HOSTS=[host],
+        GRABZIT_APPLICATION_KEY="fake-key",
+        GRABZIT_APPLICATION_SECRET="fake-secret",
+    ),
+    patch("bloom_nofos.utils.GrabzItClient.GrabzItClient") as client,
+):
+    client.return_value.SaveTo.side_effect = RuntimeError("provider-secret-sentinel")
+    generate_docx_download_response(
+        request=request,
+        export_url=f"https://{host}/export",
+        target_element="main",
+        filename_base="example",
+        tmp_name="logging-config-test",
+    )
 utils_logger.error("GrabzIt returned an invalid or empty DOCX")
 """
 
@@ -75,13 +95,16 @@ class DeployedLoggingConfigTests(SimpleTestCase):
         )
         self.assertEqual(levels["GrabzIt Word export request failed"], "ERROR")
 
-    def test_exception_includes_traceback(self):
+    def test_provider_exception_logs_only_safe_fields(self):
         failed = next(
             record
             for record in self.records
             if record["message"] == "GrabzIt Word export request failed"
         )
-        self.assertIn("synthetic provider failure", json.dumps(failed))
+        self.assertEqual(failed["error_type"], "RuntimeError")
+        self.assertEqual(failed["export_host"], "example.test")
+        self.assertNotIn("exc_info", failed)
+        self.assertNotIn("provider-secret-sentinel", self.output)
 
     def test_info_is_not_emitted(self):
         self.assertNotIn("bloom_nofos info should be filtered", self.output)
