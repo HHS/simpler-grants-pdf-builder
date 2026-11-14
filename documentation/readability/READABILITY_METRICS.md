@@ -473,7 +473,7 @@ to the authenticated Builder readability feature (#1009, implemented in #1014).
 They are outside the anonymous PDF pilot release epic (#968) and must not be
 exposed through `/readability-checker/` or counted toward that epic's acceptance criteria.
 The pilot's content-free usage monitoring is separate from saved metric results.
-See [the pilot runbook](PDF_READABILITY_PILOT.md) for its scope and release gates.
+See [the Readability Checker guide](PDF_READABILITY_PILOT.md) for its scope and release gates.
 
 ### Review display and keyboard interaction
 
