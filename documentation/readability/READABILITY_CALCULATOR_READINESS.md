@@ -1,7 +1,7 @@
 # Readability Checker: public launch readiness
 
 Prepared October 28, 2026 for [SGG #12568](https://github.com/HHS/simpler-grants-gov/issues/12568)
-and Builder [#970](https://github.com/HHS/simpler-grants-pdf-builder/issues/970),
+and NOFO Builder [#970](https://github.com/HHS/simpler-grants-pdf-builder/issues/970),
 [#971](https://github.com/HHS/simpler-grants-pdf-builder/issues/971) and
 [#968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968).
 
@@ -11,12 +11,78 @@ There is no shared-dev scheduling dependency: the requester confirmed no other
 users need this dev environment. Request limits, restoration and effective
 operating access still matter.
 
+## Launch readiness summary
+
+The NOFO Builder Readability Checker gives users immediate feedback on the
+readability of a Notice of Funding Opportunity, including grade level, sentence
+length and passive sentence use. Both the public and signed-in checkers
+support one PDF or Microsoft Word (`.docx`) document at a time. The public
+checker does not require an account when enabled. Public uploads are
+currently disabled. [Supported files and document handling](PDF_READABILITY_PILOT.md)
+
+**How uploads are handled.** The standalone checker processes uploads in a
+temporary workspace and displays the report in the browser. NOFO Builder creates
+no saved document or server-side report history for those uploads. If usage
+recording is enabled, operational records have no automatic expiration and
+exclude filenames, document text, readability scores and user identifiers.
+NOFO Builder uses these records to monitor how often people use the checker and
+how reliably and quickly it processes uploads.
+Infrastructure logs have separate access and retention settings. The upload page
+asks users to upload only documents they’re authorized to share and to follow
+their agency’s rules for sharing pre-decisional NOFO content. Users with
+questions can contact their agency’s grants policy office.
+[Usage-record handling](PDF_READABILITY_PILOT.md#content-free-outcome-monitoring-985)
+
+**What we tested and why.** We wanted to see whether people could get a
+readability report as expected and whether the checker could handle failed,
+interrupted or repeated uploads without disrupting other work in NOFO Builder.
+We also checked what the test upload left behind in temporary files and logs.
+
+- **Upload and logging.** A signed-out PDF upload in the test environment
+  **produced a report**, and we found **neither the filename nor a test phrase
+  from the document in the log fields we searched**. A separate local test
+  confirmed that a signed-out Word upload also produced a report.
+  [Dev logging evidence](../review-evidence/971/README.md#november-10-signed-out-dev-logging-check)
+- **Temporary-file cleanup.** In the test environment, the checker kept files
+  in memory and **cleared them after success, rejection, and a processing
+  timeout**. In a separate interruption test, processing stopped and the
+  checker **removed the leftover files during startup**.
+  [Storage and cleanup evidence](https://github.com/HHS/simpler-grants-pdf-builder/issues/971)
+- **Abuse controls and alerts.** In the test environment, **rate limiting,
+  emergency blocking, and restoration worked**. On the live site, we
+  confirmed the firewall was set to block requests above **30 upload attempts
+  in five minutes from the same public IP address**. People whose office
+  shares a public IP address share that limit. During a production test, the
+  team **received both the alert and the recovery email**.
+  [Infrastructure evidence](https://github.com/HHS/simpler-grants-gov/issues/12568)
+
+**How we limit abuse and respond.** The public Readability Checker accepts
+PDFs up to 5 MiB and 150 pages and Word documents up to 15 MiB. It runs one
+analysis at a time and limits how long each analysis can run and how many
+resources it can use. The SimplerNOFOs team can pause public Readability
+Checker uploads using the checker’s setting in NOFO Builder. The firewall’s
+emergency block can restrict access to the public checker page and upload
+route. The public checker sends the same search indexing directives whether
+uploads are enabled or disabled. We verified them on the disabled production
+page and tested both states locally. The directives depend on crawlers
+honoring them.
+[Launch risks and response](#launch-risks-and-response) ·
+[Operating runbook](https://github.com/HHS/simpler-grants-gov/blob/main/documentation/infra/nofo-pdf-readability-waf.md)
+
+**Where to look if an issue occurs.** Depending on the issue, authorized
+responders can review firewall logs in CloudWatch and recent samples in AWS WAF
+where sampling is enabled. They can check access and retention in the system
+that holds the relevant logs, and inspect the running NOFO Builder service in
+AWS for temporary-storage or cleanup issues. Use the incident procedure to
+coordinate the investigation and keep sensitive evidence restricted.
+[Incident response guidance](#pause-and-reopen)
+
 ## Documentation ownership
 
-This is Builder's overall readiness and launch plan. The infrastructure
+This is NOFO Builder's overall readiness and launch plan. The infrastructure
 implementation and operator procedures remain in
 [the Simpler Grants infrastructure guides](https://github.com/HHS/simpler-grants-gov/tree/main/documentation/infra).
-Use this plan alongside Builder's
+Use this plan alongside NOFO Builder's
 [deployment safeguards](PDF_READABILITY_SAFEGUARDS.md) and
 [release checklist](PDF_READABILITY_RELEASE_CHECKLIST.md); it does not replace
 their evidence or approval requirements. Maintain one overall plan here, and
@@ -100,8 +166,8 @@ Both responses use HTTP 429. The screen and the monitoring source depend on whic
 
 | Cause | What the user sees | Where to look |
 | --- | --- | --- |
-| Builder analyzer busy | The upload form shows “The analyzer is busy. Please try again in a moment.” Builder returns `Retry-After: 15`. | In **Readability Checker usage**, look for **Analyzer busy** when attempt recording is enabled for that route. |
-| WAF upload rate limit in Block mode | WAF returns an empty 429 response before Builder receives the submission. The form navigates away and the browser may show its own error page. | Check the upload-rate rule's CloudWatch `BlockedRequests` metric and alarm. Builder has no usage record for a request intercepted by WAF. |
+| NOFO Builder analyzer busy | The upload form shows “The analyzer is busy. Please try again in a moment.” NOFO Builder returns `Retry-After: 15`. | In **Readability Checker usage**, look for **Analyzer busy** when attempt recording is enabled for that route. |
+| WAF upload rate limit in Block mode | WAF returns an empty 429 response before NOFO Builder receives the submission. The form navigates away and the browser may show its own error page. | Check the upload-rate rule's CloudWatch `BlockedRequests` metric and alarm. NOFO Builder has no usage record for a request intercepted by WAF. |
 
 In Count mode, the rate rule records over-limit traffic without returning a rate-limit 429. The [WAF runbook](https://github.com/HHS/simpler-grants-gov/blob/main/documentation/infra/nofo-pdf-readability-waf.md) covers rule configuration and monitoring. See the [local Chrome screenshots](../review-evidence/971/README.md) for examples of both responses.
 
@@ -161,7 +227,7 @@ authorization, a duration/request cap and verified disabled-state restoration.
 
 The existing inspector and New Relic completion logs cannot establish which
 web worker is waiting for body bytes. For the bounded slow-upload plan in
-[SGG #13115](https://github.com/HHS/simpler-grants-gov/pull/13115), Builder provides
+[SGG #13115](https://github.com/HHS/simpler-grants-gov/pull/13115), NOFO Builder provides
 an optional WSGI body-read observer. This is diagnostic visibility, not slow-client
 protection, and does not authorize test traffic or feature enablement.
 
@@ -258,15 +324,15 @@ for emergency blocking, verification and restoration.
 
 | Risk | Safeguards and evidence today | First response |
 | --- | --- | --- |
-| A sensitive upload is exposed or retained unexpectedly. | Builder keeps no report history, and the usage records exclude document content. The [private temporary workspace and interruption cleanup](https://github.com/HHS/simpler-grants-pdf-builder/pull/1316) are [deployed in dev](https://github.com/HHS/simpler-grants-gov/actions/runs/42677257714). Review of deployed storage, cleanup after interruption, and logging access and retention is still open. | Pause public uploads, escalate through the approved HHS security/privacy incident channel, and preserve relevant evidence in the approved restricted location. Ask HHS to assess scope and direct any required notifications and recovery. |
+| A sensitive upload is exposed or retained unexpectedly. | NOFO Builder keeps no report history, and the usage records exclude document content. The [private temporary workspace and interruption cleanup](https://github.com/HHS/simpler-grants-pdf-builder/pull/1316) are [deployed in dev](https://github.com/HHS/simpler-grants-gov/actions/runs/42677257714). The dev probes verified temporary storage and isolated interruption cleanup. Production storage and cleanup, and deployed logging access and retention remain open. | Pause public uploads, escalate through the approved HHS security/privacy incident channel, and preserve relevant evidence in the approved restricted location. Ask HHS to assess scope and direct any required notifications and recovery. |
 | A malicious PDF exploits the analyzer. | Analysis runs in a separate process with a restricted environment and resource limits. The deployed filesystem, network, and credential boundaries still need review. | Pause uploads and involve security and infrastructure. Determine what the process could access, fix the issue, and verify the affected boundaries before reopening. |
-| Upload traffic degrades Builder, or a rate limit blocks legitimate users on a shared network. | Builder caps PDF uploads at 5 MiB. Dev tests verified rate enforcement, emergency blocking and restoration. Production alarm delivery was verified. [Production enforcement](https://github.com/HHS/simpler-grants-gov/pull/13219) is pending. | Check Builder health, WAF metrics and support reports. Pause the checker if Builder is affected. For shared-network blocks, check rule counters and user impact before proposing a threshold change. |
+| Upload traffic degrades NOFO Builder, or a rate limit blocks legitimate users on a shared network. | The public Readability Checker caps PDF uploads at 5 MiB and 150 pages and Word uploads at 15 MiB. Dev tests verified rate enforcement, emergency blocking and restoration. Production alarm delivery was verified. [Production inspection](https://github.com/HHS/simpler-grants-gov/actions/runs/42861864575) confirmed the rate rule is in Block mode at 30 upload requests per five minutes per public IP. | Check NOFO Builder health, WAF metrics and support reports. Pause the checker if NOFO Builder is affected. For shared-network blocks, check rule counters and user impact before proposing a threshold change. |
 | A favorable score gives reviewers false confidence. | The checker labels scores as estimates. Use them alongside human review of clarity, repetition and whether applicants can follow the instructions. | Explain the measure's limits in support responses. Investigate reproducibly incorrect results and update guidance or the calculator as needed. |
 
 ### Pause and reopen
 
 - **Pause.** Disable public uploads if there is a suspected exposure or upload
-  traffic is affecting Builder. Use the emergency block if the application
+  traffic is affecting NOFO Builder. Use the emergency block if the application
   switch is insufficient, and follow the approved HHS incident process for
   suspected exposure.
 - **Reopen.** Resume uploads after the cause is addressed, the relevant
@@ -279,7 +345,7 @@ Track outstanding verification and approvals through the existing
 
 For every row use pass / fail / not run / deferred, with timestamp, environment,
 application/infrastructure revisions, operator, method, sanitized evidence link
-and limitation. Do not close SGG #12568 or Builder #970/#971 solely because alerts are enabled.
+and limitation. Do not close SGG #12568 or NOFO Builder #970/#971 solely because alerts are enabled.
 Link results across the existing trackers when authorized; no issue updates or
 external messages are made by writing this plan. Keep raw runtime/log evidence
 in an approved restricted location and make that location/access explicit before

@@ -51,6 +51,7 @@ class FileCategoryTests(TestCase):
     def test_success_and_parser_failure_keep_attempted_extension_only(self):
         for url, name, category in (
             (self.public, "PRIVATE-NAME.PDF", "pdf"),
+            (self.public, "PRIVATE-NAME.DoCx", "docx"),
             (self.authenticated, "PRIVATE-NAME.DoCx", "docx"),
         ):
             for error in (
@@ -71,18 +72,6 @@ class FileCategoryTests(TestCase):
                     self.assertEqual(record.outcome, error.code if error else "success")
                     self.assertNotIn("PRIVATE", str(record.__dict__))
                     PdfReadabilityAttempt.objects.all().delete()
-
-    def test_public_docx_rejection_records_attempted_category(self):
-        with patch("bloom_nofos.views.analyze_uploaded_pdf") as analyze:
-            self.assertEqual(
-                self.client.post(
-                    self.public, {"pdf": self.upload("private.docx")}
-                ).status_code,
-                400,
-            )
-            analyze.assert_not_called()
-        row = PdfReadabilityAttempt.objects.get()
-        self.assertEqual((row.file_category, row.outcome), ("docx", "unsupported_file"))
 
     @patch("nofos.pdf_readability.MAX_UPLOAD_BYTES", 1)
     def test_aborted_oversized_upload_is_unknown(self):

@@ -6,7 +6,7 @@ link to the owning guide instead of duplicating its procedures.
 | Guide | Owns |
 | --- | --- |
 | [Source-native metrics](READABILITY_METRICS.md) | Package integration, source contract, editor panel and saved readability history |
-| [PDF/Word pilot runbook](PDF_READABILITY_PILOT.md) | Shared upload processing, recognition, limits, public-route release gates and stop procedure |
+| [Readability Checker](PDF_READABILITY_PILOT.md) | Shared upload processing, recognition, limits, public-route release gates and stop procedure |
 | [Authenticated pilot](AUTHENTICATED_PDF_READABILITY_PILOT.md) | Restricted participant access, authenticated-route operations and activation checks |
 | [Drafting guidance](DRAFT_PDF_READABILITY.md) | Content preparation, measurement scope and current validation limitations |
 | [Word report scope and reliability](WORD_READABILITY_RELIABILITY.md) | Conversion coverage, absent Word reliability rating and report presentation |

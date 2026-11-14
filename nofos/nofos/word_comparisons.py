@@ -119,7 +119,6 @@ def save(request):
                 timezone.datetime.fromisoformat(snapshot["analyzed_at"])
             ),
             "source_word": True,
-            "word_uploads_allowed": True,
             "authenticated_pilot": True,
             "pilot_url_name": "nofos:authenticated_pdf_readability",
             "comparison_run": request.POST["run"] if record is None else None,

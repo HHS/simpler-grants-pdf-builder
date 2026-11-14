@@ -961,16 +961,16 @@ succeed even if metrics could not be saved. See [readability metrics](readabilit
 
 ### TASK-READABILITY-UPLOAD — Check Word or PDF readability without creating a NOFO
 
-**Starting point:** **Readability Checker** at the direct
-`/nofos/readability-checker/` URL on your Builder environment.
-There is no navigation link. This restricted pilot requires an active account,
-pilot permission and an enabled feature; signing in alone does not grant access.
-If access is denied or the page is unavailable, contact the pilot operator.
+**Starting point:** Open the **Readability Checker** at
+`/readability-checker/` for the public route or `/nofos/readability-checker/`
+for the signed-in route. Each route has its own availability setting. The
+signed-in route requires an active account and explicit checker permission.
+If access is denied or the page is unavailable, contact the checker operator.
 
 **Steps**
 
-1. Open `/nofos/readability-checker/` and review **Document requirements** and
-   **How we handle your document**. Use only documents authorized for this pilot.
+1. Review **Document requirements** and **How we handle your document**.
+   Upload only documents you’re authorized to share.
 2. Choose one supported text-based HHS NOFO PDF up to 5 MiB or unlocked Word
    `.docx` up to 15 MiB, then
    select **Analyze document**. Legacy `.doc` and macro-enabled formats are not
@@ -1002,8 +1002,9 @@ count. Keep instructions applicants need. An in-progress draft can be checked
 before publication design, but favorable scores do not establish publication
 readiness. Compare drafts with the same content scope.
 Word, PDF and saved-Builder scores can differ; use the same format and
-analysis method when tracking revisions. The separate public `/readability-checker/`
-route remains PDF-only and has its own availability controls.
+analysis method when tracking revisions. Both checker routes support the same
+upload formats and limits. Saving Word comparisons requires the signed-in route
+and the separate permission.
 See [authenticated readability pilot](readability/AUTHENTICATED_PDF_READABILITY_PILOT.md).
 
 ---

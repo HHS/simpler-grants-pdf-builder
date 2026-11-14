@@ -417,13 +417,9 @@ Each source explanation stays in one paragraph:
 
 - **Word:** general preparation guidance is ordinary Measurement scope text, not an alert. It describes text boxes, headers, footers, images and unused template options without claiming any of those were detected. An unassessed report explains once: “This analysis does not check how completely the Word document was converted, so it does not assign a reliability rating. This does not mean a problem was detected in your upload. Any conversion warnings appear in Calculation notes.”
 - **PDF with usable tags:** “PDF structure tags helped the tool read the text in order, but some text may still be missed or read out of order, especially in columns and tables. These scores describe the text the tool recovered and may not reflect the entire PDF.”
-- **PDF without usable tags (authenticated tool):** “The tool could not reliably determine the order of text in this PDF, so the scores may be less reliable. For your next upload, try uploading the original Word document instead. If you need to use a PDF, save it from Word using ‘Save as PDF’ rather than ‘Print to PDF.’”
+- **PDF without usable tags:** “The tool could not reliably determine the order of text in this PDF, so the scores may be less reliable. For your next upload, try uploading the original Word document instead. If you need to use a PDF, save it from Word using ‘Save as PDF’ rather than ‘Print to PDF.’”
 
-**PDF without usable tags (public PDF-only route):** “The tool could not reliably determine the order of text in this PDF, so the scores may be less reliable. For your next upload, save the original document from Word using “Save as PDF” rather than “Print to PDF.””
-
-Word is supported only on authenticated `/nofos/readability-checker/`; public
-`/readability-checker/` accepts PDFs only. The public variant therefore does not recommend
-a Word upload. These suggestions do not guarantee accurate scores. The source
+Both checker routes give the same document preparation guidance. These suggestions do not guarantee accurate scores. The source
 explanation is one paragraph. When overall reliability is not assessed, the alert
 also includes the separate sentence: “Reliability has not been assessed for these
 estimates.” This sentence can accompany tagged-PDF source copy. Unassessed Word
