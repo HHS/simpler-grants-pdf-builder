@@ -5,19 +5,26 @@ const { runInNewContext } = require('node:vm');
 const { join } = require('node:path');
 const source = readFileSync(join(__dirname, '../../nofos/bloom_nofos/static/js/nofos/nofo_readability_metrics.js'), 'utf8');
 
+function classes(...initial) {
+  const set = new Set(initial);
+  return { add: name => set.add(name), remove: name => set.delete(name), contains: name => set.has(name) };
+}
 function setup(responses) {
   const listeners = {};
-  const element = () => ({ hidden: true, disabled: false, textContent: '', classList: { add() {} }, attributes: {}, setAttribute(name, value) { this.attributes[name] = value; }, replaceChildren() {}, append() {} });
-  const calculate = element(), save = element(), saveStatus = element(), results = element(), history = element();
+  const element = () => ({ hidden: true, disabled: false, textContent: '', classList: classes(), attributes: {}, setAttribute(name, value) { this.attributes[name] = value; }, replaceChildren() {}, append() {} });
+  const retry = element(), save = element(), saveStatus = element(), results = element(), history = element();
   const named = { ':scope > summary': element(), '[data-save-readability]': save, '[data-save-readability-status]': saveStatus, '[data-readability-saved-history]': history };
-  calculate.addEventListener = (event, handler) => { listeners.calculate = handler; };
+  retry.classList = classes('display-none');
+  retry.addEventListener = (event, handler) => { listeners.retry = handler; };
   save.addEventListener = (event, handler) => { listeners.save = handler; };
   const panel = { dataset: { metricsEndpoint: '/calculate', saveEndpoint: '/save', historyEndpoint: '/history?fragment=1', csrfToken: 'synthetic' },
     querySelector: selector => named[selector] || (named[selector] = element()), querySelectorAll: () => [], addEventListener(event, handler) { if (event === "toggle") listeners.toggle = handler; } };
-  const elements = { 'readability-metrics-panel': panel, 'calculate-readability-metrics': calculate, 'readability-metrics-results': results, 'readability-metrics-status': element() };
+  const elements = { 'readability-metrics-panel': panel, 'retry-readability-metrics': retry, 'readability-metrics-results': results, 'readability-metrics-status': element() };
   const calls = [];
   runInNewContext(source, { document: { querySelector: () => null, getElementById: id => elements[id] || null }, window: { setTimeout: () => 1, clearTimeout() {} }, AbortController, Intl, fetch: async (url, options) => { calls.push({ url, options }); const response = responses.shift(); if (response instanceof Error) throw response; return response; } });
-  return { panel, listeners, save, saveStatus, calculate, results, history, calls };
+  // Opening the panel is the only way a calculation starts on success.
+  listeners.calculate = async () => { panel.open = true; listeners.toggle(); await new Promise(resolve => setImmediate(resolve)); };
+  return { panel, listeners, save, saveStatus, retry, results, history, calls };
 }
 const result = value => ({ source: { revision: String(value) }, metrics: { word_count: { value, status: 'calculated' } }, warnings: [] });
 const response = (payload, ok = true) => ({ ok, status: ok ? 200 : 503, json: async () => payload });
@@ -55,7 +62,7 @@ test('save timeout is uncertain, retry safe and controls enabled', async () => {
   await ui.listeners.calculate();
   await ui.listeners.save();
   assert.match(ui.saveStatus.textContent, /too long to confirm/);
-  assert.equal(ui.calculate.disabled, false);
+  assert.ok(ui.retry.classList.contains('display-none'));
   assert.equal(ui.save.disabled, false);
 });
 
@@ -93,4 +100,30 @@ test('saving remains focusable while duplicate submissions are blocked', async (
   finish({ result: result(10), checkpoint: { id: 1 } });
   await saving;
   assert.equal(ui.save.attributes['aria-disabled'], 'false');
+});
+test('retry button stays hidden after a successful calculation', async () => {
+  const ui = setup([response(result(10))]);
+  await ui.listeners.calculate();
+  assert.ok(ui.retry.classList.contains('display-none'));
+  assert.match(ui.panel.querySelector('[data-metrics-summary-status]').textContent, /Calculated/);
+});
+test('failed calculation shows retry, and retrying hides it again on success', async () => {
+  const ui = setup([response({ message: 'Unavailable' }, false), response(result(10))]);
+  await ui.listeners.calculate();
+  assert.equal(ui.retry.classList.contains('display-none'), false);
+  await ui.listeners.retry();
+  assert.equal(ui.calls.length, 2);
+  assert.ok(ui.retry.classList.contains('display-none'));
+  assert.equal(ui.save.hidden, false);
+});
+test('reopening the panel during a calculation does not start a second request', async () => {
+  let finish;
+  const pending = { ok: true, status: 200, json: () => new Promise(resolve => { finish = resolve; }) };
+  const ui = setup([pending]);
+  ui.panel.open = true;
+  ui.listeners.toggle();
+  ui.listeners.toggle();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(ui.calls.length, 1);
+  finish(result(10));
 });

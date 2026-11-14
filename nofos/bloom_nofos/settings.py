@@ -267,6 +267,13 @@ else:
                 "level": "INFO",
                 "propagate": False,
             },
+            # Word export (GrabzIt) warnings and errors from bloom_nofos.utils.
+            # Without this entry they reach the root NullHandler and are lost.
+            "bloom_nofos": {
+                "handlers": ["console"],
+                "level": "WARNING",
+                "propagate": False,
+            },
             # Suppress ALL other loggers aggressively
             "": {
                 "handlers": ["null"],

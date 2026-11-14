@@ -160,6 +160,10 @@ is needed, contact the SimplerNOFOs team.
   **Tagline** field under **Basic information** is still filled in from the
   document. Titled subsections and other sections are kept. Already saved
   NOFOs are not changed; delete a duplicate tagline subsection manually.
+- Builder standardizes paragraph-opening labels such as **PLEASE NOTE:** or
+  **N.B.** to bold **Note:** on import or reimport, including in tables. The
+  text after the label is preserved. Use the subsection's **Edit** action to
+  revise the label or note, and preview the PDF when a note follows a table.
 - For an existing NOFO, reimport replaces sections and subsections and can lose
   manual edits. It is not a way to apply import repairs to saved edits in place.
   Reimport preserves saved theme, cover and introductory ownership choices.
@@ -555,6 +559,35 @@ idea.
   [Automatic table styling](TABLES.md#captions).
 - Apply the review guidance's caption exemptions before requesting a change.
 
+<a id="task-table-points-column"></a>
+
+### TASK-TABLE-POINTS-COLUMN — Keep point values on one line, or let them wrap
+
+Scoring columns with a header such as **Point value**, **Points** or
+**Maximum points** shrink to fit automatically, and short values such as
+"10 points" stay on one line. This includes tables in older NOFOs and tables
+pasted into the editor. It applies only when every filled cell in the column is
+a short point value, such as "10 points", "5", "0–10 points" or "Up to 5 points".
+
+**Steps**
+
+1. Open the subsection that contains the table ([TASK-SUBSECTION-EDIT](#task-subsection-edit)).
+2. To let the column wrap normally, add `{: .col--wrap }` to the end of its
+   header cell, for example `| **Point value** {: .col--wrap } |`. To set a fixed
+   width instead, add a width class such as `{: .w-25 }`.
+3. To turn the one-line layout on for a column with a different header, add
+   `{: .col--points }` to its header cell.
+4. Select **Save subsection**, then select **Preview PDF** to check the result.
+
+**Notes**
+
+- Removing `{: .col--points }` does not turn the layout off when the header
+  still reads like a points header. Use `{: .col--wrap }`.
+- If any filled cell in the column holds longer text, the column wraps normally.
+- The live **Preview** tab in the content editor may still wrap point values.
+  Check the saved subsection or **Preview PDF**.
+- See [Automatic table styling](TABLES.md#points-columns).
+
 <a id="task-table-full-width"></a>
 
 ### TASK-TABLE-FULL-WIDTH — Make tables full width
@@ -915,7 +948,7 @@ If the panel is absent, this task is unavailable there.
 **Steps**
 
 1. On the NOFO edit page, expand **Readability metrics**. Opening it checks the
-   current NOFO; use **Calculate metrics** to request another calculation.
+   current NOFO. If the calculation fails, select **Try again**.
 2. Review the results, scope and any **Calculation notes** before interpreting
    the scores.
 3. Select **Save these results** to keep a manual checkpoint. Saving checks the

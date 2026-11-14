@@ -5,6 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.59.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.59.0...nofos-v3.59.1) (2026-11-13)
+
+
+### Bug Fixes
+
+* remove readability panel Recalculate button, show Try again only on failure ([#1346](https://github.com/HHS/simpler-grants-pdf-builder/issues/1346)) ([e46014e](https://github.com/HHS/simpler-grants-pdf-builder/commit/e46014eabe277f95c5288f00f204080fb1577156))
+
+## [3.59.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.58.1...nofos-v3.59.0) (2026-11-13)
+
+
+### Features
+
+* add Office of Grants and HHS policy link rows to the footer ([#1344](https://github.com/HHS/simpler-grants-pdf-builder/issues/1344)) ([144f057](https://github.com/HHS/simpler-grants-pdf-builder/commit/144f057e1d1501766cfa5345aa168c37dcd78a16))
+
+
+### Miscellaneous Chores
+
+* bump soupsieve from 2.9.2 to 4.0 ([#1342](https://github.com/HHS/simpler-grants-pdf-builder/issues/1342)) ([83fdc9a](https://github.com/HHS/simpler-grants-pdf-builder/commit/83fdc9a686aa46e3108a5f4c034b69c86874eec2))
+
+## [3.58.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.58.0...nofos-v3.58.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* ignore CVE-2026-119170 for Python 3.14.10 in Grype scan ([#1338](https://github.com/HHS/simpler-grants-pdf-builder/issues/1338)) ([8c62497](https://github.com/HHS/simpler-grants-pdf-builder/commit/8c624979d3787a702abb09b27d17c14c820e4606))
+* show Readability Checker upload notice as a slim info alert above the file input ([#1332](https://github.com/HHS/simpler-grants-pdf-builder/issues/1332)) ([9989781](https://github.com/HHS/simpler-grants-pdf-builder/commit/9989781f1b5bb12401cff7698c1b2dd484ef78cd))
+* stack Readability Checker and Builder footer links in one column on small screens ([#1340](https://github.com/HHS/simpler-grants-pdf-builder/issues/1340)) ([32e99f8](https://github.com/HHS/simpler-grants-pdf-builder/commit/32e99f8394245ff0957c2cc55d79c02d13a802d9))
+
+## [3.58.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.57.1...nofos-v3.58.0) (2026-11-12)
+
+
+### Features
+
+* onboard ONC with a group and branded NOFO theme ([#1324](https://github.com/HHS/simpler-grants-pdf-builder/issues/1324)) ([13617f2](https://github.com/HHS/simpler-grants-pdf-builder/commit/13617f221c426fe76ed8eba394784f0e7dbd997a))
+* warn when subsection email addresses need links ([#1320](https://github.com/HHS/simpler-grants-pdf-builder/issues/1320)) ([68cf22c](https://github.com/HHS/simpler-grants-pdf-builder/commit/68cf22caa65a48b85d37c44824c7633c73c9c719))
+
+
+### Bug Fixes
+
+* link NOFO Builder header on the public Readability Checker ([#1334](https://github.com/HHS/simpler-grants-pdf-builder/issues/1334)) ([4b33ac5](https://github.com/HHS/simpler-grants-pdf-builder/commit/4b33ac52b26cf07f85bc71cdcf04ad118f045ffa))
+
+
+### Documentation
+
+* add a Readability Checker launch risk and response plan ([#1319](https://github.com/HHS/simpler-grants-pdf-builder/issues/1319)) ([ec8862b](https://github.com/HHS/simpler-grants-pdf-builder/commit/ec8862b58d7234072d1f55d7b4876fb0d216df18))
+* clarify AS November 10 integration assumptions ([#1323](https://github.com/HHS/simpler-grants-pdf-builder/issues/1323)) ([1777bda](https://github.com/HHS/simpler-grants-pdf-builder/commit/1777bda3e570d4d1f83867647713ae01dfa4f8f6))
+* record Readability Checker dev storage evidence ([#1322](https://github.com/HHS/simpler-grants-pdf-builder/issues/1322)) ([c5aee10](https://github.com/HHS/simpler-grants-pdf-builder/commit/c5aee10ec63b4cde554046f03331517787a7977d))
+* record signed-out dev logging evidence ([#1325](https://github.com/HHS/simpler-grants-pdf-builder/issues/1325)) ([5831b6f](https://github.com/HHS/simpler-grants-pdf-builder/commit/5831b6f878e50592126e35fe4902d635ccecdcba))
+
 ## [3.57.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.57.0...nofos-v3.57.1) (2026-11-09)
 
 

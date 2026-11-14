@@ -6,7 +6,7 @@ const { join } = require('node:path');
 const source = readFileSync(join(__dirname, '../../nofos/bloom_nofos/static/js/nofos/nofo_readability_metrics.js'), 'utf8');
 
 function setup(responses, { open = false } = {}) {
-  const element = () => ({ hidden: false, disabled: false, textContent: '', innerHTML: '', attributes: {}, classList: { add() {} }, setAttribute(k, v) { this.attributes[k] = v; }, addEventListener() {}, replaceChildren() {}, append() {} });
+  const element = () => ({ hidden: false, disabled: false, textContent: '', innerHTML: '', attributes: {}, classList: { add() {}, remove() {} }, setAttribute(k, v) { this.attributes[k] = v; }, addEventListener() {}, replaceChildren() {}, append() {} });
   const named = {};
   const calculate = element();
   let calculateListener;
@@ -18,7 +18,7 @@ function setup(responses, { open = false } = {}) {
   let submit;
   const form = { action: '/print?mode=attachment&is_test_pdf=false', querySelector: () => downloadButton, addEventListener: (event, handler) => { submit = handler; } };
   const calls = [], downloads = [], urls = [], timers = [];
-  const elements = { 'readability-metrics-panel': panel, 'calculate-readability-metrics': calculate, 'readability-metrics-results': element(), 'readability-metrics-status': element() };
+  const elements = { 'readability-metrics-panel': panel, 'retry-readability-metrics': calculate, 'readability-metrics-results': element(), 'readability-metrics-status': element() };
   class DOMParser {
     parseFromString(state) {
       return { querySelector: selector => ({

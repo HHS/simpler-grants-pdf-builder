@@ -220,8 +220,7 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "styles.css")
         self.assertNotContains(response, "theme-base.css")
         self.assertNotContains(response, "fonts.googleapis.com")
-        self.assertContains(response, "<span>NOFO Builder</span>", html=True)
-        self.assertNotContains(response, ">NOFO Builder</a>")
+        self.assertContains(response, '<a href="/">NOFO Builder</a>', html=True)
         self.assertContains(response, "Back to top")
         self.assertContains(response, "Latest updates")
         self.assertContains(response, 'for="pdf"')
@@ -258,8 +257,23 @@ class PdfReadabilityPageTests(TestCase):
             "<summary><span>How we handle your document</span></summary>",
             html=True,
         )
+        # The upload condition and its handling details are read before the
+        # file input, as a non-interrupting slim informational alert (#1329).
+        self.assertContains(
+            response,
+            '<div class="usa-alert usa-alert--info usa-alert--slim margin-top-0" '
+            'role="note" id="readability-privacy-notice">',
+        )
+        notice_start = content.index('id="readability-privacy-notice"')
         self.assertLess(
-            content.index('id="pdf"'), content.index('id="readability-privacy-notice"')
+            notice_start, content.index("<summary><span>How we handle your document")
+        )
+        self.assertLess(
+            content.index("<summary><span>How we handle your document"),
+            content.index('id="pdf"'),
+        )
+        self.assertLess(
+            content.index('id="pdf"'), content.index('id="analyze-pdf-button"')
         )
         self.assertContains(
             response,

@@ -457,6 +457,30 @@ This entry covers the readability reliability notice. Add other verified
 alert patterns here as they are reviewed; a site-wide alert audit is not
 required to extend this catalog.
 
+## Readability Checker upload notice
+
+The [Readability Checker upload page](../nofos/bloom_nofos/templates/pdf_readability.html)
+states its upload condition in a slim informational alert directly above the
+file input, below the page introduction. Users should read a condition for
+uploading before they choose a file, so place it before the field it governs
+rather than between the field and the submit button.
+
+Reuse the slim info alert already used on the Builder readability panel
+([readability_automatic_notice.html](../nofos/nofos/templates/nofos/includes/readability_automatic_notice.html)):
+`usa-alert usa-alert--info usa-alert--slim`, no heading, and `usa-alert__text`
+on its one paragraph. Use `role="note"`. Do not use `role="alert"` or
+`usa-alert--warning`; the notice is non-critical information, and `role="alert"`
+would interrupt screen readers on page load.
+
+The **How we handle your document** disclosure follows the alert, still before
+the file input, so the notice and its details stay together. The file input and
+**Analyze document** then keep the standard 1.5rem button spacing. Because the
+form uses `usa-form`, USWDS's `.usa-form .usa-button` rule would otherwise reduce
+that margin to 0.5rem below 30em and override `margin-top-3`; `pdf_readability.css`
+keeps 1.5rem at every width. The notice's wording is
+limited by the [upload privacy notice](readability/PDF_READABILITY_PILOT.md#upload-privacy-notice)
+rules. See [the before-and-after review](review-evidence/1329/README.md).
+
 ## Leftover template instruction warning after Word import
 
 This is a fallback review warning for a successful Word import, not an import
@@ -625,20 +649,58 @@ References:
   [save handler](../nofos/nofos/views.py), and [regression tests](../nofos/nofos/tests_nofos/test_subsection_edit.py)
 - [Deployment considerations](../DEPLOYMENT.md#subsection-conflict-protection-rollout)
 
-## HHS footer identifier
+## HHS footer identifier and link rows
 
 Application pages extending `base.html` or `pdf_readability_base.html` use the shared
+[`footer.html`](../nofos/bloom_nofos/templates/includes/footer.html). It renders the
 [`hhs_identifier.html`](../nofos/bloom_nofos/templates/includes/hhs_identifier.html)
-above the existing footer navigation. Reuse the bundled USWDS identifier masthead,
+band followed by two rows of links. Change footer links there, not in the base templates.
+
+The identifier reuses the bundled USWDS identifier masthead,
 the existing HHS SVG, and Builder's `--color--dark-blue` background with a white
 logo, sized to 3rem with 0.25rem vertical margins around the crest. The agency name links to `https://www.hhs.gov/` in the same tab. The logo is
 decorative because the adjacent text identifies the agency. Give its SVG title a
 footer-specific ID so it does not collide with other uses of the logo.
 
 Keep the identifier in the application shell; NOFO document and PDF templates
-continue to use their own branding. Verify signed-in and signed-out layouts,
-keyboard focus, and wrapping at mobile and desktop widths with
-`tests/js/footer.browser.cjs`.
+continue to use their own branding.
+
+Below the identifier, the bands go one step lighter, then one step darker, so the
+footer reads as one family of blues. White link text stays above 9:1 contrast on both.
+
+- **Row 1 (`Footer navigation`, `#0b4778`):** bold links to About Office of Grants,
+  Submit a support ticket, Latest updates and Back to top. The support ticket link
+  appears only for signed-in users and only when the page passes
+  `show_support_link=True`; `base.html` does, the Readability Checker does not.
+  The links form one left-aligned column, separated by thin dividers, below the USWDS tablet-lg
+  breakpoint (880px). They fit on one line from about 760px, so don't move this
+  breakpoint lower without rechecking. From 880px they form one row with Back to top at
+  the right edge.
+- **Row 2 (`HHS policies and resources`, `#002340`):** smaller, regular-weight links
+  modeled on the simpler.grants.gov footer: About HHS, Accessibility support, FOIA
+  requests, No FEAR Act data, Office of the Inspector General, Performance reports,
+  Privacy policy and Vulnerability disclosure policy. One column below the tablet breakpoint (640px); a wrapping row
+  from there up.
+
+External links use `usa-link--external` (icon after the text), open in a new window
+and include the visually hidden text " (opens in a new window)". Back to top is an
+in-page link with no icon.
+
+The floating **Top** button
+([`scroll_to_top_button.html`](../nofos/bloom_nofos/templates/includes/scroll_to_top_button.html),
+shown when a view sets `include_scroll_to_top`) is separate from the footer and
+otherwise unaffected by the link rows. At the bottom of a page it can sit over the dark
+footer bands, where its `--color--usa-link` background alone has only 2.38:1 against
+row 2 and 1.43:1 against row 1 (5.9:1 against the earlier grey footer). A 1px white
+border, with 1px less padding so the size is unchanged, gives it a visible edge there:
+the white border has 9.6:1 to 16:1 against the footer bands. Against the white page
+background the border doesn't show, so the button looks the same as before elsewhere.
+Keep the border if the footer or button colors change.
+
+Verify signed-in and signed-out layouts, keyboard focus, and wrapping at mobile
+and desktop widths with `tests/js/footer.browser.cjs`. Link order and destinations
+are covered by `nofos/bloom_nofos/tests_bloom_nofos/test_footer.py`.
+[Issue #1343 evidence](review-evidence/1343/README.md) has before-and-after screenshots.
 
 ## Metrics page headings and back navigation
 
@@ -660,6 +722,67 @@ Pass the title, back_text and back_href to the shared include with **only**.
 For example, resolve nofos:builder_metrics into metrics_href and use
 back_text="Back to usage &amp; quality metrics". Check the arrow, link focus,
 title spacing and wrapping on desktop and narrow layouts.
+
+## Automatic calculation in a disclosure panel
+
+Use this when opening a collapsed panel (USWDS accordion on a native
+`<details>` element) is itself the request for a result, such as the NOFO edit
+page's **Readability metrics** panel. Opening the panel is the action, so do
+not add a separate button that does the same thing.
+
+### What the user sees
+
+- **While calculating:** a one-line status beside where results will appear,
+  such as **Calculating metrics…**, in a polite live region. No button.
+- **On success:** the status line describes the result (**Calculated for the
+  current NOFO. Save these results to keep a snapshot.**) and the results
+  appear. No calculate or recalculate button: closing and reopening the panel
+  calculates again, and edits reload the edit page.
+- **On failure:** the status line says what failed (**Metrics could not be
+  calculated.** followed by the server's reason, or **The calculation took
+  too long.**) and a **Try again** outline button appears beside it. A
+  successful retry hides the button again. Reopening the panel also retries.
+- The collapsed accordion heading keeps a short state (**Calculated** or
+  **Unable to calculate**) so the result is visible without opening the panel.
+
+Keep the panel's primary action (for readability, **Save these results**) as
+the only solid button. Do not use the failure-only button for anything else.
+
+### Implementation
+
+- Start the calculation from the `<details>` element's `toggle` event when it
+  opens. Track an in-flight request with a variable, not a button's
+  `disabled` state, so reopening the panel cannot start a second request and
+  other actions can check the same flag.
+- Show and hide the retry button with the USWDS `display-none` utility class.
+  Do not use the `hidden` attribute on a `usa-button`: `.usa-button` sets
+  `display: inline-block`, which overrides `hidden`, so the button stays
+  visible.
+- Do not tell users to "recalculate" in status or error messages; name the
+  action that exists (**Try again**, **Save again**).
+
+Reference: [readability_metrics_panel.html](../nofos/nofos/templates/nofos/includes/readability_metrics_panel.html),
+[nofo_readability_metrics.js](../nofos/bloom_nofos/static/js/nofos/nofo_readability_metrics.js),
+and the [review evidence](review-evidence/readability-try-again/README.md).
+
+### Verify before shipping
+
+1. Open the panel: the calculation starts and no button is shown.
+2. On success, confirm no retry or recalculate button is visible in a real
+   browser, not only in unit tests: a hidden-attribute bug passes DOM tests.
+3. Force a server error or timeout: the status names the failure and
+   **Try again** appears.
+4. Select **Try again** after the failure clears: results appear and the
+   button hides.
+5. Close and reopen the panel during a calculation: only one request is sent.
+
+### Known gap
+
+The failure message is plain status text, not the red error styling that
+[Errors and verification](#errors-and-verification) recommends for operational
+failures. That styling predates this pattern. Whether to use a slim error alert
+inside the panel is an open design question; decide it for the panel as a
+whole rather than for the retry button alone.
 
 ## Saved readability tables
 
