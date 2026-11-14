@@ -166,6 +166,8 @@ GrabzIt stores the authentication cookies used for URL-to-DOCX conversion on the
 
 If production Word exports fail after a provider configuration change, first remove or disable Word export in the non-production environment and verify through approved secret-management and deployment metadata that production references its production-only credentials. Never expose credential or authentication-cookie values in source control, command output, application logs, screenshots, issues, or pull requests; rotate credentials through the approved secret-management process if exposure is suspected. Invalid or blank provider output is rejected by the application rather than downloaded as a successful Word document.
 
+Word export problems are logged as JSON to the application console through the `bloom_nofos` logger (warnings and errors only), so they reach log aggregation. Search for `GrabzIt Word export request failed`, `GrabzIt returned an invalid or empty DOCX`, or `GrabzIt Word export blocked for unconfigured host`. These entries include the export host, never credentials, cookie values, or document content.
+
 ### Monitoring
 
 Each environment exposes a public health check endpoint that requires no authentication:
