@@ -558,7 +558,7 @@ class NofoExportPolicyLanguagePostTests(TestCase):
 
     @staticmethod
     def _fake_generate(captured):
-        def fake(*, request, export_url, target_element, filename_base, tmp_name):
+        def fake(*, request, export_url, target_element, filename_base):
             captured["export_url"] = export_url
             captured["filename_base"] = filename_base
             return HttpResponse(b"fake-docx-bytes")

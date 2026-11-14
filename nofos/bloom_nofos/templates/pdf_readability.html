@@ -71,7 +71,7 @@
           <div class="usa-alert usa-alert--{% if report.reliability == 'low' %}warning{% else %}info{% endif %} readability-reliability" role="note" id="readability-reliability">
             <div class="usa-alert__body">
               <h3 class="usa-alert__heading">{% if report.reliability %}Reliability of these estimates: {{ report.reliability|capfirst }}{% else %}What this report includes{% endif %}</h3>
-              <p class="usa-alert__text">{% if source_word %}A reliability rating does not verify that all Word content was converted.{% elif report.profile == 'generic' %}The tool could not reliably determine the order of text in this PDF, so the scores may be less reliable. {% if word_uploads_allowed %}For your next upload, try uploading the original Word document instead. If you need to use a PDF, save it from Word using “Save as PDF” rather than “Print to PDF.”{% else %}For your next upload, save the original document from Word using “Save as PDF” rather than “Print to PDF.”{% endif %}{% else %}PDF structure tags helped the tool read the text in order, but some text may still be missed or read out of order, especially in columns and tables. These scores describe the text the tool recovered and may not reflect the entire PDF.{% endif %}</p>
+              <p class="usa-alert__text">{% if source_word %}A reliability rating does not verify that all Word content was converted.{% elif report.profile == 'generic' %}The tool could not reliably determine the order of text in this PDF, so the scores may be less reliable. For your next upload, try uploading the original Word document instead. If you need to use a PDF, save it from Word using “Save as PDF” rather than “Print to PDF.”{% else %}PDF structure tags helped the tool read the text in order, but some text may still be missed or read out of order, especially in columns and tables. These scores describe the text the tool recovered and may not reflect the entire PDF.{% endif %}</p>
               {% if not report.reliability %}<p class="usa-alert__text">Reliability has not been assessed for these estimates.</p>{% endif %}
             </div>
           </div>
@@ -134,7 +134,7 @@
     {% else %}
       <p class="text-base margin-bottom-1">Readability Checker</p>
       <h1 class="font-heading-xl margin-top-0">Check a document’s readability</h1>
-      <p class="usa-intro">Upload an HHS notice of funding opportunity{% if word_uploads_allowed %} as a PDF or Word (.docx) document{% else %} as a PDF{% endif %} to get readability estimates.</p>
+      <p class="usa-intro">Upload an HHS notice of funding opportunity as a PDF or Word (.docx) document to get readability estimates.</p>
 
       <form method="post" enctype="multipart/form-data" class="usa-form readability-form" id="pdf-readability-form">
         {% csrf_token %}

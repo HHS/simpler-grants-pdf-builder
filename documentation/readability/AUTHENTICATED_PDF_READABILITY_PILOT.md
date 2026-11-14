@@ -52,8 +52,8 @@ handler is installed before the nested CSRF check reads the body.
 ## Supported documents and processing
 
 The same authorized form also accepts Word `.docx` documents under #1111.
-Word support is restricted to this route. Public `/readability-checker/` remains PDF-only
-and keeps its independent access switch; #1111 does not broaden access.
+The public `/readability-checker/` route accepts the same file formats and has
+its own availability setting.
 Permissions, participant groups, feature switches and content-free recording
 settings keep their existing names and behavior. Word handling, archive bounds,
 measurement scope and known conversion limits are documented in
@@ -67,7 +67,7 @@ five pages for NOFO signals such as HHS agency name, opportunity number,
 Assistance Listing number and Grants.gov reference. Agency text can replace
 agency metadata lost in a print export; two different signal types are still
 required. See
-[PDF_READABILITY_PILOT.md](PDF_READABILITY_PILOT.md) and
+[Readability Checker guide](PDF_READABILITY_PILOT.md) and
 [PDF_READABILITY_SAFEGUARDS.md](PDF_READABILITY_SAFEGUARDS.md).
 
 PDF limits are one PDF, 5 MiB, 150 pages, a 15-second bounded analyzer worker and
@@ -142,7 +142,7 @@ Authenticated recording requires only the recording switch. Leave the optional
 pilot: content-free usage records have no automatic expiration. Uploaded PDFs
 and document contents are not retained. No authenticated cleanup schedule is
 required. Public content-free usage records follow the same no-automatic-expiration
-policy; see the [public pilot retention decision](PDF_READABILITY_PILOT.md#content-free-outcome-monitoring-985).
+policy; see the [public checker retention decision](PDF_READABILITY_PILOT.md#content-free-outcome-monitoring-985).
 This is the pilot's chosen behavior, not a claim about HHS policy.
 
 If a future decision introduces expiration, configure a positive retention

@@ -389,7 +389,7 @@ details[open].explainer-box summary {
   max-width: 80ex;
 }
 
-/* Use existing points markers in the saved-content editor preview. */
+/* Match the PDF points-column rules in the saved-content editor preview. */
 table th.col--points,
 table td.col--points {
   width: 1%;

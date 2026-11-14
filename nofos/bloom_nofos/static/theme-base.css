@@ -182,6 +182,15 @@ p + p {
   margin-top: 10px;
 }
 
+p.nofo-note {
+  color: #565c65; /* USWDS base-dark */
+  font-size: 0.95em;
+}
+
+table .nofo-note--in-table {
+  font-size: 0.95em;
+}
+
 a,
 table td a {
   color: var(--color--cdc-blue);
@@ -1171,6 +1180,11 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
 
 /* Media queries */
 @media print {
+  table.table--with-following-note {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
   @prince-pdf {
     /* Open Acrobat with bookmarks panel open by default */
     -prince-pdf-page-mode: show-bookmarks;

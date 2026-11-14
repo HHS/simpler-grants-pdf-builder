@@ -155,6 +155,14 @@ is needed, contact the SimplerNOFOs team.
   from already saved NOFOs automatically.
 - Import repairs Word email links stored as file paths when the path ends in
   the displayed email address. Other broken links still need review.
+- In Step 1, Builder removes a leading standalone `Tagline:` paragraph from an
+  untitled subsection on import and reimport. Following content is kept, and
+  a subsection with no substantive content left is omitted. The **Tagline**
+  field under **Basic information** is still filled in from the document.
+- Builder standardizes paragraph-opening labels such as **PLEASE NOTE:** or
+  **N.B.** to bold **Note:** on import or reimport, including in tables. The
+  text after the label is preserved. Use the subsection's **Edit** action to
+  revise the label or note, and preview the PDF when a note follows a table.
 - For an existing NOFO, reimport replaces sections and subsections and can lose
   manual edits. It is not a way to apply import repairs to saved edits in place.
   Reimport preserves saved theme, cover and introductory ownership choices.
@@ -550,6 +558,35 @@ idea.
   [Automatic table styling](TABLES.md#captions).
 - Apply the review guidance's caption exemptions before requesting a change.
 
+<a id="task-table-points-column"></a>
+
+### TASK-TABLE-POINTS-COLUMN — Keep point values on one line, or let them wrap
+
+Scoring columns with a header such as **Point value**, **Points** or
+**Maximum points** shrink to fit automatically, and short values such as
+"10 points" stay on one line. This includes tables in older NOFOs and tables
+pasted into the editor. It applies only when every filled cell in the column is
+a short point value, such as "10 points", "5", "0–10 points" or "Up to 5 points".
+
+**Steps**
+
+1. Open the subsection that contains the table ([TASK-SUBSECTION-EDIT](#task-subsection-edit)).
+2. To let the column wrap normally, add `{: .col--wrap }` to the end of its
+   header cell, for example `| **Point value** {: .col--wrap } |`. To set a fixed
+   width instead, add a width class such as `{: .w-25 }`.
+3. To turn the one-line layout on for a column with a different header, add
+   `{: .col--points }` to its header cell.
+4. Select **Save subsection**, then select **Preview PDF** to check the result.
+
+**Notes**
+
+- Removing `{: .col--points }` does not turn the layout off when the header
+  still reads like a points header. Use `{: .col--wrap }`.
+- If any filled cell in the column holds longer text, the column wraps normally.
+- The live **Preview** tab in the content editor may still wrap point values.
+  Check the saved subsection or **Preview PDF**.
+- See [Automatic table styling](TABLES.md#points-columns).
+
 <a id="task-table-full-width"></a>
 
 ### TASK-TABLE-FULL-WIDTH — Make tables full width
@@ -819,7 +856,9 @@ Author, subject, and keywords are required by the NOFO metadata guidance.
 ### TASK-BASIC-INFO — Change the title, number, deadline, agency, or tagline
 
 New-template Tagline headings are imported into this existing field, not a
-Tagline subsection. See [tagline import and re-import behavior](TAGLINE_IMPORT.md).
+Tagline subsection. Builder also removes a leading standalone `Tagline:`
+paragraph from an untitled Step 1 subsection while preserving following content.
+See [tagline import and re-import behavior](TAGLINE_IMPORT.md).
 
 **Steps**
 
@@ -928,16 +967,16 @@ succeed even if metrics could not be saved. See [readability metrics](readabilit
 
 ### TASK-READABILITY-UPLOAD — Check Word or PDF readability without creating a NOFO
 
-**Starting point:** **Readability Checker** at the direct
-`/nofos/readability-checker/` URL on your Builder environment.
-There is no navigation link. This restricted pilot requires an active account,
-pilot permission and an enabled feature; signing in alone does not grant access.
-If access is denied or the page is unavailable, contact the pilot operator.
+**Starting point:** Open the **Readability Checker** at
+`/readability-checker/` for the public route or `/nofos/readability-checker/`
+for the signed-in route. Each route has its own availability setting. The
+signed-in route requires an active account and explicit checker permission.
+If access is denied or the page is unavailable, contact the checker operator.
 
 **Steps**
 
-1. Open `/nofos/readability-checker/` and review **Document requirements** and
-   **How we handle your document**. Use only documents authorized for this pilot.
+1. Review **Document requirements** and **How we handle your document**.
+   Upload only documents you’re authorized to share.
 2. Choose one supported text-based HHS NOFO PDF up to 5 MiB or unlocked Word
    `.docx` up to 15 MiB, then
    select **Analyze document**. Legacy `.doc` and macro-enabled formats are not
@@ -971,8 +1010,9 @@ count. Keep instructions applicants need. An in-progress draft can be checked
 before publication design, but favorable scores do not establish publication
 readiness. Compare drafts with the same content scope.
 Word, PDF and saved-Builder scores can differ; use the same format and
-analysis method when tracking revisions. The separate public `/readability-checker/`
-route remains PDF-only and has its own availability controls.
+analysis method when tracking revisions. Both checker routes support the same
+upload formats and limits. Saving Word comparisons requires the signed-in route
+and the separate permission.
 See [authenticated readability pilot](readability/AUTHENTICATED_PDF_READABILITY_PILOT.md).
 
 ---

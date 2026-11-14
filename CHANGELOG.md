@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [Unreleased]
+
+### Bug Fixes
+
+* Preserve applicant instructions that follow a duplicate Step 1 tagline in Word imports and re-imports ([#1327](https://github.com/HHS/simpler-grants-pdf-builder/issues/1327)).
+
 ## [3.59.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.59.0...nofos-v3.59.1) (2026-11-13)
 
 
