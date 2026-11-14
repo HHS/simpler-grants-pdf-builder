@@ -691,34 +691,19 @@ TAGLINE_LABEL_PATTERN = re.compile(r"^\s*tagline\s*:", re.IGNORECASE)
 
 
 def remove_step_1_tagline_subsections(sections):
-    """Drop untitled Step 1 subsections that begin with ``Tagline:`` (IMPORT-079).
+    """Remove duplicate tagline paragraphs and return discarded subsections (IMPORT-079)."""
 
-    Some Word documents repeat the legacy ``Tagline:`` metadata line as body
-    content in Step 1, where it becomes an untitled subsection and shows the
-    tagline twice. The Tagline field is still suggested from the full source
-    (IMPORT-041/IMPORT-059), so the whole subsection is redundant.
-
-    Accepts section dicts, not Section objects. A subsection is removed when it
-    sits in a section whose name starts with "Step 1", has no name, and the
-    text of its first non-empty body element starts with ``Tagline:``
-    (case- and whitespace-insensitive). Remaining subsections are renumbered.
-    Mutates ``sections`` in place and returns the removed subsection dicts.
-    """
-
-    def _text(element):
-        if isinstance(element, Tag):
-            return element.get_text(" ")
-        return BeautifulSoup(str(element), "html.parser").get_text(" ")
-
-    def _starts_with_tagline(body):
-        if isinstance(body, Tag):
-            # Callout box subsections hold one div as their body.
-            body = [body]
-        for element in body or []:
-            text = sanitize_imported_text(_text(element))
-            if text:
-                return bool(TAGLINE_LABEL_PATTERN.match(text))
-        return False
+    def substantive(node):
+        if isinstance(node, Comment):
+            return False
+        if isinstance(node, Tag):
+            return (
+                node.name != "p"
+                or sanitize_imported_text(node.get_text())
+                or node.has_attr("id")
+                or node.find(["img", "a", "svg", "math", "object"])
+            )
+        return bool(sanitize_imported_text(str(node)))
 
     removed = []
     for section in sections:
@@ -727,12 +712,35 @@ def remove_step_1_tagline_subsections(sections):
         subsections = section.get("subsections", [])
         kept = []
         for subsection in subsections:
-            if not clean_string(subsection.get("name", "")) and _starts_with_tagline(
-                subsection.get("body")
-            ):
-                removed.append(subsection)
-            else:
+            body = subsection.get("body")
+            if clean_string(subsection.get("name", "")) or subsection.get("tag"):
                 kept.append(subsection)
+                continue
+
+            nodes = list(body.children) if isinstance(body, Tag) else body or []
+            content = [node for node in nodes if substantive(node)]
+            first = content[0] if content else None
+            paragraph = first
+            if isinstance(first, str) and not isinstance(first, NavigableString):
+                parsed = BeautifulSoup(first, "html.parser")
+                blocks = [node for node in parsed.contents if substantive(node)]
+                paragraph = blocks[0] if len(blocks) == 1 else None
+            if (
+                isinstance(paragraph, Tag)
+                and paragraph.name == "p"
+                and not paragraph.find(["br", "img", "svg", "math", "object"])
+                and TAGLINE_LABEL_PATTERN.match(
+                    sanitize_imported_text(paragraph.get_text())
+                )
+            ):
+                if len(content) == 1:
+                    removed.append(subsection)
+                    continue
+                if isinstance(body, Tag):
+                    first.extract()
+                else:
+                    subsection["body"] = [node for node in nodes if node is not first]
+            kept.append(subsection)
         if len(kept) != len(subsections):
             for order, subsection in enumerate(kept, 1):
                 subsection["order"] = order

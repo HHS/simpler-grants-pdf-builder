@@ -21,12 +21,12 @@ visible even when the field is blank.
 Some Word documents also repeat the legacy `Tagline: value` line as body
 content in Step 1, where it would become an untitled subsection and show the
 tagline twice. On Builder import and re-import, a subsection in a Step 1
-section that has no title and whose first non-empty text begins with
-`Tagline:` (ignoring case and spacing) is omitted entirely, along with any
-content that follows it in that subsection. The Tagline field is still filled in
-from the document as described above. Titled subsections, subsections where
-`Tagline:` is not the first text, and other sections are kept. No warning is
-shown.
+section that has no title can start with a standalone `Tagline:` paragraph.
+Builder removes that paragraph and keeps any content that follows. If no
+substantive content remains, Builder omits the subsection. The Tagline field
+is still filled in from the document as described above. Titled subsections,
+subsections where `Tagline:` is not first, and other sections are kept. No
+warning is shown.
 
 Use the existing Tagline row in Basic information on the NOFO editor to edit the
 saved value. It appears through the existing dedicated tagline presentation;

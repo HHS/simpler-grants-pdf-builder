@@ -56,7 +56,7 @@ class RemoveTaglineSubsectionsFromStep1Tests(TestCase):
             [("Basic information", 1), ("Eligibility", 2)],
         )
 
-    def test_removes_whole_subsection_even_with_content_after_tagline(self):
+    def test_removes_only_tagline_paragraph_when_content_follows(self):
         sections = self._sections(
             [
                 _subsection(
@@ -69,7 +69,10 @@ class RemoveTaglineSubsectionsFromStep1Tests(TestCase):
 
         remove_step_1_tagline_subsections(sections)
 
-        self.assertEqual(sections[0]["subsections"], [])
+        self.assertEqual(
+            [str(block) for block in sections[0]["subsections"][0]["body"]],
+            ["<p>More text.</p>"],
+        )
 
     def test_match_is_case_and_whitespace_insensitive_and_skips_empty_paragraphs(
         self,
@@ -193,6 +196,7 @@ TAGLINE_HTML = """
 <p>Tagline: Helping families thrive.</p>
 <h1>Step 1: Review the Opportunity</h1>
 <p>Tagline: Helping families thrive.</p>
+{following}
 <h2>Basic information</h2>
 <p>Basic information body.</p>
 <h1>Step 2: Get Ready to Apply</h1>
@@ -201,10 +205,10 @@ TAGLINE_HTML = """
 """
 
 
-def _upload(number):
+def _upload(number, following=""):
     return SimpleUploadedFile(
         "tagline.html",
-        TAGLINE_HTML.format(number=number).encode("utf-8"),
+        TAGLINE_HTML.format(number=number, following=following).encode("utf-8"),
         content_type="text/html",
     )
 
@@ -242,6 +246,20 @@ class TaglineSubsectionImportTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self._assert_tagline_removed_from_step_1(Nofo.objects.get())
+
+    def test_new_import_keeps_applicant_instructions_after_tagline(self):
+        instruction = "Applicants must attach the signed certification."
+        response = self.client.post(
+            reverse("nofos:nofo_import"),
+            {"nofo-import": _upload("ACF-TAG-001", f"<p>{instruction}</p>")},
+        )
+        self.assertEqual(response.status_code, 302)
+        nofo = Nofo.objects.get()
+        self.assertEqual(nofo.tagline, "Helping families thrive.")
+        step_1 = nofo.sections.get(order=1)
+        first = step_1.subsections.get(order=1, name="")
+        self.assertEqual(first.body.strip(), instruction)
+        self.assertEqual(step_1.subsections.get(order=2).name, "Basic information")
 
     def test_reimport_omits_tagline_subsection_in_step_1(self):
         nofo = Nofo.objects.create(
