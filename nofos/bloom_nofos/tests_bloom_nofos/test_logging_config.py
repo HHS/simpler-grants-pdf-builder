@@ -43,7 +43,6 @@ with (
         export_url=f"https://{host}/export",
         target_element="main",
         filename_base="example",
-        tmp_name="logging-config-test",
     )
 utils_logger.error("GrabzIt returned an invalid or empty DOCX")
 """
