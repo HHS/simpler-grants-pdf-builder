@@ -59,7 +59,7 @@
           <div class="usa-alert usa-alert--{% if report.reliability == 'low' %}warning{% else %}info{% endif %} readability-reliability" role="note" id="readability-reliability">
             <div class="usa-alert__body">
               <h3 class="usa-alert__heading">{% if report.reliability %}Reliability of these estimates: {{ report.reliability|capfirst }}{% else %}What this report includes{% endif %}</h3>
-              <p class="usa-alert__text">{% if source_word %}A reliability rating does not verify that all Word content was converted.{% elif report.profile == 'generic' %}The tool could not reliably determine the order of text in this PDF, so the scores may be less reliable. {% if word_uploads_allowed %}For your next upload, try uploading the original Word document instead. If you need to use a PDF, save it from Word using “Save as PDF” rather than “Print to PDF.”{% else %}For your next upload, save the original document from Word using “Save as PDF” rather than “Print to PDF.”{% endif %}{% else %}PDF structure tags helped the tool read the text in order, but some text may still be missed or read out of order, especially in columns and tables. These scores describe the text the tool recovered and may not reflect the entire PDF.{% endif %}</p>
+              <p class="usa-alert__text">{% if source_word %}A reliability rating does not verify that all Word content was converted.{% elif report.profile == 'generic' %}The tool could not reliably determine the order of text in this PDF, so the scores may be less reliable. For your next upload, try uploading the original Word document instead. If you need to use a PDF, save it from Word using “Save as PDF” rather than “Print to PDF.”{% else %}PDF structure tags helped the tool read the text in order, but some text may still be missed or read out of order, especially in columns and tables. These scores describe the text the tool recovered and may not reflect the entire PDF.{% endif %}</p>
               {% if not report.reliability %}<p class="usa-alert__text">Reliability has not been assessed for these estimates.</p>{% endif %}
             </div>
           </div>
@@ -122,7 +122,7 @@
     {% else %}
       <p class="text-base margin-bottom-1">Readability Checker</p>
       <h1 class="font-heading-xl margin-top-0">Check a document’s readability</h1>
-      <p class="usa-intro">Upload an HHS notice of funding opportunity{% if word_uploads_allowed %} as a PDF or Word (.docx) document{% else %} as a PDF{% endif %} to get readability estimates.</p>
+      <p class="usa-intro">Upload an HHS notice of funding opportunity as a PDF or Word (.docx) document to get readability estimates.</p>
 
       <form method="post" enctype="multipart/form-data" class="usa-form readability-form" id="pdf-readability-form">
         {% csrf_token %}
@@ -152,7 +152,7 @@
           <p>Use a text-based HHS NOFO PDF. Keep the agency name, opportunity number, Assistance Listing number, and Grants.gov reference in the first five pages when possible.</p>
           <p>You can check an in-progress draft; it does not need to be designed for publication. Export a copy containing the writing you want to measure. Writer-only notes and template prompts may affect the results. Blank templates without identifying details may not be recognized.</p>
           <p>Scanned or image-only pages need OCR before analysis. Untagged PDFs can receive a report, but their estimates have lower reliability.</p>
-          {% if word_uploads_allowed %}<p>For Word, use an unlocked .docx file with NOFO details near the beginning. HHS NOFO templates can use placeholder identifiers if they identify the agency, identify themselves as a NOFO template or notice of funding opportunity, and reference Grants.gov. Legacy .doc and macro-enabled files are not supported. Word conversion can omit headers, footers, text boxes and images; template instructions and draft options may be counted.</p>{% endif %}
+          <p>For Word, use an unlocked .docx file with NOFO details near the beginning. HHS NOFO templates can use placeholder identifiers if they identify the agency, identify themselves as a NOFO template or notice of funding opportunity, and reference Grants.gov. Legacy .doc and macro-enabled files are not supported. Word conversion can omit headers, footers, text boxes and images; template instructions and draft options may be counted.</p>
         </div>
         </details>
       <p class="margin-top-3"><strong>Need help?</strong> Contact your agency’s grants policy office first, or submit a request through the <a class="usa-link usa-link--external" href="https://forms.office.com/r/KH4icQuZ0S" target="_blank" rel="nofollow noopener noreferrer">NOFO Builder Feedback Form<span class="usa-sr-only"> (opens in a new tab)</span></a>.</p>

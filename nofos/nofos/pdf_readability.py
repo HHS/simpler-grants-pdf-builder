@@ -108,19 +108,14 @@ class PdfReadabilityError(Exception):
 class PdfSizeLimitUploadHandler(FileUploadHandler):
     """Stop receiving the request once an upload exceeds the limit for its format."""
 
-    def __init__(self, request, *, allow_word=False):
+    def __init__(self, request):
         super().__init__(request)
-        self._allow_word = allow_word
         self._received = 0
         self._limit = MAX_UPLOAD_BYTES
 
     def new_file(self, field_name, file_name, *args, **kwargs):
         super().new_file(field_name, file_name, *args, **kwargs)
-        self._limit = (
-            _upload_limit(Path(file_name).suffix.lower())
-            if self._allow_word
-            else MAX_UPLOAD_BYTES
-        )
+        self._limit = _upload_limit(Path(file_name).suffix.lower())
 
     def receive_data_chunk(self, raw_data, start):
         self._received += len(raw_data)

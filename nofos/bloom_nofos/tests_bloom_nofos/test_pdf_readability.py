@@ -1,4 +1,4 @@
-"""Public PDF readability page; processing itself is tested in nofos tests."""
+"""Public Readability Checker; processing itself is tested in nofos tests."""
 
 import tempfile
 from pathlib import Path
@@ -95,20 +95,40 @@ class PdfReadabilityPageTests(TestCase):
                 self.assertEqual(response.status_code, status)
                 self.assertEqual(list(root.iterdir()), [])
 
-    @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
-    def test_public_route_remains_pdf_only_even_when_enabled(self):
+    @override_config(
+        HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True,
+        HHS_NOFO_WORD_COMPARISONS_ENABLED=True,
+    )
+    def test_public_route_analyzes_word_without_saving_a_comparison(self):
         from nofos.tests_nofos.test_word_readability import synthetic_docx
 
-        with patch("bloom_nofos.views.analyze_uploaded_pdf") as analyze:
+        with patch("nofos.word_comparisons.stage_run") as stage_run:
             response = self.client.post(
-                reverse("pdf_readability"),
+                self.url,
                 {"pdf": SimpleUploadedFile("synthetic.docx", synthetic_docx())},
             )
-        analyze.assert_not_called()
-        self.assertContains(response, "Choose one PDF file", status_code=400)
-        self.assertNotContains(response, "Readability measures", status_code=400)
-        self.assertNotContains(response, 'accept=".pdf,.docx', status_code=400)
+        self.assertContains(response, "Readability measures")
+        self.assertTrue(response.context["source_word"])
+        self.assertNotContains(response, "Save comparison")
+        stage_run.assert_not_called()
         self.assertIn("no-store", response["Cache-Control"])
+
+    @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
+    @patch("nofos.pdf_readability.WORD_UPLOAD_BYTES", 6)
+    @patch("nofos.pdf_readability.MAX_UPLOAD_BYTES", 4)
+    def test_public_word_upload_uses_word_size_limit(self):
+        with patch(
+            "bloom_nofos.views.analyze_uploaded_pdf", return_value=REPORT
+        ) as analyze:
+            response = self.client.post(
+                self.url, {"pdf": SimpleUploadedFile("test.docx", b"x" * 6)}
+            )
+            self.assertEqual(response.status_code, 200)
+            response = self.client.post(
+                self.url, {"pdf": SimpleUploadedFile("test.docx", b"x" * 7)}
+            )
+            self.assertEqual(response.status_code, 413)
+        analyze.assert_called_once()
 
     def setUp(self):
         self.url = reverse("pdf_readability")
@@ -226,7 +246,10 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, 'for="pdf"')
         self.assertContains(response, "usa-file-input__input")
         self.assertContains(response, 'name="csrfmiddlewaretoken"')
-        self.assertContains(response, "One PDF file, up to 5 MiB")
+        self.assertContains(
+            response, "One PDF file up to 5 MiB or Word (.docx) file up to 15 MiB"
+        )
+        self.assertContains(response, 'accept=".pdf,.docx,')
         self.assertContains(response, "Upload an HHS notice of funding opportunity")
         self.assertNotContains(response, "Upload one draft NOFO PDF")
         self.assertContains(
@@ -306,17 +329,22 @@ class PdfReadabilityPageTests(TestCase):
         )
 
     def test_noindex_headers_cover_disabled_errors_and_unsupported_methods(self):
+        directives = "noindex, nofollow, noarchive, nosnippet"
         for enabled in (False, True):
             with override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=enabled):
                 client = self.client_class(enforce_csrf_checks=True)
+                page = client.get(self.url)
+                self.assertContains(
+                    page, f'<meta name="robots" content="{directives}">', html=True
+                )
                 for response in (
-                    client.get(self.url),
+                    page,
                     client.post(self.url),
                     client.put(self.url),
                 ):
                     self.assertEqual(
                         response["X-Robots-Tag"],
-                        "noindex, nofollow, noarchive, nosnippet",
+                        directives,
                     )
                     self.assertIn("no-store", response["Cache-Control"])
 
@@ -371,7 +399,7 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "The tool could not reliably determine the order")
         self.assertContains(response, "Save as PDF")
         self.assertContains(response, "Print to PDF")
-        self.assertNotContains(response, "try uploading the original Word document")
+        self.assertContains(response, "try uploading the original Word document")
 
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
     @patch("bloom_nofos.views.analyze_uploaded_pdf", return_value=REPORT)

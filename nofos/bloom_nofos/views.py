@@ -121,7 +121,7 @@ def readability_redirect(request, route_name):
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def pdf_readability(request):
-    """Public, deliberately unlinked entry point for one ephemeral PDF report."""
+    """Public, deliberately unlinked entry point for one ephemeral readability report."""
     return _pdf_readability_workflow(
         request, config.HHS_NOFO_PDF_METRICS_PILOT_ENABLED, "public"
     )
@@ -161,9 +161,7 @@ def _pdf_readability_workflow(request, enabled, source):
             with request_workspace() as workspace:
                 request.readability_workspace = workspace
                 request.upload_handlers = [
-                    PdfSizeLimitUploadHandler(
-                        request, allow_word=source == "authenticated"
-                    ),
+                    PdfSizeLimitUploadHandler(request),
                     *(
                         (
                             CheckerDiskUploadHandler(request, workspace)
@@ -209,25 +207,15 @@ def _pdf_readability_form(request):
         if request.method == "POST":
             request.pdf_readability_outcome = "disabled"
         return render(request, "pdf_readability_unavailable.html", status=503)
-    word_uploads_allowed = request.pdf_readability_source == "authenticated"
-    file_types = "PDF or Word (.docx)" if word_uploads_allowed else "PDF"
     pdf_size = f"{PDF_UPLOAD_BYTES // MIB} MiB"
     word_size = f"{WORD_UPLOAD_BYTES // MIB} MiB"
-    size_hint = (
-        f"One PDF file up to {pdf_size} or Word (.docx) file up to {word_size}."
-        if word_uploads_allowed
-        else f"One PDF file, up to {pdf_size}."
-    )
+    size_hint = f"One PDF file up to {pdf_size} or Word (.docx) file up to {word_size}."
     size_error = f"This file is too large. {size_hint}"
     context = {
-        "word_uploads_allowed": word_uploads_allowed,
-        "file_label": (
-            "Choose a PDF or Word document" if word_uploads_allowed else "Choose a PDF"
-        ),
+        "file_label": "Choose a PDF or Word document",
         "file_accept": (
-            ".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            if word_uploads_allowed
-            else ".pdf,application/pdf"
+            ".pdf,.docx,application/pdf,"
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         ),
         "authenticated_pilot": request.pdf_readability_source == "authenticated",
         "pilot_url_name": (
@@ -269,15 +257,7 @@ def _pdf_readability_form(request):
             status = 413
         elif len(uploads) != 1 or len(request.FILES) != 1:
             request.pdf_readability_outcome = "invalid_pdf"
-            context["error"] = f"Choose one {file_types} file to analyze."
-            status = 400
-        elif not word_uploads_allowed and not str(uploads[0].name).lower().endswith(
-            ".pdf"
-        ):
-            # Keep the pre-existing public route PDF-only, even if enabled.
-            uploads[0].close()
-            request.pdf_readability_outcome = "unsupported_file"
-            context["error"] = "Choose one PDF file to analyze."
+            context["error"] = "Choose one PDF or Word (.docx) file to analyze."
             status = 400
         else:
             upload = uploads[0]
@@ -290,7 +270,7 @@ def _pdf_readability_form(request):
                 )
 
                 comparison_allowed = (
-                    word_uploads_allowed
+                    request.pdf_readability_source == "authenticated"
                     and enabled()
                     and request.user.has_perm(PERMISSION)
                     and str(upload.name).lower().endswith(".docx")

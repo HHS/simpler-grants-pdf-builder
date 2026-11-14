@@ -763,7 +763,7 @@ CONSTANCE_CONFIG = {
     ),
     "HHS_NOFO_PDF_METRICS_PILOT_ENABLED": (
         HHS_NOFO_PDF_METRICS_PILOT_ENABLED_DEFAULT,
-        "Whether the standalone, signed-out PDF readability pilot is available. Uploads and reports are not saved.",
+        "Whether the public Readability Checker accepts PDF and Word uploads. Uploads and reports are not saved.",
         bool,
     ),
     "HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED": (
