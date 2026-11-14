@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.60.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.59.1...nofos-v3.60.0) (2026-11-14)
+
+
+### Features
+
+* standardize note paragraphs in imported NOFOs ([#1349](https://github.com/HHS/simpler-grants-pdf-builder/issues/1349)) ([512162e](https://github.com/HHS/simpler-grants-pdf-builder/commit/512162e7bc638ab53dc2c2c872d00d06ad7c6d8c))
+
+
+### Bug Fixes
+
+* keep unmarked scoring-table point values on one line ([#1357](https://github.com/HHS/simpler-grants-pdf-builder/issues/1357)) ([0bf182e](https://github.com/HHS/simpler-grants-pdf-builder/commit/0bf182e6dccb03bbfa4f85cf5c41e74cd86b89a0))
+
 ## [3.59.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.59.0...nofos-v3.59.1) (2026-11-13)
 
 
