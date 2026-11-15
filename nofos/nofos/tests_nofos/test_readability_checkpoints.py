@@ -197,7 +197,7 @@ class ReadabilityCheckpointTests(TestCase):
         rows = checkpoint_rows(self.nofo)
         self.assertEqual(rows[0]["metrics"][0]["change"], "Lower than previous")
         self.assertEqual(rows[0]["metrics"][2]["value"], 3.25)
-        self.assertEqual(rows[0]["metrics"][2]["display"], "3.2")
+        self.assertEqual(rows[0]["metrics"][2]["display"], "3.25")
         self.assertEqual(rows[0]["metrics"][2]["change"], "")
 
     def test_metrics_viewer_outside_group_cannot_save(self):
