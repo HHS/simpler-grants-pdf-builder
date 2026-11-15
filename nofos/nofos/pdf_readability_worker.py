@@ -21,7 +21,7 @@ from nofos.readability_upload_limits import MIB, PDF_UPLOAD_BYTES
 TAGGED_PROFILE = "hhs-nofo-fy27-pdf-estimate@0.7.0"
 GENERIC_PROFILE = "hhs-nofo-fy27-generic-pdf-estimate@0.6.0"
 TAGGED_ADAPTER = "hhs-tagged-pdf-adapter@0.1.8"
-WORD_PROFILE = "hhs-nofo-fy27-html@0.6.0"
+WORD_PROFILE = "hhs-nofo-fy27-word@0.1.0"
 METRIC_IDS = (
     "word_count",
     "words_per_sentence",
@@ -168,6 +168,21 @@ def _safe_result(result, profile_kind: str, page_count: int) -> dict:
         "metrics": metrics,
     }
     if profile_kind == "word":
+        exclusions = payload.get("excluded_word_content", {})
+        report["word_exclusions"] = {
+            key: count(exclusions.get(key, {}).get("words")) or 0
+            for key in (
+                "cover",
+                "cover_position",
+                "table_of_contents",
+                "instruction",
+                "metadata",
+            )
+        }
+        report["word_exclusions"]["cover_total"] = (
+            report["word_exclusions"]["cover"]
+            + report["word_exclusions"]["cover_position"]
+        )
         report.pop("pages_analyzed")
         report.pop("pages_total")
         report["coverage"] = (
@@ -175,7 +190,7 @@ def _safe_result(result, profile_kind: str, page_count: int) -> dict:
         )
         report["warnings"].append(
             "Word conversion may omit headers, footers, text boxes, images and other content. "
-            "Template instructions and draft options that convert to text are included. "
+            "Recognized template instructions are excluded. Other instructions and draft options may still count. "
             "Review the Word source when interpreting these estimates."
         )
     return report
@@ -245,16 +260,18 @@ def _analyze_metrics(source, support: str, page_count: int) -> dict:
 
 
 def analyze_word(path: Path) -> dict:
-    """Measure converted Word text with the existing HTML profile and engine."""
+    """Measure converted Word text with verified source boundaries."""
     import hhs_nofo_metrics as metrics
 
     from nofos.word_readability import word_html
 
-    html, conversion_warning = word_html(path)
+    boundaries = {}
+    html, conversion_warning = word_html(path, scope_boundaries=boundaries)
     try:
         result = metrics.analyze(
             metrics.SourceBundle.from_html(html.encode("utf-8")),
             profile=WORD_PROFILE,
+            adapter_config={"word_boundaries": boundaries},
             production_path="word_readability_pilot",
         )
     except metrics.NofoMetricsError:

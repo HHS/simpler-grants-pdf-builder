@@ -3,14 +3,20 @@
 No framework setup, NOFO persistence, external file access or PDF conversion.
 """
 
+from hashlib import sha256
+from io import BytesIO
 from pathlib import Path
-from zipfile import ZipFile
+from zipfile import ZIP_DEFLATED, ZipFile
 
 import mammoth
 from bs4 import BeautifulSoup
 
 from .import_transforms import _word_xml, transform_word_document
 from .pdf_format_recognition import recognize_word_nofo
+from .word_instruction_boxes import clean_instruction_boxes
+
+_WORD_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+_SCOPE_ATTR = "data-checker-instruction"
 
 MAX_EXPANDED_BYTES = 45 * 1024 * 1024
 MAX_ZIP_ENTRIES = 2000
@@ -19,7 +25,9 @@ DOCX_CONTENT_TYPE = (
 )
 
 
-def word_html(path: Path, *, require_nofo_recognition=True) -> tuple[str, bool]:
+def word_html(
+    path: Path, *, require_nofo_recognition=True, scope_boundaries=None
+) -> tuple[str, bool]:
     """Validate the container before the installed converter reads any members."""
     try:
         with ZipFile(path) as archive:
@@ -76,7 +84,54 @@ def word_html(path: Path, *, require_nofo_recognition=True) -> tuple[str, bool]:
                 for item in overrides
             ):
                 raise ValueError("invalid_word")
-        with path.open("rb") as stream:
+        marked = None
+        if scope_boundaries is not None:
+            from hhs_nofo_metrics.adapters.word_structure import (
+                mark_conversion_document,
+            )
+
+            def mark_box(box):
+                for paragraph in box.getElementsByTagNameNS(_WORD_NS, "p"):
+                    paragraph.setAttribute(_SCOPE_ATTR, marker)
+
+            with path.open("rb") as original:
+                marker = sha256(original.read()).hexdigest()
+                original.seek(0)
+                converted_copy, _ = clean_instruction_boxes(
+                    original, mark_instruction_boxes=mark_box
+                )
+                with ZipFile(converted_copy) as archive:
+                    source_xml = archive.read("word/document.xml")
+                    document = _word_xml(source_xml)
+                    paragraphs = document.getElementsByTagNameNS(_WORD_NS, "p")
+                    marked_paragraphs = tuple(
+                        i
+                        for i, paragraph in enumerate(paragraphs)
+                        if paragraph.getAttribute(_SCOPE_ATTR) == marker
+                    )
+                    for i in marked_paragraphs:
+                        paragraphs[i].removeAttribute(_SCOPE_ATTR)
+                    scope_boundaries.update(
+                        mark_conversion_document(
+                            document,
+                            source_sha256=sha256(source_xml).hexdigest(),
+                            instruction_paragraphs=marked_paragraphs,
+                        )
+                    )
+                    if scope_boundaries or converted_copy is not original:
+                        marked = BytesIO()
+                        with ZipFile(marked, "w", ZIP_DEFLATED) as target:
+                            for name in names:
+                                target.writestr(
+                                    name,
+                                    (
+                                        document.toxml(encoding="utf-8")
+                                        if name == "word/document.xml"
+                                        else archive.read(name)
+                                    ),
+                                )
+                        marked.seek(0)
+        with marked if marked is not None else path.open("rb") as stream:
             converted = mammoth.convert_to_html(
                 stream,
                 external_file_access=False,

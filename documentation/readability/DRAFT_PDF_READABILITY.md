@@ -1,5 +1,8 @@
 # Readability checks during drafting
 
+For Word uploads, check **Measurement scope** for counts of recognized
+material not included in the calculation. The PDF upload path is unchanged.
+
 The PDF checker can process a text-based HHS NOFO draft before publication design.
 That means the file can receive estimates, not that every Word-to-PDF export has
 been validated or that the draft satisfies clearance guidance. The authenticated

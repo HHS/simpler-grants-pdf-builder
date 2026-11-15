@@ -1,6 +1,7 @@
 """Restricted entry point and source-aware, content-free reporting."""
 
 from datetime import timedelta
+from importlib.metadata import version
 from io import StringIO
 from unittest.mock import patch
 
@@ -52,6 +53,27 @@ class AuthenticatedPilotTests(TestCase):
             b"%PDF-1.7 SECRET-TEXT",
             content_type="application/pdf",
         )
+
+    def test_word_scope_report_shows_recognized_cover_and_contents_counts(self):
+        self.login()
+        for cover, toc in ((0, 0), (3, 5)):
+            with self.subTest(cover=cover, toc=toc):
+                report = {
+                    **REPORT,
+                    "profile": "word",
+                    "word_exclusions": {
+                        "cover": cover,
+                        "table_of_contents": toc,
+                    },
+                }
+                with patch(
+                    "bloom_nofos.views.analyze_uploaded_pdf", return_value=report
+                ):
+                    response = self.client.post(
+                        self.url, {"pdf": SimpleUploadedFile("synthetic.docx", b"docx")}
+                    )
+                self.assertContains(response, f"Cover page: {cover} words")
+                self.assertContains(response, f"Table of contents: {toc} words")
 
     def test_authentication_and_explicit_permission_before_analysis(self):
         with patch("bloom_nofos.views.analyze_uploaded_pdf") as analyze:
@@ -145,7 +167,9 @@ class AuthenticatedPilotTests(TestCase):
             },
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context["report"]["version"], "0.7.0")
+        self.assertEqual(
+            response.context["report"]["version"], version("hhs-nofo-metrics")
+        )
         self.assertEqual(response.context["report"]["scope"]["sentence_word_count"], 17)
         self.assertEqual(
             response.context["report"]["scope"]["complete_sentence_count"], 3
@@ -165,7 +189,9 @@ class AuthenticatedPilotTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Readability Checker")
         self.assertNotContains(response, "Word readability pilot")
-        self.assertEqual(response.context["report"]["version"], "0.7.0")
+        self.assertEqual(
+            response.context["report"]["version"], version("hhs-nofo-metrics")
+        )
         self.assertNotContains(response, 'id="readability-draft-scope"')
         self.assertNotContains(response, "before exporting it")
         self.assertContains(response, "Compare drafts with the same content scope.")
@@ -183,7 +209,7 @@ class AuthenticatedPilotTests(TestCase):
         self.assertContains(response, "Missing or changed text can affect the results")
         self.assertContains(response, "Keep important text in the main document body")
         self.assertContains(
-            response, "Remove template instructions and unused draft options"
+            response, "Remove other writer notes and unused draft options"
         )
         self.assertNotContains(response, "Review the measurement scope")
         self.assertNotContains(response, "usa-alert--info readability-reliability")

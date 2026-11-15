@@ -1,5 +1,10 @@
 # Word report scope and reliability
 
+The standalone Word checker reports aggregate counts for recognized covers,
+contents, writer instructions, and Builder metadata. Cover exclusion requires
+Word’s Cover Pages gallery. Opening text before a section break remains
+countable. The counts describe recognized exclusions from recovered text.
+
 Investigation for #1169, against Builder's pinned `hhs-nofo-metrics` 0.6.0.
 This changes report presentation, not formulas, source recognition, permissions
 or upload handling.

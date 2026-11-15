@@ -175,7 +175,7 @@ class PdfReadabilityTests(SimpleTestCase):
                     self.assertEqual(before.components["sentence_count"], 4)
                     self.assertEqual(before.components["passive_sentence_count"], 3)
                     report = analyze(path, 10)
-                    self.assertEqual(report["version"], "0.7.0")
+                    self.assertEqual(report["version"], metrics.PACKAGE_VERSION)
                     self.assertEqual(
                         report["profile"], "tagged" if tagged else "generic"
                     )

@@ -109,7 +109,7 @@ class WordReadabilityTests(SimpleTestCase):
         self.assertNotIn("pages_analyzed", report)
         self.assertNotIn("HRSA-26-106", str(report))
         self.assertNotIn("Applicants should", str(report))
-        self.assertIn("Template instructions", str(report["warnings"]))
+        self.assertIn("Recognized template instructions", str(report["warnings"]))
 
     def test_templates_need_compound_hhs_nofo_context_and_distinct_signal(self):
         from nofos.pdf_format_recognition import recognize_nofo, recognize_word_nofo
@@ -209,7 +209,7 @@ class WordReadabilityTests(SimpleTestCase):
         self.assertIn("synthetic supporting note", soup.get_text())
         expected = metrics.analyze(
             metrics.SourceBundle.from_html(html.encode()),
-            profile=WORD_PROFILE,
+            profile="hhs-nofo-fy27-html@0.6.0",
         ).to_dict()
         report = analyze_word(self.path)
         for metric_id in report["metrics"]:
@@ -247,7 +247,7 @@ class WordReadabilityTests(SimpleTestCase):
         )
         self.assertEqual(after.method.version, "0.4.0-provisional")
         report = analyze_word(self.path)
-        self.assertEqual(report["version"], "0.7.0")
+        self.assertEqual(report["version"], metrics.PACKAGE_VERSION)
         self.assertEqual(
             report["metrics"]["passive_sentence_percentage"]["value"], after.value
         )
@@ -272,7 +272,11 @@ class WordReadabilityTests(SimpleTestCase):
 
         from nofos.readability import PROFILE_REFERENCE
 
-        self.assertEqual(WORD_PROFILE, PROFILE_REFERENCE)
+        self.assertNotEqual(WORD_PROFILE, PROFILE_REFERENCE)
+        self.assertEqual(
+            metrics.load_profile(WORD_PROFILE).methods,
+            metrics.load_profile(PROFILE_REFERENCE).methods,
+        )
         self.path.write_bytes(
             synthetic_docx(
                 "Opportunity number: HRSA-26-106. Assistance listing: 93.123. "
@@ -285,7 +289,9 @@ class WordReadabilityTests(SimpleTestCase):
         html, _ = word_html(self.path)
         source = metrics.SourceBundle.from_html(html.encode())
         old = metrics.analyze(source, profile="hhs-nofo-fy27-html@0.5.0")
-        new = metrics.analyze(source, profile=WORD_PROFILE)
+        new = metrics.analyze(
+            source, profile=WORD_PROFILE, adapter_config={"word_boundaries": {}}
+        )
         before = old.metrics["passive_sentence_percentage"]
         after = new.metrics["passive_sentence_percentage"]
         self.assertEqual(before.components["sentence_count"], 6)
@@ -297,7 +303,7 @@ class WordReadabilityTests(SimpleTestCase):
             if key != "passive_sentence_percentage":
                 self.assertEqual(old.metrics[key].to_dict(), new.metrics[key].to_dict())
         report = analyze_word(self.path)
-        self.assertEqual(report["version"], "0.7.0")
+        self.assertEqual(report["version"], metrics.PACKAGE_VERSION)
         self.assertEqual(
             report["metrics"]["passive_sentence_percentage"]["value"], after.value
         )
