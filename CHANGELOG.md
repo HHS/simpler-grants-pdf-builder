@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.60.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.59.1...nofos-v3.60.0) (2026-11-15)
+
+
+### Features
+
+* standardize note paragraphs in imported NOFOs ([#1349](https://github.com/HHS/simpler-grants-pdf-builder/issues/1349)) ([512162e](https://github.com/HHS/simpler-grants-pdf-builder/commit/512162e7bc638ab53dc2c2c872d00d06ad7c6d8c))
+* support Word uploads in the public Readability Checker ([5510343](https://github.com/HHS/simpler-grants-pdf-builder/commit/55103431de0ea5f1fadeeeaafd2361fb5156ef0d))
+
+
+### Bug Fixes
+
+* keep unmarked scoring-table point values on one line ([#1357](https://github.com/HHS/simpler-grants-pdf-builder/issues/1357)) ([0bf182e](https://github.com/HHS/simpler-grants-pdf-builder/commit/0bf182e6dccb03bbfa4f85cf5c41e74cd86b89a0))
+* keep Word export result in memory and fix lint on main ([#1356](https://github.com/HHS/simpler-grants-pdf-builder/issues/1356)) ([f165324](https://github.com/HHS/simpler-grants-pdf-builder/commit/f16532491d014252b81da1df7be4d2dc98d21c9c))
+* omit duplicate tagline subsection from Step 1 on import ([#1328](https://github.com/HHS/simpler-grants-pdf-builder/issues/1328)) ([5bf4458](https://github.com/HHS/simpler-grants-pdf-builder/commit/5bf44584f4378d8df9388085a51738d15207e114))
+* send Word export logs to the console in deployed environments ([#1354](https://github.com/HHS/simpler-grants-pdf-builder/issues/1354)) ([b659298](https://github.com/HHS/simpler-grants-pdf-builder/commit/b659298fe611b604e33bc21892fd126348336ff7))
+
+
+### Documentation
+
+* document Word (DOCX) export data flow and storage ([#1352](https://github.com/HHS/simpler-grants-pdf-builder/issues/1352)) ([abbcbf3](https://github.com/HHS/simpler-grants-pdf-builder/commit/abbcbf3da7be7954b3361a5dcdffe99ce49567e1))
+* index Readability Checker launch evidence ([#1359](https://github.com/HHS/simpler-grants-pdf-builder/issues/1359)) ([52ffb20](https://github.com/HHS/simpler-grants-pdf-builder/commit/52ffb200134e58b7653c52b9b799c119dd3b1837))
+* record Readability Checker upload format decision ([98a249c](https://github.com/HHS/simpler-grants-pdf-builder/commit/98a249ca95f244d8304de018383b894dfc0b073c))
+
 ## [Unreleased]
 
 ### Bug Fixes
