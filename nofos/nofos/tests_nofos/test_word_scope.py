@@ -36,9 +36,9 @@ class WordScopeConversionTests(SimpleTestCase):
         self.assertEqual(report["metrics"]["word_count"]["value"], 17)
 
     def test_section_break_keeps_opening_applicant_prose(self):
-        opening = paragraph(
-            "Eligible applicants must serve rural communities."
-        ).replace("</w:pPr>", "<w:sectPr/></w:pPr>", 1)
+        opening = paragraph("Eligible applicants must serve rural communities.").replace(
+            "</w:pPr>", "<w:sectPr/></w:pPr>", 1
+        )
         body = (
             paragraph("Step 1: Review the opportunity", "Heading1")
             + paragraph("HRSA notice of funding opportunity on Grants.gov.")
