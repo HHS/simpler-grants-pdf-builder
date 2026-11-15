@@ -8,7 +8,10 @@ table of contents (the GrantSolutions Announcement Module layout). That first
 section must have no headings, no line ending in sentence punctuation, at most
 25 words per line and at most 100 words. Builder metadata lines are recognized
 under a "Basic information" or "Before You Begin" heading. Opening text before a
-section break remains countable. The counts describe recognized exclusions from recovered text.
+section break remains countable. The counts describe recognized exclusions from
+recovered text. When the report shows 0 cover page words but the document has a
+cover, the **Why “Estimated”?** guidance asks users to delete the cover from the
+copy they upload.
 
 Investigation for #1169, against Builder's pinned `hhs-nofo-metrics` 0.6.0.
 This changes report presentation, not formulas, source recognition, permissions
