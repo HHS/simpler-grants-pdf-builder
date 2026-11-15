@@ -51,7 +51,6 @@ class BloomUserAdmin(UserAdmin):
                     "is_composer_admin",
                     "can_view_metrics",
                     "can_manage_word_comparisons",
-                    "can_use_pdf_readability_pilot",
                     "is_opdiv_admin",
                     "is_active",
                 )
@@ -83,7 +82,6 @@ class BloomUserAdmin(UserAdmin):
                     "is_composer_admin",
                     "can_view_metrics",
                     "can_manage_word_comparisons",
-                    "can_use_pdf_readability_pilot",
                     "is_opdiv_admin",
                     "is_active",
                 ),

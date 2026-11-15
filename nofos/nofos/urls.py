@@ -1,4 +1,3 @@
-from bloom_nofos.views import authenticated_pdf_readability, readability_redirect
 from django.urls import path
 
 from . import views, word_comparisons
@@ -19,16 +18,6 @@ urlpatterns = [
         "readability-checker/comparisons/save",
         word_comparisons.save,
         name="word_comparison_save",
-    ),
-    path(
-        "readability/",
-        readability_redirect,
-        {"route_name": "nofos:authenticated_pdf_readability"},
-    ),
-    path(
-        "readability-checker/",
-        authenticated_pdf_readability,
-        name="authenticated_pdf_readability",
     ),
     path(
         "metrics/readability-scores",

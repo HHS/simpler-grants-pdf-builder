@@ -15,10 +15,11 @@ operating access still matter.
 
 The NOFO Builder Readability Checker gives users immediate feedback on the
 readability of a Notice of Funding Opportunity, including grade level, sentence
-length and passive sentence use. Both the public and signed-in checkers
-support one PDF or Microsoft Word (`.docx`) document at a time. The public
-checker does not require an account when enabled. Public uploads are
-currently disabled. [Supported files and document handling](PDF_READABILITY_PILOT.md)
+length and passive sentence use. It runs at one URL, `/readability-checker/`,
+and supports one PDF or Microsoft Word (`.docx`) document at a time. When the
+public switch is on, it doesn't require an account. Public uploads are
+currently disabled; signed-in Builder users can upload while the signed-in
+switch is on ([signed-in access](AUTHENTICATED_PDF_READABILITY_PILOT.md)). [Supported files and document handling](PDF_READABILITY_PILOT.md)
 
 **How uploads are handled.** The standalone checker processes uploads in a
 temporary workspace and displays the report in the browser. NOFO Builder creates
@@ -203,7 +204,7 @@ using an authenticated experience as evidence for that path.
 
 | Check | Method with the public flag off | Evidence / remaining boundary |
 | --- | --- | --- |
-| Supported and rejected PDF processing | Approved probe invoking the deployed PDF analyzer with the existing small synthetic fixtures, one at a time. Prefer an existing authorized authenticated PDF-calculator route if it exercises the same handler. | Safe outcome labels/counts and deployed dependency versions; does not establish the signed-out enabled HTTP form. |
+| Supported and rejected PDF processing | Approved probe invoking the deployed PDF analyzer with the existing small synthetic fixtures, one at a time. With the public switch off and the signed-in switch on, a signed-in upload to `/readability-checker/` exercises the same handler (#1367). | Safe outcome labels/counts and deployed dependency versions; does not establish the signed-out enabled HTTP form. |
 | Temporary-file cleanup | Observe only probe-owned synthetic files/directories before and after success, handled failure and a deterministic timeout. | Removal of analyzer and upload temporary files, including parser children. Current task declarations and local tests alone are insufficient. |
 | Linux limits and admission | Approved deployed-runtime probe of child limits/environment and PostgreSQL contention using independent connections. | Sanitized pass/fail per limit/admission check; no credentials, settings dumps or raw task output. |
 | Interrupted worker | Explicitly reviewed, isolated disposable task/probe if possible; do not terminate the normal service as a first test. | Actual survival/cleanup behavior and response procedure. A disposable task does not by itself prove cleanup in an existing long-lived service task. |
@@ -240,8 +241,8 @@ the environment through a client-supplied Host header. The existing deployment
 metadata supplies ENVIRONMENT; confirm it on the target revision before use.
 
 The observer runs before CSRF/authentication middleware can consume a body. It
-wraps only POST streams for the exact current/legacy public and authenticated
-Readability upload routes; comparison saves, other uploads, GETs, preconsumed
+wraps only POST streams for the exact current and legacy Readability upload
+routes, including the retired `/nofos/readability*` redirects; comparison saves, other uploads, GETs, preconsumed
 streams and ASGI requests are excluded. It changes no upload permission or flag.
 Use the ordinary Constance checkbox and help text; there is no new upload-screen
 component or editor action.

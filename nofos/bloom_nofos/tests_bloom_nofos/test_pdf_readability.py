@@ -133,7 +133,7 @@ class PdfReadabilityPageTests(TestCase):
     def setUp(self):
         self.url = reverse("pdf_readability")
 
-    def test_checker_urls_and_legacy_redirects_preserve_uploads(self):
+    def test_checker_url_and_public_legacy_redirect_preserve_uploads(self):
         from users.models import BloomUser
 
         self.client.force_login(
@@ -145,14 +145,8 @@ class PdfReadabilityPageTests(TestCase):
             )
         )
         self.assertEqual(self.url, "/readability-checker/")
-        self.assertEqual(
-            reverse("nofos:authenticated_pdf_readability"),
-            "/nofos/readability-checker/",
-        )
-        for old_url, new_url in (
-            ("/readability/", self.url),
-            ("/nofos/readability/", reverse("nofos:authenticated_pdf_readability")),
-        ):
+        # The retired signed-in URLs are covered in test_signed_in_readability_checker.
+        for old_url, new_url in (("/readability/", self.url),):
             for method in ("get", "post"):
                 with self.subTest(url=old_url, method=method):
                     response = getattr(self.client, method)(old_url)
@@ -177,12 +171,14 @@ class PdfReadabilityPageTests(TestCase):
 
     def test_disabled_post_rejects_before_reading_request_body(self):
         from bloom_nofos.views import pdf_readability
+        from django.contrib.auth.models import AnonymousUser
 
         request = RequestFactory().post(
             self.url,
             data=b"malformed synthetic multipart",
             content_type="multipart/form-data; boundary=missing",
         )
+        request.user = AnonymousUser()
         with (
             patch.object(request, "read", side_effect=AssertionError("body read")),
             patch(
@@ -231,7 +227,7 @@ class PdfReadabilityPageTests(TestCase):
         self.assertIn("no-store", response["Cache-Control"])
 
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
-    def test_signed_out_form_has_csrf_file_label_and_no_login_link(self):
+    def test_signed_out_form_has_csrf_file_label_and_login_link(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Readability Checker", count=2)
@@ -261,7 +257,12 @@ class PdfReadabilityPageTests(TestCase):
             "Keep the agency name, opportunity number, Assistance Listing number, and Grants.gov reference in the first five pages when possible",
         )
         self.assertNotContains(response, "make a clearance decision")
-        self.assertNotContains(response, "Login")
+        # Same account item as the Builder header, returning to the checker.
+        self.assertContains(
+            response,
+            '<a href="/users/login/?next=/readability-checker/" class="usa-nav-link">Login</a>',
+            html=True,
+        )
         self.assertNotContains(response, "All NOFOs")
         self.assertIn("no-store", response["Cache-Control"])
 
@@ -452,7 +453,7 @@ class PdfReadabilityPageTests(TestCase):
         self.assertContains(response, "hhs-nofo-metrics 0.5.3")
         self.assertContains(response, "&lt;img src=x onerror=alert(1)&gt;.pdf")
         self.assertNotContains(response, "<img src=x onerror=alert(1)>.pdf")
-        self.assertNotContains(response, "Login")
+        self.assertContains(response, 'class="usa-nav no-print"')
         self.assertIn("no-store", response["Cache-Control"])
 
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)

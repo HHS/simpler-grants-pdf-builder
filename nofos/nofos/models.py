@@ -296,10 +296,6 @@ class Nofo(BaseNofo):
                 "view_builder_metrics",
                 "Can view NOFO Builder usage & quality metrics",
             ),
-            (
-                "use_pdf_readability_pilot",
-                "Can use the authenticated PDF readability pilot",
-            ),
         ]
 
     title = models.TextField(

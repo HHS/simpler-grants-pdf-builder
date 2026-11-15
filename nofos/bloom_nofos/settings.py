@@ -53,7 +53,8 @@ if env_exists:
 
 # Content-free public and authenticated usage records have no automatic expiration.
 # Leave retention unset; cleanup is optional if a future decision adds expiration.
-# Recording remains independently default-off for each route.
+# Recording remains independently default-off for anonymous ("public") and
+# signed-in ("authenticated") uploads to /readability-checker/.
 PDF_READABILITY_ATTEMPT_RECORDING_ENABLED = env.bool(
     "PDF_READABILITY_ATTEMPT_RECORDING_ENABLED", default=False
 )
@@ -763,12 +764,12 @@ CONSTANCE_CONFIG = {
     ),
     "HHS_NOFO_PDF_METRICS_PILOT_ENABLED": (
         HHS_NOFO_PDF_METRICS_PILOT_ENABLED_DEFAULT,
-        "Whether the public Readability Checker accepts PDF and Word uploads. Uploads and reports are not saved.",
+        "Whether the Readability Checker at /readability-checker/ accepts PDF and Word uploads from everyone, signed in or not. Uploads and reports are not saved.",
         bool,
     ),
     "HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED": (
         False,
-        "Whether the restricted signed-in PDF readability pilot is available. Requires explicit pilot permission and does not enable the public route.",
+        "Whether signed-in users can use the Readability Checker at /readability-checker/ while the public switch is off. Has no effect while the public switch is on. Uploads and reports are not saved.",
         bool,
     ),
     "WORD_IMPORT_STRICT_MODE": (

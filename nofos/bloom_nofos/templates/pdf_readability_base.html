@@ -28,6 +28,18 @@
           </em>
         </div>
       </div>
+      {# Same account item as the Builder header. no-print keeps the email off saved reports. #}
+      <nav aria-label="Primary navigation" class="usa-nav no-print">
+        <ul class="usa-nav__primary usa-accordion">
+          <li class="usa-nav__primary-item">
+            {% if user.is_authenticated %}
+              <a href="{% url 'users:user_view' %}" class="usa-nav-link"><span class="usa-sr-only">Your account</span><span aria-hidden="true">{{ user.email }}</span></a>
+            {% else %}
+              <a href="{% url 'users:login' %}?next={% url 'pdf_readability' %}" class="usa-nav-link">Login</a>
+            {% endif %}
+          </li>
+        </ul>
+      </nav>
     </div>
   </header>
 {% endblock %}

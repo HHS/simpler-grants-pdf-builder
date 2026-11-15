@@ -1,4 +1,9 @@
-"""Restricted entry point and source-aware, content-free reporting."""
+"""Signed-in access on the single checker URL and content-free reporting.
+
+The signed-in checker moved from /nofos/readability-checker/ to
+/readability-checker/ (#1367). Access depends only on the public and signed-in
+switches, and the usage label records whether the person was signed in.
+"""
 
 from datetime import timedelta
 from importlib.metadata import version
@@ -8,6 +13,7 @@ from unittest.mock import patch
 from bloom_nofos.tests_bloom_nofos.test_pdf_readability import REPORT
 from constance.test import override_config
 from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.db import DatabaseError
@@ -29,22 +35,17 @@ from nofos.tests_nofos.draft_pdf_fixtures import draft_pdf
     AUTHENTICATED_PDF_READABILITY_ATTEMPT_RECORDING_ENABLED=True,
     AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS=7,
 )
-class AuthenticatedPilotTests(TestCase):
+class SignedInCheckerTests(TestCase):
     def setUp(self):
-        self.url = reverse("nofos:authenticated_pdf_readability")
-        self.public_url = reverse("pdf_readability")
+        self.url = reverse("pdf_readability")
         self.user = BloomUser.objects.create_user(
             email="synthetic@example.com",
             password=None,
             group="bloom",
             force_password_reset=False,
         )
-        self.permission = Permission.objects.get(codename="use_pdf_readability_pilot")
 
     def login(self):
-        self.user.groups.add(
-            Group.objects.get(name="PDF readability pilot participants")
-        )
         self.client.force_login(self.user)
 
     def upload(self):
@@ -75,31 +76,63 @@ class AuthenticatedPilotTests(TestCase):
                 self.assertContains(response, f"Cover page: {cover} words")
                 self.assertContains(response, f"Table of contents: {toc} words")
 
-    def test_authentication_and_explicit_permission_before_analysis(self):
+    def test_signed_out_sees_unavailable_page_with_login_before_analysis(self):
         with patch("bloom_nofos.views.analyze_uploaded_pdf") as analyze:
-            for method in ("get", "post"):
-                response = getattr(self.client, method)(self.url)
-                self.assertEqual(response.status_code, 302)
-                self.assertTrue(response["Location"].startswith(reverse("users:login")))
-            self.client.force_login(self.user)
-            for method in ("get", "post"):
-                self.assertEqual(
-                    getattr(self.client, method)(self.url).status_code, 403
-                )
+            response = self.client.get(self.url)
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, "pdf_readability_unavailable.html")
+            self.assertContains(
+                response, f'href="{reverse("users:login")}?next={self.url}"'
+            )
+            response = self.client.post(self.url, {"pdf": self.upload()})
+            self.assertEqual(response.status_code, 403)
             analyze.assert_not_called()
+        # Public recording is off, so the anonymous disabled POST is not kept.
         self.assertFalse(PdfReadabilityAttempt.objects.exists())
 
-    def test_internal_group_and_approved_group_access_and_revocation(self):
+    def test_any_signed_in_user_has_access_without_extra_permission(self):
+        self.assertEqual(list(self.user.get_all_permissions()), [])
         self.login()
-        self.assertEqual(self.client.get(self.url).status_code, 200)
-        self.user.groups.remove(
-            Group.objects.get(name="PDF readability pilot participants")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "pdf_readability.html")
+        self.client.logout()
+        self.assertTemplateUsed(
+            self.client.get(self.url), "pdf_readability_unavailable.html"
         )
-        self.assertEqual(self.client.post(self.url).status_code, 403)
 
-    def test_public_disabled_independently_no_navigation_link(self):
+    @override_config(
+        HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True,
+        HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED=False,
+    )
+    def test_public_switch_opens_checker_to_everyone(self):
+        for signed_in in (False, True):
+            if signed_in:
+                self.login()
+            with self.subTest(signed_in=signed_in):
+                self.assertTemplateUsed(
+                    self.client.get(self.url), "pdf_readability.html"
+                )
+
+    def test_switch_change_applies_without_restart(self):
         self.login()
-        self.assertEqual(self.client.get(self.public_url).status_code, 200)
+        self.assertTemplateUsed(self.client.get(self.url), "pdf_readability.html")
+        with override_config(HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED=False):
+            self.assertTemplateUsed(
+                self.client.get(self.url), "pdf_readability_unavailable.html"
+            )
+        self.assertTemplateUsed(self.client.get(self.url), "pdf_readability.html")
+
+    def test_header_shows_signed_in_email_and_never_prints(self):
+        self.login()
+        response = self.client.get(self.url)
+        self.assertContains(response, "synthetic@example.com")
+        self.assertContains(response, f'href="{reverse("users:user_view")}"')
+        self.assertContains(response, 'class="usa-nav no-print"')
+        self.assertNotContains(response, f'href="{reverse("users:login")}')
+
+    def test_no_navigation_link_and_privacy_headers(self):
+        self.login()
         response = self.client.get(self.url)
         self.assertContains(response, "Readability Checker", count=2)
         self.assertContains(response, "How we handle your document")
@@ -114,14 +147,17 @@ class AuthenticatedPilotTests(TestCase):
     def test_disabled_get_not_counted_post_counted_without_analysis(self):
         self.login()
         with patch("bloom_nofos.views.analyze_uploaded_pdf") as analyze:
-            self.assertEqual(self.client.get(self.url).status_code, 503)
+            # Disabled is an access state, not a service failure (#1250).
+            response = self.client.get(self.url)
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, "pdf_readability_unavailable.html")
             self.assertFalse(PdfReadabilityAttempt.objects.exists())
-            self.assertEqual(self.client.post(self.url).status_code, 503)
+            self.assertEqual(self.client.post(self.url).status_code, 403)
             analyze.assert_not_called()
         row = PdfReadabilityAttempt.objects.get()
         self.assertEqual((row.source, row.outcome), ("authenticated", "disabled"))
 
-    def test_success_reuses_report_and_stays_in_authenticated_workflow(self):
+    def test_success_reuses_report_and_links_back_to_checker(self):
         self.login()
         with patch("bloom_nofos.views.analyze_uploaded_pdf", return_value=REPORT):
             response = self.client.post(self.url, {"pdf": self.upload()})
@@ -154,7 +190,6 @@ class AuthenticatedPilotTests(TestCase):
         response = self.client.get(self.url)
         self.assertContains(response, "it does not need to be designed for publication")
         self.assertContains(response, "Blank templates without identifying details")
-        self.assertEqual(self.client.get(self.public_url).status_code, 200)
 
     def test_real_draft_upload_returns_reference_metrics_with_public_disabled(self):
         self.login()
@@ -175,7 +210,6 @@ class AuthenticatedPilotTests(TestCase):
             response.context["report"]["scope"]["complete_sentence_count"], 3
         )
         self.assertContains(response, "Keep instructions that applicants need.")
-        self.assertEqual(self.client.get(self.public_url).status_code, 200)
 
     def test_real_word_upload_records_only_content_free_outcome(self):
         from nofos.models import Nofo
@@ -266,20 +300,20 @@ class AuthenticatedPilotTests(TestCase):
         self.assertContains(response, "Low reliability")
         self.assertContains(response, "Reliability not assessed", count=1)
 
-    def test_both_formats_require_authentication_and_permission(self):
-        with patch("bloom_nofos.views.analyze_uploaded_pdf") as analyze:
-            for authenticated, expected in ((False, 302), (True, 403)):
-                if authenticated:
-                    self.client.force_login(self.user)
-                for suffix in ("pdf", "docx"):
-                    response = self.client.post(
-                        self.url,
-                        {"pdf": SimpleUploadedFile(f"input.{suffix}", b"private")},
-                    )
-                    self.assertEqual(response.status_code, expected)
+    def test_both_formats_rejected_for_signed_out_uploads(self):
+        with patch("bloom_nofos.views.analyze_uploaded_pdf") as analyze, patch(
+            "django.http.request.HttpRequest._load_post_and_files"
+        ) as parse:
+            for suffix in ("pdf", "docx"):
+                response = self.client.post(
+                    self.url,
+                    {"pdf": SimpleUploadedFile(f"input.{suffix}", b"private")},
+                )
+                self.assertEqual(response.status_code, 403)
             analyze.assert_not_called()
+            parse.assert_not_called()
 
-    def test_form_copy_matches_authenticated_supported_formats(self):
+    def test_form_copy_matches_supported_formats(self):
         self.login()
         response = self.client.get(self.url)
         for text in (
@@ -321,12 +355,19 @@ class AuthenticatedPilotTests(TestCase):
         self.assertEqual(PdfReadabilityAttempt.objects.count(), 1)
 
     @override_config(HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED=False)
-    def test_disabled_authenticated_post_still_requires_csrf(self):
-        self.login()
+    def test_disabled_post_rejected_before_csrf_or_parsing(self):
         client = Client(enforce_csrf_checks=True)
         client.force_login(self.user)
-        self.assertEqual(client.post(self.url).status_code, 403)
-        self.assertFalse(PdfReadabilityAttempt.objects.exists())
+        with patch("bloom_nofos.views.analyze_uploaded_pdf") as analyze, patch(
+            "django.http.request.HttpRequest._load_post_and_files"
+        ) as parse:
+            response = client.post(self.url, {"pdf": self.upload()})
+        self.assertEqual(response.status_code, 403)
+        self.assertTemplateUsed(response, "pdf_readability_unavailable.html")
+        analyze.assert_not_called()
+        parse.assert_not_called()
+        row = PdfReadabilityAttempt.objects.get()
+        self.assertEqual((row.source, row.outcome), ("authenticated", "disabled"))
 
     def test_handled_errors_and_capacity_record_once(self):
         self.login()
@@ -390,7 +431,7 @@ class AuthenticatedPilotTests(TestCase):
         self.assertEqual(PdfReadabilityAttempt.objects.get().outcome, "internal_error")
 
     @override_settings(AUTHENTICATED_PDF_READABILITY_ATTEMPT_RECORDING_ENABLED=False)
-    def test_recording_independent_of_public_setting(self):
+    def test_signed_in_recording_independent_of_public_setting(self):
         self.login()
         with patch("bloom_nofos.views.analyze_uploaded_pdf", return_value=REPORT):
             self.assertEqual(
@@ -399,22 +440,23 @@ class AuthenticatedPilotTests(TestCase):
         self.assertFalse(PdfReadabilityAttempt.objects.exists())
 
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
-    def test_retention_notice_matches_each_route_and_recording_state(self):
-        self.login()
-        for url, prefix in (
-            (self.public_url, "PDF_READABILITY_ATTEMPT"),
-            (self.url, "AUTHENTICATED_PDF_READABILITY_ATTEMPT"),
+    def test_retention_notice_matches_signed_in_state_and_recording_state(self):
+        for signed_in, prefix in (
+            (False, "PDF_READABILITY_ATTEMPT"),
+            (True, "AUTHENTICATED_PDF_READABILITY_ATTEMPT"),
         ):
+            if signed_in:
+                self.login()
             for enabled, days in ((True, None), (True, 30), (False, None)):
                 with self.subTest(
-                    url=url, enabled=enabled, days=days
+                    signed_in=signed_in, enabled=enabled, days=days
                 ), override_settings(
                     **{
                         f"{prefix}_RECORDING_ENABLED": enabled,
                         f"{prefix}_RETENTION_DAYS": days,
                     }
                 ):
-                    response = self.client.get(url)
+                    response = self.client.get(self.url)
                     if not enabled:
                         self.assertNotContains(response, "Usage and error records")
                     elif days is None:
@@ -439,11 +481,88 @@ class AuthenticatedPilotTests(TestCase):
 
     @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True)
     @override_settings(PDF_READABILITY_ATTEMPT_RECORDING_ENABLED=True)
-    def test_signed_in_public_upload_is_public(self):
-        self.login()
+    def test_label_records_whether_uploader_was_signed_in(self):
         with patch("bloom_nofos.views.analyze_uploaded_pdf", return_value=REPORT):
-            self.client.post(self.public_url, {"pdf": self.upload()})
-        self.assertEqual(PdfReadabilityAttempt.objects.get().source, "public")
+            self.client.post(self.url, {"pdf": self.upload()})
+            self.login()
+            self.client.post(self.url, {"pdf": self.upload()})
+        self.assertEqual(
+            list(
+                PdfReadabilityAttempt.objects.order_by("pk").values_list(
+                    "source", flat=True
+                )
+            ),
+            ["public", "authenticated"],
+        )
+
+
+class RetiredSignedInRouteTests(TestCase):
+    """The old signed-in URLs redirect once, and never forward an upload."""
+
+    def test_old_urls_redirect_permanently_to_single_checker(self):
+        for old_url in ("/nofos/readability-checker/", "/nofos/readability/"):
+            for method in ("get", "post"):
+                with self.subTest(url=old_url, method=method):
+                    response = getattr(self.client, method)(old_url)
+                    self.assertEqual(response.status_code, 301)
+                    self.assertEqual(response["Location"], reverse("pdf_readability"))
+
+    def test_pending_upload_is_not_read_or_analyzed(self):
+        user = BloomUser.objects.create_user(
+            email="stale@example.com",
+            password=None,
+            group="bloom",
+            force_password_reset=False,
+        )
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(user)
+        with patch("bloom_nofos.views.analyze_uploaded_pdf") as analyze, patch(
+            "django.http.request.HttpRequest._load_post_and_files"
+        ) as parse:
+            response = client.post(
+                "/nofos/readability-checker/",
+                {"pdf": SimpleUploadedFile("stale.pdf", b"%PDF-1.7 private")},
+            )
+        self.assertEqual(response.status_code, 301)
+        analyze.assert_not_called()
+        parse.assert_not_called()
+        self.assertFalse(PdfReadabilityAttempt.objects.exists())
+
+    def test_pilot_permission_and_group_are_gone(self):
+        self.assertFalse(
+            Permission.objects.filter(codename="use_pdf_readability_pilot").exists()
+        )
+        self.assertFalse(
+            Group.objects.filter(name="PDF readability pilot participants").exists()
+        )
+
+    def test_retirement_migration_removes_memberships_and_reverses(self):
+        import importlib
+        from types import SimpleNamespace
+
+        from django.apps import apps
+        from django.db import connection
+
+        module = importlib.import_module(
+            "nofos.migrations.0164_retire_pdf_readability_pilot_permission"
+        )
+        editor = SimpleNamespace(connection=connection)
+        module.restore_pilot_access(apps, editor)
+        user = BloomUser.objects.create_user(
+            email="former-participant@example.com",
+            password=None,
+            group="bloom",
+            force_password_reset=False,
+        )
+        user.groups.add(Group.objects.get(name="PDF readability pilot participants"))
+        module.retire_pilot_access(apps, editor)
+        self.assertFalse(user.groups.exists())
+        self.assertFalse(
+            Permission.objects.filter(
+                content_type=ContentType.objects.get(app_label="nofos", model="nofo"),
+                codename="use_pdf_readability_pilot",
+            ).exists()
+        )
 
 
 class SourceDashboardTests(TestCase):
@@ -527,12 +646,6 @@ class SourceDashboardTests(TestCase):
             HTTP_ACCEPT="application/json",
         ).json()
         self.assertEqual(len(data["recent_attempts"]), 3)
-
-    def test_metrics_permission_does_not_grant_upload(self):
-        self.assertEqual(
-            self.client.get(reverse("nofos:authenticated_pdf_readability")).status_code,
-            403,
-        )
 
     @override_settings(
         PDF_READABILITY_ATTEMPT_RETENTION_DAYS=30,

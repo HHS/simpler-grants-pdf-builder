@@ -8,6 +8,8 @@ logger = logging.getLogger("django.request")
 
 
 def is_pdf_readability_request(request):
+    # The /nofos/readability* paths only redirect now (#1367), but a page left
+    # open across that change can still POST an upload to them.
     return request.path_info.rstrip("/") in {
         "/readability",
         "/nofos/readability",

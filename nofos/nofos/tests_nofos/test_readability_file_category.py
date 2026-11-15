@@ -35,12 +35,10 @@ class FileCategoryTests(TestCase):
             force_password_reset=False,
         )
         self.user.user_permissions.add(
-            Permission.objects.get(codename="use_pdf_readability_pilot"),
             Permission.objects.get(codename="view_builder_metrics"),
         )
         self.client.force_login(self.user)
         self.public = reverse("pdf_readability")
-        self.authenticated = reverse("nofos:authenticated_pdf_readability")
         self.metrics = reverse("nofos:builder_metrics_readability_pilot")
 
     def upload(self, name):
@@ -49,11 +47,15 @@ class FileCategoryTests(TestCase):
         )
 
     def test_success_and_parser_failure_keep_attempted_extension_only(self):
-        for url, name, category in (
-            (self.public, "PRIVATE-NAME.PDF", "pdf"),
-            (self.public, "PRIVATE-NAME.DoCx", "docx"),
-            (self.authenticated, "PRIVATE-NAME.DoCx", "docx"),
+        for signed_in, name, category in (
+            (False, "PRIVATE-NAME.PDF", "pdf"),
+            (False, "PRIVATE-NAME.DoCx", "docx"),
+            (True, "PRIVATE-NAME.DoCx", "docx"),
         ):
+            if signed_in:
+                self.client.force_login(self.user)
+            else:
+                self.client.logout()
             for error in (
                 None,
                 PdfReadabilityError(
@@ -65,10 +67,13 @@ class FileCategoryTests(TestCase):
                     return_value=REPORT,
                     side_effect=error,
                 ):
-                    response = self.client.post(url, {"pdf": self.upload(name)})
+                    response = self.client.post(self.public, {"pdf": self.upload(name)})
                     self.assertEqual(response.status_code, 400 if error else 200)
                     record = PdfReadabilityAttempt.objects.get()
                     self.assertEqual(record.file_category, category)
+                    self.assertEqual(
+                        record.source, "authenticated" if signed_in else "public"
+                    )
                     self.assertEqual(record.outcome, error.code if error else "success")
                     self.assertNotIn("PRIVATE", str(record.__dict__))
                     PdfReadabilityAttempt.objects.all().delete()
@@ -91,14 +96,17 @@ class FileCategoryTests(TestCase):
             {"pdf": self.upload("a.exe")},
         ):
             with self.subTest(files=list(files)):
-                response = self.client.post(self.authenticated, files)
+                response = self.client.post(self.public, files)
                 self.assertEqual(response.status_code, 400)
                 self.assertEqual(
                     PdfReadabilityAttempt.objects.get().file_category, "unknown"
                 )
                 PdfReadabilityAttempt.objects.all().delete()
 
-    @override_config(HHS_NOFO_PDF_METRICS_PILOT_ENABLED=False)
+    @override_config(
+        HHS_NOFO_PDF_METRICS_PILOT_ENABLED=False,
+        HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED=False,
+    )
     def test_disabled_does_not_parse_upload_for_category(self):
         with patch("bloom_nofos.views._pdf_readability_form") as form:
             self.assertEqual(
@@ -120,7 +128,7 @@ class FileCategoryTests(TestCase):
                 "success", 200, time.monotonic(), source=source, file_category="pdf"
             )
         self.assertFalse(PdfReadabilityAttempt.objects.exists())
-        self.assertNotContains(self.client.get(self.authenticated), "its file category")
+        self.assertNotContains(self.client.get(self.public), "its file category")
 
     def test_recording_normalizes_unrecognized_categories_without_storing_them(self):
         for value in ("private-name.pdf", "application/pdf", None, "PDF", []):
@@ -130,10 +138,12 @@ class FileCategoryTests(TestCase):
             {"unknown"},
         )
 
-    def test_notice_discloses_category_on_both_routes(self):
-        for url in (self.public, self.authenticated):
+    def test_notice_discloses_category_signed_in_and_out(self):
+        for signed_in in (True, False):
+            if not signed_in:
+                self.client.logout()
             self.assertContains(
-                self.client.get(url), "its file category (PDF, DOCX or unknown)"
+                self.client.get(self.public), "its file category (PDF, DOCX or unknown)"
             )
 
     def test_combined_filters_apply_to_counts_rates_charts_durations_and_rows(self):

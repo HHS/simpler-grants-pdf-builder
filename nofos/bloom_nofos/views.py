@@ -8,7 +8,6 @@ from pathlib import Path
 
 from constance import config
 from django.conf import settings
-from django.contrib.auth.decorators import login_required, permission_required
 from django.core.files.uploadhandler import TemporaryFileUploadHandler
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -118,33 +117,46 @@ def readability_redirect(request, route_name):
     return redirect(route_name, permanent=True, preserve_request=True)
 
 
+def checker_access(request):
+    """Return whether this request may use the checker, and its usage label.
+
+    Uses only the session-backed user and Constance switches, so callers can
+    decide before anything reads or parses the request body.
+    """
+    signed_in = request.user.is_authenticated
+    source = "authenticated" if signed_in else "public"
+    enabled = config.HHS_NOFO_PDF_METRICS_PILOT_ENABLED or (
+        signed_in and config.HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED
+    )
+    return enabled, source
+
+
 @never_cache
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def pdf_readability(request):
-    """Public, deliberately unlinked entry point for one ephemeral readability report."""
-    return _pdf_readability_workflow(
-        request, config.HHS_NOFO_PDF_METRICS_PILOT_ENABLED, "public"
-    )
+    """Deliberately unlinked entry point for one ephemeral readability report.
+
+    The public switch opens it to everyone. The signed-in switch keeps it open
+    to signed-in users while the public switch is off.
+    """
+    enabled, source = checker_access(request)
+    return _pdf_readability_workflow(request, enabled, source)
 
 
-@never_cache
-@require_http_methods(["GET", "POST"])
 @csrf_exempt
-@login_required
-@permission_required("nofos.use_pdf_readability_pilot", raise_exception=True)
-def authenticated_pdf_readability(request):
-    """Restricted entry point; authorize before parsing multipart uploads."""
-    return _pdf_readability_workflow(
-        request,
-        config.HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED,
-        "authenticated",
-    )
+def retired_checker_redirect(request):
+    """The signed-in checker moved to the single public URL.
+
+    Never forward a pending upload: a POST from a page left open across the
+    change is answered without reading its body and lands on an empty form.
+    """
+    return redirect("pdf_readability", permanent=True)
 
 
 def _pdf_readability_workflow(request, enabled, source):
     started = time.monotonic()
-    if not enabled and source == "public":
+    if not enabled:
         # Disabled is an intentional access state, not a service failure.
         # Return before CSRF/form handling can parse an uploaded document.
         status = 403 if request.method == "POST" else 200
@@ -155,7 +167,6 @@ def _pdf_readability_workflow(request, enabled, source):
         return response
 
     request.pdf_readability_source = source
-    request.pdf_readability_enabled = enabled
     try:
         if request.method == "POST":
             # Install both handlers before CSRF reads multipart request.POST.
@@ -204,10 +215,6 @@ def _record_pdf_attempt(source, outcome, status, started, file_category="unknown
 
 @csrf_protect
 def _pdf_readability_form(request):
-    if not request.pdf_readability_enabled:
-        if request.method == "POST":
-            request.pdf_readability_outcome = "disabled"
-        return render(request, "pdf_readability_unavailable.html", status=503)
     pdf_size = f"{PDF_UPLOAD_BYTES // MIB} MiB"
     word_size = f"{WORD_UPLOAD_BYTES // MIB} MiB"
     size_hint = f"One PDF file up to {pdf_size} or Word (.docx) file up to {word_size}."
@@ -217,12 +224,6 @@ def _pdf_readability_form(request):
         "file_accept": (
             ".pdf,.docx,application/pdf,"
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        ),
-        "authenticated_pilot": request.pdf_readability_source == "authenticated",
-        "pilot_url_name": (
-            "nofos:authenticated_pdf_readability"
-            if request.pdf_readability_source == "authenticated"
-            else "pdf_readability"
         ),
         "outcome_retention_days": retention_days(request.pdf_readability_source),
         "outcome_recording_enabled": (
@@ -271,8 +272,7 @@ def _pdf_readability_form(request):
                 )
 
                 comparison_allowed = (
-                    request.pdf_readability_source == "authenticated"
-                    and enabled()
+                    enabled()
                     and request.user.has_perm(PERMISSION)
                     and str(upload.name).lower().endswith(".docx")
                 )

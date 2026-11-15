@@ -419,7 +419,7 @@ Each source explanation stays in one paragraph:
 - **PDF with usable tags:** “PDF structure tags helped the tool read the text in order, but some text may still be missed or read out of order, especially in columns and tables. These scores describe the text the tool recovered and may not reflect the entire PDF.”
 - **PDF without usable tags:** “The tool could not reliably determine the order of text in this PDF, so the scores may be less reliable. For your next upload, try uploading the original Word document instead. If you need to use a PDF, save it from Word using ‘Save as PDF’ rather than ‘Print to PDF.’”
 
-Both checker routes give the same document preparation guidance. These suggestions do not guarantee accurate scores. The source
+Signed-in and signed-out users get the same document preparation guidance. These suggestions do not guarantee accurate scores. The source
 explanation is one paragraph. When overall reliability is not assessed, the alert
 also includes the separate sentence: “Reliability has not been assessed for these
 estimates.” This sentence can accompany tagged-PDF source copy. Unassessed Word
@@ -476,6 +476,23 @@ that margin to 0.5rem below 30em and override `margin-top-3`; `pdf_readability.c
 keeps 1.5rem at every width. The notice's wording is
 limited by the [upload privacy notice](readability/PDF_READABILITY_PILOT.md#upload-privacy-notice)
 rules. See [the before-and-after review](review-evidence/1329/README.md).
+
+## Readability Checker header account item
+
+The [checker header](../nofos/bloom_nofos/templates/pdf_readability_base.html)
+reuses the account item from the Builder header
+([`base.html`](../nofos/bloom_nofos/templates/base.html)): a `usa-nav` with one
+`usa-nav__primary-item`. Signed out, it shows **Login**, linking to
+`users:login` with `?next=/readability-checker/` so password sign-in returns to
+the checker. Signed in, it shows the user's email with visually hidden "Your
+account" text, linking to `users:user_view`. The unavailable page uses the same
+header, so a signed-out visitor can sign in from there.
+
+Don't add **All NOFOs**, NOFO Compare or admin links; the checker isn't a Builder
+workspace. Keep `no-print` on the nav so the email isn't printed on saved
+reports. The page already sends `Cache-Control: no-store`, so one user's email
+can't be served to another from a cache. See
+[signed-in access](readability/AUTHENTICATED_PDF_READABILITY_PILOT.md#header).
 
 ## Leftover template instruction warning after Word import
 
