@@ -78,6 +78,43 @@ AWS for temporary-storage or cleanup issues. Use the incident procedure to
 coordinate the investigation and keep sensitive evidence restricted.
 [Incident response guidance](#pause-and-reopen)
 
+## Launch risks and response
+
+Use this section for the public launch review. The SimplerNOFOs team owns
+alert triage and coordinates response. Follow the existing
+[infrastructure runbook](https://github.com/HHS/simpler-grants-gov/blob/main/documentation/infra/nofo-pdf-readability-waf.md)
+for emergency blocking, verification and restoration.
+
+| Risk | Safeguards and evidence today | First response |
+| --- | --- | --- |
+| A sensitive upload is exposed or retained unexpectedly. | NOFO Builder keeps no report history, and the usage records exclude document content. The [private temporary workspace and interruption cleanup](https://github.com/HHS/simpler-grants-pdf-builder/pull/1316) are [deployed in dev](https://github.com/HHS/simpler-grants-gov/actions/runs/42677257714). The dev probes verified temporary storage and isolated interruption cleanup. Production storage and cleanup, and deployed logging access and retention remain open. | Pause public uploads, escalate through the approved HHS security/privacy incident channel, and preserve relevant evidence in the approved restricted location. Ask HHS to assess scope and direct any required notifications and recovery. |
+| A malicious PDF exploits the analyzer. | Analysis runs in a separate process with a restricted environment and resource limits. The deployed filesystem, network, and credential boundaries still need review. | Pause uploads and involve security and infrastructure. Determine what the process could access, fix the issue, and verify the affected boundaries before reopening. |
+| Upload traffic degrades NOFO Builder, or a rate limit blocks legitimate users on a shared network. | The public Readability Checker caps PDF uploads at 5 MiB and 150 pages and Word uploads at 15 MiB. Dev tests verified rate enforcement, emergency blocking and restoration. Production alarm delivery was verified. [Production inspection](https://github.com/HHS/simpler-grants-gov/actions/runs/42861864575) confirmed the rate rule is in Block mode at 30 upload requests per five minutes per public IP. | Check NOFO Builder health, WAF metrics and support reports. Pause the checker if NOFO Builder is affected. For shared-network blocks, check rule counters and user impact before proposing a threshold change. |
+| A favorable score gives reviewers false confidence. | The checker labels scores as estimates. Use them alongside human review of clarity, repetition and whether applicants can follow the instructions. | Explain the measure's limits in support responses. Investigate reproducibly incorrect results and update guidance or the calculator as needed. |
+
+### Pause and reopen
+
+- **Pause.** Disable public uploads if there is a suspected exposure or upload
+  traffic is affecting NOFO Builder. Use the emergency block if the application
+  switch is insufficient, and follow the approved HHS incident process for
+  suspected exposure.
+- **Reopen.** Resume uploads after the cause is addressed, the relevant
+  safeguards are verified, and the release owner has any required HHS clearance.
+
+Track outstanding verification and approvals through the existing
+[release checklist](PDF_READABILITY_RELEASE_CHECKLIST.md) and its linked issues.
+
+### What users see and where to look
+
+Both responses use HTTP 429. The screen and the monitoring source depend on which component rejected the submission.
+
+| Cause | What the user sees | Where to look |
+| --- | --- | --- |
+| NOFO Builder analyzer busy | The upload form shows “The analyzer is busy. Please try again in a moment.” NOFO Builder returns `Retry-After: 15`. | In **Readability Checker usage**, look for **Analyzer busy** when attempt recording is enabled for that route. |
+| WAF upload rate limit in Block mode | WAF returns an empty 429 response before NOFO Builder receives the submission. The form navigates away and the browser may show its own error page. | Check the upload-rate rule's CloudWatch `BlockedRequests` metric and alarm. NOFO Builder has no usage record for a request intercepted by WAF. |
+
+In Count mode, the rate rule records over-limit traffic without returning a rate-limit 429. The [WAF runbook](https://github.com/HHS/simpler-grants-gov/blob/main/documentation/infra/nofo-pdf-readability-waf.md) covers rule configuration and monitoring. See the [local Chrome screenshots](../review-evidence/971/README.md) for examples of both responses.
+
 ## Documentation ownership
 
 This is NOFO Builder's overall readiness and launch plan. The infrastructure
@@ -89,7 +126,24 @@ Use this plan alongside NOFO Builder's
 their evidence or approval requirements. Maintain one overall plan here, and
 link to infrastructure procedures rather than copying their implementations.
 
-## Completed evidence to reuse
+## Verification procedure
+
+These steps are for the operators running the checks. Each section is
+collapsed; select a heading's **Show steps** to expand it. The table gives each
+step's current status and what's still open. Test results and their dates live
+in the linked evidence records; update those first, then this table.
+
+| Step | Status | Still open | Evidence |
+| --- | --- | --- | --- |
+| [1. Preflight](#1-preflight-no-control-changes) | Done in dev. The route-coverage gap found October 28 was fixed by [SGG #13060](https://github.com/HHS/simpler-grants-gov/pull/13060), and the WAF tests covered all four route forms. | None in dev | [October 28 preflight](../review-evidence/readability-readiness-1239/README.md#preflight-finding-renamed-route-coverage) · [Dated launch evidence](../review-evidence/971/README.md#dated-launch-evidence) |
+| [2. WAF test card](#2-waf-test-card-synthetic-empty-requests-no-file-uploads) | Done in dev | None in dev | [Dated launch evidence](../review-evidence/971/README.md#dated-launch-evidence) |
+| [3. Runtime checks](#3-runtime-checks-without-opening-public-uploads) | Partly done | Fresh signed-out end-to-end test after [#1368](https://github.com/HHS/simpler-grants-pdf-builder/pull/1368) deploys (upload, rejection messages, browser-saved report); live-service interruption; production storage and cleanup; log access and retention; slow-upload protection | [Storage and cleanup](../review-evidence/971/README.md#november-10-dev-temporary-storage-and-cleanup) · [Logging](../review-evidence/971/README.md#november-10-signed-out-dev-logging-check) |
+| [4. Production setup](#4-production-setup-separate-from-public-launch) | Partly done | Production storage and cleanup, log access, handling approvals, Office of Grants leadership approval | [Dated launch evidence](../review-evidence/971/README.md#dated-launch-evidence) |
+
+### Completed evidence to reuse
+
+<details>
+<summary>Show evidence guidance</summary>
 
 See the [October 28 evidence record](../review-evidence/readability-readiness-1239/README.md)
 for deployment, alarm/email inspection and route observations. Reuse only evidence
@@ -99,7 +153,12 @@ The separate [application-5xx investigation](https://github.com/HHS/simpler-gran
 may affect baseline interpretation; collection success alone does not establish
 resolution or attribute failures to the calculator.
 
-## 1. Preflight: no control changes
+</details>
+
+### 1. Preflight: no control changes
+
+<details>
+<summary>Show steps</summary>
 
 Target only `https://nofos.dev.simpler.grants.gov` / `infra-dev`. Record deployed
 application/image revision, infrastructure revision, date, operator, source of
@@ -123,7 +182,7 @@ it; do not mistake it for WAF enforcement or assume both forms return the same s
 Confirm `/health` responds normally. If the baseline is unexpected, stop before
 rate/block testing and investigate.
 
-### Route coverage follow-through
+#### Route coverage follow-through
 
 The [October 28 preflight record](../review-evidence/readability-readiness-1239/README.md#preflight-finding-renamed-route-coverage)
 found that the reviewed WAF source covered only the legacy route. Recheck the
@@ -132,7 +191,12 @@ verified, do not claim protection or run the enforcement card. Correct scope
 through a reviewed infrastructure change while keeping Count mode and the public
 application flag unchanged. A legacy redirect does not prove target protection.
 
-## 2. WAF test card: synthetic empty requests, no file uploads
+</details>
+
+### 2. WAF test card: synthetic empty requests, no file uploads
+
+<details>
+<summary>Show steps</summary>
 
 Use [the existing WAF procedure](https://github.com/HHS/simpler-grants-gov/blob/main/documentation/infra/nofo-pdf-readability-waf.md) and leave the
 application flag false throughout. No real documents, multipart file bodies,
@@ -161,18 +225,8 @@ how the deployed topology identifies the test source; do not publish client IPs
 or infer shared-IP fairness from a single-source test. Count/block counters and
 HTTP responses should corroborate each other, accounting for publication delay.
 
-### What users see and where to look
 
-Both responses use HTTP 429. The screen and the monitoring source depend on which component rejected the submission.
-
-| Cause | What the user sees | Where to look |
-| --- | --- | --- |
-| NOFO Builder analyzer busy | The upload form shows “The analyzer is busy. Please try again in a moment.” NOFO Builder returns `Retry-After: 15`. | In **Readability Checker usage**, look for **Analyzer busy** when attempt recording is enabled for that route. |
-| WAF upload rate limit in Block mode | WAF returns an empty 429 response before NOFO Builder receives the submission. The form navigates away and the browser may show its own error page. | Check the upload-rate rule's CloudWatch `BlockedRequests` metric and alarm. NOFO Builder has no usage record for a request intercepted by WAF. |
-
-In Count mode, the rate rule records over-limit traffic without returning a rate-limit 429. The [WAF runbook](https://github.com/HHS/simpler-grants-gov/blob/main/documentation/infra/nofo-pdf-readability-waf.md) covers rule configuration and monitoring. See the [local Chrome screenshots](../review-evidence/971/README.md) for examples of both responses.
-
-### Control path and restoration requirement
+#### Control path and restoration requirement
 
 The existing approved control path is reviewed Terraform configuration plus
 **Deploy NOFOs**. There is no dedicated short-lived WAF test switch/restore
@@ -195,7 +249,12 @@ use the agreed infrastructure fallback; do not delete the ACL or managed rules.
 Record measured activation/restoration time. There is no emergency-response SLA
 until this mechanism has been exercised.
 
-## 3. Runtime checks without opening public uploads
+</details>
+
+### 3. Runtime checks without opening public uploads
+
+<details>
+<summary>Show steps</summary>
 
 Reuse current source tests and prior evidence only where the target revision
 and runtime match. Saved-document readability metrics are not automatically
@@ -224,7 +283,7 @@ need end-to-end validation if equivalent evidence is unavailable. Mark these
 this plan. A future brief upload test requires the requester's separate explicit
 authorization, a duration/request cap and verified disabled-state restoration.
 
-### Dev-only upload-read observation
+#### Dev-only upload-read observation
 
 The existing inspector and New Relic completion logs cannot establish which
 web worker is waiting for body bytes. For the bounded slow-upload plan in
@@ -293,7 +352,12 @@ new observations but does not erase prior logs or stop an in-flight observer.
 Use only fictional files. No live observations or upload tests are established
 by merging this implementation, and production diagnostic activation is unsupported.
 
-## 4. Production setup: separate from public launch
+</details>
+
+### 4. Production setup: separate from public launch
+
+<details>
+<summary>Show steps</summary>
 
 After relevant dev verification and handling review, prepare one consolidated
 production safeguards/private-email change where feasible. First inspect the
@@ -316,33 +380,12 @@ explicitly limited deferrals have been accepted by the release decision-maker.
 Office of Grants leadership launch approval remains separate; no automatic
 flag activation follows email setup, a successful deploy or a green test.
 
-## Launch risks and response
+</details>
 
-Use this section for the public launch review. The SimplerNOFOs team owns
-alert triage and coordinates response. Follow the existing
-[infrastructure runbook](https://github.com/HHS/simpler-grants-gov/blob/main/documentation/infra/nofo-pdf-readability-waf.md)
-for emergency blocking, verification and restoration.
+### Evidence record and completion
 
-| Risk | Safeguards and evidence today | First response |
-| --- | --- | --- |
-| A sensitive upload is exposed or retained unexpectedly. | NOFO Builder keeps no report history, and the usage records exclude document content. The [private temporary workspace and interruption cleanup](https://github.com/HHS/simpler-grants-pdf-builder/pull/1316) are [deployed in dev](https://github.com/HHS/simpler-grants-gov/actions/runs/42677257714). The dev probes verified temporary storage and isolated interruption cleanup. Production storage and cleanup, and deployed logging access and retention remain open. | Pause public uploads, escalate through the approved HHS security/privacy incident channel, and preserve relevant evidence in the approved restricted location. Ask HHS to assess scope and direct any required notifications and recovery. |
-| A malicious PDF exploits the analyzer. | Analysis runs in a separate process with a restricted environment and resource limits. The deployed filesystem, network, and credential boundaries still need review. | Pause uploads and involve security and infrastructure. Determine what the process could access, fix the issue, and verify the affected boundaries before reopening. |
-| Upload traffic degrades NOFO Builder, or a rate limit blocks legitimate users on a shared network. | The public Readability Checker caps PDF uploads at 5 MiB and 150 pages and Word uploads at 15 MiB. Dev tests verified rate enforcement, emergency blocking and restoration. Production alarm delivery was verified. [Production inspection](https://github.com/HHS/simpler-grants-gov/actions/runs/42861864575) confirmed the rate rule is in Block mode at 30 upload requests per five minutes per public IP. | Check NOFO Builder health, WAF metrics and support reports. Pause the checker if NOFO Builder is affected. For shared-network blocks, check rule counters and user impact before proposing a threshold change. |
-| A favorable score gives reviewers false confidence. | The checker labels scores as estimates. Use them alongside human review of clarity, repetition and whether applicants can follow the instructions. | Explain the measure's limits in support responses. Investigate reproducibly incorrect results and update guidance or the calculator as needed. |
-
-### Pause and reopen
-
-- **Pause.** Disable public uploads if there is a suspected exposure or upload
-  traffic is affecting NOFO Builder. Use the emergency block if the application
-  switch is insufficient, and follow the approved HHS incident process for
-  suspected exposure.
-- **Reopen.** Resume uploads after the cause is addressed, the relevant
-  safeguards are verified, and the release owner has any required HHS clearance.
-
-Track outstanding verification and approvals through the existing
-[release checklist](PDF_READABILITY_RELEASE_CHECKLIST.md) and its linked issues.
-
-## Evidence record and completion
+<details>
+<summary>Show record requirements</summary>
 
 For every row use pass / fail / not run / deferred, with timestamp, environment,
 application/infrastructure revisions, operator, method, sanitized evidence link
@@ -352,3 +395,5 @@ external messages are made by writing this plan. Keep raw runtime/log evidence
 in an approved restricted location and make that location/access explicit before
 collecting it. Content-free usage records remain indefinite; uploaded files,
 logs and backups have separate requirements.
+
+</details>
