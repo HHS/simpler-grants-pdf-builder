@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.62.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.61.0...nofos-v3.62.0) (2026-11-15)
+
+
+### Features
+
+* serve the Readability Checker from one URL and retire the pilot route ([#1368](https://github.com/HHS/simpler-grants-pdf-builder/issues/1368)) ([4bb3821](https://github.com/HHS/simpler-grants-pdf-builder/commit/4bb38215e9166ab8e78ccc5f2be39bf94b0cc1d3))
+
 ## [3.61.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.60.0...nofos-v3.61.0) (2026-11-15)
 
 
