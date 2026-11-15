@@ -1,12 +1,17 @@
 # Word report scope and reliability
 
 The standalone Word checker reports aggregate counts for recognized covers,
-contents, writer instructions, and Builder metadata. Cover exclusion requires
-Word’s Cover Pages gallery. Opening text before a section break remains
-countable. The counts describe recognized exclusions from recovered text.
-When the report shows 0 cover page words but the document has a cover, the
-**Why “Estimated”?** guidance asks users to delete the cover from the copy they
-upload.
+contents, writer instructions, and Builder metadata. Covers are recognized
+from Word’s Cover Pages gallery or, since `hhs-nofo-metrics` 0.8.1, from a
+plain-paragraph first section that ends in a section break and is followed by a
+table of contents (the GrantSolutions Announcement Module layout). That first
+section must have no headings, no line ending in sentence punctuation, at most
+25 words per line and at most 100 words. Builder metadata lines are recognized
+under a "Basic information" or "Before You Begin" heading. Opening text before a
+section break remains countable. The counts describe recognized exclusions from
+recovered text. When the report shows 0 cover page words but the document has a
+cover, the **Why “Estimated”?** guidance asks users to delete the cover from the
+copy they upload.
 
 Investigation for #1169, against Builder's pinned `hhs-nofo-metrics` 0.6.0.
 This changes report presentation, not formulas, source recognition, permissions

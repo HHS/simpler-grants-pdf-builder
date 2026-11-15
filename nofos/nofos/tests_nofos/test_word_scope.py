@@ -57,6 +57,60 @@ class WordScopeConversionTests(SimpleTestCase):
             baseline["metrics"]["word_count"]["value"] + 6,
         )
 
+    def test_plain_cover_section_and_before_you_begin_metadata_are_excluded(self):
+        # Synthetic GrantSolutions-style layout: plain cover lines, a section
+        # break, a contents label and entries, then generated metadata.
+        cover = (
+            paragraph("Notice of Funding Opportunity")
+            + paragraph("Application due 01/01/2099")
+            + paragraph("Example Bureau")
+            + paragraph("Opportunity Number: HRSA-99-999").replace(
+                "</w:pPr>", "<w:sectPr/></w:pPr>", 1
+            )
+        )
+        contents = (
+            paragraph("Table of Contents", "MainHeading")
+            + paragraph("Before You Begin 2", "TOC2")
+            + paragraph("Eligibility 4", "TOC2")
+        )
+        metadata = paragraph("Metadata author: Example agency") + paragraph(
+            "Metadata keywords: Example; Test"
+        )
+
+        def body(include_cover, include_metadata):
+            return (
+                (cover if include_cover else "")
+                + contents
+                + paragraph("Before You Begin", "Heading2")
+                + paragraph("OpDiv: Example")
+                + paragraph("Opportunity number: HRSA-99-999")
+                + (metadata if include_metadata else "")
+                + paragraph("Step 1: Review the opportunity", "Heading1")
+                + paragraph("HRSA notice of funding opportunity on Grants.gov.")
+                + paragraph("Applicants should file the form.")
+            )
+
+        with TemporaryDirectory() as scratch:
+            full_path = Path(scratch) / "full.docx"
+            bare_path = Path(scratch) / "bare.docx"
+            full_path.write_bytes(docx(body(True, True)).read())
+            bare_path.write_bytes(docx(body(False, False)).read())
+            report = analyze_word(full_path)
+            bare = analyze_word(bare_path)
+        exclusions = report["word_exclusions"]
+        self.assertGreater(exclusions["cover_position"], 0)
+        self.assertEqual(exclusions["cover_total"], exclusions["cover_position"])
+        self.assertGreater(exclusions["metadata"], 0)
+        self.assertEqual(bare["word_exclusions"]["cover_total"], 0)
+        self.assertEqual(bare["word_exclusions"]["metadata"], 0)
+        # Excluding the cover and metadata leaves the same Word Count as a
+        # copy without them.
+        self.assertEqual(
+            report["metrics"]["word_count"]["value"],
+            bare["metrics"]["word_count"]["value"],
+        )
+        self.assertNotIn("Example Bureau", str(report))
+
     def test_only_verified_instruction_boxes_are_excluded(self):
         body = (
             paragraph("HRSA notice of funding opportunity on Grants.gov.")
