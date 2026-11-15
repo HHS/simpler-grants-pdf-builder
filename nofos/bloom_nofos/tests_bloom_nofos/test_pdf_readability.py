@@ -348,6 +348,14 @@ class PdfReadabilityPageTests(TestCase):
                     )
                     self.assertIn("no-store", response["Cache-Control"])
 
+    def test_metric_values_use_panel_precision(self):
+        values = {row["label"]: row["value"] for row in _metric_rows(REPORT)}
+        self.assertEqual(values["Word count"], "1,234")
+        self.assertEqual(values["Words per sentence"], "18.16")
+        self.assertEqual(values["Flesch-Kincaid Grade Level"], "10.5")
+        self.assertEqual(values["Passive sentences"], "19.74%")
+        self.assertEqual(values["Sentences per paragraph"], "Not available")
+
     def test_public_metric_policy_omits_reading_ease(self):
         rows = _metric_rows(REPORT)
         self.assertEqual(len(rows), 5)

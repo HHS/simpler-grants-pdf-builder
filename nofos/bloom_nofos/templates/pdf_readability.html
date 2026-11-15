@@ -63,7 +63,7 @@
             </p>
           {% endif %}
           {% if source_word %}
-            <p id="readability-word-guidance"><strong>Why “Estimated”?</strong> These measures describe text recovered from your Word document. Missing or changed text can affect the results. The tool may miss text in text boxes, headers, and footers, and cannot read text in images. Keep important text in the main document body. Remove other writer notes and unused draft options from the copy you upload.</p>
+            <p id="readability-word-guidance"><strong>Why “Estimated”?</strong> These measures describe text recovered from your Word document. Missing or changed text can affect the results. The tool may miss text in text boxes, headers, and footers, and cannot read text in images. Keep important text in the main document body. Remove other writer notes and unused draft options from the copy you upload. If the report shows 0 cover page words but your document has a cover page, delete the cover from the copy you upload.</p>
           {% endif %}
           {% if source_word and not report.reliability %}
             <p id="readability-reliability">This analysis does not check how completely the Word document was converted, so it does not assign a reliability rating. This does not mean a problem was detected in your upload. Any conversion warnings appear in Calculation notes.</p>
