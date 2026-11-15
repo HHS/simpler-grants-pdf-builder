@@ -8,6 +8,25 @@ the shared [ADR template](template.md), and link the record here when relevant.
 
 ---
 
+## 2026-11-14 — Use the same upload formats on both Readability Checker routes
+
+**Context:** The public Readability Checker accepted PDFs, and the signed-in
+checker also accepted Word documents. People checking readability should be able
+to use the same supported document formats on either route.
+
+**Decision:** Accept one PDF or unlocked Word (`.docx`) document on either
+route. Use the same validation, format-specific size limits, analysis, and report
+for both. Keep separate availability and usage-recording settings for the two
+routes. The signed-in route requires checker permission, and saving a Word
+comparison requires a separate permission on that route. The public route has
+its own firewall controls. Track public enablement in [#968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968).
+
+Implemented in [#1358](https://github.com/HHS/simpler-grants-pdf-builder/pull/1358).
+See the [Readability Checker guide](readability/PDF_READABILITY_PILOT.md#word-uploads-1111)
+and the [signed-out dev Word test](https://github.com/HHS/simpler-grants-pdf-builder/issues/971#issuecomment-6886105867).
+
+---
+
 ## 2026-11-13 — Remove the Beta tag from the readability metrics panel
 
 **Context:** The readability metrics accordion on the NOFO edit page showed a
