@@ -141,5 +141,14 @@ Builder deployment infrastructure lives in
 Local screenshots and checks for this change are in the
 [#1367 evidence](../review-evidence/1367/README.md).
 
-To pause uploads, turn the relevant switch off. Rolling back the application
-restores the old route and an empty pilot group; reassign participants manually.
+Switch changes take effect immediately, without a deployment:
+
+- To pause all uploads, turn off both `HHS_NOFO_PDF_METRICS_PILOT_ENABLED` and
+  `HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED`. While the public switch is
+  on, everyone can upload whatever the signed-in switch is set to; while the
+  signed-in switch is on, signed-in users can still upload.
+- To pause only signed-out uploads, turn off the public switch and leave the
+  signed-in switch on.
+
+Rolling back the application restores the old route and an empty pilot group;
+reassign participants manually.
