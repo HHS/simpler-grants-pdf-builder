@@ -192,6 +192,13 @@ comparisons apply. Builder compares the unrounded metric value and uses
 **Within target**, **Check NOFO type**, or **Needs improvement** language rather
 than pass or fail.
 
+The panel, the standalone Readability Checker and saved readability snapshots
+display non-count metrics with up to two decimal places, dropping trailing
+zeros (13.5, 1.33, 5.78%). The panel formats in the browser with
+`Intl.NumberFormat`; server-rendered views use
+`nofos/nofos/readability_format.py`, which rounds the same way, so the same
+value shows the same digits everywhere. Word count shows whole numbers.
+
 The package response and stored snapshot retain all calculated metrics.
 `flesch_reading_ease` does not have a card in the edit-screen panel.
 Sentences per paragraph uses the component supplied with words per sentence;

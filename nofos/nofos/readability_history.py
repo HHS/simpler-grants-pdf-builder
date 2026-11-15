@@ -12,6 +12,7 @@ from .readability import (
     get_metrics_package_version,
     normalize_readability_metric_goals,
 )
+from .readability_format import format_metric_number
 
 DISPLAY_METRICS = (
     ("word_count", "Word count"),
@@ -95,7 +96,7 @@ def format_value(metric_id, value):
     if metric_id == "word_count":
         return f"{value:,.0f}"
     suffix = "%" if metric_id == "passive_sentence_percentage" else ""
-    return f"{value:.1f}{suffix}"
+    return f"{format_metric_number(value)}{suffix}"
 
 
 def change_summary(row, previous, goals):

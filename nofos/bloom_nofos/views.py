@@ -23,6 +23,7 @@ from nofos.pdf_readability import (
     analyze_uploaded_pdf,
 )
 from nofos.pdf_readability_metrics import record_attempt, retention_days
+from nofos.readability_format import format_metric_number
 from nofos.readability_scratch import CheckerDiskUploadHandler, request_workspace
 from nofos.readability_upload_limits import MIB, PDF_UPLOAD_BYTES, WORD_UPLOAD_BYTES
 
@@ -85,9 +86,9 @@ def _metric_rows(report):
         elif metric_id == "word_count":
             formatted = f"{value:,.0f}"
         elif metric_id == "passive_sentence_percentage":
-            formatted = f"{value:,.1f}%"
+            formatted = f"{format_metric_number(value)}%"
         else:
-            formatted = f"{value:,.1f}"
+            formatted = format_metric_number(value)
         # A metric without evidence must not inherit another metric's rating.
         # Generic PDF extraction retains its explicit low-confidence policy.
         reliability = metric.get("reliability")

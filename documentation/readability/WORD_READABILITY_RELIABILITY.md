@@ -4,6 +4,9 @@ The standalone Word checker reports aggregate counts for recognized covers,
 contents, writer instructions, and Builder metadata. Cover exclusion requires
 Word’s Cover Pages gallery. Opening text before a section break remains
 countable. The counts describe recognized exclusions from recovered text.
+When the report shows 0 cover page words but the document has a cover, the
+**Why “Estimated”?** guidance asks users to delete the cover from the copy they
+upload.
 
 Investigation for #1169, against Builder's pinned `hhs-nofo-metrics` 0.6.0.
 This changes report presentation, not formulas, source recognition, permissions
