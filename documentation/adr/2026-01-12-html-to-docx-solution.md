@@ -4,6 +4,8 @@
 - **Last Modified:** 2026-01-12
 - **Deciders:** Julia Hogan, Paul Craig
 
+> **How it works today:** see [Word (DOCX) export workflow](../DOCX_EXPORT.md) for a sequence diagram of the GrabzIt download flow and where NOFO data and temporary files are stored.
+
 ## Context and Problem Statement
 
 The goal of this ADR is to select a solution for converting HTML documents to DOCX format for the NOFO Composer. Users need to be able to export their NOFO documents as Word files that maintain formatting, styles, and accessibility features. The exported documents must also be re-importable into the system, creating a round-trip workflow.
@@ -149,6 +151,7 @@ Grabzit is an HTML-to-DOCX conversion service with Python client library support
 
 ## Links
 
+- [Word (DOCX) export workflow](../DOCX_EXPORT.md) (implementation, data flow diagram, and data storage)
 - [Grabzit HTML to DOCX API](https://grabz.it/html-to-word-docx-api/)
 - [Grabzit Python Client Documentation](https://grabz.it/api/python/technical-documentation/)
 - [Grabzit Trust Center](https://grabz.it/trust/) (Security and compliance information)
