@@ -135,8 +135,8 @@ in the linked evidence records; update those first, then this table.
 
 | Step | Status | Still open | Evidence |
 | --- | --- | --- | --- |
-| [1. Preflight](#1-preflight-no-control-changes) | Baseline recorded; found a route-coverage gap | Recheck route coverage on the current infrastructure revision | [October 28 preflight](../review-evidence/readability-readiness-1239/README.md#preflight-finding-renamed-route-coverage) |
-| [2. WAF test card](#2-waf-test-card-synthetic-empty-requests-no-file-uploads) | Done in dev | None in dev | [SGG #12568](https://github.com/HHS/simpler-grants-gov/issues/12568) |
+| [1. Preflight](#1-preflight-no-control-changes) | Done in dev. The route-coverage gap found October 28 was fixed by [SGG #13060](https://github.com/HHS/simpler-grants-gov/pull/13060), and the WAF tests covered all four route forms. | None in dev | [October 28 preflight](../review-evidence/readability-readiness-1239/README.md#preflight-finding-renamed-route-coverage) · [Dated launch evidence](../review-evidence/971/README.md#dated-launch-evidence) |
+| [2. WAF test card](#2-waf-test-card-synthetic-empty-requests-no-file-uploads) | Done in dev | None in dev | [Dated launch evidence](../review-evidence/971/README.md#dated-launch-evidence) |
 | [3. Runtime checks](#3-runtime-checks-without-opening-public-uploads) | Partly done | Live-service interruption, production storage and cleanup, log access and retention, slow-upload protection | [Storage and cleanup](../review-evidence/971/README.md#november-10-dev-temporary-storage-and-cleanup) · [Logging](../review-evidence/971/README.md#november-10-signed-out-dev-logging-check) |
 | [4. Production setup](#4-production-setup-separate-from-public-launch) | Partly done | Production storage and cleanup, log access, handling approvals, Office of Grants leadership approval | [Dated launch evidence](../review-evidence/971/README.md#dated-launch-evidence) |
 
