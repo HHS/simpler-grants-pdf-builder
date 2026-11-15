@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.62.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.62.0...nofos-v3.62.1) (2026-11-15)
+
+
+### Documentation
+
+* make readability readiness doc scannable for leadership ([#1370](https://github.com/HHS/simpler-grants-pdf-builder/issues/1370)) ([4ea57e6](https://github.com/HHS/simpler-grants-pdf-builder/commit/4ea57e6f9862ee4dbb858e0c428ccc14e4bc3431))
+* say both Readability Checker switches must be off to pause all uploads ([#1372](https://github.com/HHS/simpler-grants-pdf-builder/issues/1372)) ([f6ad2b9](https://github.com/HHS/simpler-grants-pdf-builder/commit/f6ad2b9fe9a01a051ae68d86372abd1318345ae9))
+
 ## [3.62.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.61.0...nofos-v3.62.0) (2026-11-15)
 
 
