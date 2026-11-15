@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.61.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.60.0...nofos-v3.61.0) (2026-11-15)
+
+
+### Features
+
+* adopt hhs-nofo-metrics 0.8.1 for Word readability scope ([#1366](https://github.com/HHS/simpler-grants-pdf-builder/issues/1366)) ([b0ea20b](https://github.com/HHS/simpler-grants-pdf-builder/commit/b0ea20bb04d86bdffbf2c3e4eb2c888eeb332e96))
+* show recognized Word readability exclusions ([#1350](https://github.com/HHS/simpler-grants-pdf-builder/issues/1350)) ([d0ac018](https://github.com/HHS/simpler-grants-pdf-builder/commit/d0ac01821c13fd4c9206a9686a0f3eda8ea17681))
+
+
+### Bug Fixes
+
+* show Readability Checker values with the panel's precision ([#1365](https://github.com/HHS/simpler-grants-pdf-builder/issues/1365)) ([9046f0c](https://github.com/HHS/simpler-grants-pdf-builder/commit/9046f0cf00ba3dd88fef5e94ec6f64d72159e7b5))
+
+
+### Continuous Integration
+
+* require DOCX_EXPORT.md updates for Word export changes ([#1363](https://github.com/HHS/simpler-grants-pdf-builder/issues/1363)) ([613a328](https://github.com/HHS/simpler-grants-pdf-builder/commit/613a328afa43029f71573c737d6b9091eaf494cc))
+
 ## [3.60.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.59.1...nofos-v3.60.0) (2026-11-15)
 
 
