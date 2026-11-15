@@ -1,0 +1,116 @@
+# docx_export_docs.yml
+#
+# Fails when a PR changes Word (DOCX) export code without updating
+# documentation/DOCX_EXPORT.md. Add the `docs-not-needed` label to skip the check
+# when a change does not affect anything the page describes (for example, a
+# refactor or a test-only change).
+#
+# The file lists below are the source of truth for what counts as Word export
+# code. Keep them in sync with:
+#   - documentation/DOCX_EXPORT.md § Keeping this page current
+#   - AGENTS.md § Keep Word export docs current
+#   - .github/pull_request_template.md (Word export checklist item)
+
+name: Word Export Docs Check
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - labeled
+      - unlabeled
+
+permissions:
+  contents: read
+
+jobs:
+  check-docx-export-docs:
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'docs-not-needed') }}
+    name: Check DOCX_EXPORT.md is updated
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compare changed files
+        shell: python
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          import os
+          import re
+          import subprocess
+
+          DOC = "documentation/DOCX_EXPORT.md"
+
+          # Files that exist only for Word export. Any change counts.
+          EXPORT_FILES = {
+              "nofos/bloom_nofos/templates/includes/docx_download_button_form.html",
+              "nofos/bloom_nofos/templates/includes/download_docx_button.html",
+              "nofos/composer/templates/composer/composer_export.html",
+              "nofos/composer/templates/composer/writer/docx_export.html",
+              "nofos/nofos/templates/nofos/includes/nofo_export_document.html",
+              "nofos/nofos/templates/nofos/nofo_export.html",
+              "nofos/nofos/templatetags/truncate_anchor_links_for_docx.py",
+          }
+
+          # Shared files that hold Word export code next to other code. A change
+          # counts only when a changed line, or the class/function it sits in,
+          # matches EXPORT_PATTERN.
+          SHARED_FILES = {
+              "Dockerfile",  # gunicorn timeout
+              "nofos/bloom_nofos/settings.py",
+              "nofos/bloom_nofos/utils.py",
+              "nofos/composer/views.py",
+              "nofos/nofos/views.py",
+          }
+          # Kept narrow on purpose: Word *import* code also mentions "docx".
+          EXPORT_PATTERN = re.compile(
+              r"grabzit|is_valid_docx|generate_docx_download_response"
+              r"|download_target|(NOFOs|Composer|WriterInstance)ExportView"
+              r"|--timeout",
+              re.IGNORECASE,
+          )
+
+          base, head = os.environ["BASE_SHA"], os.environ["HEAD_SHA"]
+          revs = f"{base}...{head}"
+
+          def git(*args):
+              return subprocess.run(
+                  ["git", *args], check=True, capture_output=True, text=True
+              ).stdout
+
+          changed = set(git("diff", "--name-only", revs).splitlines())
+          if DOC in changed:
+              print(f"{DOC} was updated.")
+              raise SystemExit(0)
+
+          triggers = sorted(changed & EXPORT_FILES)
+          for path in sorted(changed & SHARED_FILES):
+              diff = git("diff", "--unified=0", revs, "--", path)
+              lines = [
+                  line
+                  for line in diff.splitlines()
+                  if line.startswith("@@")
+                  or (line[:1] in "+-" and not line.startswith(("+++", "---")))
+              ]
+              if any(EXPORT_PATTERN.search(line) for line in lines):
+                  triggers.append(path)
+
+          if not triggers:
+              print("No Word export changes found.")
+              raise SystemExit(0)
+
+          print("Word export code changed in:")
+          for path in triggers:
+              print(f"  - {path}")
+          print(
+              f"::error::Word export code changed but {DOC} was not updated. "
+              f"Update {DOC} to match, or add the 'docs-not-needed' label if "
+              "nothing it describes has changed."
+          )
+          raise SystemExit(1)

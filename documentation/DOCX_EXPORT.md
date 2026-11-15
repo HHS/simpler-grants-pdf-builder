@@ -5,7 +5,7 @@ This page explains how a "Download Word" request becomes a `.docx` file, which s
 For why we chose GrabzIt over other converters, see the ADR: [HTML to DOCX solution](adr/2026-01-12-html-to-docx-solution.md). For which environments may use GrabzIt credentials, see [`DEPLOYMENT.md` § Word export environment isolation](../DEPLOYMENT.md#word-export-environment-isolation).
 
 - **Related issue:** [#1351](https://github.com/HHS/simpler-grants-pdf-builder/issues/1351)
-- **Source baseline:** `main` at release 3.59.1. Recheck this page when `generate_docx_download_response` changes.
+- **Source baseline:** `main` at release 3.59.1. See [Keeping this page current](#keeping-this-page-current).
 
 ## Where it is used
 
@@ -117,3 +117,32 @@ Once [#1354](https://github.com/HHS/simpler-grants-pdf-builder/pull/1354) is dep
 
 - `<p>&nbsp;</p>` spacers marked `<!-- remove this if grabzit fixes their issue -->` in `composer_export.html` and `nofo_export_document.html` work around a GrabzIt layout issue.
 - Heading IDs and anchor links are shortened for DOCX by the `truncate_anchor_links_for_docx` template tags.
+
+## Keeping this page current
+
+Update this page in the same PR as any change to Word export code. The
+[`Word Export Docs Check`](../.github/workflows/docx_export_docs.yml) workflow fails a PR that
+changes the files below without changing this page. If nothing described here has changed, add the
+`docs-not-needed` label to the PR and explain why in its description.
+
+Any change to these files triggers the check:
+
+- `nofos/bloom_nofos/templates/includes/docx_download_button_form.html`
+- `nofos/bloom_nofos/templates/includes/download_docx_button.html`
+- `nofos/composer/templates/composer/composer_export.html`
+- `nofos/composer/templates/composer/writer/docx_export.html`
+- `nofos/nofos/templates/nofos/includes/nofo_export_document.html`
+- `nofos/nofos/templates/nofos/nofo_export.html`
+- `nofos/nofos/templatetags/truncate_anchor_links_for_docx.py`
+
+These shared files trigger the check only when the change touches Word export code (GrabzIt, the
+DOCX helpers, `download_target`, the export views or the gunicorn `--timeout`):
+
+- `Dockerfile`
+- `nofos/bloom_nofos/settings.py`
+- `nofos/bloom_nofos/utils.py`
+- `nofos/composer/views.py`
+- `nofos/nofos/views.py`
+
+When you add or move Word export code, update this list and the matching lists in the workflow,
+[`AGENTS.md`](../AGENTS.md#keep-word-export-docs-current) and the PR template.
