@@ -35,23 +35,27 @@ class WordScopeConversionTests(SimpleTestCase):
         self.assertEqual(report["word_exclusions"]["table_of_contents"], 2)
         self.assertEqual(report["metrics"]["word_count"]["value"], 17)
 
-    def test_position_only_cover_is_distinguished_from_unrecognized_opening(self):
-        for following_style, expected in (("Heading1", 2), ("Normal", 0)):
-            with self.subTest(style=following_style), TemporaryDirectory() as scratch:
-                opening = paragraph("Example cover").replace(
-                    "</w:pPr>", "<w:sectPr/></w:pPr>", 1
-                )
-                body = (
-                    opening
-                    + paragraph("Step 1: Review the opportunity", following_style)
-                    + paragraph("HRSA notice of funding opportunity on Grants.gov.")
-                    + paragraph("Opportunity number: HRSA-27-123")
-                )
-                path = Path(scratch) / "synthetic.docx"
-                path.write_bytes(docx(body).read())
-                self.assertEqual(
-                    analyze_word(path)["word_exclusions"]["cover_position"], expected
-                )
+    def test_section_break_keeps_opening_applicant_prose(self):
+        opening = paragraph("Eligible applicants must serve rural communities.").replace(
+            "</w:pPr>", "<w:sectPr/></w:pPr>", 1
+        )
+        body = (
+            paragraph("Step 1: Review the opportunity", "Heading1")
+            + paragraph("HRSA notice of funding opportunity on Grants.gov.")
+            + paragraph("Opportunity number: HRSA-27-123")
+        )
+        with TemporaryDirectory() as scratch:
+            baseline_path = Path(scratch) / "baseline.docx"
+            applicant_path = Path(scratch) / "applicant.docx"
+            baseline_path.write_bytes(docx(body).read())
+            applicant_path.write_bytes(docx(opening + body).read())
+            baseline = analyze_word(baseline_path)
+            report = analyze_word(applicant_path)
+        self.assertEqual(report["word_exclusions"]["cover_total"], 0)
+        self.assertEqual(
+            report["metrics"]["word_count"]["value"],
+            baseline["metrics"]["word_count"]["value"] + 6,
+        )
 
     def test_only_verified_instruction_boxes_are_excluded(self):
         body = (

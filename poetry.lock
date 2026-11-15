@@ -775,13 +775,14 @@ tornado = ["tornado (>=6.5.7)"]
 
 [[package]]
 name = "hhs-nofo-metrics"
-version = "0.7.0"
+version = "0.8.0"
 description = "Versioned, reproducible readability metrics for HHS NOFO documents"
 optional = false
 python-versions = ">=3.11"
 groups = ["main"]
-files = []
-develop = false
+files = [
+    {file = "hhs_nofo_metrics-0.8.0-py3-none-any.whl", hash = "sha256:21ae01ee681ec424a162397cd1ba98980ebc577cd2142ec19fd6205265b1e1b2"},
+]
 
 [package.dependencies]
 pdfplumber = ">=0.11,<1"
@@ -791,10 +792,8 @@ pypdf = ">=5,<7"
 dev = ["build (>=1.2,<2)", "jsonschema (>=4.23,<5)", "pre-commit (>=4.6,<5)", "pytest (>=8,<9)", "pytest-cov (>=7.1,<8)", "ruff (>=0.16,<0.17)"]
 
 [package.source]
-type = "git"
-url = "https://github.com/agilesix/hhs-nofo-metrics.git"
-reference = "d8e257d695b8ccb0dad1f3e548d1f251dd8a9cac"
-resolved_reference = "d8e257d695b8ccb0dad1f3e548d1f251dd8a9cac"
+type = "url"
+url = "https://github.com/agilesix/hhs-nofo-metrics/releases/download/v0.8.0/hhs_nofo_metrics-0.8.0-py3-none-any.whl"
 
 [[package]]
 name = "identify"
@@ -1888,4 +1887,4 @@ type = ["pytest-mypy (>=1.0.1) ; platform_python_implementation != \"PyPy\""]
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.14"
-content-hash = "8e2b2df03c8b2321a1790323be3994053bb427c32bbc5c9fae63ea227591610e"
+content-hash = "4fbe12024f6720597f87dd11f7e4beb81b524206a7751f2310d37086be523f75"
