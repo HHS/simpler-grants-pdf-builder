@@ -129,15 +129,16 @@ link to infrastructure procedures rather than copying their implementations.
 ## Verification procedure
 
 These steps are for the operators running the checks. Each section is
-collapsed; select a heading's **Show steps** to expand it. The table gives the
-current status so you can scan it without expanding anything.
+collapsed; select a heading's **Show steps** to expand it. The table gives each
+step's current status and what's still open. Test results and their dates live
+in the linked evidence records; update those first, then this table.
 
-| Step | Status | Still open |
-| --- | --- | --- |
-| [1. Preflight](#1-preflight-no-control-changes) | Baseline recorded October 28. It found the firewall rules covered only the legacy route. | Recheck route coverage on the current infrastructure revision. |
-| [2. WAF test card](#2-waf-test-card-synthetic-empty-requests-no-file-uploads) | Done in dev: rate limiting, emergency blocking and restoration worked. | None in dev. |
-| [3. Runtime checks](#3-runtime-checks-without-opening-public-uploads) | Partly done: the November 10 dev task verified temporary storage, cleanup, analyzer limits and database admission. One signed-out upload left no filename or document text in the log fields searched. | Live-service interruption, production storage and cleanup, log access and retention, and slow-upload protection. |
-| [4. Production setup](#4-production-setup-separate-from-public-launch) | Partly done: alarm and recovery emails delivered November 4. The firewall rule is in Block mode, and its logging configuration was inspected November 12. | Production storage and cleanup, log access, handling approvals and Office of Grants leadership approval. |
+| Step | Status | Still open | Evidence |
+| --- | --- | --- | --- |
+| [1. Preflight](#1-preflight-no-control-changes) | Baseline recorded; found a route-coverage gap | Recheck route coverage on the current infrastructure revision | [October 28 preflight](../review-evidence/readability-readiness-1239/README.md#preflight-finding-renamed-route-coverage) |
+| [2. WAF test card](#2-waf-test-card-synthetic-empty-requests-no-file-uploads) | Done in dev | None in dev | [SGG #12568](https://github.com/HHS/simpler-grants-gov/issues/12568) |
+| [3. Runtime checks](#3-runtime-checks-without-opening-public-uploads) | Partly done | Live-service interruption, production storage and cleanup, log access and retention, slow-upload protection | [Storage and cleanup](../review-evidence/971/README.md#november-10-dev-temporary-storage-and-cleanup) · [Logging](../review-evidence/971/README.md#november-10-signed-out-dev-logging-check) |
+| [4. Production setup](#4-production-setup-separate-from-public-launch) | Partly done | Production storage and cleanup, log access, handling approvals, Office of Grants leadership approval | [Dated launch evidence](../review-evidence/971/README.md#dated-launch-evidence) |
 
 ### Completed evidence to reuse
 
