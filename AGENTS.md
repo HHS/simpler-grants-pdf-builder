@@ -102,6 +102,20 @@ before merging. In the PR checklist, confirm the instructions were updated or ex
 update is needed. Routine internal changes with no effect on editor instructions need only a
 brief explanation; they do not require a documentation edit.
 
+## Keep Word export docs current
+
+When a change touches Word (DOCX) export code, review
+[`documentation/DOCX_EXPORT.md`](documentation/DOCX_EXPORT.md) and update it in the same PR.
+This covers the GrabzIt helper (`generate_docx_download_response`, `is_valid_docx` and
+`is_grabzit_word_export_enabled` in `nofos/bloom_nofos/utils.py`), the export views, the export
+templates, the `truncate_anchor_links_for_docx` template tags, the `GRABZIT_*` settings and the
+gunicorn timeout. The full file list is in
+[DOCX_EXPORT.md § Keeping this page current](documentation/DOCX_EXPORT.md#keeping-this-page-current).
+
+The `Word Export Docs Check` workflow fails a PR that changes these files without changing
+`DOCX_EXPORT.md`. If nothing the page describes has changed, add the `docs-not-needed` label and
+say why in the PR description instead of making a placeholder edit.
+
 ## Runtime feature switches
 
 If a feature should be enabled or disabled by an administrator after deployment,
