@@ -33,11 +33,7 @@ class ComparisonTests(TestCase):
             password="test",
             force_password_reset=False,
         )
-        for codename in (
-            "manage_word_comparisons",
-            "use_pdf_readability_pilot",
-            "view_builder_metrics",
-        ):
+        for codename in ("manage_word_comparisons", "view_builder_metrics"):
             self.user.user_permissions.add(Permission.objects.get(codename=codename))
         self.client.force_login(self.user)
 
@@ -45,7 +41,7 @@ class ComparisonTests(TestCase):
         count = WordComparison.objects.count()
         with patch("bloom_nofos.views.analyze_uploaded_pdf", return_value=REPORT):
             response = self.client.post(
-                reverse("nofos:authenticated_pdf_readability"),
+                reverse("pdf_readability"),
                 {"pdf": SimpleUploadedFile("Synthetic.docx", b"synthetic")},
             )
         self.assertEqual(response.status_code, 200)
@@ -281,7 +277,6 @@ class ComparisonTests(TestCase):
         self.assertTrue(form.initial["can_manage_word_comparisons"])
         form.cleaned_data = {
             "can_view_metrics": False,
-            "can_use_pdf_readability_pilot": False,
             "can_manage_word_comparisons": False,
         }
         form._save_m2m()
@@ -379,4 +374,92 @@ class ComparisonTests(TestCase):
                 url, {"run": token, "passive": 3}, HTTP_ACCEPT="application/json"
             ).status_code,
             403,
+        )
+
+
+@override_config(
+    HHS_NOFO_WORD_COMPARISONS_ENABLED=True,
+    HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True,
+    HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED=False,
+)
+class SingleCheckerComparisonAccessTests(TestCase):
+    """Comparison save follows the user's permission on /readability-checker/."""
+
+    def setUp(self):
+        self.url = reverse("pdf_readability")
+        self.user = BloomUser.objects.create_user(
+            email="comparer@example.test",
+            group="bloom",
+            password="test",
+            force_password_reset=False,
+        )
+
+    def analyze(self, name="Synthetic.docx", report=REPORT):
+        with patch("bloom_nofos.views.analyze_uploaded_pdf", return_value=report):
+            response = self.client.post(
+                self.url, {"pdf": SimpleUploadedFile(name, b"synthetic")}
+            )
+        self.assertEqual(response.status_code, 200)
+        return response
+
+    def grant(self):
+        self.user.user_permissions.add(
+            Permission.objects.get(codename="manage_word_comparisons")
+        )
+
+    def test_anonymous_user_never_sees_comparison(self):
+        response = self.analyze()
+        self.assertNotIn("comparison_run", response.context)
+        self.assertNotContains(response, "Compare with Microsoft Word for Windows")
+
+    def test_signed_in_without_permission_does_not_see_comparison(self):
+        self.client.force_login(self.user)
+        self.assertNotContains(
+            self.analyze(), "Compare with Microsoft Word for Windows"
+        )
+
+    def test_signed_in_with_permission_sees_and_saves_comparison(self):
+        self.grant()
+        self.client.force_login(self.user)
+        response = self.analyze()
+        self.assertContains(response, "Compare with Microsoft Word for Windows")
+        saved = self.client.post(
+            reverse("nofos:word_comparison_save"),
+            {"run": response.context["comparison_run"], "passive": 4.2},
+        )
+        self.assertEqual(saved.status_code, 200)
+        self.assertEqual(WordComparison.objects.get().word_passive, 4.2)
+
+    def test_pdf_and_non_word_profiles_do_not_offer_comparison(self):
+        self.grant()
+        self.client.force_login(self.user)
+        self.assertNotContains(
+            self.analyze("Synthetic.pdf"), "Compare with Microsoft Word for Windows"
+        )
+        self.assertNotContains(
+            self.analyze(report={**REPORT, "profile": "generic"}),
+            "Compare with Microsoft Word for Windows",
+        )
+
+    @override_config(HHS_NOFO_WORD_COMPARISONS_ENABLED=False)
+    def test_comparison_switch_off_hides_comparison(self):
+        self.grant()
+        self.client.force_login(self.user)
+        self.assertNotContains(
+            self.analyze(), "Compare with Microsoft Word for Windows"
+        )
+
+    def test_failed_save_without_javascript_links_back_to_checker(self):
+        self.grant()
+        self.client.force_login(self.user)
+        token = self.analyze().context["comparison_run"]
+        response = self.client.post(
+            reverse("nofos:word_comparison_save"), {"run": token, "passive": 101}
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(
+            response,
+            f'<a class="usa-link text-bold" href="{self.url}">Analyze another document</a>',
+            html=True,
+            status_code=400,
         )

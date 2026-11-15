@@ -15,10 +15,12 @@ ROUTES = {
     "/readability/": "public",
     "/readability-checker": "public",
     "/readability-checker/": "public",
-    "/nofos/readability": "authenticated",
-    "/nofos/readability/": "authenticated",
-    "/nofos/readability-checker": "authenticated",
-    "/nofos/readability-checker/": "authenticated",
+    # Retired signed-in routes now redirect without reading the body (#1367).
+    # Keep observing them so stale-form POSTs can be confirmed as unread.
+    "/nofos/readability": "retired_redirect",
+    "/nofos/readability/": "retired_redirect",
+    "/nofos/readability-checker": "retired_redirect",
+    "/nofos/readability-checker/": "retired_redirect",
 }
 MAX_OBSERVED_READS = 8
 

@@ -262,20 +262,21 @@ class MetricsTests(TestCase):
             page,
             "These metrics include recorded attempts from the Readability Checker.",
         )
-        self.assertContains(
-            page,
-            "Authenticated uploads support PDF and Word (.docx); "
-            "public uploads support PDF only.",
-        )
+        self.assertContains(page, "Uploads support PDF and Word (.docx).")
         self.assertContains(
             page,
             "File categories describe the submitted extension, not verified contents.",
         )
         self.assertContains(
             page,
-            "Choose public, authenticated or unknown to filter usage by upload route.",
+            "Choose public (not signed in), authenticated (signed in) or unknown "
+            "to filter usage.",
         )
         self.assertContains(page, 'aria-describedby="pilot-source-hint"')
+        self.assertContains(
+            page, "Authenticated means signed in and Public means not signed in."
+        )
+        self.assertContains(page, "Earlier records used a different meaning.")
         self.assertContains(page, "No recorded attempts.")
         main = self.client.get(reverse("nofos:builder_metrics"))
         self.assertContains(

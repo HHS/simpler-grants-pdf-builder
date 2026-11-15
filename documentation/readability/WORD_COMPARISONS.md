@@ -53,8 +53,10 @@ can change the differences. Inspect calculation details before interpreting a tr
 1. Apply migration 0160 before using the comparison page.
 2. **HHS_NOFO_WORD_COMPARISONS_ENABLED** is a default-off Constance flag and takes
    effect without restarting workers. It controls new submissions only; metrics viewers
-   can always access the comparison page and its usage-page link. Authenticated Readability Checker enablement
-   and its separate permission remain required to analyze a Word upload.
+   can always access the comparison page and its usage-page link. Saving also needs a
+   Word analysis on `/readability-checker/`, so the reviewer must be signed in while
+   the checker is open to them (public or signed-in switch on). Since #1367 there is
+   no separate checker permission or route.
 3. In user admin, grant **Can save passive sentence comparisons** to selected reviewers.
    This grants nofos.manage_word_comparisons, independently of metrics viewing.
    Bloom membership neither grants nor blocks this permission.

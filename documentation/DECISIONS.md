@@ -8,6 +8,35 @@ the shared [ADR template](template.md), and link the record here when relevant.
 
 ---
 
+## 2026-11-15 — Serve the Readability Checker from one URL and retire the pilot permission
+
+**Context:** The signed-in checker at `/nofos/readability-checker/` was added in
+#1035 so approved pilot participants could use it while public uploads were off.
+It ran the same code as `/readability-checker/`. The only user-facing difference
+was Word comparison save, which already had its own permission and switch.
+
+**Decision:**
+
+- Serve the checker only from `/readability-checker/`. The old
+  `/nofos/readability-checker/` and `/nofos/readability/` URLs permanently
+  redirect (301) in one hop and never forward an upload.
+- Control access with two Constance switches. The public switch opens the checker
+  to everyone; the signed-in switch keeps it open to any signed-in Builder user
+  while the public switch is off. Remove the per-user pilot permission and group.
+- Show Word comparison save to signed-in users with the comparison permission.
+  Its wording is unchanged: the saver is stored but not displayed anywhere.
+- Record usage as `authenticated` (signed in) or `public` (not signed in). Keep
+  `unknown` only for historical rows.
+- Add the Builder header's account item (Login link or signed-in email) to the
+  checker header, hidden when printing.
+- Keep the WAF upload limit at 30 POSTs per IP per 5 minutes; it now also covers
+  signed-in uploads.
+
+Tracked in [#1367](https://github.com/HHS/simpler-grants-pdf-builder/issues/1367).
+See [signed-in Readability Checker access](readability/AUTHENTICATED_PDF_READABILITY_PILOT.md).
+
+---
+
 ## 2026-11-14 — Use the same upload formats on both Readability Checker routes
 
 **Context:** The public Readability Checker accepted PDFs, and the signed-in

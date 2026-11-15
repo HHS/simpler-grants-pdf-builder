@@ -7,7 +7,7 @@ link to the owning guide instead of duplicating its procedures.
 | --- | --- |
 | [Source-native metrics](READABILITY_METRICS.md) | Package integration, source contract, editor panel and saved readability history |
 | [Readability Checker](PDF_READABILITY_PILOT.md) | Shared upload processing, recognition, limits, public-route release gates and stop procedure |
-| [Authenticated pilot](AUTHENTICATED_PDF_READABILITY_PILOT.md) | Restricted participant access, authenticated-route operations and activation checks |
+| [Signed-in access](AUTHENTICATED_PDF_READABILITY_PILOT.md) | Public and signed-in switches, header account item, usage labels, retired pilot route and permission |
 | [Drafting guidance](DRAFT_PDF_READABILITY.md) | Content preparation, measurement scope and current validation limitations |
 | [Word report scope and reliability](WORD_READABILITY_RELIABILITY.md) | Conversion coverage, absent Word reliability rating and report presentation |
 | [Deployment safeguards](PDF_READABILITY_SAFEGUARDS.md) | Source-based controls inventory and handling decisions that target deployments must establish |

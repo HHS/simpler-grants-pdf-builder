@@ -44,6 +44,10 @@ urlpatterns = [
     ),
     re_path(r"^favicon\.ico$", favicon_view),
     path("martor/", include("martor.urls")),
+    # The signed-in checker moved to /readability-checker/ (#1367). These sit
+    # outside nofos.urls so signed-out visitors aren't sent to login first.
+    path("nofos/readability-checker/", views.retired_checker_redirect),
+    path("nofos/readability/", views.retired_checker_redirect),
     path("nofos/", include("nofos.urls")),
     path("compare/", include("compare.urls")),
     path("composer/", include("composer.urls")),

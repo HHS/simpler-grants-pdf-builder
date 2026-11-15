@@ -968,10 +968,11 @@ succeed even if metrics could not be saved. See [readability metrics](readabilit
 ### TASK-READABILITY-UPLOAD — Check Word or PDF readability without creating a NOFO
 
 **Starting point:** Open the **Readability Checker** at
-`/readability-checker/` for the public route or `/nofos/readability-checker/`
-for the signed-in route. Each route has its own availability setting. The
-signed-in route requires an active account and explicit checker permission.
-If access is denied or the page is unavailable, contact the checker operator.
+`/readability-checker/`. The old `/nofos/readability-checker/` link redirects
+there. Whether you can upload depends on two operator switches: one opens the
+checker to everyone, and the other opens it to signed-in Builder users. If the
+page says the checker is unavailable, select **Login** in the header and sign in,
+then try again. If it's still unavailable, contact the checker operator.
 
 **Steps**
 
@@ -1010,10 +1011,10 @@ count. Keep instructions applicants need. An in-progress draft can be checked
 before publication design, but favorable scores do not establish publication
 readiness. Compare drafts with the same content scope.
 Word, PDF and saved-Builder scores can differ; use the same format and
-analysis method when tracking revisions. Both checker routes support the same
-upload formats and limits. Saving Word comparisons requires the signed-in route
-and the separate permission.
-See [authenticated readability pilot](readability/AUTHENTICATED_PDF_READABILITY_PILOT.md).
+analysis method when tracking revisions. Signed-in and signed-out uploads
+support the same formats and limits. Saving Word comparisons requires being
+signed in and the separate comparison permission.
+See [signed-in Readability Checker access](readability/AUTHENTICATED_PDF_READABILITY_PILOT.md).
 
 ---
 
@@ -1186,7 +1187,8 @@ matching task in the same pull request.
 ### TASK-WORD-COMPARISON — Compare passive sentence percentages
 
 **Before you start:** an operator must enable comparisons and grant you
-**Can save passive sentence comparisons** in addition to Readability Checker access.
+**Can save passive sentence comparisons**. Sign in before uploading: the
+comparison entry appears only for signed-in users with that permission.
 
 1. Complete [TASK-READABILITY-UPLOAD](#task-readability-upload) with a Word file.
 2. On the report, enter **Microsoft Word for Windows passive sentences (%)** for

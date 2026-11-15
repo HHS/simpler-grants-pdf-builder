@@ -1,9 +1,12 @@
 # Readability Checker
 
-The public Readability Checker has an unlinked `/readability-checker/` route.
+The Readability Checker has one unlinked URL, `/readability-checker/`.
 Users can upload one PDF or Word (.docx) document, receive an immediate readability report, and use the
 browser's **Print / save as PDF** dialog to keep a copy. The checker does not
 create a NOFO or save report history. Anyone with the URL can reach the page.
+Two switches control who can upload: the public switch opens it to everyone, and
+the signed-in switch keeps it open to signed-in Builder users while the public
+switch is off. See [signed-in access](AUTHENTICATED_PDF_READABILITY_PILOT.md).
 
 Saved readability checkpoints, per-NOFO history, and the saved-results overview
 (#1009 / #1014) belong only to the authenticated NOFO Builder feature documented in
@@ -15,10 +18,9 @@ history. Browser **Print / save as PDF** saves a local copy, not server-side his
 
 ## Word uploads (#1111)
 
-Both the public `/readability-checker/` route and the authorized
-`/nofos/readability-checker/` route accept unlocked Word (`.docx`) files and PDFs.
-Each route has its own availability setting. Legacy `.doc`, macro-enabled
-documents and other file types are unsupported.
+The checker accepts unlocked Word (`.docx`) files and PDFs for everyone who can
+use it. Legacy `.doc`, macro-enabled documents and other file types are
+unsupported.
 
 The existing isolated worker validates the ZIP container before using the
 already installed Mammoth converter. It permits at most 2,000 entries and
@@ -61,8 +63,7 @@ The complete current alert-copy catalog, report headings, metric labels, rating
 selection rule and authenticated/public variants are documented in
 [UI patterns — Readability estimate reliability alerts](../UI_PATTERNS.md#readability-estimate-reliability-alerts).
 That catalog also distinguishes an unavailable metric from unassessed reliability.
-Source explanations stay in one paragraph; only the authenticated tool suggests
-uploading Word instead of a PDF. Historical screenshots may predate copy changes.
+Source explanations stay in one paragraph. Historical screenshots may predate copy changes.
 
 The upload limits are 5 MiB for PDF and 15 MiB for Word. Both formats share a 15-second deadline, global
 analysis slot, filtered subprocess environment and Linux resource limits. Word
@@ -84,14 +85,17 @@ of 50 recent attempts. JSON uses the same permission and `private, no-store`.
 No OpDiv or user attribution is possible. It is a support trend source, not an
 infrastructure alarm or evidence that #970's safeguards are deployed.
 
-Totals combine recorded attempts unless filtered by upload route or file category.
-Both routes accept PDF and Word (.docx). The source filter selects the upload
-route (public, authenticated or unknown), not the visitor's login state.
+Totals combine recorded attempts unless filtered by source or file category.
+The source filter selects whether the person was signed in when they uploaded:
+`authenticated` (signed in), `public` (not signed in) or `unknown` (historical
+rows with no established source). Before #1367, the label recorded the upload
+route instead: `authenticated` meant the restricted pilot route and `public`
+included signed-in people on the public page. The usage page notes this change.
 The separate `file_category` filter accepts `all`, `pdf`, `docx` or `unknown`
-and applies with the route filter to counts, rates, charts, durations and recent
+and applies with the source filter to counts, rates, charts, durations and recent
 attempts in HTML and JSON. Pagination and printed selected-filter text retain
-both filters. The category breakdown covers the selected route across all
-categories; the labeled all-route breakdown still covers all retained rows.
+both filters. The category breakdown covers the selected source across all
+categories; the labeled all-source breakdown still covers all retained rows.
 
 The new field records only the attempted category from a recognized filename
 extension; it does not validate file contents. Even rejected public DOCX uploads
@@ -104,7 +108,9 @@ Names, arbitrary extensions and MIME values are never stored. Recording switches
 retention and permissions are unchanged.
 
 Recording is separately default-off via
-`PDF_READABILITY_ATTEMPT_RECORDING_ENABLED=false`, including disabled POSTs.
+`PDF_READABILITY_ATTEMPT_RECORDING_ENABLED=false` for signed-out uploads and
+`AUTHENTICATED_PDF_READABILITY_ATTEMPT_RECORDING_ENABLED=false` for signed-in
+uploads, including disabled POSTs. Set both as intended in each environment.
 Public and authenticated content-free usage/error records are retained indefinitely,
 with no automatic age-based expiration. Ben confirmed this choice on October 26,
 2026 for the public records as well as the existing authenticated approach. It
@@ -114,7 +120,7 @@ a claim about HHS-wide policy or completion of any separately required review.
 
 Leave `PDF_READABILITY_ATTEMPT_RETENTION_DAYS` and
 `AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS` unset. No outcome-record
-cleanup schedule is required for either route. Before enabling public recording,
+cleanup schedule is required for either label. Before enabling public recording,
 verify the deployed retention setting is unset and no outcome-record cleanup job
 is active; remove any previously configured cutoff/job through the deployment's
 normal change process. Verify recording and the notice in the target environment,
@@ -299,14 +305,18 @@ enabling the public checker.
 
 ## Pause public uploads
 
-Turn `HHS_NOFO_PDF_METRICS_PILOT_ENABLED` off to prevent new analyses. Investigate
+Turn `HHS_NOFO_PDF_METRICS_PILOT_ENABLED` off to prevent new public analyses.
+Signed-in users can still upload while `HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED`
+is on; turn both off to stop all analyses. Investigate
 timeouts, sustained busy responses, unexpected parser failures, or resource
 pressure before re-enabling. If the application cannot respond, use the existing
 infrastructure incident procedure to block the route. Disabling new requests does
 not cancel an already-running bounded analysis.
 
-No navigation/login-page link, account flow, report archive, external PDF-generation
-service, or batch-processing system is part of the public Readability Checker.
+No navigation link, report archive, external PDF-generation service, or
+batch-processing system is part of the Readability Checker. The header has the
+same **Login** link or signed-in email as the Builder header; see
+[signed-in access](AUTHENTICATED_PDF_READABILITY_PILOT.md#header).
 
 ## Temporary processing limits
 
@@ -341,16 +351,19 @@ is not a guarantee of immediate deletion or a substitute for deployed retention
 and handling approval. The usage-record cleanup command does not touch upload files.
 See the [local synthetic crash and recovery evidence](../review-evidence/1315/README.md).
 
-### Disabled public HTTP responses
+### Disabled HTTP responses
 
-With the public flag off, GET `/readability-checker/` serves the existing
+When the switches don't allow the current visitor to upload (see
+[who can use the checker](AUTHENTICATED_PDF_READABILITY_PILOT.md#who-can-use-the-checker)),
+GET `/readability-checker/` serves the existing
 unavailable page with 200; POST returns that page with 403 before application
 form/CSRF processing or multipart parsing. This does not prevent upstream servers
 from receiving/buffering a request body. No upload form is shown. Both retain
 no-store and noindex headers. Unsupported methods (including HEAD) remain 405;
-legacy paths retain their redirects. Authenticated disabled behavior is unchanged.
+legacy paths retain their redirects. The signed-in pilot route's disabled 503 page
+was retired with that route in #1367.
 
-Recorded public disabled POST attempts keep outcome `disabled` and category
+Recorded disabled POST attempts keep outcome `disabled` and category
 `unknown`, with status 403 for new records; historical 503 records are unchanged.
 Expected disabled visits no longer contribute to ALB target-5xx counts. A 200
 response is not proof that uploads are enabled; monitoring/readiness checks must

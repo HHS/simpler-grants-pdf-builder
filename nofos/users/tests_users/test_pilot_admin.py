@@ -1,11 +1,13 @@
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Permission
 from django.test import TestCase
 from django.urls import reverse
-from users.forms import BloomUserChangeForm
+from users.forms import BloomUserChangeForm, BloomUserCreationForm
 from users.models import BloomUser
 
 
-class PilotAdminTests(TestCase):
+class RetiredPilotAccessAdminTests(TestCase):
+    """Readability Checker access no longer has a per-user permission (#1367)."""
+
     def setUp(self):
         self.admin = BloomUser.objects.create_superuser(
             email="admin@example.gov", password="test"
@@ -15,92 +17,29 @@ class PilotAdminTests(TestCase):
         )
         self.client.force_login(self.admin)
         self.url = reverse("admin:users_bloomuser_change", args=[self.user.pk])
-        self.data = {
-            "email": self.user.email,
-            "full_name": "Viewer",
-            "group": "cdc",
-            "is_active": "on",
-        }
 
-    def test_admin_grants_and_revokes_access_preserving_other_groups(self):
-        unrelated = Group.objects.create(name="Other role")
-        self.user.groups.add(unrelated)
-        response = self.client.post(
-            self.url, {**self.data, "can_use_pdf_readability_pilot": "on"}
-        )
-        self.assertEqual(response.status_code, 302)
-        user = BloomUser.objects.get(pk=self.user.pk)
-        self.assertTrue(user.has_perm("nofos.use_pdf_readability_pilot"))
-        self.assertTrue(
-            BloomUserChangeForm(instance=user).initial["can_use_pdf_readability_pilot"]
-        )
-        self.assertFalse(user.has_perm("nofos.view_builder_metrics"))
-        response = self.client.post(self.url, self.data)
-        self.assertEqual(response.status_code, 302)
-        user = BloomUser.objects.get(pk=self.user.pk)
-        self.assertFalse(user.has_perm("nofos.use_pdf_readability_pilot"))
-        self.assertTrue(user.groups.filter(pk=unrelated.pk).exists())
-        self.assertEqual(user.group, "cdc")
+    def test_forms_and_admin_no_longer_offer_pilot_checkbox(self):
+        for form in (BloomUserChangeForm(instance=self.user), BloomUserCreationForm()):
+            self.assertNotIn("can_use_pdf_readability_pilot", form.fields)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Can use PDF readability pilot")
+        self.assertContains(response, "Can save passive sentence comparisons")
 
-    def test_create_user_with_pilot_access(self):
+    def test_submitting_old_field_grants_nothing(self):
         response = self.client.post(
-            reverse("admin:users_bloomuser_add"),
+            self.url,
             {
-                **self.data,
-                "email": "new@example.gov",
+                "email": self.user.email,
+                "full_name": "Viewer",
+                "group": "cdc",
+                "is_active": "on",
                 "can_use_pdf_readability_pilot": "on",
-                "password1": "New-complex-password-529!",
-                "password2": "New-complex-password-529!",
             },
         )
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(
-            BloomUser.objects.get(email="new@example.gov").has_perm(
-                "nofos.use_pdf_readability_pilot"
-            )
-        )
-
-    def test_separate_permission_is_explained_and_preserved(self):
-        permission = Permission.objects.get(
-            content_type__app_label="nofos", codename="use_pdf_readability_pilot"
-        )
-        self.user.user_permissions.add(permission)
-        response = self.client.get(self.url)
-        self.assertContains(
-            response, "Unchecking this box will not remove that separate access."
-        )
-        self.client.post(self.url, self.data)
-        self.assertTrue(
-            BloomUser.objects.get(pk=self.user.pk).has_perm(
-                "nofos.use_pdf_readability_pilot"
-            )
-        )
-
-    def test_non_admin_cannot_grant_access(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            self.url, {**self.data, "can_use_pdf_readability_pilot": "on"}
-        )
-        self.assertEqual(response.status_code, 302)
+        user = BloomUser.objects.get(pk=self.user.pk)
+        self.assertFalse(user.groups.exists())
         self.assertFalse(
-            BloomUser.objects.get(pk=self.user.pk).has_perm(
-                "nofos.use_pdf_readability_pilot"
-            )
-        )
-
-    def test_other_group_permission_is_explained_and_preserved(self):
-        permission = Permission.objects.get(
-            content_type__app_label="nofos", codename="use_pdf_readability_pilot"
-        )
-        other = Group.objects.create(name="Separate pilot role")
-        other.permissions.add(permission)
-        self.user.groups.add(other)
-        self.assertContains(
-            self.client.get(self.url), "pilot permission granted separately"
-        )
-        self.client.post(self.url, self.data)
-        self.assertTrue(
-            BloomUser.objects.get(pk=self.user.pk).has_perm(
-                "nofos.use_pdf_readability_pilot"
-            )
+            Permission.objects.filter(codename="use_pdf_readability_pilot").exists()
         )
