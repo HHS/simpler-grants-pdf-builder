@@ -70,23 +70,6 @@ honoring them.
 [Launch risks and response](#launch-risks-and-response) ·
 [Operating runbook](https://github.com/HHS/simpler-grants-gov/blob/main/documentation/infra/nofo-pdf-readability-waf.md)
 
-**Firewall request-body masking was deferred.** The production inspection
-confirmed that masking was off. Whether firewall logs or sampled requests
-contain upload snippets remains unverified. The dev change was deferred
-because a preview of the live infrastructure changes was unavailable.
-The release owner records whether to accept or address this gap before
-enabling public uploads.
-[Inspection results](https://github.com/HHS/simpler-grants-gov/issues/12568#deployed-firewall-data-protection-november-16-2026) ·
-[Launch decision checklist](https://github.com/HHS/simpler-grants-pdf-builder/issues/968#release-acceptance-criteria)
-
-**Where to look if an issue occurs.** Depending on the issue, authorized
-responders can review firewall logs in CloudWatch and recent samples in AWS WAF
-where sampling is enabled. They can check access and retention in the system
-that holds the relevant logs, and inspect the running NOFO Builder service in
-AWS for temporary-storage or cleanup issues. Use the incident procedure to
-coordinate the investigation and keep sensitive evidence restricted.
-[Incident response guidance](#pause-and-reopen)
-
 ## Launch risks and response
 
 Use this section for the public launch review. The SimplerNOFOs team owns
@@ -101,6 +84,15 @@ for emergency blocking, verification and restoration.
 | Upload traffic degrades NOFO Builder, or a rate limit blocks legitimate users on a shared network. | The public Readability Checker caps PDF uploads at 5 MiB and 150 pages and Word uploads at 15 MiB. Dev tests verified rate enforcement, emergency blocking and restoration. Production alarm delivery was verified. [Production inspection](https://github.com/HHS/simpler-grants-gov/actions/runs/42861864575) confirmed the rate rule is in Block mode at 30 upload requests per five minutes per public IP. | Check NOFO Builder health, WAF metrics and support reports. Pause the checker if NOFO Builder is affected. For shared-network blocks, check rule counters and user impact before proposing a threshold change. |
 | A favorable score gives reviewers false confidence. | The checker labels scores as estimates. Use them alongside human review of clarity, repetition and whether applicants can follow the instructions. | Explain the measure's limits in support responses. Investigate reproducibly incorrect results and update guidance or the calculator as needed. |
 
+**Firewall request-body masking was deferred.** The production inspection
+confirmed that masking was off. Whether firewall logs or sampled requests
+contain upload snippets remains unverified. The dev change was deferred
+because a preview of the live infrastructure changes was unavailable.
+The release owner records whether to accept or address this gap before
+enabling public uploads.
+[Inspection results](https://github.com/HHS/simpler-grants-gov/issues/12568#deployed-firewall-data-protection-november-16-2026) ·
+[Launch decision checklist](https://github.com/HHS/simpler-grants-pdf-builder/issues/968#release-acceptance-criteria)
+
 ### Pause and reopen
 
 - **Pause.** Disable public uploads if there is a suspected exposure or upload
@@ -112,6 +104,14 @@ for emergency blocking, verification and restoration.
 
 Track outstanding verification and approvals through the existing
 [release checklist](PDF_READABILITY_RELEASE_CHECKLIST.md) and its linked issues.
+
+**Where to look if an issue occurs.** Depending on the issue, authorized
+responders can review firewall logs in CloudWatch and recent samples in AWS WAF
+where sampling is enabled. They can check access and retention in the system
+that holds the relevant logs, and inspect the running NOFO Builder service in
+AWS for temporary-storage or cleanup issues. Use the incident procedure to
+coordinate the investigation and keep sensitive evidence restricted.
+[Incident response guidance](#pause-and-reopen)
 
 ### What users see and where to look
 
@@ -146,8 +146,8 @@ in the linked evidence records; update those first, then this table.
 | --- | --- | --- | --- |
 | [1. Preflight](#1-preflight-no-control-changes) | Done in dev. The route-coverage gap found October 28 was fixed by [SGG #13060](https://github.com/HHS/simpler-grants-gov/pull/13060), and the WAF tests covered all four route forms. | None in dev | [October 28 preflight](../review-evidence/readability-readiness-1239/README.md#preflight-finding-renamed-route-coverage) · [Dated launch evidence](../review-evidence/971/README.md#dated-launch-evidence) |
 | [2. WAF test card](#2-waf-test-card-synthetic-empty-requests-no-file-uploads) | Done in dev | None in dev | [Dated launch evidence](../review-evidence/971/README.md#dated-launch-evidence) |
-| [3. Runtime checks](#3-runtime-checks-without-opening-public-uploads) | Dev upload, cleanup, analyzer and admission checks recorded | Confirm smoke-test coverage for the launch version. Record decisions on remaining runtime, logging and upload protection gaps. | [Dev runtime evidence](../review-evidence/971/README.md) · [Signed-out Word smoke test](https://github.com/HHS/simpler-grants-pdf-builder/issues/971#issuecomment-6886105867) |
-| [4. Production setup](#4-production-setup-separate-from-public-launch) | Alert delivery and firewall controls verified with public uploads off | Record the launch decision and any required approvals. After approval, enable public usage recording and run the launch smoke check. | [Production firewall inspection](https://github.com/HHS/simpler-grants-gov/actions/runs/43895642259) · [Launch checklist #968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968#release-acceptance-criteria) |
+| [3. Runtime checks](#3-runtime-checks-without-opening-public-uploads) | **Open.** Dev tests passed. Production runtime verification is incomplete. | Confirm smoke-test coverage for the launch version. Record which runtime, logging and upload protection gaps need more evidence and which the release owner accepts. | [Dev runtime evidence](../review-evidence/971/README.md) · [Signed-out Word smoke test](https://github.com/HHS/simpler-grants-pdf-builder/issues/971#issuecomment-6886105867) |
+| [4. Production setup](#4-production-setup-separate-from-public-launch) | **Done.** Production firewall controls and alert delivery were verified with public uploads off. | **Public launch remains open.** Record the launch decision and any required approvals. After approval, enable public usage recording and run the launch smoke check. | [Production firewall inspection](https://github.com/HHS/simpler-grants-gov/actions/runs/43895642259) · [Launch checklist #968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968#release-acceptance-criteria) |
 
 ### Completed evidence to reuse
 
