@@ -23,7 +23,10 @@ ROW_1 = [
 
 ROW_2 = [
     ("About HHS", "https://www.hhs.gov/about/index.html"),
-    ("Accessibility support", "https://www.grants.gov/accessibility-compliance"),
+    (
+        "Accessibility statement",
+        "https://www.hhs.gov/accessibility/hhs-digital-accessibility-statement/index.html",
+    ),
     ("FOIA requests", "https://www.hhs.gov/foia/index.html"),
     (
         "No FEAR Act data",

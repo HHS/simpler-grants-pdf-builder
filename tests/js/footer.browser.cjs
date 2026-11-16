@@ -18,7 +18,7 @@ const root = resolve(__dirname, '../..');
   const output = resolve(root, 'documentation/review-evidence/1343');
   mkdirSync(output, {recursive:true});
   const newWindow = ' (opens in a new window)';
-  const policyLinks = ['About HHS', 'Accessibility support', 'FOIA requests', 'No FEAR Act data',
+  const policyLinks = ['About HHS', 'Accessibility statement', 'FOIA requests', 'No FEAR Act data',
     'Office of the Inspector General', 'Performance reports', 'Privacy policy',
     'Vulnerability disclosure policy'].map(text => text + newWindow);
   // WCAG 2.x contrast ratio between two computed rgb() colors.
