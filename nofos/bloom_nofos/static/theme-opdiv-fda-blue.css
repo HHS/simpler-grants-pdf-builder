@@ -1,0 +1,112 @@
+/* Draft palette. Replace only after FDA visual identity review. */
+.nofo--cover-page--header {
+  background-color: var(--color--fda-draft-navy);
+  color: var(--color--white);
+}
+
+.fda-cover-logo-placeholder {
+  display: grid;
+  place-items: center;
+  width: 16rem;
+  max-width: 100%;
+  min-height: 3rem;
+  aspect-ratio: 5 / 1;
+  margin-bottom: 0.5rem;
+  border: 1px dashed currentColor;
+}
+
+.nofo--cover-page--header .nofo--cover-page--header--logo--subheading p {
+  white-space: normal;
+}
+
+.nofo--cover-page--medium .nofo--cover-page--header--logo {
+  max-width: 62%;
+  margin-right: 1rem;
+}
+
+.callout-box {
+  background-color: #e0f2ff;
+  color: var(--color--fda-draft-navy);
+}
+
+.callout-box :is(a, .callout-box--title) {
+  color: inherit;
+}
+
+:is(h1, h2, h3, h4, h5, h6),
+.toc .toc--section-name .toc--section-name--a {
+  color: var(--color--fda-draft-navy);
+}
+
+:is(.toc--section-name--img, .section--before-you-begin--icon, .section--title-page--icon) svg {
+  color: var(--color--fda-draft-navy);
+}
+
+:is(.toc--section-name--img, .section--before-you-begin--icon, .section--title-page--icon) svg > circle {
+  fill: var(--color--white);
+}
+
+.nofo--icons--border :is(.toc--section-name--img, .section--before-you-begin--icon, .section--title-page--icon) svg {
+  color: var(--color--white);
+}
+
+.nofo--icons--border :is(.toc--section-name--img, .section--before-you-begin--icon, .section--title-page--icon) svg > circle {
+  fill: var(--color--fda-draft-navy);
+  stroke: var(--color--fda-draft-navy);
+}
+
+.section--content > .section--content--right-col > .callout-box {
+  overflow-wrap: anywhere;
+}
+
+@media screen {
+  .section--content:has(> .section--content--right-col) {
+    display: flow-root;
+  }
+
+  .section--content:has(> .section--content--right-col) > :not(.section--content--right-col) {
+    width: 67%;
+  }
+
+  .section--content > .section--content--right-col {
+    width: 30%;
+  }
+
+  .section--content > .section--content--right-col > .callout-box {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 40em) {
+  .section--content:has(> .section--content--right-col) > :not(.section--content--right-col),
+  .section--content > .section--content--right-col {
+    float: none;
+    width: 100%;
+  }
+
+  .nofo--cover-page--header,
+  .nofo--cover-page--title {
+    padding-inline: 1rem;
+  }
+
+  .nofo--cover-page--medium .nofo--cover-page--header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .nofo--cover-page--medium .nofo--cover-page--header--logo {
+    max-width: none;
+    margin-right: 0;
+  }
+
+  .nofo--cover-page--text .nofo--cover-page--header {
+    height: auto;
+    padding-block: 2rem;
+    gap: 1.5rem;
+  }
+
+  .nofo--cover-page--medium .nofo--cover-page--footer .nofo--cover-page--footer--logo {
+    left: 1rem;
+  }
+}

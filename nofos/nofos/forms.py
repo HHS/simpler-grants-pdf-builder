@@ -3,6 +3,7 @@ from martor.fields import MartorFormField
 from users.models import BloomUser
 
 from .models import (
+    GROUP_DEFAULT_THEMES,
     RETIRED_THEME_CHOICES,
     STATUS_CHOICES,
     THEME_CHOICES,
@@ -161,8 +162,9 @@ NIH_ALLOWED_CHOICES = {
     "icon_style": frozenset(["nofo--icons--solid"]),
 }
 
-HRSA_ALLOWED_COVERS = frozenset(["nofo--cover-page--text", "nofo--cover-page--medium"])
-ONC_ALLOWED_COVERS = frozenset(["nofo--cover-page--text", "nofo--cover-page--medium"])
+TEXT_AND_STANDARD_COVERS = frozenset(
+    ["nofo--cover-page--text", "nofo--cover-page--medium"]
+)
 
 
 class NofoThemeOptionsForm(forms.ModelForm):
@@ -199,17 +201,17 @@ class NofoThemeOptionsForm(forms.ModelForm):
             if value not in RETIRED_THEME_CHOICES or value == existing_legacy_theme
         ]
 
-        is_onc = self.instance.group == "onc"
+        group_theme = GROUP_DEFAULT_THEMES.get(self.instance.group)
         group_key = user.group.upper() if user and hasattr(user, "group") else None
         is_bloom = group_key == "BLOOM"
-        if is_onc and not is_bloom:
+        if group_theme and not is_bloom:
             self.fields["theme"].choices = [
                 (
-                    "ONC",
+                    self.instance.group.upper(),
                     [
                         (value, label)
                         for value, label in selectable_theme_choices
-                        if value == "portrait-onc-navy"
+                        if value == group_theme
                     ],
                 )
             ]
@@ -239,7 +241,7 @@ class NofoThemeOptionsForm(forms.ModelForm):
             # -------- Filter theme choices into optgroups by OpDiv
             theme_categories_dict = {}
             for value, label in selectable_theme_choices:
-                if value == "portrait-onc-navy" and not is_bloom:
+                if value in GROUP_DEFAULT_THEMES.values() and not is_bloom:
                     continue
                 opdiv = label.split(" ")[0]
                 theme_categories_dict.setdefault(opdiv, []).append((value, label))
@@ -266,20 +268,19 @@ class NofoThemeOptionsForm(forms.ModelForm):
         selected_theme = (
             self.data.get(self.add_prefix("theme"), "") if self.is_bound else ""
         )
-        uses_onc_options = (
-            is_onc or (selected_theme or self.instance.theme) == "portrait-onc-navy"
+        active_theme = selected_theme or self.instance.theme
+        restricted_theme = group_theme or (
+            active_theme if active_theme in GROUP_DEFAULT_THEMES.values() else None
         )
-        if uses_onc_options:
+        if restricted_theme:
             self.fields["cover"].choices = [
                 (value, label)
                 for value, label in Nofo.COVER_CHOICES
-                if value in ONC_ALLOWED_COVERS
+                if value in TEXT_AND_STANDARD_COVERS
             ]
-            self.fields["icon_style"].choices = get_icon_path_choices(
-                "portrait-onc-navy"
-            )
+            self.fields["icon_style"].choices = get_icon_path_choices(restricted_theme)
         if (
-            not uses_onc_options
+            not restricted_theme
             and not user_is_nih_group(user)
             and (
                 "hrsa-" in self.instance.theme
@@ -295,12 +296,12 @@ class NofoThemeOptionsForm(forms.ModelForm):
                     value,
                     (
                         label
-                        if value in HRSA_ALLOWED_COVERS
+                        if value in TEXT_AND_STANDARD_COVERS
                         else f"{label} (current legacy value)"
                     ),
                 )
                 for value, label in Nofo.COVER_CHOICES
-                if value in HRSA_ALLOWED_COVERS or value == legacy_cover
+                if value in TEXT_AND_STANDARD_COVERS or value == legacy_cover
             ]
 
     def clean_pdf_contents_layout(self):

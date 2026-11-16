@@ -1,9 +1,14 @@
+from bs4 import BeautifulSoup
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.template.loader import render_to_string
 from django.test import TestCase
 from django.urls import reverse
 from users.models import BloomUser
 
+from nofos.forms import NofoThemeOptionsForm
 from nofos.models import Nofo
+from nofos.nofo import suggest_all_nofo_fields, suggest_nofo_theme
+from nofos.nofo_document_context import get_nofo_document_context
 from nofos.tests_nofos.test_introductory_page import introductory_docx
 
 
@@ -55,6 +60,8 @@ class FDAOnboardingTests(TestCase):
         self.assertEqual(response.status_code, 302)
         imported = Nofo.objects.get()
         self.assertEqual(imported.group, "fda")
+        self.assertEqual(imported.theme, "portrait-fda-blue")
+        self.assertEqual(imported.cover, "nofo--cover-page--text")
         separate = Nofo.objects.create(group="cdc", title="CDC notice", opdiv="CDC")
         index = reverse("nofos:nofo_index")
         imported_view = reverse("nofos:nofo_view", args=[imported.pk])
@@ -79,3 +86,92 @@ class FDAOnboardingTests(TestCase):
 
         self.client.force_login(self.bloom)
         self.assertEqual(self.client.get(imported_view).status_code, 200)
+
+    def test_theme_match_does_not_change_cdc_fallback(self):
+        for opdiv, number, expected in (
+            ("Food and Drug Administration", "", "fda-blue"),
+            ("Food & Drug Administration", "TEMPLATE", "fda-blue"),
+            ("FDA", "RFA-FD-26-001", "fda-blue"),
+            ("", "RFA-FD-26-001", "fda-blue"),
+            ("", "PAR-FD-26-002", "fda-blue"),
+            ("", "CDC-RFA-FD-26-0012", "cdc-blue"),
+            ("Centers for Disease Control and Prevention", "RFA-FD-26-001", "cdc-blue"),
+            ("CDC", "", "cdc-blue"),
+            ("AFDA", "RFA-XX-26-001", "cdc-blue"),
+            ("ACF", "RFA-FD-26-001", "acf-white"),
+        ):
+            with self.subTest(opdiv=opdiv, number=number):
+                self.assertEqual(
+                    suggest_nofo_theme(number, opdiv), f"portrait-{expected}"
+                )
+
+    def test_group_default_only_applies_on_first_import(self):
+        soup = BeautifulSoup(
+            "<p>OpDiv: CDC</p><p>Opportunity number: CDC-RFA-DP-26-0012</p>",
+            "html.parser",
+        )
+        nofo = Nofo(group="fda")
+        suggest_all_nofo_fields(nofo, soup, first_time_import=True)
+        self.assertEqual(nofo.theme, "portrait-fda-blue")
+        self.assertEqual(nofo.cover, "nofo--cover-page--text")
+        nofo.theme = "portrait-cdc-blue"
+        nofo.cover = "nofo--cover-page--medium"
+        nofo.icon_style = "nofo--icons--border"
+        suggest_all_nofo_fields(nofo, soup, first_time_import=False)
+        self.assertEqual(nofo.theme, "portrait-cdc-blue")
+        self.assertEqual(nofo.cover, "nofo--cover-page--medium")
+        self.assertEqual(nofo.icon_style, "nofo--icons--border")
+
+    def test_theme_form_restricts_fda_choices_without_restricting_bloom(self):
+        data = {
+            "theme": "portrait-fda-blue",
+            "cover": "nofo--cover-page--medium",
+            "icon_style": "nofo--icons--border",
+        }
+        for user, group, valid in (
+            (self.fda, "fda", True),
+            (self.bloom, "cdc", True),
+            (self.cdc, "cdc", False),
+        ):
+            with self.subTest(user=user.group, group=group):
+                form = NofoThemeOptionsForm(
+                    data,
+                    user=user,
+                    instance=Nofo(group=group, title="Synthetic notice"),
+                )
+                self.assertEqual(form.is_valid(), valid, form.errors)
+        form = NofoThemeOptionsForm(
+            {
+                "theme": "portrait-cdc-blue",
+                "cover": "nofo--cover-page--hero",
+                "icon_style": "nofo--icons--thin",
+            },
+            user=self.fda,
+            instance=Nofo(group="fda", title="Synthetic notice"),
+        )
+        self.assertFalse(form.is_valid())
+        self.assertEqual(set(form.errors), {"theme", "cover", "icon_style"})
+
+    def test_both_pdf_cover_sources_use_neutral_placeholder(self):
+        for cover in ("text", "medium"):
+            with self.subTest(cover=cover):
+                nofo = Nofo.objects.create(
+                    group="fda",
+                    theme="portrait-fda-blue",
+                    cover=f"nofo--cover-page--{cover}",
+                    title="Synthetic FDA notice",
+                    opdiv="FDA",
+                    agency="U.S. Food and Drug Administration",
+                )
+                html = render_to_string(
+                    "nofos/nofo_pdf.html",
+                    {"nofo": nofo, **get_nofo_document_context(nofo)},
+                )
+                soup = BeautifulSoup(html, "html.parser")
+                cover_html = soup.select_one("#section--cover-page")
+                self.assertEqual(
+                    cover_html.select_one(".fda-cover-logo-placeholder")["aria-hidden"],
+                    "true",
+                )
+                self.assertIn(nofo.agency, cover_html.get_text())
+                self.assertIn("theme-opdiv-fda-blue.css", html)

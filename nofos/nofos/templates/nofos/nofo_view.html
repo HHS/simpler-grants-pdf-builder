@@ -83,6 +83,8 @@
         {% if nofo_opdiv == 'onc' %}
           <img class="onc-cover-logo" src="{% static 'img/onc-logo-inverse.png' %}"
             width="487" height="46" alt="Office of the National Coordinator for Health Information Technology logo">
+        {% elif nofo_opdiv == 'fda' %}
+          {% include "includes/logos/fda-cover-placeholder.html" only %}
         {% else %}
           {% with "includes/logos/"|add:nofo_opdiv|add:"-logo.svg" as opdiv_logo_path %}
             {% include opdiv_logo_path %}

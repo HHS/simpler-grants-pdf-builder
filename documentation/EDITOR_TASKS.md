@@ -108,7 +108,8 @@ is needed, contact the SimplerNOFOs team.
 
 **Notes**
 
-- New ONC-group imports start with the **ONC** theme and the **Text only** cover.
+- New FDA- and ONC-group imports start with their agency theme and the **Text only** cover.
+  An FDA OpDiv label or a matching FDA opportunity number can also suggest **FDA** for another group without changing who can access the NOFO.
   See [Change theme, cover style, or icon style](#task-theme) for the available options.
 - When the imported OpDiv identifies CMS, Builder suggests **CMS (Light)** under
   **NOFO theme options** on a new import, even if the opportunity number is blank
@@ -826,9 +827,9 @@ to use an image cover.
 
 **Notes**
 
-- ONC editors see one theme, **ONC**. For ONC notices, choose **Text only** or
-  **Standard image** and either **Filled** or **Outlined** icons. Bloom editors
-  can select ONC alongside other OpDiv themes.
+- FDA and ONC editors see their agency theme on their group’s notices. Choose
+  **Text only** or **Standard image** and either **Filled** or **Outlined** icons.
+  Bloom editors can select FDA and ONC alongside other OpDiv themes.
 
 - New imports that identify SAMHSA start with **Text only**. To use an image
   cover, choose **Standard image** in **Cover style**.
