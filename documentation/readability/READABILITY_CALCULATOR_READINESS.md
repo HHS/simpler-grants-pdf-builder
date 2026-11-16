@@ -144,9 +144,9 @@ in the linked evidence records; update those first, then this table.
 
 | Step | Status | Still open | Evidence |
 | --- | --- | --- | --- |
-| [1. Preflight](#1-preflight-no-control-changes) | Done in dev. The route-coverage gap found October 28 was fixed by [SGG #13060](https://github.com/HHS/simpler-grants-gov/pull/13060), and the WAF tests covered all four route forms. | None in dev | [October 28 preflight](../review-evidence/readability-readiness-1239/README.md#preflight-finding-renamed-route-coverage) · [Dated launch evidence](../review-evidence/971/README.md#dated-launch-evidence) |
-| [2. WAF test card](#2-waf-test-card-synthetic-empty-requests-no-file-uploads) | Done in dev | None in dev | [Dated launch evidence](../review-evidence/971/README.md#dated-launch-evidence) |
-| [3. Runtime checks](#3-runtime-checks-without-opening-public-uploads) | **Open.** Dev tests passed. Production runtime verification is incomplete. | Confirm smoke-test coverage for the launch version. Record which runtime, logging and upload protection gaps need more evidence and which the release owner accepts. | [Dev runtime evidence](../review-evidence/971/README.md) · [Signed-out Word smoke test](https://github.com/HHS/simpler-grants-pdf-builder/issues/971#issuecomment-6886105867) |
+| [1. Preflight](#1-preflight-no-control-changes) | **Done.** Dev preflight passed, and the production inspection confirmed firewall route coverage. | Before enabling public uploads, confirm the approved production version and check that the public upload switch is off. | [Dev preflight and route verification](../review-evidence/971/README.md#dated-launch-evidence) · [Production firewall inspection](https://github.com/HHS/simpler-grants-gov/actions/runs/43895642259) |
+| [2. WAF test card](#2-waf-test-card-synthetic-empty-requests-no-file-uploads) | **Done.** Rate limiting, emergency blocking and restoration passed in dev. Production was inspected at 30 upload requests per five minutes per public IP. | — | [Dev firewall test evidence](../review-evidence/971/README.md#dated-launch-evidence) · [Production firewall inspection](https://github.com/HHS/simpler-grants-gov/actions/runs/43895642259) |
+| [3. Runtime checks](#3-runtime-checks-without-opening-public-uploads) | **Done.** Dev evidence covers synthetic PDF and Word uploads, temporary-file cleanup, analyzer limits and one-analysis-at-a-time behavior. | Deeper production checks are deferred. If IT or DevOps needs additional evidence, test the specific gap they identify. | [Dev runtime evidence](../review-evidence/971/README.md) · [Signed-out Word smoke test](https://github.com/HHS/simpler-grants-pdf-builder/issues/971#issuecomment-6886105867) · [Launch decision #968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968#release-acceptance-criteria) |
 | [4. Production setup](#4-production-setup-separate-from-public-launch) | **Done.** Production firewall controls and alert delivery were verified with public uploads off. | **Public launch remains open.** Record the launch decision and any required approvals. After approval, enable public usage recording and run the launch smoke check. | [Production firewall inspection](https://github.com/HHS/simpler-grants-gov/actions/runs/43895642259) · [Launch checklist #968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968#release-acceptance-criteria) |
 
 ### Completed evidence to reuse
@@ -287,13 +287,13 @@ produced a report and verified the enabled page's indexing directives. The
 [earlier browser smoke test](https://github.com/HHS/simpler-grants-pdf-builder/issues/971#issuecomment-5890322354)
 covered copying metrics and saving a PDF report.
 
-**Open for the launch decision.** Production analyzer isolation, temporary
-storage, cleanup after full service-task replacement and individual firewall
-logs and samples remain unverified. Log access and retention still need review
-where coverage is incomplete. The dev logging check covered application and
-load balancer logs for one successful synthetic upload. Record which
-limitations need further evidence and which the release owner accepts, including
-the remaining slow- and oversized-upload risks. Track the evidence in
+**Decision on production verification.** The dev evidence completes this step.
+Deeper production checks are deferred for analyzer isolation, temporary storage
+and cleanup after full service-task replacement, and the contents of individual
+firewall logs and sampled requests. If IT or DevOps needs more evidence, test
+the specific gap they identify. Keep these limitations and any remaining
+slow- and oversized-upload considerations in [Launch decision #968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968#release-acceptance-criteria).
+Track supporting evidence in
 [#970](https://github.com/HHS/simpler-grants-pdf-builder/issues/970) and
 [#971](https://github.com/HHS/simpler-grants-pdf-builder/issues/971).
 
