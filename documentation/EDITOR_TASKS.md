@@ -474,6 +474,12 @@ Most tables are written in Markdown, like this:
 column) are stored as **HTML** (`<table>`, `<tr>`, `<td rowspan="2">`). They
 look more complicated in the editor, but you edit them the same way.
 
+HRSA imports and reimports store two-column **Allowable expenses** and
+**Unallowable expenses** tables as HTML. These tables use the full available
+width and split it equally when no cells span rows. To change the split in the subsection editor,
+replace the two `w-50` header classes with widths that add up to 100%
+(for example, `w-60` and `w-40`). You can also replace the table with Markdown.
+
 <a id="task-table-simplify-merged"></a>
 
 ### TASK-TABLE-SIMPLIFY-MERGED — Remove merged cells from a table

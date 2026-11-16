@@ -391,7 +391,9 @@ def add_page_breaks_to_headings(document):
                         subsection.save()
 
 
-def _build_document(document, sections, SectionModel, SubsectionModel):
+def _build_document(
+    document, sections, SectionModel, SubsectionModel, *, hrsa_import=False
+):
     # Check all names before creating any section, for every import consumer.
     long_headings = []
     for section in sections:
@@ -500,7 +502,9 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
             continue
 
         for subsection in section.get("subsections", []):
-            subsection_md_body = get_as_markdown(subsection.get("body", []))
+            subsection_md_body = get_as_markdown(
+                subsection.get("body", []), hrsa_import=hrsa_import
+            )
 
             subsection_fields = {
                 "name": subsection.get("name", ""),
@@ -582,7 +586,7 @@ def _build_document(document, sections, SectionModel, SubsectionModel):
     return document
 
 
-def get_as_markdown(html_or_string):
+def get_as_markdown(html_or_string, *, hrsa_import=False):
     md_body = ""
 
     # if content is a string, it's not HTML
@@ -592,7 +596,7 @@ def get_as_markdown(html_or_string):
     else:
         html_body = [str(tag).strip() for tag in html_or_string]
         if html_body:
-            md_body = md("".join(html_body), escape_misc=False)
+            md_body = md("".join(html_body), escape_misc=False, hrsa_import=hrsa_import)
             # strip excess newlines, then add 1 trailing newline
             md_body = md_body.strip() + "\n"
 
@@ -600,13 +604,15 @@ def get_as_markdown(html_or_string):
 
 
 @transaction.atomic
-def create_nofo(title, sections, opdiv, group="bloom"):
+def create_nofo(title, sections, opdiv, group="bloom", *, hrsa_import=False):
     nofo = Nofo(title=title, group=group)
     nofo.number = "NOFO #999"
     nofo.opdiv = opdiv
     nofo.save()
     try:
-        return _build_document(nofo, sections, Section, Subsection)
+        return _build_document(
+            nofo, sections, Section, Subsection, hrsa_import=hrsa_import
+        )
     except ValidationError as e:
         nofo.delete()
         e.nofo = nofo
@@ -732,9 +738,9 @@ def restore_subsection_metadata(nofo, preserved_page_breaks):
     return nofo
 
 
-def overwrite_nofo(nofo, sections):
+def overwrite_nofo(nofo, sections, *, hrsa_import=False):
     nofo.sections.all().delete()
-    nofo = _build_document(nofo, sections, Section, Subsection)
+    nofo = _build_document(nofo, sections, Section, Subsection, hrsa_import=hrsa_import)
     nofo.save()  # Save after sections are added
 
     # _build_document creates sections and subsections with bulk_create, which
@@ -1788,6 +1794,15 @@ def suggest_nofo_theme(nofo_number, opdiv=""):
         return "portrait-cdc-blue"
 
     return "portrait-nih-white"
+
+
+def is_hrsa_nofo_import(soup):
+    return (
+        suggest_nofo_theme(
+            suggest_nofo_opportunity_number(soup), opdiv=suggest_nofo_opdiv(soup)
+        )
+        == "portrait-hrsa-white"
+    )
 
 
 def suggest_nofo_title(soup):
