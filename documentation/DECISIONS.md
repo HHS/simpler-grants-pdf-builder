@@ -8,6 +8,24 @@ the shared [ADR template](template.md), and link the record here when relevant.
 
 ---
 
+## 2026-11-16 — Link the footer to the HHS Digital Accessibility Statement
+
+**Context:** The "HHS policies and resources" footer row, added in #1343, is
+modeled on the simpler.grants.gov footer, so its accessibility link was labeled
+"Accessibility support" and went to the Grants.gov accessibility page. The
+NOFO Builder and Readability Checker are HHS products, and the row's other links
+already go to HHS pages.
+
+**Decision:** Rename the link to "Accessibility statement" and point it to the
+[HHS Digital Accessibility Statement](https://www.hhs.gov/accessibility/hhs-digital-accessibility-statement/index.html).
+Footer policy links go to HHS-owned pages even where simpler.grants.gov links to
+a Grants.gov equivalent.
+
+Tracked in [#1376](https://github.com/HHS/simpler-grants-pdf-builder/issues/1376).
+See [HHS footer identifier and link rows](UI_PATTERNS.md#hhs-footer-identifier-and-link-rows).
+
+---
+
 ## 2026-11-15 — Serve the Readability Checker from one URL and retire the pilot permission
 
 **Context:** The signed-in checker at `/nofos/readability-checker/` was added in

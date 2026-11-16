@@ -690,10 +690,13 @@ footer reads as one family of blues. White link text stays above 9:1 contrast on
   breakpoint lower without rechecking. From 880px they form one row with Back to top at
   the right edge.
 - **Row 2 (`HHS policies and resources`, `#002340`):** smaller, regular-weight links
-  modeled on the simpler.grants.gov footer: About HHS, Accessibility support, FOIA
+  modeled on the simpler.grants.gov footer: About HHS, Accessibility statement, FOIA
   requests, No FEAR Act data, Office of the Inspector General, Performance reports,
   Privacy policy and Vulnerability disclosure policy. One column below the tablet breakpoint (640px); a wrapping row
-  from there up.
+  from there up. These links go to HHS-owned pages, even where simpler.grants.gov
+  links to a Grants.gov page: Accessibility statement goes to the HHS Digital
+  Accessibility Statement, not the Grants.gov accessibility page
+  ([decision](DECISIONS.md#2026-11-16--link-the-footer-to-the-hhs-digital-accessibility-statement)).
 
 External links use `usa-link--external` (icon after the text), open in a new window
 and include the visually hidden text " (opens in a new window)". Back to top is an
@@ -712,7 +715,9 @@ Keep the border if the footer or button colors change.
 
 Verify signed-in and signed-out layouts, keyboard focus, and wrapping at mobile
 and desktop widths with `tests/js/footer.browser.cjs`. Link order and destinations
-are covered by `nofos/bloom_nofos/tests_bloom_nofos/test_footer.py`.
+are covered by `nofos/bloom_nofos/tests_bloom_nofos/test_footer.py`, the source of
+truth for each link's text and URL. If you change a footer link, update this list and
+`test_footer.py` together.
 [Issue #1343 evidence](review-evidence/1343/README.md) has before-and-after screenshots.
 
 ## Metrics page headings and back navigation
