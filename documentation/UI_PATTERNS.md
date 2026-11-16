@@ -718,7 +718,8 @@ and desktop widths with `tests/js/footer.browser.cjs`. Link order and destinatio
 are covered by `nofos/bloom_nofos/tests_bloom_nofos/test_footer.py`, the source of
 truth for each link's text and URL. If you change a footer link, update this list and
 `test_footer.py` together.
-[Issue #1343 evidence](review-evidence/1343/README.md) has before-and-after screenshots.
+[Issue #1343 evidence](review-evidence/1343/README.md) has before-and-after screenshots;
+[issue #1376 evidence](review-evidence/1376/README.md) shows the Accessibility statement change.
 
 ## Metrics page headings and back navigation
 
