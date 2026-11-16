@@ -143,6 +143,7 @@ from .nofo import (
     get_nofo_action_links,
     get_side_nav_links,
     get_subsection_action_availability,
+    is_hrsa_nofo_import,
     modifications_update_announcement_text,
     nofo_has_appendix_section,
     nofo_has_end_notes_section,
@@ -1059,7 +1060,13 @@ class NofosImportNewView(BaseNofoImportView):
             nofo_title = suggest_nofo_title(soup)
             opdiv = suggest_nofo_opdiv(soup)
 
-            nofo = create_nofo(nofo_title, sections, opdiv, group=request.user.group)
+            nofo = create_nofo(
+                nofo_title,
+                sections,
+                opdiv,
+                group=request.user.group,
+                hrsa_import=is_hrsa_nofo_import(soup),
+            )
             imported_tagline = add_headings_to_document(
                 nofo, extra_link_text=kwargs.get("imported_tagline")
             )
@@ -1264,7 +1271,9 @@ class NofosImportOverwriteView(
                 # cloning a nofo creates a past revision and then archives it immediately
                 duplicate_nofo(nofo, is_successor=True)
 
-                nofo = overwrite_nofo(nofo, sections)
+                nofo = overwrite_nofo(
+                    nofo, sections, hrsa_import=is_hrsa_nofo_import(soup)
+                )
 
                 # restore page breaks
                 if if_preserve_page_breaks and page_breaks:
