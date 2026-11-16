@@ -15,7 +15,8 @@ operating access still matter.
 
 The NOFO Builder Readability Checker gives users immediate feedback on the
 readability of a Notice of Funding Opportunity, including grade level, sentence
-length and passive sentence use. It runs at one URL, `/readability-checker/`,
+length and passive sentence use. It helps people improve NOFO drafts before
+publication. It runs at one URL, `/readability-checker/`,
 and supports one PDF or Microsoft Word (`.docx`) document at a time. When the
 public switch is on, it doesn't require an account. Public uploads are
 currently disabled; signed-in Builder users can upload while the signed-in
@@ -102,22 +103,6 @@ The release owner records whether to accept or address this gap before
 enabling public uploads.
 [Inspection results](https://github.com/HHS/simpler-grants-gov/issues/12568#deployed-firewall-data-protection-november-16-2026) ·
 [Launch decision checklist](https://github.com/HHS/simpler-grants-pdf-builder/issues/968#release-acceptance-criteria)
-
-### Proposed initial pilot scope
-
-Start with **published HHS NOFOs and supported synthetic examples only**, if
-that meets the pilot goal. Before enabling uploads under that scope, make it
-clear on the upload page: “Upload only a published HHS NOFO or a synthetic test
-document. Do not upload drafts or other nonpublic material.” This is guidance,
-not a technical gate. The release owner and required reviewers still need to
-consider that someone could upload a nonpublic document despite the notice.
-
-If pre-decisional drafts are needed, start with a restricted check of the
-existing synthetic dev request in firewall logs and any available samples.
-Record what could be located and inspected; a missing or expired record is
-inconclusive. Use that evidence and its limits for the handling decision in
-[#968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968). The proposed
-scope is not approved by this document.
 
 ### Pause and reopen
 
@@ -427,7 +412,7 @@ deploy and verify public usage recording before switching on public uploads.
    back off. Reuse the documented dev checks where they apply; this smoke
    check does not replace any required evidence or approval in #968.
 2. **During the approved launch window:** Confirm the November 16
-   [Production smoke-test results](https://github.com/HHS/simpler-grants-pdf-builder/issues/971#issuecomment-6930322038) apply to the approved version. Repeat a smoke check only if a
+   [production smoke-test results](https://github.com/HHS/simpler-grants-pdf-builder/issues/971#issuecomment-6930322038) apply to the approved version. Repeat a smoke check only if a
    change affects what it verified. Use a synthetic signed-out upload to confirm
    that public usage recording works and the resulting record excludes document
    content. Record the version and results in #971.
