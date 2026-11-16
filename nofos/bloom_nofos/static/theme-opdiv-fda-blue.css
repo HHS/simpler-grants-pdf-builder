@@ -1,7 +1,8 @@
-/* Draft palette. Replace only after FDA visual identity review. */
+/* FDA Blue is a decorative accent on the dark-blue cover header. */
 .nofo--cover-page--header {
-  background-color: var(--color--fda-draft-navy);
+  background-color: var(--color--fda-dark-blue);
   color: var(--color--white);
+  border-bottom: 4px solid var(--color--fda-blue);
 }
 
 .nofo--cover-page--header .fda-cover-logo {
@@ -23,20 +24,22 @@
 
 .callout-box {
   background-color: #e0f2ff;
-  color: var(--color--fda-draft-navy);
+  color: var(--color--fda-dark-blue);
 }
 
-.callout-box :is(a, .callout-box--title) {
+.callout-box .callout-box--title {
   color: inherit;
 }
 
 :is(h1, h2, h3, h4, h5, h6),
-.toc .toc--section-name .toc--section-name--a {
-  color: var(--color--fda-draft-navy);
+.toc .toc--section-name .toc--section-name--a,
+.section--content a,
+.callout-box a {
+  color: var(--color--fda-dark-blue);
 }
 
 :is(.toc--section-name--img, .section--before-you-begin--icon, .section--title-page--icon) svg {
-  color: var(--color--fda-draft-navy);
+  color: var(--color--fda-dark-blue);
 }
 
 :is(.toc--section-name--img, .section--before-you-begin--icon, .section--title-page--icon) svg > circle {
@@ -48,8 +51,8 @@
 }
 
 .nofo--icons--border :is(.toc--section-name--img, .section--before-you-begin--icon, .section--title-page--icon) svg > circle {
-  fill: var(--color--fda-draft-navy);
-  stroke: var(--color--fda-draft-navy);
+  fill: var(--color--fda-dark-blue);
+  stroke: var(--color--fda-dark-blue);
 }
 
 .section--content > .section--content--right-col > .callout-box {
