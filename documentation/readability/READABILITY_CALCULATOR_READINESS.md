@@ -48,6 +48,10 @@ We also checked what the test upload left behind in temporary files and logs.
   That check did not cover firewall logs or samples.
   [Dev PDF and logging evidence](../review-evidence/971/README.md#november-10-signed-out-dev-logging-check) ·
   [Dev Word evidence](https://github.com/HHS/simpler-grants-pdf-builder/issues/971#issuecomment-6886105867)
+- **Production smoke test.** One signed-out synthetic PDF and one Word file
+  **both produced reports**. The form and reports sent no-store and noindex
+  headers. We turned public uploads back off and verified that the unavailable
+  page returned. [Production smoke-test results](https://github.com/HHS/simpler-grants-pdf-builder/issues/971#issuecomment-6930322038)
 - **Temporary-file cleanup.** In the test environment, the checker kept files
   in memory and **cleared them after success, rejection, and a processing
   timeout**. In a separate interruption test, processing stopped and the
@@ -422,13 +426,11 @@ deploy and verify public usage recording before switching on public uploads.
    notice, verify the public switch is off, and confirm who can switch it
    back off. Reuse the documented dev checks where they apply; this smoke
    check does not replace any required evidence or approval in #968.
-2. **During the approved launch window:** With a signed-out browser, submit one
-   supported synthetic PDF and one supported synthetic Word file. Confirm both
-   produce the expected reports and that the form and reports have no-store
-   and noindex directives. Save one report through the browser and check it
-   contains all five metrics and their notes. Confirm the signed-out attempts
-   are recorded as expected without document content. If the checks pass,
-   record the version and results in #971.
+2. **During the approved launch window:** Confirm the November 16
+   [Production smoke-test results](https://github.com/HHS/simpler-grants-pdf-builder/issues/971#issuecomment-6930322038) apply to the approved version. Repeat a smoke check only if a
+   change affects what it verified. Use a synthetic signed-out upload to confirm
+   that public usage recording works and the resulting record excludes document
+   content. Record the version and results in #971.
 3. **If a check fails:** Turn the public switch back off and confirm a fresh
    signed-out visit shows the unavailable page with no upload form. If the
    switch is unavailable or insufficient, follow the emergency block
