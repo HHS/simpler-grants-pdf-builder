@@ -181,13 +181,15 @@ class ConnectedDesignPilotTests(TestCase):
         self.user.group = "cdc"
         self.user.save(update_fields=["group"])
         run = self.candidate()  # Source metadata still describes HRSA.
+        self.assertEqual(run.nofo.theme, "portrait-cdc-blue")
         choices = host.candidate_capabilities(self.user, run)["choices"]["theme"]
         self.assertIn("portrait-cdc-blue", choices)
+        self.assertIn("portrait-cdc-white", choices)
         self.assertNotIn("portrait-hrsa-white", choices)
         self.assertNotIn("portrait-nih-white", choices)
         response = self.client.get(reverse("design_pilot:review", args=[run.pk]))
         self.assertEqual(response.context["choices"]["theme"], choices)
-        self.assertContains(response, "Choose a permitted theme")
+        self.assertNotContains(response, "Choose a permitted theme")
         before = (run.revision, run.presentation_json, run.content_json)
         with self.assertRaises(DesignRequestError):
             host.update_candidate(
@@ -198,9 +200,9 @@ class ConnectedDesignPilotTests(TestCase):
             before, (run.revision, run.presentation_json, run.content_json)
         )
         updated = host.update_candidate(
-            self.user, run.pk, self.theme_command(run, "portrait-cdc-blue")
+            self.user, run.pk, self.theme_command(run, "portrait-cdc-white")
         )
-        self.assertEqual(updated.nofo.theme, "portrait-cdc-blue")
+        self.assertEqual(updated.nofo.theme, "portrait-cdc-white")
         self.assertEqual(updated.content_json, before[2])
 
     def test_nih_theme_policy_and_stale_membership_fail_closed(self):

@@ -193,15 +193,17 @@
           </span>
         </span>
       </div>
-      <div class="nofo--cover-page--footer--image">
-        {% spaceless%}
-          {% if nofo_cover_image|slice:":4" == "img/" %}
-            <img alt="{{ nofo.cover_image_alt_text }}" src="{% static nofo_cover_image %}">
-          {% else %}
-            <img alt="{{ nofo.cover_image_alt_text }}" src="{{ nofo_cover_image }}">
-          {% endif %}
-        {% endspaceless %}
-      </div>
+      {% if nofo_cover_image %}
+        <div class="nofo--cover-page--footer--image">
+          {% spaceless %}
+            {% if nofo_cover_image|slice:":4" == "img/" %}
+              <img alt="{{ nofo.cover_image_alt_text }}" src="{% static nofo_cover_image %}">
+            {% else %}
+              <img alt="{{ nofo.cover_image_alt_text }}" src="{{ nofo_cover_image }}">
+            {% endif %}
+          {% endspaceless %}
+        </div>
+      {% endif %}
     </div>
   </section>
 

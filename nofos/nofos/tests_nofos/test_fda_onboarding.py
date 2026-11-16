@@ -111,7 +111,9 @@ class FDAOnboardingTests(TestCase):
                     },
                     follow=True,
                 )
-                self.assertContains(response, f"The document’s OpDiv identifies {opdiv}.")
+                self.assertContains(
+                    response, f"The document’s OpDiv identifies {opdiv}."
+                )
                 nofo = Nofo.objects.get(group=user.group)
                 self.assertEqual(nofo.opdiv, opdiv)
                 self.assertEqual(nofo.theme, theme)
@@ -238,6 +240,9 @@ class FDAOnboardingTests(TestCase):
                 )
                 self.assertIsNone(
                     cover_html.select_one(".nofo--cover-page--hero-image")
+                )
+                self.assertIsNone(
+                    cover_html.select_one(".nofo--cover-page--footer--image img")
                 )
                 self.assertIn(nofo.agency, cover_html.get_text())
                 self.assertIn("theme-opdiv-fda-blue.css", html)
