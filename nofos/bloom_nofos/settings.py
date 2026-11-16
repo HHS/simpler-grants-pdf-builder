@@ -829,6 +829,7 @@ GROUP_CHOICES = [
     ("aspr", "ASPR: Administration for Strategic Preparedness and Response"),
     ("cdc", "CDC: Centers for Disease Control and Prevention"),
     ("cms", "CMS: Centers for Medicare & Medicaid Services"),
+    ("fda", "FDA: Food and Drug Administration"),
     ("hrsa", "HRSA: Health Resources and Services Administration"),
     ("ihs", "IHS: Indian Health Service"),
     ("nih", "NIH: National Institutes of Health"),
