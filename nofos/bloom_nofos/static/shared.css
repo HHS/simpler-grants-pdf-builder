@@ -33,6 +33,15 @@
   --color--staging-coral: #f08080;
 }
 
+/* Editable full-width layout for tables with explicit column widths. */
+table.table--fixed-layout,
+.usa-prose table.table--small.table--fixed-layout {
+  width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
+  overflow-wrap: break-word;
+}
+
 /* Utility classes */
 
 .w-100,

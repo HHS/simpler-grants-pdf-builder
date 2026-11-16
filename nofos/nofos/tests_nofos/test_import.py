@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
+from martor.utils import markdownify
 from users.models import BloomUser
 
 from nofos.models import ImportAttempt, Nofo, Section, Subsection
@@ -417,6 +418,91 @@ class TestKeyCalloutDocxImport(TestCase):
         )
 
         self.assert_key_callout_heading(key_dates, "Key dates", is_callout_box=True)
+
+
+class TestHrsaExpenseTableImport(TestCase):
+    def setUp(self):
+        user = BloomUser.objects.create_user(
+            email="expenses@example.com",
+            password="testpass123",
+            force_password_reset=False,
+            group="bloom",
+        )
+        self.client.force_login(user)
+
+    def upload(self, url, opdiv="Health Resources and Services Administration (HRSA)"):
+        matching_table = (
+            '<table width="60%"><colgroup><col width="25%"><col></colgroup>'
+            '<tr><td class="w-25"><strong>ALLOW</strong>ABLE<br>expenses</td>'
+            "<td>Unallowable   expenses</td></tr>"
+            "<tr><td><ul><li>Eligible equipment</li></ul></td><td>Land</td></tr></table>"
+        )
+        other_table = (
+            "<table><tr><td>Allowable expenses</td><td>Unallowable expenses</td>"
+            "<td>Notes</td></tr><tr><td>Yes</td><td>No</td><td>Maybe</td></tr></table>"
+        )
+        row_spanning_table = (
+            '<table><tr><td rowspan="2">Allowable expenses</td>'
+            "<td>Unallowable expenses</td></tr><tr><td>No</td><td>Notes</td></tr></table>"
+        )
+        html = (
+            f"<p>Opportunity name: Expenses</p><p>Opdiv: {opdiv}</p>"
+            "<p>Opportunity number: TEMPLATE-001</p>"
+            "<h1>Review the Opportunity</h1><h2>Construction</h2>"
+            f"{matching_table}<h2>Equipment</h2>{matching_table}{other_table}{row_spanning_table}"
+        )
+        response = self.client.post(
+            url,
+            {
+                "nofo-import": SimpleUploadedFile(
+                    "expenses.html", html.encode(), content_type="text/html"
+                )
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+
+    def assert_expense_widths(self, nofo):
+        for name in ("Construction", "Equipment"):
+            with self.subTest(subsection=name):
+                body = Subsection.objects.get(section__nofo=nofo, name=name).body
+                tables = BeautifulSoup(markdownify(body), "html.parser").find_all(
+                    "table"
+                )
+                self.assertEqual(len(tables), 3 if name == "Equipment" else 1)
+                table = tables[0]
+                self.assertIn("table--fixed-layout", table["class"])
+                self.assertFalse(table.has_attr("width"))
+                self.assertIsNotNone(table.find("th").find("br"))
+                self.assertEqual(
+                    [header.get("class") for header in table.find_all("th")],
+                    [["w-50"], ["w-50"]],
+                )
+                self.assertEqual(
+                    table.find("li").get_text(strip=True), "Eligible equipment"
+                )
+                if name == "Equipment":
+                    for other_table in tables[1:]:
+                        self.assertNotIn(
+                            "table--fixed-layout", other_table.get("class", [])
+                        )
+                    self.assertIsNotNone(tables[2].find(attrs={"rowspan": "2"}))
+
+    def test_new_import_uses_opdiv_and_sets_widths_for_every_matching_table(self):
+        self.upload(reverse("nofos:nofo_import"))
+        self.assert_expense_widths(Nofo.objects.get(number="TEMPLATE-001"))
+
+    def test_reimport_sets_widths_on_an_existing_nofo(self):
+        nofo = Nofo.objects.create(
+            title="Expenses", number="TEMPLATE-001", opdiv="HRSA", group="bloom"
+        )
+        self.upload(reverse("nofos:nofo_import_overwrite", kwargs={"pk": nofo.pk}))
+        self.assert_expense_widths(nofo)
+
+    def test_non_hrsa_import_has_no_fixed_layout(self):
+        self.upload(reverse("nofos:nofo_import"), opdiv="CDC")
+        nofo = Nofo.objects.get(number="TEMPLATE-001")
+        body = Subsection.objects.get(section__nofo=nofo, name="Construction").body
+        self.assertNotIn("table--fixed-layout", body)
 
 
 class TestNofoImportOpdiv(TestCase):

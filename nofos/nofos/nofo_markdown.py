@@ -6,6 +6,7 @@ NofoMarkdownConverter's conversion rules.
 """
 
 import re
+from copy import deepcopy
 
 from bs4 import BeautifulSoup, NavigableString
 from markdownify import MarkdownConverter
@@ -315,7 +316,55 @@ class NofoMarkdownConverter(MarkdownConverter):
 
         return super().convert_p(el, text, parent_tags)
 
+    def _format_hrsa_expense_table(self, table):
+        rows = table.find_all("tr")
+        if not rows or table.find("table") is not None:
+            return False
+
+        headers = rows[0].find_all(["th", "td"], recursive=False)
+        labels = []
+        for header in headers:
+            matching_header = deepcopy(header)
+            for line_break in matching_header.find_all("br"):
+                line_break.replace_with(" ")
+            labels.append(" ".join(matching_header.get_text().split()).casefold())
+        if labels != [
+            "allowable expenses",
+            "unallowable expenses",
+        ]:
+            return False
+
+        for row in rows:
+            cells = row.find_all(["td", "th"], recursive=False)
+            # Spanning cells can occupy columns in later rows.
+            if any(cell.get("rowspan", "1") != "1" for cell in cells):
+                return False
+            spans = [cell.get("colspan", "1") for cell in cells]
+            if any(span not in ("1", "2") for span in spans):
+                return False
+            if sum(int(span) for span in spans) > 2:
+                return False
+
+        # Fixed layout uses the first row for widths. Remove imported column
+        # definitions so they cannot take precedence over those widths.
+        for column in table.find_all(["colgroup", "col"], recursive=False):
+            column.decompose()
+        self._strip_source_list_attrs(table)
+        for tag, width_class in [
+            (table, "table--fixed-layout"),
+            *((header, "w-50") for header in headers),
+        ]:
+            tag.attrs.pop("width", None)
+            classes = [
+                name for name in tag.get("class", []) if not name.startswith("w-")
+            ]
+            tag["class"] = [*classes, width_class]
+        return True
+
     def convert_table(self, el, text, parent_tags):
+        if self.options.get("hrsa_import") and self._format_hrsa_expense_table(el):
+            return "\n\n" + str(el) + "\n\n"
+
         if el.find(id=re.compile(r"^endnote-manual-")):
             return "\n\n" + str(el) + "\n\n"
 

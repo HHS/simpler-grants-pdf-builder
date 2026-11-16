@@ -235,7 +235,9 @@ class MetricsImportCreationTests(TestCase):
 
         from nofos.nofo import create_nofo
 
-        with patch("nofos.nofo._build_document", side_effect=lambda nofo, *args: nofo):
+        with patch(
+            "nofos.nofo._build_document", side_effect=lambda nofo, *args, **kwargs: nofo
+        ):
             nofo = create_nofo("Imported", [], "CDC", group="cdc")
         self.assertTrue(MetricsNofo.objects.get(pk=nofo.pk).included)
 

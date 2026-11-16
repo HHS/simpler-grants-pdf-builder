@@ -89,6 +89,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-024 | conversion | Tables | Single-cell, single-row table → extracted as a callout-box subsection | `nofo.py` |
 | IMPORT-025 | conversion | Tables | Callout box titled "Key facts"/"Key dates"/"Application due date" → forced to `h4`, canonical casing | `nofo.py` |
 | IMPORT-026 | repair | Tables | `<span>` inside table cells → unwrapped | `nofo.py` |
+| IMPORT-081 | conversion | Tables | HRSA expense table → full width with equal columns | `nofo_markdown.py` |
 | IMPORT-027 | conversion | Tables | Any cell with `colspan`/`rowspan` ≠ 1 → whole table kept as raw HTML; header width classes auto-assigned | `nofo_markdown.py` |
 | IMPORT-057 | repair | Tables | Caption before the first row does not suppress the Markdown table separator | `nofo_markdown.py` |
 | IMPORT-054 | conversion | Tables | "Point value"/"Points" header + short point-value cells → header marked `{: .col--points }` (fit-to-content, no-wrap column) | `nofo_markdown.py` |
@@ -488,6 +489,14 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Trigger:** A `<span>` inside any `<td>`/`<th>`.
 - **Action:** Unwrapped, keeping the text content.
 - **Source:** `content_processing.py::clean_table_cells`
+- **Status:** active
+
+### IMPORT-081 — HRSA expense table widths
+
+- **Type:** conversion
+- **Trigger:** A Builder import or reimport identifies the upload as HRSA from the OpDiv or opportunity number via the existing theme suggestion. A two-column table without row spans starts with “Allowable expenses” and “Unallowable expenses,” in that order. Matching treats line breaks as whitespace and ignores capitalization and extra whitespace.
+- **Action:** Store the table as editable HTML with full available width, fixed layout, and a 50% width on each column header. Existing column definitions are replaced by those header widths. Editors can change the width classes or replace the table with Markdown after import.
+- **Source:** `nofo.py::is_hrsa_nofo_import`, `nofo_markdown.py::NofoMarkdownConverter._format_hrsa_expense_table`, and the Builder new and overwrite import views.
 - **Status:** active
 
 ### IMPORT-027 — Spanned-cell tables kept as raw HTML + auto width classes

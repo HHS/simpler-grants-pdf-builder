@@ -157,6 +157,13 @@ that environment has dedicated GrabzIt credentials. See `DEPLOYMENT.md` § Word 
 isolation. Never include credential or authentication-cookie values in source control, logs,
 screenshots, issues, or pull requests.
 
+## Opt-in AI contribution evaluation
+
+When the maintainer asks to “run the #1375 pilot” for a task, follow the
+[AI contribution evaluation procedure](documentation/AI_CONTRIBUTION_EVALUATION.md).
+Ordinary coding and PR requests follow the normal contribution workflow. Link
+any PR produced by a pilot run to its evidence record.
+
 ## NOFO import rules
 
 This repo automatically transforms content on NOFO import (`.docx`/HTML upload) — footnote/endnote

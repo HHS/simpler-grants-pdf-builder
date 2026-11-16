@@ -1,0 +1,207 @@
+diff --git a/documentation/EDITOR_TASKS.md b/documentation/EDITOR_TASKS.md
+index c3f84e0..53f486c 100644
+--- a/documentation/EDITOR_TASKS.md
++++ b/documentation/EDITOR_TASKS.md
+@@ -132,6 +132,9 @@ is needed, contact the SimplerNOFOs team.
+ - Import removes isolated bold formatting from a period, comma, question mark,
+   or colon directly after text. If the whole sentence is bold, the punctuation
+   stays bold with the sentence.
++- If Word stores an email hyperlink as a file link, import restores the email
++  destination when the file name exactly matches the displayed address. Review
++  any remaining broken links on the edit page.
+ - Consecutive Word bullets at the same numbering level import as one list even
+   when their internal list IDs differ, avoiding extra gaps between bullet groups.
+   Paragraphs still separate lists; numbered-list restarts remain separate.
+diff --git a/documentation/IMPORT_RULES.md b/documentation/IMPORT_RULES.md
+index bfeec9b..e5b3ba0 100644
+--- a/documentation/IMPORT_RULES.md
++++ b/documentation/IMPORT_RULES.md
+@@ -92,6 +92,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
+ | IMPORT-027 | conversion | Tables | Any cell with `colspan`/`rowspan` ≠ 1 → whole table kept as raw HTML; header width classes auto-assigned | `nofo_markdown.py` |
+ | IMPORT-057 | repair | Tables | Caption before the first row does not suppress the Markdown table separator | `nofo_markdown.py` |
+ | IMPORT-054 | conversion | Tables | "Point value"/"Points" header + short point-value cells → header marked `{: .col--points }` (fit-to-content, no-wrap column) | `nofo_markdown.py` |
++| IMPORT-078 | repair | Links | Word file URLs matching their displayed email address → mailto links | `nofo.py` |
+ | IMPORT-028 | repair | Links | Google Docs tracking-redirect URLs → unwrapped to real destination | `nofo.py` |
+ | IMPORT-029 | repair | Links | Consecutive same-href links merged; whitespace before punctuation trimmed | `nofo.py` |
+ | IMPORT-030 | repair | Links | Bookmark/heading/table-heading anchor IDs transferred to surviving parent elements | `nofo.py` |
+@@ -512,6 +513,13 @@ The example that prompted this document: detecting a footnote/endnote list and f
+
+ ## Link Handling
+
++### IMPORT-078 — Word email links saved as file URLs
++- **Type:** repair
++- **Trigger:** Word conversion emits a `file:` hyperlink whose percent-decoded final path component exactly matches its displayed text, including case, and the text is a valid email address. Targets with a query or fragment delimiter are excluded.
++- **Action:** Set the link destination to a `mailto:` URL for that address. Preserve the label and its inline formatting. Existing email links, other destinations and mismatches retain their original destinations.
++- **Source:** `nofo.py::_repair_word_email_links`, used by `parse_uploaded_file_as_html_string`
++- **Status:** active on Word import and reimport through the shared conversion path. HTML uploads bypass this repair.
++
+ ### IMPORT-028 — Google tracking-link unwrapping
+ - **Type:** repair
+ - **Trigger:** An `<a href>` starts with `https://www.google.com/url?` (Google Docs export's link-tracking redirect wrapper).
+diff --git a/nofos/nofos/nofo.py b/nofos/nofos/nofo.py
+index 30b5776..17ab35f 100644
+--- a/nofos/nofos/nofo.py
++++ b/nofos/nofos/nofo.py
+@@ -15,7 +15,7 @@ import os
+ import re
+ import sys
+ from concurrent.futures import ThreadPoolExecutor, as_completed
+-from urllib.parse import urlparse
++from urllib.parse import quote, unquote, urlparse, urlsplit
+
+ import mammoth
+ import markdown
+@@ -33,6 +33,7 @@ from bloom_nofos.s3.utils import (
+ from bs4 import BeautifulSoup, NavigableString, Tag
+ from constance import config
+ from django.conf import settings
++from django.core.validators import validate_email
+ from django.db import transaction
+ from django.forms import ValidationError
+ from django.urls import reverse_lazy
+@@ -168,6 +169,33 @@ REQUEST_HEADERS = {
+ ###########################################################
+
+
++def _repair_word_email_links(html):
++    """Restore email hyperlinks represented as file URLs in Word."""
++    if "file:" not in html.lower():
++        return html
++
++    soup = BeautifulSoup(html, "html.parser")
++    changed = False
++    for link in soup.find_all("a", href=True):
++        href = link["href"]
++        # Check for delimiters directly, including empty queries and fragments.
++        if not href.lower().startswith("file:") or "?" in href or "#" in href:
++            continue
++        address = link.get_text()
++        try:
++            filename = urlsplit(href).path.rsplit("/", 1)[-1]
++            if unquote(filename, errors="strict") != address or link.find("br"):
++                continue
++            validate_email(address)
++        except (ValidationError, ValueError):
++            continue
++
++        link["href"] = "mailto:" + quote(address, safe="@+")
++        changed = True
++
++    return str(soup) if changed else html
++
++
+ def parse_uploaded_file_as_html_string(
+     uploaded_file,
+     *,
+@@ -251,7 +279,8 @@ def parse_uploaded_file_as_html_string(
+         if config.WORD_IMPORT_STRICT_MODE and warnings:
+             raise StrictFormattingError(warnings)
+
+-        return list_plan.restore_html(doc_to_html_result.value), len(warnings)
++        html = _repair_word_email_links(doc_to_html_result.value)
++        return list_plan.restore_html(html), len(warnings)
+
+     else:
+         raise ValidationError(
+diff --git a/nofos/nofos/tests_nofos/test_word_email_import.py b/nofos/nofos/tests_nofos/test_word_email_import.py
+new file mode 100644
+index 0000000..76655ae
+--- /dev/null
++++ b/nofos/nofos/tests_nofos/test_word_email_import.py
+@@ -0,0 +1,96 @@
++from io import BytesIO
++from unittest.mock import patch
++from xml.sax.saxutils import escape, quoteattr
++from zipfile import ZipFile
++
++import markdown
++from bs4 import BeautifulSoup
++from django.core.files.uploadedfile import SimpleUploadedFile
++from django.test import SimpleTestCase
++
++from nofos.nofo import parse_uploaded_file_as_html_string
++from nofos.nofo_markdown import md
++
++WORD = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
++OFFICE_RELS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
++PACKAGE_RELS = "http://schemas.openxmlformats.org/package/2006/relationships"
++DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
++
++
++def word_hyperlinks(links):
++    paragraphs = []
++    relationships = []
++    for index, (href, label) in enumerate(links, 1):
++        # Split the address across Word runs and format the first run.
++        paragraphs.append(
++            f'<w:p><w:hyperlink r:id="rId{index}">'
++            f"<w:r><w:rPr><w:b/></w:rPr><w:t>{escape(label[:4])}</w:t></w:r>"
++            f"<w:r><w:t>{escape(label[4:])}</w:t></w:r>"
++            "</w:hyperlink></w:p>"
++        )
++        relationships.append(
++            f'<Relationship Id="rId{index}" Type="{OFFICE_RELS}/hyperlink" '
++            f'Target={quoteattr(href)} TargetMode="External"/>'
++        )
++    output = BytesIO()
++    with ZipFile(output, "w") as docx:
++        docx.writestr(
++            "word/document.xml",
++            f'<w:document xmlns:w="{WORD}" xmlns:r="{OFFICE_RELS}">'
++            f'<w:body>{"".join(paragraphs)}</w:body></w:document>',
++        )
++        docx.writestr(
++            "word/_rels/document.xml.rels",
++            f'<Relationships xmlns="{PACKAGE_RELS}">'
++            f'{"".join(relationships)}</Relationships>',
++        )
++    return SimpleUploadedFile("synthetic-email.docx", output.getvalue(), DOCX_MIME)
++
++
++class WordEmailImportTests(SimpleTestCase):
++    @patch("nofos.nofo.config")
++    def test_rewrites_only_exact_email_file_destinations(self, config):
++        config.WORD_IMPORT_STRICT_MODE = False
++        address = "Help+Grants@example.gov"
++        file_href = "file:///C:/Applicant%20Support/Help%2BGrants%40example.gov"
++        mailto = f"mailto:{address}"
++        links = (
++            (file_href, address, mailto),
++            ("FILE:///tmp/Help+Grants@example.gov", address, mailto),
++            (
++                "file:///tmp/first%23last%40example.gov",
++                "first#last@example.gov",
++                "mailto:first%23last@example.gov",
++            ),
++            (mailto, address, mailto),
++            (
++                "https://example.gov/Help+Grants@example.gov",
++                address,
++                "https://example.gov/Help+Grants@example.gov",
++            ),
++            ("file:///tmp/handbook.pdf", "handbook.pdf", "file:///tmp/handbook.pdf"),
++            (file_href, "help+Grants@example.gov", file_href),
++            (file_href, "Email the grants team", file_href),
++            (f"{file_href}?subject=NOFO", address, f"{file_href}?subject=NOFO"),
++            (f"{file_href}#contact", address, f"{file_href}#contact"),
++            (f"{file_href}?", address, f"{file_href}?"),
++            (f"{file_href}#", address, f"{file_href}#"),
++        )
++        upload = word_hyperlinks([(href, label) for href, label, _ in links])
++
++        html, warnings = parse_uploaded_file_as_html_string(upload)
++
++        self.assertEqual(warnings, 0)
++        for result in (html, markdown.markdown(md(html))):
++            anchors = BeautifulSoup(result, "html.parser").find_all("a")
++            self.assertEqual(
++                [(link["href"], link.get_text()) for link in anchors],
++                [(expected, label) for _, label, expected in links],
++            )
++            self.assertEqual(anchors[0].strong.get_text(), address[:4])
++
++    def test_html_upload_bypasses_repair(self):
++        html = '<a href="file:///tmp/help%40example.gov">help@example.gov</a>'
++        upload = SimpleUploadedFile("example.html", html.encode(), "text/html")
++
++        self.assertEqual(parse_uploaded_file_as_html_string(upload), (html, 0))
