@@ -146,8 +146,8 @@ in the linked evidence records; update those first, then this table.
 | --- | --- | --- | --- |
 | [1. Preflight](#1-preflight-no-control-changes) | Done in dev. The route-coverage gap found October 28 was fixed by [SGG #13060](https://github.com/HHS/simpler-grants-gov/pull/13060), and the WAF tests covered all four route forms. | None in dev | [October 28 preflight](../review-evidence/readability-readiness-1239/README.md#preflight-finding-renamed-route-coverage) · [Dated launch evidence](../review-evidence/971/README.md#dated-launch-evidence) |
 | [2. WAF test card](#2-waf-test-card-synthetic-empty-requests-no-file-uploads) | Done in dev | None in dev | [Dated launch evidence](../review-evidence/971/README.md#dated-launch-evidence) |
-| [3. Runtime checks](#3-runtime-checks-without-opening-public-uploads) | Partly done | Fresh signed-out end-to-end test after [#1368](https://github.com/HHS/simpler-grants-pdf-builder/pull/1368) deploys (upload, rejection messages, browser-saved report); live-service interruption; production storage and cleanup; log access and retention; slow-upload protection | [Storage and cleanup](../review-evidence/971/README.md#november-10-dev-temporary-storage-and-cleanup) · [Logging](../review-evidence/971/README.md#november-10-signed-out-dev-logging-check) |
-| [4. Production setup](#4-production-setup-separate-from-public-launch) | Partly done | Production storage and cleanup, log access, handling approvals, Office of Grants leadership approval | [Dated launch evidence](../review-evidence/971/README.md#dated-launch-evidence) |
+| [3. Runtime checks](#3-runtime-checks-without-opening-public-uploads) | Dev upload, cleanup, analyzer and admission checks recorded | Confirm smoke-test coverage for the launch version. Record decisions on remaining runtime, logging and upload protection gaps. | [Dev runtime evidence](../review-evidence/971/README.md) · [Signed-out Word smoke test](https://github.com/HHS/simpler-grants-pdf-builder/issues/971#issuecomment-6886105867) |
+| [4. Production setup](#4-production-setup-separate-from-public-launch) | Alert delivery and firewall controls verified with public uploads off | Record the launch decision and any required approvals. After approval, enable public usage recording and run the launch smoke check. | [Production firewall inspection](https://github.com/HHS/simpler-grants-gov/actions/runs/43895642259) · [Launch checklist #968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968#release-acceptance-criteria) |
 
 ### Completed evidence to reuse
 
@@ -279,18 +279,28 @@ using an authenticated experience as evidence for that path.
 | Logging | Restricted search for synthetic body marker/fixture names and inspection of actual logging destinations and retention/access. | The [November 10 dev check](../review-evidence/971/README.md#november-10-signed-out-dev-logging-check) covers one successful upload in application and load balancer logs. The evidence record lists remaining coverage and retention checks. Keep raw messages restricted. |
 | Request-size and slow-upload protection | Reuse the assessment in [SGG #12678](https://github.com/HHS/simpler-grants-gov/pull/12678) and identify remaining deployment-dependent checks before any bounded ingress test. | Rate limiting does not establish these controls. No pathological PDF, resource-exhaustion or unbounded upload test. |
 
-The [November 10 disposable dev task](../review-evidence/971/README.md#november-10-dev-temporary-storage-and-cleanup)
-records the completed synthetic processing, temporary storage, cleanup,
-Linux analyzer and PostgreSQL checks. Use reviewed mechanisms for the remaining
-target-runtime checks. The infrastructure inspection workflow cannot read
-temporary storage or run container commands. Required security/privacy reviewers
-must accept the actual runtime handling boundary.
+**Dev evidence to reuse.** The [November 10 disposable task](../review-evidence/971/README.md#november-10-dev-temporary-storage-and-cleanup)
+verified synthetic PDF processing, cleanup after success, rejection and timeout,
+Linux analyzer limits and PostgreSQL admission. The isolated interruption test
+verified cleanup at startup. A [signed-out dev Word smoke test](https://github.com/HHS/simpler-grants-pdf-builder/issues/971#issuecomment-6886105867)
+produced a report and verified the enabled page's indexing directives. The
+[earlier browser smoke test](https://github.com/HHS/simpler-grants-pdf-builder/issues/971#issuecomment-5890322354)
+covered copying metrics and saving a PDF report.
 
-The enabled signed-out form, recognition messages and browser-saved report still
-need end-to-end validation if equivalent evidence is unavailable. Mark these
-**deferred: public enablement prohibited**. Do not turn the flag on to complete
-this plan. A future brief upload test requires the requester's separate explicit
-authorization, a duration/request cap and verified disabled-state restoration.
+**Open for the launch decision.** Production analyzer isolation, temporary
+storage, cleanup after full service-task replacement and individual firewall
+logs and samples remain unverified. Log access and retention still need review
+where coverage is incomplete. The dev logging check covered application and
+load balancer logs for one successful synthetic upload. Record which
+limitations need further evidence and which the release owner accepts, including
+the remaining slow- and oversized-upload risks. Track the evidence in
+[#970](https://github.com/HHS/simpler-grants-pdf-builder/issues/970) and
+[#971](https://github.com/HHS/simpler-grants-pdf-builder/issues/971).
+
+**Launch smoke check.** Confirm which earlier checks apply to the launch
+version and test any remaining gaps in the signed-out upload, rejection and
+browser-saved report flows. Keep public uploads off until a test or launch is
+specifically authorized.
 
 #### Dev-only upload-read observation
 
@@ -368,26 +378,25 @@ by merging this implementation, and production diagnostic activation is unsuppor
 <details>
 <summary>Show steps</summary>
 
-After relevant dev verification and handling review, prepare one consolidated
-production safeguards/private-email change where feasible. First inspect the
-actual production account, region, service, existing controls and credential
-path; dev permissions/settings do not prove production access. Keep the effective
-public flag false before and after any deployment.
+**Verified in production.** The team's private email subscription is active,
+and a [controlled test](https://github.com/HHS/simpler-grants-gov/issues/12568#issuecomment-6643739707)
+delivered both alarm and recovery emails. The
+[production inspection](https://github.com/HHS/simpler-grants-gov/actions/runs/43895642259)
+confirmed the upload rate rule blocks at 30 matching requests per five minutes
+per public IP and the emergency rule is in Count mode. The
+[operating runbook](https://github.com/HHS/simpler-grants-gov/blob/main/documentation/infra/nofo-pdf-readability-waf.md)
+records who handles alerts and how to pause and restore uploads.
 
-Provision/select the production private parameter through an approved secret
-path, configure the production monitoring subscription, and have the inbox holder
-confirm it. Verify controlled production alarm/recovery delivery without enabling
-uploads, inspect actual production controls and agree responder/escalation paths.
-Use separate production authorization and review; this dev plan is not a
-production mutation approval. Do not copy dev account IDs or assume its workflows
-support production. Keep recipient values/confirmation links out of public code.
+**Before enablement.** Record the target version, applicable smoke-test
+evidence, any required approvals, and how the release owner will handle the
+remaining safeguards gaps in [launch decision #968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968#release-acceptance-criteria).
+Obtain Office of Grants leadership approval before enabling public uploads.
 
-Record verified controls, open limitations and which checks are deferred by the
-disabled-state constraint. Only claim **ready, awaiting leadership approval**
-when required safeguards/handling approvals and tests are complete or their
-explicitly limited deferrals have been accepted by the release decision-maker.
-Office of Grants leadership launch approval remains separate; no automatic
-flag activation follows email setup, a successful deploy or a green test.
+**At approved launch.** Follow the
+[production usage-recording guide](https://github.com/HHS/simpler-grants-gov/blob/main/documentation/infra/nofo-authenticated-readability-recording.md):
+deploy and verify public usage recording before switching on public uploads.
+Complete the agreed smoke check on the approved version and record the results
+in [#971](https://github.com/HHS/simpler-grants-pdf-builder/issues/971).
 
 </details>
 
