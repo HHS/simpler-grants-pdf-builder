@@ -63,3 +63,7 @@ The common script covers the named prefixes, inline formatting and links, table 
 The original checks passed on both patches. Follow-up probes after blind scoring confirmed that both changed the ordinary paragraph `N.B.-based organizations may apply.` to a bold note and that Patch 2 also rewrote `N.B.’s office is open.` The merged reference preserved both paragraphs. The reviewer also flagged that Patch 1 emits `**Note:**Apply by Friday.` for an adjacent label and hypothesized that bold might be lost. Builder’s Markdown rendering preserved the bold label in the coordinator probe. This correction does not change the correctness score.
 
 The dry run exercised separate coding and review sessions, a reusable test command, and a checkable evidence record. Guide-read timing was self-reported. Before scored runs, add ordinary-prose boundary cases to the common checks, remove the coding-session instruction to report documentation reads if independent event capture is available, and calibrate the rubric on the second dry run. No adoption decision is due from this dry run. Maintainer calibration is pending.
+
+## Second dry run
+
+See [Word email link evaluation](word-email-dry-run.md) for the prompts, scores, and reproducible evidence.
