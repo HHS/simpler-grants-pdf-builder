@@ -1,6 +1,7 @@
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
+from bs4 import BeautifulSoup
 from django.contrib.contenttypes.models import ContentType
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
@@ -120,7 +121,8 @@ class NofoDesignerAutoAssignTest(TestCase):
         ), patch(
             "nofos.views.create_nofo_audit_event"
         ):
-            view.handle_nofo_create(request, MagicMock(), [], "test.html")
+            soup = BeautifulSoup("<p>OpDiv: HHS</p>", "html.parser")
+            view.handle_nofo_create(request, soup, [], "test.html")
 
         nofo.refresh_from_db()
         return nofo
