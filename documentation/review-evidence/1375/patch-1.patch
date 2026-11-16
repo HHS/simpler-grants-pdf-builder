@@ -1,0 +1,193 @@
+diff --git a/documentation/EDITOR_TASKS.md b/documentation/EDITOR_TASKS.md
+index 03e4626..25c640c 100644
+--- a/documentation/EDITOR_TASKS.md
++++ b/documentation/EDITOR_TASKS.md
+@@ -134,6 +134,10 @@ is needed, contact the SimplerNOFOs team.
+ - Import removes isolated bold formatting from a period, comma, question mark,
+   or colon directly after text. If the whole sentence is bold, the punctuation
+   stays bold with the sentence.
++- Import and reimport standardize applicant labels such as “PLEASE NOTE:”,
++  “Note –”, and “N.B.” at the start of paragraphs, including inside table cells.
++  Builder displays the label as bold **Note:** and keeps the following text and
++  formatting.
+ - Consecutive Word bullets at the same numbering level import as one list even
+   when their internal list IDs differ, avoiding extra gaps between bullet groups.
+   Paragraphs still separate lists; numbered-list restarts remain separate.
+diff --git a/documentation/IMPORT_RULES.md b/documentation/IMPORT_RULES.md
+index 3412872..e77bb29 100644
+--- a/documentation/IMPORT_RULES.md
++++ b/documentation/IMPORT_RULES.md
+@@ -122,6 +122,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
+
+ | IMPORT-075 | repair | Emphasis | Explicit line breaks inside bold/italic text survive Markdown conversion | `nofo_markdown.py` |
+ | IMPORT-077 | repair | Emphasis | Unwrap isolated bold on trailing punctuation | `content_processing.py` |
++| IMPORT-079 | conversion | Emphasis | Paragraph-leading applicant note labels → bold `Note:` | `content_processing.py` |
+
+ ---
+
+@@ -622,6 +623,14 @@ The example that prompted this document: detecting a footnote/endnote list and f
+ - **Action:** Unwrap the punctuation run before Markdown conversion. Preserve the mark, whitespace, and any surrounding bold, including an outer bold wrapper around the full sentence.
+ - **Source:** `content_processing.py::unwrap_bold_trailing_punctuation`.
+
++### IMPORT-079 — Applicant note labels
++
++- **Type:** conversion
++- **Trigger:** A paragraph, including a paragraph in a table cell, starts with `Note` or `Please note` followed by a colon or dash, or with `N.B.` followed by whitespace, a colon or dash, or the end of the paragraph. Matching is case-insensitive and can span inline formatting runs.
++- **Action:** Replace only the leading label with bold `Note:`. Preserve the following text and its inline formatting. Ordinary sentences and labels later in the paragraph remain as written.
++- **Source:** `content_processing.py::normalize_applicant_note_labels`
++- **Status:** active on import and reimport
++
+ ## Content Extraction & Removal
+
+ ### IMPORT-038 — "Before you begin" duplicate-section removal
+diff --git a/nofos/nofos/content_processing.py b/nofos/nofos/content_processing.py
+index dd6c5b5..cd5ab67 100644
+--- a/nofos/nofos/content_processing.py
++++ b/nofos/nofos/content_processing.py
+@@ -230,6 +230,7 @@ def process_nofo_html(soup, top_heading_level, *, debug_capture=None):
+     continue_table_row_numbering(soup)  # IMPORT-067
+     unwrap_empty_elements(soup)
+     unwrap_bold_trailing_punctuation(soup)  # IMPORT-077
++    normalize_applicant_note_labels(soup)  # IMPORT-079
+     decompose_empty_tags(soup)
+     combine_consecutive_links(soup)
+     repair_file_email_links(soup)
+@@ -1912,6 +1913,62 @@ def unwrap_bold_trailing_punctuation(soup):
+             bold.unwrap()
+
+
++_APPLICANT_NOTE_LABEL = re.compile(
++    r"\A\s*(?:(?:please\s+)?note(?:\s*[:–—]|\s+-|-(?=\s|$))"
++    r"|n\.b\.(?:\s*[:–—-]|(?=\s|$)))",
++    re.IGNORECASE,
++)
++_NOTE_LABEL_FORMATTING_TAGS = {"b", "em", "i", "span", "strong", "u"}
++
++
++def normalize_applicant_note_labels(soup):
++    """Replace a paragraph's label, preserving the inline markup of its body."""
++    for paragraph in soup.find_all("p"):
++        prefix_nodes = []
++        for node in paragraph.descendants:
++            if type(node) is NavigableString:
++                prefix_nodes.append(node)
++            elif isinstance(node, Comment) or (
++                isinstance(node, Tag)
++                and node.name == "a"
++                and not node.contents
++                and (node.has_attr("id") or node.has_attr("name"))
++            ):
++                continue
++            elif (
++                not isinstance(node, Tag)
++                or node.name not in _NOTE_LABEL_FORMATTING_TAGS
++            ):
++                # A link, image, break, or other content marks the end of the prefix.
++                break
++
++        match = _APPLICANT_NOTE_LABEL.match("".join(prefix_nodes))
++        if match is None:
++            continue
++
++        first_label_node = next(node for node in prefix_nodes if node.strip())
++        while first_label_node.parent is not paragraph:
++            first_label_node = first_label_node.parent
++        label = soup.new_tag("strong")
++        label.string = "Note:"
++        first_label_node.insert_before(label)
++
++        remaining = match.end()
++        for node in prefix_nodes:
++            if remaining < len(node):
++                node.replace_with(node[remaining:])
++                break
++            remaining -= len(node)
++            parent = node.parent
++            node.extract()
++            while parent is not paragraph and not parent.contents and not parent.attrs:
++                empty = parent
++                parent = empty.parent
++                empty.decompose()
++            if remaining == 0:
++                break
++
++
+ def add_em_to_de_minimis(soup):
+     # Work on text nodes so attributes (including Word Find snippets) stay plain.
+     soup = BeautifulSoup(str(soup), "html.parser")
+diff --git a/nofos/nofos/tests_nofos/test_content_processing.py b/nofos/nofos/tests_nofos/test_content_processing.py
+index 40c57e7..2a8284a 100644
+--- a/nofos/nofos/tests_nofos/test_content_processing.py
++++ b/nofos/nofos/tests_nofos/test_content_processing.py
+@@ -11,7 +11,7 @@ from django.core.exceptions import ValidationError
+ from django.test import SimpleTestCase, override_settings
+
+ from nofos import content_processing, document_processing
+-from nofos.nofo import process_nofo_html, resolve_section_heading_level
++from nofos.nofo import get_as_markdown, process_nofo_html, resolve_section_heading_level
+
+
+ class IsolatedContentProcessingTests(SimpleTestCase):
+@@ -229,3 +229,62 @@ class TrailingPunctuationImportTests(SimpleTestCase):
+                     BeautifulSoup(f"<p>{source}</p>", "html.parser"), "h1"
+                 )
+                 self.assertEqual(soup.p.decode_contents(), source)
++
++
++class ApplicantNoteLabelImportTests(SimpleTestCase):
++    def test_builder_processing_normalizes_labels_and_preserves_body_formatting(self):
++        html = (
++            "<h1>Opportunity</h1><h2>Summary</h2>"
++            "<p>PLEASE NOTE: Apply by <em>Friday</em>.</p>"
++            '<p><em>Note</em> <b>–</b> <a href="https://example.org">Read more</a>.</p>'
++            "<p><b>N.B. Keep this bold.</b></p>"
++            "<p><strong>Note:</strong> Already standardized.</p>"
++            "<table><tr><th>Instructions</th></tr>"
++            "<tr><td><p>n.b. Keep <strong>this</strong> in the table.</p>"
++            "<p>Keep the next paragraph.</p></td></tr></table>"
++        )
++        result = content_processing.process_document_content(html, builder_import=True)
++        self.assertEqual(
++            [paragraph.decode_contents() for paragraph in result.soup.find_all("p")],
++            [
++                "<strong>Note:</strong> Apply by <em>Friday</em>.",
++                '<strong>Note:</strong> <a href="https://example.org">Read more</a>.',
++                "<strong>Note:</strong><b> Keep this bold.</b>",
++                "<strong>Note:</strong> Already standardized.",
++                "<strong>Note:</strong> Keep <strong>this</strong> in the table.",
++                "Keep the next paragraph.",
++            ],
++        )
++        body = get_as_markdown(result.sections[0]["subsections"][0]["body"])
++        self.assertIn("**Note:** Apply by *Friday*.", body)
++        self.assertIn("**Note:** [Read more](https://example.org).", body)
++        self.assertIn("**Note:** **Keep this bold.**", body)
++        self.assertIn(
++            "<strong>Note:</strong> Keep <strong>this</strong> in the table.", body
++        )
++
++    def test_import_preserves_a_bookmark_before_the_label(self):
++        result = content_processing.process_document_content(
++            "<h1>Opportunity</h1><h2>Summary</h2>"
++            '<p><a href="#deadline-note">See deadline</a></p>'
++            '<p><a id="deadline-note"></a>Note – Apply by Friday.</p>'
++        )
++        bookmark = result.soup.find(id="deadline-note")
++        self.assertEqual(bookmark.find_next_sibling("strong").get_text(), "Note:")
++        self.assertEqual(bookmark.parent.get_text(), "Note: Apply by Friday.")
++
++    def test_import_leaves_ordinary_prose_and_embedded_labels_alone(self):
++        cases = [
++            "Note that the deadline changed.",
++            "Note-taking is optional.",
++            "Please note the new schedule.",
++            "Apply by Friday. Note: Late applications are ineligible.",
++            "Apply now.<br/>N.B. Read the instructions.",
++            "N.B.C. is an organization.",
++        ]
++        for source in cases:
++            with self.subTest(source=source):
++                soup, _ = process_nofo_html(
++                    BeautifulSoup(f"<p>{source}</p>", "html.parser"), "h1"
++                )
++                self.assertEqual(soup.p.decode_contents(), source)
