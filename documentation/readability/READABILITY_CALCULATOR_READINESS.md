@@ -28,7 +28,10 @@ recording is enabled, operational records have no automatic expiration and
 exclude filenames, document text, readability scores and user identifiers.
 NOFO Builder uses these records to monitor how often people use the checker and
 how reliably and quickly it processes uploads.
-Infrastructure logs have separate access and retention settings. The upload page
+Infrastructure logs have separate access and retention settings. Not saving a
+document or report does not establish what the firewall can capture: production
+request-body masking is off, and the contents of firewall logs and request
+samples have not been verified. The upload page
 asks users to upload only documents they’re authorized to share and to follow
 their agency’s rules for sharing pre-decisional NOFO content. Users with
 questions can contact their agency’s grants policy office.
@@ -39,11 +42,12 @@ readability report as expected and whether the checker could handle failed,
 interrupted or repeated uploads without disrupting other work in NOFO Builder.
 We also checked what the test upload left behind in temporary files and logs.
 
-- **Upload and logging.** A signed-out PDF upload in the test environment
-  **produced a report**, and we found **neither the filename nor a test phrase
-  from the document in the log fields we searched**. A separate local test
-  confirmed that a signed-out Word upload also produced a report.
-  [Dev logging evidence](../review-evidence/971/README.md#november-10-signed-out-dev-logging-check)
+- **Upload and logging.** Signed-out synthetic PDF and Word uploads both
+  **produced reports in dev**. For the PDF, neither the filename nor a test
+  phrase appeared in the application and load balancer log fields searched.
+  That check did not cover firewall logs or samples.
+  [Dev PDF and logging evidence](../review-evidence/971/README.md#november-10-signed-out-dev-logging-check) ·
+  [Dev Word evidence](https://github.com/HHS/simpler-grants-pdf-builder/issues/971#issuecomment-6886105867)
 - **Temporary-file cleanup.** In the test environment, the checker kept files
   in memory and **cleared them after success, rejection, and a processing
   timeout**. In a separate interruption test, processing stopped and the
@@ -53,8 +57,10 @@ We also checked what the test upload left behind in temporary files and logs.
   emergency blocking, and restoration worked**. On the live site, we
   confirmed the firewall was set to block requests above **30 upload attempts
   in five minutes from the same public IP address**. People whose office
-  shares a public IP address share that limit. During a production test, the
-  team **received both the alert and the recovery email**.
+  shares a public IP address share that limit. A temporary production test
+  alarm **delivered both alert and recovery emails**. The checker alarms
+  were separately verified to use that notification route; the email test
+  did not trigger those alarms with checker traffic.
   [Infrastructure evidence](https://github.com/HHS/simpler-grants-gov/issues/12568)
 
 **How we limit abuse and respond.** The public Readability Checker accepts
@@ -92,6 +98,22 @@ The release owner records whether to accept or address this gap before
 enabling public uploads.
 [Inspection results](https://github.com/HHS/simpler-grants-gov/issues/12568#deployed-firewall-data-protection-november-16-2026) ·
 [Launch decision checklist](https://github.com/HHS/simpler-grants-pdf-builder/issues/968#release-acceptance-criteria)
+
+### Proposed initial pilot scope
+
+Start with **published HHS NOFOs and supported synthetic examples only**, if
+that meets the pilot goal. Before enabling uploads under that scope, make it
+clear on the upload page: “Upload only a published HHS NOFO or a synthetic test
+document. Do not upload drafts or other nonpublic material.” This is guidance,
+not a technical gate. The release owner and required reviewers still need to
+consider that someone could upload a nonpublic document despite the notice.
+
+If pre-decisional drafts are needed, start with a restricted check of the
+existing synthetic dev request in firewall logs and any available samples.
+Record what could be located and inspected; a missing or expired record is
+inconclusive. Use that evidence and its limits for the handling decision in
+[#968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968). The proposed
+scope is not approved by this document.
 
 ### Pause and reopen
 
@@ -395,8 +417,24 @@ Obtain Office of Grants leadership approval before enabling public uploads.
 **At approved launch.** Follow the
 [production usage-recording guide](https://github.com/HHS/simpler-grants-gov/blob/main/documentation/infra/nofo-authenticated-readability-recording.md):
 deploy and verify public usage recording before switching on public uploads.
-Complete the agreed smoke check on the approved version and record the results
-in [#971](https://github.com/HHS/simpler-grants-pdf-builder/issues/971).
+
+1. **Before switching on:** Confirm the approved production version and upload
+   notice, verify the public switch is off, and confirm who can switch it
+   back off. Reuse the documented dev checks where they apply; this smoke
+   check does not replace any required evidence or approval in #968.
+2. **During the approved launch window:** With a signed-out browser, submit one
+   supported synthetic PDF and one supported synthetic Word file. Confirm both
+   produce the expected reports and that the form and reports have no-store
+   and noindex directives. Save one report through the browser and check it
+   contains all five metrics and their notes. Confirm the signed-out attempts
+   are recorded as expected without document content. If the checks pass,
+   record the version and results in #971.
+3. **If a check fails:** Turn the public switch back off and confirm a fresh
+   signed-out visit shows the unavailable page with no upload form. If the
+   switch is unavailable or insufficient, follow the emergency block
+   runbook. Record the deployed version, result and final switch state in
+   [#971](https://github.com/HHS/simpler-grants-pdf-builder/issues/971), and
+   return to #968 before reopening.
 
 </details>
 
