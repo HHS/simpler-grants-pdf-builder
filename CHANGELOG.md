@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.62.2](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.62.1...nofos-v3.62.2) (2026-11-16)
+
+
+### Bug Fixes
+
+* link the footer to the HHS Digital Accessibility Statement ([#1377](https://github.com/HHS/simpler-grants-pdf-builder/issues/1377)) ([8951539](https://github.com/HHS/simpler-grants-pdf-builder/commit/89515390813c600d2c62b354e350fe2204b59537))
+* use the HHS favicon across the PDF Builder ([#1373](https://github.com/HHS/simpler-grants-pdf-builder/issues/1373)) ([8b7f3c2](https://github.com/HHS/simpler-grants-pdf-builder/commit/8b7f3c2fd0214d85e78567c96ebc9ad147741ecc))
+
 ## [3.62.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.62.0...nofos-v3.62.1) (2026-11-15)
 
 
