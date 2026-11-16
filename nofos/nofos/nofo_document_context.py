@@ -12,7 +12,9 @@ def get_nofo_document_context(nofo):
         "nofo_theme_base": "{}-{}".format(opdiv, colour),
         "nofo_opdiv": opdiv,
         "nofo_theme_orientation": orientation,
-        "nofo_cover_image": get_cover_image(nofo),
+        "nofo_cover_image": (
+            "" if opdiv == "fda" and not nofo.cover_image else get_cover_image(nofo)
+        ),
         "step_2_section": get_step_2_section(nofo),
         "assistance_listing_on_cover_enabled": (
             config.HHS_NOFO_ASSISTANCE_LISTING_ENABLED

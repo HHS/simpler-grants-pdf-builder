@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from bs4 import BeautifulSoup
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.template.loader import render_to_string
@@ -87,6 +89,34 @@ class FDAOnboardingTests(TestCase):
         self.client.force_login(self.bloom)
         self.assertEqual(self.client.get(imported_view).status_code, 200)
 
+    def test_conflicting_word_opdiv_keeps_group_theme_and_warns_editor(self):
+        cases = (
+            (self.cdc, "FDA", "RFA-FD-26-001", "portrait-cdc-blue"),
+            (self.fda, "CDC", "CDC-RFA-DP-26-0012", "portrait-fda-blue"),
+        )
+        for user, opdiv, number, theme in cases:
+            with self.subTest(group=user.group):
+                self.client.force_login(user)
+                response = self.client.post(
+                    reverse("nofos:nofo_import"),
+                    {
+                        "nofo-import": SimpleUploadedFile(
+                            "synthetic.docx",
+                            introductory_docx(number=number, opdiv=opdiv),
+                            content_type=(
+                                "application/vnd.openxmlformats-officedocument."
+                                "wordprocessingml.document"
+                            ),
+                        )
+                    },
+                    follow=True,
+                )
+                self.assertContains(response, f"The document’s OpDiv identifies {opdiv}.")
+                nofo = Nofo.objects.get(group=user.group)
+                self.assertEqual(nofo.opdiv, opdiv)
+                self.assertEqual(nofo.theme, theme)
+                self.assertEqual(nofo.cover, "nofo--cover-page--text")
+
     def test_theme_match_does_not_change_cdc_fallback(self):
         for opdiv, number, expected in (
             ("Food and Drug Administration", "", "fda-blue"),
@@ -152,7 +182,40 @@ class FDAOnboardingTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(set(form.errors), {"theme", "cover", "icon_style"})
 
-    def test_both_pdf_cover_sources_use_neutral_placeholder(self):
+    def test_standard_cover_uses_the_uploaded_image(self):
+        nofo = Nofo.objects.create(
+            group="fda",
+            theme="portrait-fda-blue",
+            cover="nofo--cover-page--medium",
+            title="Synthetic FDA notice",
+            opdiv="FDA",
+        )
+        self.client.force_login(self.fda)
+        key = "img/cover-img/synthetic.png"
+        image_url = "https://example.test/synthetic.png"
+        with patch("nofos.nofo.upload_file_to_s3", return_value=key):
+            response = self.client.post(
+                reverse("nofos:nofo_upload_cover_image", args=[nofo.pk]),
+                {
+                    "cover_image": SimpleUploadedFile(
+                        "synthetic.png", b"fixture", content_type="image/png"
+                    ),
+                    "cover_image_alt_text": "Synthetic cover artwork",
+                },
+            )
+        self.assertRedirects(
+            response,
+            reverse("nofos:nofo_edit", args=[nofo.pk]),
+            fetch_redirect_response=False,
+        )
+        nofo.refresh_from_db()
+        self.assertEqual(nofo.cover_image, key)
+        with patch("nofos.nofo.get_image_url_from_s3", return_value=image_url):
+            response = self.client.get(reverse("nofos:nofo_view", args=[nofo.pk]))
+        self.assertContains(response, image_url)
+        self.assertContains(response, 'alt="Synthetic cover artwork"')
+
+    def test_both_pdf_cover_sources_use_fda_logo(self):
         for cover in ("text", "medium"):
             with self.subTest(cover=cover):
                 nofo = Nofo.objects.create(
@@ -170,8 +233,11 @@ class FDAOnboardingTests(TestCase):
                 soup = BeautifulSoup(html, "html.parser")
                 cover_html = soup.select_one("#section--cover-page")
                 self.assertEqual(
-                    cover_html.select_one(".fda-cover-logo-placeholder")["aria-hidden"],
-                    "true",
+                    cover_html.select_one("img.fda-cover-logo")["alt"],
+                    "U.S. Food and Drug Administration logo",
+                )
+                self.assertIsNone(
+                    cover_html.select_one(".nofo--cover-page--hero-image")
                 )
                 self.assertIn(nofo.agency, cover_html.get_text())
                 self.assertIn("theme-opdiv-fda-blue.css", html)

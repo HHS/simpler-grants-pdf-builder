@@ -25,6 +25,7 @@ def introductory_docx(
     bookmark="_Toc12345",
     number="HRSA-27-001",
     split_heading=False,
+    opdiv="HRSA",
 ):
     """A real minimal DOCX with Heading 2 plus a Word internal bookmark link."""
     stream = BytesIO()
@@ -56,7 +57,7 @@ def introductory_docx(
 <w:p><w:r><w:t>To register:</w:t></w:r></w:p>
 <w:p><w:r><w:t>Another source instruction.</w:t></w:r></w:p>
 <w:p><w:r><w:t>Opportunity Number: {number}</w:t></w:r></w:p>
-<w:p><w:r><w:t>Opdiv: HRSA</w:t></w:r></w:p>
+<w:p><w:r><w:t>Opdiv: {opdiv}</w:t></w:r></w:p>
 <w:p><w:r><w:t>Opportunity Name: Synthetic introductory page review</w:t></w:r></w:p>
 <w:p><w:r><w:t>Application Deadline: October 30, 2027</w:t></w:r></w:p>
 <w:p><w:pPr><w:pStyle w:val="Heading2"/></w:pPr><w:r><w:t>Step 1: Review the Opportunity</w:t></w:r></w:p>

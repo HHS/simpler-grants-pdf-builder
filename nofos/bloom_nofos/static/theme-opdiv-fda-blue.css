@@ -4,15 +4,12 @@
   color: var(--color--white);
 }
 
-.fda-cover-logo-placeholder {
-  display: grid;
-  place-items: center;
-  width: 16rem;
+.nofo--cover-page--header .fda-cover-logo {
+  display: block;
+  width: 4rem;
   max-width: 100%;
-  min-height: 3rem;
-  aspect-ratio: 5 / 1;
+  height: auto;
   margin-bottom: 0.5rem;
-  border: 1px dashed currentColor;
 }
 
 .nofo--cover-page--header .nofo--cover-page--header--logo--subheading p {

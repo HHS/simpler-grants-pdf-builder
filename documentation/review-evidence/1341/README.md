@@ -1,21 +1,19 @@
-# FDA onboarding draft evidence
+# FDA onboarding review evidence
 
 Tracked in [#1341](https://github.com/HHS/simpler-grants-pdf-builder/issues/1341).
-The draft cover is a synthetic example. It contains a neutral box marked
-“Logo placeholder,” not an FDA mark or approved artwork. The colors and font
-choices are provisional pending FDA review.
 
-- [Text-only cover, 1,200px](cover-1200.png)
-- [Text-only cover, 390px](cover-390.png)
+The original synthetic previews used a placeholder. The current cover uses the
+[white FDA monogram from FDA.gov](https://www.fda.gov/themes/custom/preview/assets/images/FDA_Logo_Icon_White.svg)
+with accessible text in the shared HTML template. Text only is the default.
+Standard image uses the editor’s upload for that NOFO.
 
-Chrome rendered the long fixture title without horizontal overflow at both
-widths. Its computed white-on-navy header contrast was 12.93:1. This is a
-check of that draft color pair, not a theme-wide contrast audit.
+- [Draft text-only cover, 1,200px](cover-1200.png)
+- [Draft text-only cover, 390px](cover-390.png)
 
-The focused tests cover import, re-import, group isolation, theme-option
-validation, and the PDF HTML template for both cover modes. They do not prove
-PDF tagging or reading order. Before merge, replace the placeholder with the
-approved asset, capture same-state before/after evidence and theme options,
-and validate the final cover and callouts in both cover and icon modes. Check a
-tagged PDF for logo alternative text, reading order, and contrast. Deployed
-account provisioning and live DocRaptor verification are separate rollout steps.
+Chrome rendered the draft long title without horizontal overflow at both widths.
+The draft white-on-navy header contrast was 12.93:1 and navy on the pale blue
+callout background is 11.28:1.
+
+Use Builder’s existing PDF export to spot-check the final text-only cover,
+logo alternative text and reading order. The template tests exercise PDF
+source HTML. Initial account provisioning and live export are rollout steps.

@@ -1741,14 +1741,25 @@ def suggest_nofo_before_you_begin(
 FDA_NOFO_NUMBER_PATTERN = re.compile(r"^(?:rfa|par|pa|pas|rfp)-fd-\d{2}-\d+", re.I)
 
 
-def suggest_nofo_theme(nofo_number, opdiv=""):
+def get_cdc_or_fda_opdiv(opdiv):
     opdiv_lower = (opdiv or "").lower()
     if "centers for disease control and prevention" in opdiv_lower or re.search(
         r"\bcdc\b", opdiv_lower
     ):
-        return "portrait-cdc-blue"
+        return "cdc"
 
     if re.search(r"\b(?:food (?:and|&) drug administration|fda)\b", opdiv_lower):
+        return "fda"
+
+    return None
+
+
+def suggest_nofo_theme(nofo_number, opdiv=""):
+    opdiv_lower = (opdiv or "").lower()
+    agency = get_cdc_or_fda_opdiv(opdiv)
+    if agency == "cdc":
+        return "portrait-cdc-blue"
+    if agency == "fda":
         return GROUP_DEFAULT_THEMES["fda"]
 
     if "national institutes of health" in opdiv_lower or re.search(
@@ -1921,8 +1932,20 @@ def suggest_all_nofo_fields(
     nofo.subject = suggest_nofo_subject(soup)  # guess the NOFO subject
     nofo.keywords = suggest_nofo_keywords(soup)  # guess the NOFO keywords
 
+    if first_time_import:
+        group_theme = (
+            "portrait-cdc-blue"
+            if nofo.group == "cdc"
+            else GROUP_DEFAULT_THEMES.get(nofo.group)
+        )
+        nofo.theme = group_theme or suggest_nofo_theme(nofo.number, opdiv=nofo.opdiv)
+
     preserve_hrsa_image = not first_time_import and "hrsa-" in nofo.theme.lower()
-    if not nofo.cover_image and not preserve_hrsa_image:
+    if (
+        not nofo.cover_image
+        and not preserve_hrsa_image
+        and nofo.theme != GROUP_DEFAULT_THEMES["fda"]
+    ):
         nofo.cover_image = suggest_nofo_cover_image(nofo)  # guess NOFO cover image
 
     nofo_title = suggest_nofo_title(soup)  # guess the NOFO title
@@ -1932,10 +1955,6 @@ def suggest_all_nofo_fields(
             nofo.title = nofo_title
 
     # do not reset these during import
-    if first_time_import:
-        nofo.theme = GROUP_DEFAULT_THEMES.get(nofo.group) or suggest_nofo_theme(
-            nofo.number, opdiv=nofo.opdiv
-        )
     if first_time_import:
         nofo.cover = suggest_nofo_cover(nofo.theme)  # guess the NOFO cover
     if first_time_import:
