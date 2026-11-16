@@ -6,6 +6,7 @@ NofoMarkdownConverter's conversion rules.
 """
 
 import re
+from copy import deepcopy
 
 from bs4 import BeautifulSoup, NavigableString
 from markdownify import MarkdownConverter
@@ -321,7 +322,13 @@ class NofoMarkdownConverter(MarkdownConverter):
             return False
 
         headers = rows[0].find_all(["th", "td"], recursive=False)
-        if [" ".join(cell.get_text().split()).casefold() for cell in headers] != [
+        labels = []
+        for header in headers:
+            matching_header = deepcopy(header)
+            for line_break in matching_header.find_all("br"):
+                line_break.replace_with(" ")
+            labels.append(" ".join(matching_header.get_text().split()).casefold())
+        if labels != [
             "allowable expenses",
             "unallowable expenses",
         ]:
@@ -329,6 +336,9 @@ class NofoMarkdownConverter(MarkdownConverter):
 
         for row in rows:
             cells = row.find_all(["td", "th"], recursive=False)
+            # Spanning cells can occupy columns in later rows.
+            if any(cell.get("rowspan", "1") != "1" for cell in cells):
+                return False
             spans = [cell.get("colspan", "1") for cell in cells]
             if any(span not in ("1", "2") for span in spans):
                 return False

@@ -494,7 +494,7 @@ The example that prompted this document: detecting a footnote/endnote list and f
 ### IMPORT-081 — HRSA expense table widths
 
 - **Type:** conversion
-- **Trigger:** A Builder import or reimport identifies the upload as HRSA from the OpDiv or opportunity number via the existing theme suggestion. A two-column table starts with “Allowable expenses” and “Unallowable expenses,” in that order. Matching ignores capitalization and extra whitespace.
+- **Trigger:** A Builder import or reimport identifies the upload as HRSA from the OpDiv or opportunity number via the existing theme suggestion. A two-column table without row spans starts with “Allowable expenses” and “Unallowable expenses,” in that order. Matching treats line breaks as whitespace and ignores capitalization and extra whitespace.
 - **Action:** Store the table as editable HTML with full available width, fixed layout, and a 50% width on each column header. Existing column definitions are replaced by those header widths. Editors can change the width classes or replace the table with Markdown after import.
 - **Source:** `nofo.py::is_hrsa_nofo_import`, `nofo_markdown.py::NofoMarkdownConverter._format_hrsa_expense_table`, and the Builder new and overwrite import views.
 - **Status:** active
