@@ -70,6 +70,15 @@ honoring them.
 [Launch risks and response](#launch-risks-and-response) ·
 [Operating runbook](https://github.com/HHS/simpler-grants-gov/blob/main/documentation/infra/nofo-pdf-readability-waf.md)
 
+**Firewall request-body masking was deferred.** The production inspection
+confirmed that masking was off. Whether firewall logs or sampled requests
+contain upload snippets remains unverified. The dev change was deferred
+because a preview of the live infrastructure changes was unavailable.
+The release owner records whether to accept or address this gap before
+enabling public uploads.
+[Inspection results](https://github.com/HHS/simpler-grants-gov/issues/12568#deployed-firewall-data-protection-november-16-2026) ·
+[Launch decision checklist](https://github.com/HHS/simpler-grants-pdf-builder/issues/968#release-acceptance-criteria)
+
 **Where to look if an issue occurs.** Depending on the issue, authorized
 responders can review firewall logs in CloudWatch and recent samples in AWS WAF
 where sampling is enabled. They can check access and retention in the system
