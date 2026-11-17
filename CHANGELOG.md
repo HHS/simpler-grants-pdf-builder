@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.63.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.62.2...nofos-v3.63.0) (2026-11-17)
+
+
+### Features
+
+* onboard FDA with a draft portrait theme ([#1383](https://github.com/HHS/simpler-grants-pdf-builder/issues/1383)) ([d7e0f8a](https://github.com/HHS/simpler-grants-pdf-builder/commit/d7e0f8a9c2dd7c9081fa41f461e327b16f6a474b))
+* standardize HRSA expense table widths on import ([#1379](https://github.com/HHS/simpler-grants-pdf-builder/issues/1379)) ([e3de507](https://github.com/HHS/simpler-grants-pdf-builder/commit/e3de507c26d64c4f70772fbf4a70fa75a32a7f1f))
+
+
+### Documentation
+
+* clarify Readability Checker launch readiness ([13d29aa](https://github.com/HHS/simpler-grants-pdf-builder/commit/13d29aa09255ed2b7ce135811e322d8f217ddcd4))
+* clarify Readability Checker pilot launch steps ([b421b43](https://github.com/HHS/simpler-grants-pdf-builder/commit/b421b43ae1769dc83875b120975cb68bc449c0b5))
+* document the AI contribution evaluation pilot ([#1381](https://github.com/HHS/simpler-grants-pdf-builder/issues/1381)) ([a8042b0](https://github.com/HHS/simpler-grants-pdf-builder/commit/a8042b09a7909cbbd4868995a88ce8fc413d8b40))
+* enroll import evaluation tasks as they arise ([#1386](https://github.com/HHS/simpler-grants-pdf-builder/issues/1386)) ([aa0fdc3](https://github.com/HHS/simpler-grants-pdf-builder/commit/aa0fdc362b86cd921c1a8188019e412cb7fc30d3))
+* record completed Readability Checker verification ([164f357](https://github.com/HHS/simpler-grants-pdf-builder/commit/164f35733f7afb428ef7712b1ada9bc6fd2f4ff2))
+* record firewall masking deferral in launch readiness ([18804ba](https://github.com/HHS/simpler-grants-pdf-builder/commit/18804ba3dfdd24149a3cfa0a5b2a4621fdda652c))
+* record the first AI contribution evaluation dry run ([#1384](https://github.com/HHS/simpler-grants-pdf-builder/issues/1384)) ([7052477](https://github.com/HHS/simpler-grants-pdf-builder/commit/705247700e87a69fb7fd33685ba4dcb96dcb36df))
+* record the Word email link evaluation dry run ([#1385](https://github.com/HHS/simpler-grants-pdf-builder/issues/1385)) ([22edd97](https://github.com/HHS/simpler-grants-pdf-builder/commit/22edd97ee8ae9b769af657a6d2dfa6aac093d155))
+* streamline Readability Checker launch review ([c9463a4](https://github.com/HHS/simpler-grants-pdf-builder/commit/c9463a4dbca4dc443f172adcfe20cf7b6a9e4812))
+
+
+### Miscellaneous Chores
+
+* bump the python-minor-and-patch group with 4 updates ([#1380](https://github.com/HHS/simpler-grants-pdf-builder/issues/1380)) ([41a54ff](https://github.com/HHS/simpler-grants-pdf-builder/commit/41a54ff85eb8cbdbf32ff43b1b6fb533742b708e))
+
 ## [3.62.2](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.62.1...nofos-v3.62.2) (2026-11-16)
 
 
