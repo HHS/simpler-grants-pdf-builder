@@ -18,7 +18,7 @@ flowchart LR
     D --> E["Generate PDF and return it manually"]
 ```
 
-Identical repeat submissions reuse their existing draft. Each new AS source version creates a separate labeled draft, preserving earlier design work. Replacement requires an explicit human decision. Builder removes its temporary Word copy after processing, while AS retains the exchange copy according to the agreed retention approach.
+NB will use the latest AS source version as the general product direction accepted November 17; detailed selection and mid-design update steps remain to be agreed below. Identical repeat submissions reuse their existing draft. Each new AS source version creates a separate labeled draft, preserving earlier design work. Replacement requires an explicit human decision. Builder removes its temporary Word copy after processing, while AS retains the exchange copy according to the agreed retention approach.
 
 For current delivery dates, estimates and planning assumptions, see [#954’s estimate and proposed schedule](https://github.com/HHS/simpler-grants-pdf-builder/issues/954#estimate-and-proposed-schedule).
 
@@ -51,7 +51,7 @@ flowchart TD
     S --> C
     C -. "Sweep complete or invalid token" .-> R["Restart sweep from beginning and reuse observations"]
     R --> C
-    E --> F["Claim oldest eligible work with expiry and fencing"]
+    E --> F["Claim eligible work with expiry and fencing"]
     F --> G["Pin source or conditionally download to private temporary file"]
     G --> H["Validate metadata and bytes, scanning evidence and resource limits; compute SHA-256"]
     H --> Q{"Source identity and bytes?"}
@@ -148,7 +148,7 @@ At the end of the listing, mark the sweep complete and clear its token so the ne
 
 ListObjectsV2 discovers current keys. Capture VersionId through object metadata lookup before retrieval when versioning is available, or use a conditional read against the observed object. Persist the listing observation first so metadata lookup failures remain actionable pending work. AS must retain discoverable submissions until pickup and the exact observed source through the agreed recovery window. If every overwritten historical version must be discovered, agree version-aware listing or delivery events before implementation. A current-key sweep cannot guarantee discovery of versions overwritten between sweeps.
 
-Process eligible pending work in first-discovered order with a stable ID tie-breaker. Store next-attempt time separately. Claim each item exclusively with an expiring lease and fencing revision, and check for a completed result before downloading or importing. A failed item's backoff allows other eligible items to proceed. Repeated discovery cannot reset exhausted retries. Record SHA-256 of retrieved bytes and bind the result to that exact source. Same source identity with different bytes requires review.
+Use the latest AS version for design. Agree eligibility and treatment of older pending versions before implementation; first-discovered ordering is only a proposed scheduling approach within the resulting eligible work, not a rule for choosing the latest version. Store next-attempt time separately. Claim each item exclusively with an expiring lease and fencing revision, and check for a completed result before downloading or importing. A failed item's backoff allows other eligible items to proceed. Repeated discovery cannot reset exhausted retries. Record SHA-256 of retrieved bytes and bind the result to that exact source. Same source identity with different bytes requires review.
 
 Recover expired processing claims through the durable attempt record. A stale worker must fail its fencing check before the atomic draft/result transaction. Database rollback and lookup of an existing committed result make retries safe across interruption. Temporary files are cleaned up on exit, with task-storage teardown covering abrupt termination.
 
@@ -242,7 +242,15 @@ The general workflow is accepted; the following implementation steps still need 
 - Agree manual operating steps, automated acknowledgment, scoped human/machine permissions, archive recovery access, and failed-file retention.
 - Verify success/failure handling and recovery before rollout; acceptance here is not evidence of deployed permissions or completed operating approvals.
 
-The other November 17 review points remain open: this update does not change version-selection behavior, confirm a 45 MB Word limit, or define an additional phase.
+### Latest source version — accepted November 17
+
+NB accepts the revised requirement to always use the latest AS source version. The requirements provide sufficient general direction; detailed operating steps can be agreed during implementation rather than treating this wording as a product disagreement.
+
+For Phase 1a, authorized Agile Six team members select the appropriate latest source. For Phase 1b, retain separate labeled drafts for distinct eligible FON/AM versions, reuse identical repeat deliveries, and require an explicit authorized human decision before replacement or reimport of existing design work, as the revised requirements also specify.
+
+Agree how AS metadata identifies the latest version, when that selection is evaluated, whether older pending submissions remain eligible, and how designers are notified and choose next steps when an update arrives mid-design. Preserve earlier drafts and design work. Do not infer numeric ordering from opaque AM labels or assume arrival order determines the latest version. Track these detailed steps under #888/#954/#1302.
+
+The 45 MB Word limit and undefined additional phase remain separate review points.
 
 ## Decisions required before connectivity or enablement
 
