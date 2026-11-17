@@ -82,4 +82,4 @@ correctness. A confirmation opened before deployment and submitted after
 deployment lacks the new Word flag in its saved session. The reviewer identified
 that rollout case as untested for both patches.
 
-Maintainer decision pending.
+The maintainer selected Patch 2 for the implementation PR on November 17, 2026. The port to upstream `main` reconciles overlapping FDA onboarding changes in the theme helper and import guide.

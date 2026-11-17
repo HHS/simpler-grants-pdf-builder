@@ -122,6 +122,7 @@ from .nofo import (
     END_NOTES_PLACEHOLDER_BODY,
     END_NOTES_SECTION_HTML_ID,
     END_NOTES_SECTION_NAME,
+    WORD_DOCUMENT_CONTENT_TYPE,
     add_final_subsection_to_step_3,
     add_headings_to_document,
     add_line_breaks_to_key_dates_values,
@@ -869,6 +870,9 @@ class BaseNofoImportView(View):
         # Best-effort filename for ImportAttempt logging if parsing fails below;
         # the real `filename` local (used on success) isn't computed until after.
         attempt_filename = getattr(uploaded_file, "name", "") or ""
+        word_import = (
+            getattr(uploaded_file, "content_type", "") == WORD_DOCUMENT_CONTENT_TYPE
+        )
         try:
             # 2. Parse string to HTML
             review_warnings = []
@@ -902,9 +906,7 @@ class BaseNofoImportView(View):
                     )
                     else (
                         "detect"
-                        if isinstance(self, NofosImportNewView)
-                        and getattr(uploaded_file, "content_type", "")
-                        == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        if isinstance(self, NofosImportNewView) and word_import
                         else "generated"
                     )
                 ),
@@ -1009,6 +1011,7 @@ class BaseNofoImportView(View):
             *args,
             warning_count=warning_count,
             imported_tagline=imported_tagline,
+            word_import=word_import,
             **kwargs,
         )
 
@@ -1080,6 +1083,7 @@ class NofosImportNewView(BaseNofoImportView):
                 soup,
                 first_time_import=True,
                 imported_tagline=imported_tagline,
+                word_import=kwargs.get("word_import", False),
             )
             nofo.filename = filename
             nofo.designer = (request.user.full_name or "").strip()
@@ -1248,6 +1252,7 @@ class NofosImportOverwriteView(
                 "if_preserve_page_breaks": if_preserve_page_breaks,
                 "warning_count": warning_count,
                 "imported_tagline": kwargs.get("imported_tagline"),
+                "word_import": kwargs.get("word_import", False),
             }
             return redirect("nofos:nofo_import_confirm_overwrite", pk=nofo.id)
 
@@ -1261,6 +1266,7 @@ class NofosImportOverwriteView(
             if_preserve_page_breaks,
             warning_count,
             imported_tagline=kwargs.get("imported_tagline"),
+            word_import=kwargs.get("word_import", False),
         )
 
     @staticmethod
@@ -1274,6 +1280,7 @@ class NofosImportOverwriteView(
         warning_count=0,
         *,
         imported_tagline=None,
+        word_import=False,
     ):
         """
         Handles the actual reimport logic, allowing external calls without requiring an instance.
@@ -1304,6 +1311,7 @@ class NofosImportOverwriteView(
                     soup,
                     first_time_import=False,
                     imported_tagline=imported_tagline,
+                    word_import=word_import,
                 )
                 nofo.filename = filename
                 nofo.save()
@@ -1452,6 +1460,7 @@ class NofosConfirmReimportView(GroupAccessObjectMixin, View):
             if_preserve_page_breaks,
             warning_count,
             imported_tagline=reimport_data.get("imported_tagline"),
+            word_import=reimport_data.get("word_import", False),
         )
 
 

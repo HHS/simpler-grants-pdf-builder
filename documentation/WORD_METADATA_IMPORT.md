@@ -104,8 +104,10 @@ are supported. Tagline and assistance-listing extraction remain independent of t
 Extraction runs only on explicit import/re-import. Viewing, editing unrelated fields or
 exporting existing records does not re-extract metadata. Authorized re-import still uses
 the existing overwrite, validation, status checks and transaction rollback behavior. It
-preserves stored theme, cover and registration-page variant; a missing incoming title
-does not replace an existing title with a timestamp default. No migration or backfill is
+preserves the stored theme and cover. When the NOFO belongs to the SAMHSA group or
+the incoming Word OpDiv identifies SAMHSA, Builder sets the registration-page option
+to **BYB page with eRA**. Other re-imports retain their saved option. A missing
+incoming title leaves the existing title in place. No migration or backfill is
 required. New-import cover/theme suggestions use the resolved OpDiv and opportunity number.
 
 If an earlier import left PDF metadata blank after an Assistance listing field,

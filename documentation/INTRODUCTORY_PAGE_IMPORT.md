@@ -42,9 +42,9 @@ registration variant. Existing records have an empty discriminator and keep
 their legacy presentation and historical Word-export behavior. No content-based
 backfill runs. A recognized legacy upload stores `legacy`; a recognized new
 upload stores `get_started`. An absent or ambiguous heading stores the empty
-legacy fallback. Authorized re-import preserves the saved family and variant;
-confirmation serializes the captured source family with processed
-HTML, and failed imports roll back family and content together. Duplication and
+legacy fallback. Authorized re-import preserves the saved family and applies
+the [registration variant rules](IMPORT_RULES.md#import-044--before-you-begin-page-variant-suggestion).
+Confirmation carries import information with the processed HTML. Duplication and
 archive snapshots copy both saved values. Composer/Compare do not opt into this
 Builder family selection; guide Introduction behavior is unchanged.
 
@@ -56,11 +56,12 @@ Builder family selection; guide Introduction behavior is unchanged.
 | hrsa | Same new full registration, no HRSA requirements | Existing HRSA wording and requirements |
 | none | No introductory page | Existing None behavior |
 
-First import defaults are unchanged except new-family HRSA uses full. HRSA theme
-takes precedence over NIH importing group: legacy → hrsa; new → full. Otherwise
-NIH importing group selects era, other groups select full. This is a group check,
-not an invented NIH OpDiv default. Re-import never resets a saved choice; a saved
-hrsa value remains hrsa even though new-family registration uses the full body.
+Word imports and re-imports select `era` when the NOFO belongs to the SAMHSA
+group or the incoming OpDiv identifies SAMHSA. Other first imports with an HRSA
+theme select `hrsa` for the legacy family and `full` for the Get started family.
+First imports with other themes select `era` for the NIH group and `full` for all
+other groups. Other re-imports preserve the saved choice. A retained `hrsa`
+variant with the Get started family renders the full registration body.
 
 ## Wording provenance and outputs
 
