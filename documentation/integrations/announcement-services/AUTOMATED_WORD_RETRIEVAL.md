@@ -83,8 +83,10 @@ The diagram describes the proposed automated implementation. Discovery and impor
 
 Every solid arrow is proposed integration work, not evidence that an exchange or
 worker is deployed. Download is not handoff acceptance, and import is not design
-completion. There is no automatic move to `processed`/`failed`, source deletion,
-publication, existing-NOFO replacement, or PDF return in this minimum release.
+completion. The November 17 accepted operating direction adds result writes to
+`processed/` or `failed/` and removal from `incoming/`; the detailed steps below
+must be agreed before implementation. Automatic publication, existing-NOFO
+replacement and PDF return remain outside this minimum release.
 
 ### Trigger, runtime and permissions
 
@@ -106,11 +108,17 @@ object keys into command inputs and enables execution-data logging.
 Use a dedicated machine task role, not a designer's credentials or a broader web
 application role. The infrastructure team owns the task, network/DB reachability,
 alerts and runtime permissions; AS owns exchange policy and source availability.
-Grant only agreed-prefix `ListBucket`, `GetObject` or `GetObjectVersion`, plus
-scoped `kms:Decrypt` when required by the exchange encryption key. Constrain
+Provision agreed-prefix `ListBucket`, `GetObject` or `GetObjectVersion`, result
+`PutObject` access to `processed/` and `failed/`, and `DeleteObject` access to
+`incoming/`, plus scoped `kms:Decrypt` when required by the exchange encryption
+key. Finalize exact resources and any additional encryption permissions against
+the agreed result/file-handling steps before provisioning. Constrain
 trusted source identity and destination group in server-side configuration.
 No source payload can supply an access group or choose a destination NOFO.
-Writing, moving and deleting AS objects are unnecessary for this release.
+The earlier list/read-only design is superseded by the accepted result-write and
+incoming-delete direction. Manual Phase 1a handling uses authorized Agile Six
+team members; automated Phase 1b handling uses the dedicated NB machine role.
+Agree each identity's scoped permissions separately.
 
 Add a default-off Constance operational switch, checked at runtime before taking
 new work and before committing a result. Keep credentials, fixed AWS identity,
@@ -222,7 +230,19 @@ For example, a file remaining in incoming reaches deletion approximately 120 day
 
 Implementation details remain under #888/#952/#1302: define what processed contains (source Word, result/receipt, or both), the event and authorized operator for each transition, acknowledgment semantics, archive read/list permissions, and how recovery locates the exact source after a move. Define failed-file retention explicitly. Acceptance of these periods records the product decision, not evidence of deployed lifecycle configuration or completion of operating/records approvals.
 
-The remaining November 17 requirements are still under review. This decision does not accept broader NB write/delete permissions, change version-selection behavior, confirm a 45 MB Word limit, or define an additional phase.
+### S3 result writes and incoming deletion — accepted November 17
+
+NB product review also accepts the general revised workflow: AS places the Word document in `incoming/`; after processing, NB writes the result to `processed/` on success or `failed/` on failure and removes the document from `incoming/`. Authorized Agile Six team members perform the agreed handling manually in Phase 1a; NB performs it automatically in Phase 1b. This supersedes the earlier design's exclusion of exchange writes/deletes.
+
+The general workflow is accepted; the following implementation steps still need explicit agreement under #888/#952/#1302:
+
+- Define the result format and contents in each destination: source Word, status/receipt, or both, with correlation to the exact FON/AM version.
+- Specify who copies or moves the Word file, who records the outcome, and when incoming deletion is safe. Confirm the exact retry source remains available after a failure or transition.
+- Define write/delete ordering and recovery for partial failures, including a successful result write followed by a failed incoming deletion. Repeated handling must preserve existing drafts and designer edits.
+- Agree manual operating steps, automated acknowledgment, scoped human/machine permissions, archive recovery access, and failed-file retention.
+- Verify success/failure handling and recovery before rollout; acceptance here is not evidence of deployed permissions or completed operating approvals.
+
+The other November 17 review points remain open: this update does not change version-selection behavior, confirm a 45 MB Word limit, or define an additional phase.
 
 ## Decisions required before connectivity or enablement
 
@@ -242,7 +262,7 @@ These are functional owners, not requests for an individual to find another owne
 
 NB returned v2 requirements to AS on November 9 with clarifications for manual pickup and later automated retrieval/import. The revised proposal aligns with separate drafts for new source versions, duplicate reuse, human-controlled replacement, temporary-file cleanup and manual fallback reconciliation. AS agreement on the revisions remains to be recorded under #888.
 
-The supplied document retains original result-writing/source-deletion and archive instructions alongside later qualifications about retry availability, acceptance and cleanup. Keep the current retrieval design while resolving result contents, acknowledgment, folder movement and corresponding permissions; the archive/deletion periods were subsequently accepted on November 17 under #888/#952/#1302. Final contract decisions must be reflected here before implementation.
+The supplied document retains original result-writing/source-deletion and archive instructions alongside later qualifications about retry availability, acceptance and cleanup. The November 17 product decisions above accept the archive/deletion periods and general result-write/incoming-delete workflow, superseding the earlier read-only exclusion. Resolve detailed result contents, acknowledgment, folder handling and corresponding permissions under #888/#952/#1302. Final contract decisions must be reflected here before implementation.
 
 The 45 MB figure comes from the October 5 answer about the largest PDF AS could accept; it does not establish an exported Word limit. Confirm its applicability to exported Word, exact units and NB handling before automated rollout. Human-download access and machine provisioning are separate milestones. #956 owns manual validation; #954/#1303 own automated integration and UAT.
 
