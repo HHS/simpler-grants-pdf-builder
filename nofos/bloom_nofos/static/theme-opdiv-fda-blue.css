@@ -1,0 +1,121 @@
+/* FDA Blue is a decorative accent on the dark-blue cover header. */
+.nofo--cover-page--header {
+  background-color: var(--color--fda-dark-blue);
+  color: var(--color--white);
+  border-bottom: 4px solid var(--color--fda-blue);
+}
+
+.nofo--cover-page--header .fda-cover-logo {
+  display: block;
+  width: 4rem;
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 0.5rem;
+}
+
+.nofo--cover-page--header .nofo--cover-page--header--logo--subheading p {
+  white-space: normal;
+}
+
+.nofo--cover-page--medium .nofo--cover-page--header--logo {
+  max-width: 62%;
+  margin-right: 1rem;
+}
+
+.callout-box {
+  background-color: #e0f2ff;
+  color: var(--color--fda-dark-blue);
+}
+
+.callout-box .callout-box--title {
+  color: inherit;
+}
+
+:is(h1, h2, h3, h4, h5, h6),
+.toc .toc--section-name .toc--section-name--a,
+.section--content a,
+.callout-box a {
+  color: var(--color--fda-dark-blue);
+}
+
+:is(.toc--section-name--img, .section--before-you-begin--icon, .section--title-page--icon) svg {
+  color: var(--color--fda-dark-blue);
+}
+
+:is(.toc--section-name--img, .section--before-you-begin--icon, .section--title-page--icon) svg > circle {
+  fill: var(--color--white);
+}
+
+.nofo--icons--border :is(.toc--section-name--img, .section--before-you-begin--icon, .section--title-page--icon) svg {
+  color: var(--color--white);
+}
+
+.nofo--icons--border :is(.toc--section-name--img, .section--before-you-begin--icon, .section--title-page--icon) svg > circle {
+  fill: var(--color--fda-dark-blue);
+  stroke: var(--color--fda-dark-blue);
+}
+
+.section--content > .section--content--right-col > .callout-box {
+  overflow-wrap: anywhere;
+}
+
+@media screen {
+  .section--content:has(> .section--content--right-col) {
+    display: flow-root;
+  }
+
+  .section--content:has(> .section--content--right-col) > :not(.section--content--right-col) {
+    width: 67%;
+  }
+
+  .section--content > .section--content--right-col {
+    width: 30%;
+  }
+
+  .section--content > .section--content--right-col > .callout-box {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 40em) {
+  .section--content:has(> .section--content--right-col) > :not(.section--content--right-col),
+  .section--content > .section--content--right-col {
+    float: none;
+    width: 100%;
+  }
+
+  .nofo--cover-page--header,
+  .nofo--cover-page--title {
+    padding-inline: 1rem;
+  }
+
+  .nofo--cover-page--medium .nofo--cover-page--header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .nofo--cover-page--medium .nofo--cover-page--header--logo {
+    max-width: none;
+    margin-right: 0;
+  }
+
+  .nofo--cover-page--callout-box {
+    margin-right: 0;
+  }
+
+  .nofo--cover-page--text .nofo--cover-page--header {
+    height: auto;
+    padding-block: 2rem;
+    gap: 1.5rem;
+  }
+
+  .nofo--cover-page--medium .nofo--cover-page--footer .nofo--cover-page--footer--logo {
+    left: 1rem;
+  }
+
+  .nofo--cover-page--medium .nofo--cover-page--footer--image {
+    /* Leave room for the 120px HHS seal and its screen padding. */
+    max-width: calc(100% - 120px - 2rem);
+  }
+}

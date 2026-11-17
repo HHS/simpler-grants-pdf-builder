@@ -580,6 +580,20 @@ Pro Web at weight 700, matching the existing USWDS alert pattern. Automated
 tests verify unsupported import remains successful and guidance is shown.
 No new blocking error code or persistent warning field is introduced.
 
+## Word OpDiv mismatch warning
+
+After a successful new Word import, show **Check the document’s OpDiv** on
+**Name your NOFO** when the Word OpDiv identifies FDA for a CDC editor or CDC for
+an FDA editor. Reuse `word_import_review.html` with the `import-opdiv-mismatch`
+Django message tag, the existing yellow `usa-alert--warning`, a bold heading,
+and `role="alert"`.
+
+Tell the editor which OpDiv the document identifies, which theme NOFO Builder
+applied based on their group, and ask them to check that they uploaded the
+intended document. Keep the naming form and **Save NOFO name** available.
+See [IMPORT-042](IMPORT_RULES.md#import-042--cover-theme-suggestion) for the
+theme selection rule.
+
 ## Subsection save conflicts
 
 Use this recovery pattern when saving an out-of-date subsection form would

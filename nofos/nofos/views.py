@@ -139,6 +139,7 @@ from .nofo import (
     find_matches_with_context,
     find_same_or_higher_heading_levels_consecutive,
     find_subsections_with_nofo_field_value,
+    get_cdc_or_fda_opdiv,
     get_cover_image,
     get_nofo_action_links,
     get_side_nav_links,
@@ -1096,6 +1097,21 @@ class NofosImportNewView(BaseNofoImportView):
             save_automatic_checkpoint(
                 request, nofo, NofoReadabilityCheckpoint.TRIGGER_IMPORT
             )
+
+            source_opdiv = get_cdc_or_fda_opdiv(nofo.opdiv)
+            if (
+                nofo.group in {"cdc", "fda"}
+                and source_opdiv
+                and source_opdiv != nofo.group
+            ):
+                messages.warning(
+                    request,
+                    f"The document’s OpDiv identifies {source_opdiv.upper()}. "
+                    f"NOFO Builder applied the {nofo.group.upper()} theme "
+                    "based on your group. "
+                    "Check that you uploaded the intended document.",
+                    extra_tags="import-opdiv-mismatch",
+                )
 
             return redirect("nofos:nofo_import_title", pk=nofo.id)
 

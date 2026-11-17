@@ -83,6 +83,9 @@
         {% if nofo_opdiv == 'onc' %}
           <img class="onc-cover-logo" src="{% static 'img/onc-logo-inverse.png' %}"
             width="487" height="46" alt="Office of the National Coordinator for Health Information Technology logo">
+        {% elif nofo_opdiv == 'fda' %}
+          <img class="fda-cover-logo" src="{% static 'img/fda-logo-white.svg' %}"
+            width="66" height="79" alt="U.S. Food and Drug Administration logo">
         {% else %}
           {% with "includes/logos/"|add:nofo_opdiv|add:"-logo.svg" as opdiv_logo_path %}
             {% include opdiv_logo_path %}
@@ -136,6 +139,7 @@
         {% endif %}
       </div>
     </div>
+    {% if nofo_cover_image %}
     <div class="nofo--cover-page--hero-image">
       {% spaceless%}
         {% if nofo_cover_image|slice:":4" == "img/" %}
@@ -145,6 +149,7 @@
         {% endif %}
       {% endspaceless %}
     </div>
+    {% endif %}
     <div class="nofo--cover-page--title">
       <div class="nofo--cover-page--title--block">
         <h1 class="{{ nofo.title|add_classes_to_nofo_title }}">{{ nofo.title }}</h1>
@@ -188,15 +193,17 @@
           </span>
         </span>
       </div>
-      <div class="nofo--cover-page--footer--image">
-        {% spaceless%}
-          {% if nofo_cover_image|slice:":4" == "img/" %}
-            <img alt="{{ nofo.cover_image_alt_text }}" src="{% static nofo_cover_image %}">
-          {% else %}
-            <img alt="{{ nofo.cover_image_alt_text }}" src="{{ nofo_cover_image }}">
-          {% endif %}
-        {% endspaceless %}
-      </div>
+      {% if nofo_cover_image %}
+        <div class="nofo--cover-page--footer--image">
+          {% spaceless %}
+            {% if nofo_cover_image|slice:":4" == "img/" %}
+              <img alt="{{ nofo.cover_image_alt_text }}" src="{% static nofo_cover_image %}">
+            {% else %}
+              <img alt="{{ nofo.cover_image_alt_text }}" src="{{ nofo_cover_image }}">
+            {% endif %}
+          {% endspaceless %}
+        </div>
+      {% endif %}
     </div>
   </section>
 

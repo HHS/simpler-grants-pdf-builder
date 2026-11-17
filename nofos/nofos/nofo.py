@@ -114,7 +114,7 @@ from .import_transforms import (
     omit_leading_word_title,
     transform_word_document,
 )
-from .models import Nofo, Section, Subsection
+from .models import GROUP_DEFAULT_THEMES, Nofo, Section, Subsection
 from .nofo_markdown import MISSING_ALT_TEXT_ATTR, PRESERVE_BOOKMARK_TARGET_ATTR, md
 from .pdf_metadata import normalize_pdf_metadata_value
 from .policy_language import detect_policy_language_status, get_candidate_slots
@@ -1716,7 +1716,16 @@ def suggest_nofo_application_deadline(soup):
 def suggest_nofo_cover(nofo_theme):
     if any(
         prefix in nofo_theme.lower()
-        for prefix in ["acf-", "acl-", "cdc-", "hrsa-", "nih-", "onc-", "samhsa-"]
+        for prefix in [
+            "acf-",
+            "acl-",
+            "cdc-",
+            "fda-",
+            "hrsa-",
+            "nih-",
+            "onc-",
+            "samhsa-",
+        ]
     ):
         return "nofo--cover-page--text"
 
@@ -1735,12 +1744,29 @@ def suggest_nofo_before_you_begin(
     return "full"
 
 
-def suggest_nofo_theme(nofo_number, opdiv=""):
+FDA_NOFO_NUMBER_PATTERN = re.compile(r"^(?:rfa|par|pa|pas|rfp)-fd-\d{2}-\d+", re.I)
+
+
+def get_cdc_or_fda_opdiv(opdiv):
     opdiv_lower = (opdiv or "").lower()
     if "centers for disease control and prevention" in opdiv_lower or re.search(
         r"\bcdc\b", opdiv_lower
     ):
+        return "cdc"
+
+    if re.search(r"\b(?:food (?:and|&) drug administration|fda)\b", opdiv_lower):
+        return "fda"
+
+    return None
+
+
+def suggest_nofo_theme(nofo_number, opdiv=""):
+    opdiv_lower = (opdiv or "").lower()
+    agency = get_cdc_or_fda_opdiv(opdiv)
+    if agency == "cdc":
         return "portrait-cdc-blue"
+    if agency == "fda":
+        return GROUP_DEFAULT_THEMES["fda"]
 
     if "national institutes of health" in opdiv_lower or re.search(
         r"\bnih\b", opdiv_lower
@@ -1770,6 +1796,11 @@ def suggest_nofo_theme(nofo_number, opdiv=""):
         r"\b(?:centers for medicare (?:&|and) medicaid services|cms)\b", opdiv_lower
     ):
         return "portrait-cms-white"
+
+    if FDA_NOFO_NUMBER_PATTERN.match(nofo_number):
+        if is_acf_nofo_metadata("", opdiv):
+            return "portrait-acf-white"
+        return GROUP_DEFAULT_THEMES["fda"]
 
     if "cdc-" in nofo_number.lower():
         return "portrait-cdc-blue"
@@ -1916,8 +1947,20 @@ def suggest_all_nofo_fields(
     nofo.subject = suggest_nofo_subject(soup)  # guess the NOFO subject
     nofo.keywords = suggest_nofo_keywords(soup)  # guess the NOFO keywords
 
+    if first_time_import:
+        group_theme = (
+            "portrait-cdc-blue"
+            if nofo.group == "cdc"
+            else GROUP_DEFAULT_THEMES.get(nofo.group)
+        )
+        nofo.theme = group_theme or suggest_nofo_theme(nofo.number, opdiv=nofo.opdiv)
+
     preserve_hrsa_image = not first_time_import and "hrsa-" in nofo.theme.lower()
-    if not nofo.cover_image and not preserve_hrsa_image:
+    if (
+        not nofo.cover_image
+        and not preserve_hrsa_image
+        and nofo.theme != GROUP_DEFAULT_THEMES["fda"]
+    ):
         nofo.cover_image = suggest_nofo_cover_image(nofo)  # guess NOFO cover image
 
     nofo_title = suggest_nofo_title(soup)  # guess the NOFO title
@@ -1927,12 +1970,6 @@ def suggest_all_nofo_fields(
             nofo.title = nofo_title
 
     # do not reset these during import
-    if first_time_import:
-        nofo.theme = (
-            "portrait-onc-navy"
-            if nofo.group == "onc"
-            else suggest_nofo_theme(nofo.number, opdiv=nofo.opdiv)
-        )
     if first_time_import:
         nofo.cover = suggest_nofo_cover(nofo.theme)  # guess the NOFO cover
     if first_time_import:

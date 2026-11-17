@@ -27,6 +27,8 @@
   --color--nih-blue: var(--color--acl-blue);
   --color--nih-grey: #65666a;
   --color--onc-navy: #081f7a;
+  --color--fda-blue: #007cba;
+  --color--fda-dark-blue: #222c67;
   --color--samhsa-blue: #1e384b;
   --color--staging-coral: #f08080;
 }
@@ -172,6 +174,10 @@ table.table--fixed-layout,
 
 .bg-group--cms {
   background-color: var(--color--cms-blue);
+}
+
+.bg-group--fda {
+  background-color: var(--color--fda-dark-blue);
 }
 
 .bg-group--hrsa {

@@ -87,6 +87,8 @@ STATUS_CHOICES = [
 ]
 
 
+GROUP_DEFAULT_THEMES = {"fda": "portrait-fda-blue", "onc": "portrait-onc-navy"}
+
 THEME_CHOICES = [
     ("landscape-cdc-blue", "CDC Landscape (Default)"),
     ("landscape-cdc-white", "CDC Landscape (Light)"),
@@ -103,6 +105,7 @@ THEME_CHOICES = [
     ("portrait-aspr-white", "ASPR (Light)"),
     ("portrait-cms-blue", "CMS (Default)"),
     ("portrait-cms-white", "CMS (Light)"),
+    ("portrait-fda-blue", "FDA"),
     ("portrait-hrsa-blue", "HRSA (Default)"),
     ("portrait-hrsa-white", "HRSA (Light)"),
     ("portrait-ihs-white", "IHS (Light)"),
