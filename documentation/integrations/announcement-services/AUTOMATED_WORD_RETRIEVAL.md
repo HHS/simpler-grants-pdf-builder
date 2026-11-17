@@ -1,7 +1,7 @@
 # Automated Word retrieval: proposed minimum release
 
 **Proposal for [#1278](https://github.com/HHS/simpler-grants-pdf-builder/issues/1278),
-reviewed November 4, 2026. Not implemented, approved, or scheduled for deployment.**
+reviewed November 4 and updated November 17, 2026. General requirements accepted as recorded below; implementation and operating approvals remain pending. Not deployed.**
 The [manual pilot](https://github.com/HHS/simpler-grants-pdf-builder/issues/950)
 can proceed separately. [Dated findings and verification](../../review-evidence/1278/README.md)
 pin the source examined and distinguish existing capabilities from this proposal.
@@ -18,7 +18,7 @@ flowchart LR
     D --> E["Generate PDF and return it manually"]
 ```
 
-Identical repeat submissions reuse their existing draft. Each new AS source version creates a separate labeled draft, preserving earlier design work. Replacement requires an explicit human decision. Builder removes its temporary Word copy after processing, while AS retains the exchange copy according to the agreed retention approach.
+NB will use the latest AS source version as the general product direction accepted November 17; detailed selection and mid-design update steps remain to be agreed below. Identical repeat submissions reuse their existing draft. Each new AS source version creates a separate labeled draft, preserving earlier design work. Replacement requires an explicit human decision. Builder removes its temporary Word copy after processing, while AS retains the exchange copy according to the agreed retention approach.
 
 For current delivery dates, estimates and planning assumptions, see [#954’s estimate and proposed schedule](https://github.com/HHS/simpler-grants-pdf-builder/issues/954#estimate-and-proposed-schedule).
 
@@ -37,7 +37,7 @@ The agreed product approach, confirmed November 6, 2026, is automatic creation o
 - The same source identity with different file bytes is a conflict requiring review.
 - Replacing or reimporting into existing design work requires an explicit authorized human decision.
 
-Automatic draft creation is the selected policy for the implementation estimate. The acceptance event that starts AS exchange cleanup still requires agreement with AS, including whether successful import or explicit designer acceptance supplies that event.
+Automatic draft creation is the selected policy for the implementation estimate. The November 17 accepted exchange policy uses time in each folder for archiving and deletion (see below). The event that moves a submission into `processed/` and the acknowledgment to AS still require agreement.
 
 ## Proposed flow
 
@@ -51,7 +51,7 @@ flowchart TD
     S --> C
     C -. "Sweep complete or invalid token" .-> R["Restart sweep from beginning and reuse observations"]
     R --> C
-    E --> F["Claim oldest eligible work with expiry and fencing"]
+    E --> F["Claim eligible work with expiry and fencing"]
     F --> G["Pin source or conditionally download to private temporary file"]
     G --> H["Validate metadata and bytes, scanning evidence and resource limits; compute SHA-256"]
     H --> Q{"Source identity and bytes?"}
@@ -75,16 +75,18 @@ flowchart TD
     V -.-> T
     X -.-> T
     K -.-> O["Acceptance event and acknowledgment to agree with AS"]
-    O -.-> P["AS exchange cleanup baseline: delete 30 days after acceptance; review unclaimed or failed at 60 days"]
+    O -.-> P["AS exchange lifecycle: archive incoming after 60 days and processed after 30 days; delete archived after 60 days"]
 ```
 
-The diagram describes the proposed automated implementation. Discovery and import have independent bounded budgets. Database uniqueness and an atomic draft/result transaction protect concurrent retries. Distinct AM versions produce separate drafts while earlier design work remains available. File cleanup applies to every processing exit, including early validation failure. The acceptance event, acknowledgment, cleanup ownership and 60-day review-clock start require agreement with AS.
+The diagram describes the proposed automated implementation. Discovery and import have independent bounded budgets. Database uniqueness and an atomic draft/result transaction protect concurrent retries. Distinct AM versions produce separate drafts while earlier design work remains available. File cleanup applies to every processing exit, including early validation failure. The exchange archive/deletion periods are accepted as of November 17. Processing transitions, acknowledgment, cleanup ownership and archive recovery access still require agreement with AS.
 
 
 Every solid arrow is proposed integration work, not evidence that an exchange or
 worker is deployed. Download is not handoff acceptance, and import is not design
-completion. There is no automatic move to `processed`/`failed`, source deletion,
-publication, existing-NOFO replacement, or PDF return in this minimum release.
+completion. The November 17 accepted operating direction adds result writes to
+`processed/` or `failed/` and removal from `incoming/`; the detailed steps below
+must be agreed before implementation. Automatic publication, existing-NOFO
+replacement and PDF return remain outside this minimum release.
 
 ### Trigger, runtime and permissions
 
@@ -106,11 +108,17 @@ object keys into command inputs and enables execution-data logging.
 Use a dedicated machine task role, not a designer's credentials or a broader web
 application role. The infrastructure team owns the task, network/DB reachability,
 alerts and runtime permissions; AS owns exchange policy and source availability.
-Grant only agreed-prefix `ListBucket`, `GetObject` or `GetObjectVersion`, plus
-scoped `kms:Decrypt` when required by the exchange encryption key. Constrain
+Provision agreed-prefix `ListBucket`, `GetObject` or `GetObjectVersion`, result
+`PutObject` access to `processed/` and `failed/`, and `DeleteObject` access to
+`incoming/`, plus scoped `kms:Decrypt` when required by the exchange encryption
+key. Finalize exact resources and any additional encryption permissions against
+the agreed result/file-handling steps before provisioning. Constrain
 trusted source identity and destination group in server-side configuration.
 No source payload can supply an access group or choose a destination NOFO.
-Writing, moving and deleting AS objects are unnecessary for this release.
+The earlier list/read-only design is superseded by the accepted result-write and
+incoming-delete direction. Manual Phase 1a handling uses authorized Agile Six
+team members; automated Phase 1b handling uses the dedicated NB machine role.
+Agree each identity's scoped permissions separately.
 
 Add a default-off Constance operational switch, checked at runtime before taking
 new work and before committing a result. Keep credentials, fixed AWS identity,
@@ -130,6 +138,18 @@ These are proposed functional responsibilities. Confirm the specific owners, app
 
 NOFO Builder deployment infrastructure is maintained in the simpler-grants-gov repository. Repository maintenance responsibility and authority to approve or apply AWS changes must be confirmed separately. Track machine-access provisioning under #1302 and authorization decisions under #952.
 
+### Hosting, reuse and early identity coordination
+
+The existing NOFO Builder prototype supports active operational workflows through infrastructure managed in the SGG repository, as a bridge to the future Smarter Grants Management (SGM) implementation. This describes its operational role and interim hosting; it does not assert formal production authorization or a completed migration to SGM.
+
+The proposed machine identity should be provisioned alongside that existing Builder deployment, with the infrastructure owner confirming the account/environment and applicable IT Ops requirements. Early provision of its IAM role ARN can let GrantSolutions include the intended machine identity in its bucket-access approval and avoid a separate later request. Treat this as useful parallel coordination, not a blanket blocker to requirements review, planning or implementation preparation. Verified access and applicable operating approvals are still required before connectivity and joint testing.
+
+Confirm with GrantSolutions whether it needs a DEV role ARN first and separate ARNs for subsequent environments. An IAM role ARN identifies the account and role; no request for access keys or secrets has been established. Human access for Phase 1a remains separately scoped. The role can be created and its ARN shared before the automated job is implemented or enabled; bucket/key-specific permissions follow the agreed handling contract.
+
+The SGG source reviewed November 17 shows ECS task-role definitions in [access_control.tf](https://github.com/HHS/simpler-grants-gov/blob/main/infra/modules/service/access_control.tf), empty [NOFO scheduled-job configuration](https://github.com/HHS/simpler-grants-gov/blob/main/infra/nofos/app-config/env-config/scheduled_jobs.tf), and existing role selection in [scheduled_jobs.tf](https://github.com/HHS/simpler-grants-gov/blob/main/infra/modules/service/scheduled_jobs.tf) that needs extension for a dedicated AS identity. The [deployment workflow](https://github.com/HHS/simpler-grants-gov/blob/main/.github/workflows/cd-nofos.yml) maps dev to infra-dev. These are source findings, not verification of a live role or effective AWS permissions. Confirm the provisioning/deployment owner under #1302; AWS account controls may require administrator support.
+
+Structure the source adapter and processing boundary so the workflow and code can be packaged for future SGM reuse and potentially an eRA FOAM integration. These are reuse goals, not additional integrations promised in this release.
+
 ### Discovery progress and import scheduling
 
 Use the existing Django/PostgreSQL database for discovery checkpoints and pending work. Each scheduled invocation has separate discovery and processing budgets. Discovery records metadata before any Word conversion starts. A failed or slow import therefore cannot consume the discovery budget of subsequent invocations.
@@ -140,7 +160,7 @@ At the end of the listing, mark the sweep complete and clear its token so the ne
 
 ListObjectsV2 discovers current keys. Capture VersionId through object metadata lookup before retrieval when versioning is available, or use a conditional read against the observed object. Persist the listing observation first so metadata lookup failures remain actionable pending work. AS must retain discoverable submissions until pickup and the exact observed source through the agreed recovery window. If every overwritten historical version must be discovered, agree version-aware listing or delivery events before implementation. A current-key sweep cannot guarantee discovery of versions overwritten between sweeps.
 
-Process eligible pending work in first-discovered order with a stable ID tie-breaker. Store next-attempt time separately. Claim each item exclusively with an expiring lease and fencing revision, and check for a completed result before downloading or importing. A failed item's backoff allows other eligible items to proceed. Repeated discovery cannot reset exhausted retries. Record SHA-256 of retrieved bytes and bind the result to that exact source. Same source identity with different bytes requires review.
+Use the latest AS version for design. Agree eligibility and treatment of older pending versions before implementation; first-discovered ordering is only a proposed scheduling approach within the resulting eligible work, not a rule for choosing the latest version. Store next-attempt time separately. Claim each item exclusively with an expiring lease and fencing revision, and check for a completed result before downloading or importing. A failed item's backoff allows other eligible items to proceed. Repeated discovery cannot reset exhausted retries. Record SHA-256 of retrieved bytes and bind the result to that exact source. Same source identity with different bytes requires review.
 
 Recover expired processing claims through the durable attempt record. A stale worker must fail its fencing check before the atomic draft/result transaction. Database rollback and lookup of an existing committed result make retries safe across interruption. Temporary files are cleaned up on exit, with task-storage teardown covering abrupt termination.
 
@@ -189,8 +209,8 @@ Verification under #954 must include multiple listing pages and more pending fil
 
 | Copy or record | Proposed location and lifetime | Controls and recovery |
 | --- | --- | --- |
-| AS authoritative source and exchange Word | AS-controlled storage. Exchange copy remains the retry source until the agreed handoff/retention policy permits removal. | AS owns encryption, permissions, backups, versions and cleanup. The earlier agreed-in-principle baseline was deletion 30 days after design-handoff acceptance and review of unclaimed/failed submissions at 60 days. A November 10 archive-folder alternative is pending AS technical approval (see below). Confirm acceptance recording, cleanup ownership and the start of the 60-day clock. Resolve exact pinning and availability for retries. |
-| Downloaded original Word | Seekable temporary file in the single task's private ephemeral filesystem, only for that attempt. Confirm the exported Word size limit and exact units with AS before automated rollout. The October 5 45 MB answer concerned PDFs AS could accept, not an established exported Word limit; enforce and test the separately agreed Word export boundary. Do not rely on declared length alone. | Restricted directory/file permissions, encrypted approved task storage, no shared mount, persistent volume, public URL or backup. Always close/unlink in `finally`. Task termination ends crash leftovers; verify actual task storage and cleanup configuration. This is not a secure-erasure guarantee. |
+| AS authoritative source and exchange Word | AS-controlled storage. Exchange copy remains the retry source until the agreed handoff/retention policy permits removal. | AS owns encryption, permissions, backups, versions and exchange lifecycle configuration. The November 17 accepted policy archives incoming files after 60 days and processed files after 30 days, then deletes archived files after another 60 days. See the lifecycle table below. Confirm transition responsibilities, archive access and exact-source availability for retries; failed-file retention remains unspecified. |
+| Downloaded original Word | Seekable temporary file in the single task's private ephemeral filesystem, only for that attempt. Confirm the exported Word size limit and exact units with AS before automated rollout. The October 5 answer concerned PDFs; the revised November 17 requirements specify a 45 MB Word cap. Confirm exact units and enforce/test the agreed boundary; the local probe is not deployed-capacity evidence. Do not rely on declared length alone. | Restricted directory/file permissions, encrypted approved task storage, no shared mount, persistent volume, public URL or backup. Always close/unlink in `finally`. Task termination ends crash leftovers; verify actual task storage and cleanup configuration. This is not a secure-erasure guarantee. |
 | Conversion buffers and intermediates | Process memory and the same attempt-local scratch directory, only until conversion/validation ends. | Word helpers can rebuild ZIPs and hold multiple copies in memory. Bound expanded ZIP size, entries, conversion memory/time and output size as well as compressed bytes. `DEBUG=False`; prohibit debug HTML dumps, crash payload dumps and content-bearing exception logs. |
 | Imported NOFO and embedded content/assets | Existing Builder database and approved asset locations after successful transaction. Persist intentionally as draft content, not as the original Word archive. | Normal Builder access, editing, retention and backups apply. Embedded images can survive as data in imported content; inspect/test all asset paths. Any external object writes need attempt ownership plus compensating cleanup; database rollback does not delete S3 objects. Never delete shared assets as compensation. |
 | Receipt, digest, attempts and result linkage | Builder database; minimal source/correlation IDs, object observation, digest, timestamps, state/error codes and result UUID. | Restricted access and approved retention. These are not automatically public or content-free simply because they are metadata. Keep raw keys/FONs out of ordinary operational logs and alerts. Existing tombstones are not a complete legal/records policy. |
@@ -203,11 +223,56 @@ over forcing a large original plus expanded conversions into RAM. If approved
 AS retention cannot support retries, revisit private staging explicitly with
 security/records owners; do not silently repurpose the existing image bucket.
 
-### Exchange retention baseline and acceptance
+### Exchange archive and deletion policy — accepted November 17
 
-The October 20 meeting and October 21 written follow-up record AS alignment in principle with deleting retrieved exchange copies 30 days after the design team accepts the handoff and reviewing unclaimed or failed submissions at 60 days before deciding cleanup. AS confirmed it can configure lifecycle rules. This remains the historical baseline; reconcile it with the November 10 archive proposal below before configuring lifecycle actions.
+NB product review accepted the archive/deletion policy in GrantSolutions' November 17, 2026 clean v3 integration requirements. This supersedes the earlier proposal to delete exchange copies 30 days after handoff acceptance and review unclaimed/failed copies at 60 days, and the pending November 10 archive alternative.
 
-Agree whether successful automated import constitutes acceptance or an authorized designer explicitly accepts afterward. Record the chosen event and timestamp durably, define how AS receives the acknowledgment, assign cleanup ownership, and confirm whether the 60-day review clock starts at submission. A 60-day review requires a cleanup decision. Task-local temporary files are removed after each attempt. Preserve access to the exact source version throughout the agreed recovery period.
+| Exchange folder | Accepted lifecycle | Clock start |
+| --- | --- | --- |
+| `incoming/` | Automatically move to `archived/` after 60 days. | Entry into `incoming/`. |
+| `processed/` | Automatically move to `archived/` after 30 days. | Entry into `processed/`. |
+| `archived/` | Automatically delete after 60 days in the archive. | Entry into `archived/`. |
+| `failed/` | No archive/deletion period is specified in v3; confirm separately. | To be agreed. |
+
+The incoming-folder clock above records NB's accepted interpretation: measure from entry into incoming, rather than the contradictory v3 sentence referring to entry into archived. Confirm that wording correction with AS when finalizing implementation.
+
+Archive moves preserve the original filename, source folder and archive timestamp as user-defined S3 object metadata (`x-amz-meta-*` headers). Exact metadata header names remain to be agreed.
+
+For example, a file remaining in incoming reaches deletion approximately 120 days after submission: 60 days incoming plus 60 days archived. A file retained in processed reaches deletion approximately 90 days after entry there: 30 days processed plus 60 days archived. These periods apply to exchange files; they do not delete imported Builder drafts, design work, assets, receipt history or generated PDFs. Task-local original/intermediate files are still removed after each attempt.
+
+Implementation details remain under #888/#952/#1302: define what processed contains (source Word, result/receipt, or both), the event and authorized operator for each transition, acknowledgment semantics, archive read/list permissions, and how recovery locates the exact source after a move. Define failed-file retention explicitly. Acceptance of these periods records the product decision, not evidence of deployed lifecycle configuration or completion of operating/records approvals.
+
+### S3 result writes and incoming deletion — accepted November 17
+
+NB product review also accepts the general revised workflow: AS places the Word document in `incoming/`; after processing, NB writes the result to `processed/` on success or `failed/` on failure and removes the document from `incoming/`. Authorized Agile Six team members perform the agreed handling manually in Phase 1a; NB performs it automatically in Phase 1b. This supersedes the earlier design's exclusion of exchange writes/deletes.
+
+The general workflow is accepted; the following implementation steps still need explicit agreement under #888/#952/#1302:
+
+- Define the result format and contents in each destination: source Word, status/receipt, or both, with correlation to the exact FON/AM version.
+- Specify who copies or moves the Word file, who records the outcome, and when incoming deletion is safe. Confirm the exact retry source remains available after a failure or transition.
+- Define write/delete ordering and recovery for partial failures, including a successful result write followed by a failed incoming deletion. Repeated handling must preserve existing drafts and designer edits.
+- Agree manual operating steps, automated acknowledgment, scoped human/machine permissions, archive recovery access, and failed-file retention.
+- Verify success/failure handling and recovery before rollout; acceptance here is not evidence of deployed permissions or completed operating approvals.
+
+### Latest source version — accepted November 17
+
+NB accepts the revised requirement to always use the latest AS source version. The requirements provide sufficient general direction; detailed operating steps can be agreed during implementation rather than treating this wording as a product disagreement.
+
+For Phase 1a, authorized Agile Six team members select the appropriate latest source. For Phase 1b, retain separate labeled drafts for distinct eligible FON/AM versions, reuse identical repeat deliveries, and require an explicit authorized human decision before replacement or reimport of existing design work, as the revised requirements also specify.
+
+Agree how AS metadata identifies the latest version, when that selection is evaluated, whether older pending submissions remain eligible, and how designers are notified and choose next steps when an update arrives mid-design. Preserve earlier drafts and design work. Do not infer numeric ordering from opaque AM labels or assume arrival order determines the latest version. Track these detailed steps under #888/#954/#1302.
+
+### Phase labels and PDF return — November 17 working interpretation
+
+NB product review interprets the v3 reference to “Phase 1c” as referring to the same later PDF-return capability described as “Phase 2”: Builder makes the designed PDF available for GrantSolutions to retrieve. Confirm this terminology with AS; the document does not establish an additional implementation phase or move PDF return into Phase 1a/1b. Continue tracking PDF return separately under #951/#957.
+
+The “successful receipt” open topic still needs its event and direction clarified. This phase-label interpretation does not settle how NB acknowledges receipt/import of the source Word to AS; that remains part of the Phase 1b operating steps.
+
+### Word import size and validation
+
+The current ordinary Word import path has no explicit application file-size check. The November 17 revised AS requirements specify a 45 MB Word export cap; confirm exact units and deployed capacity during implementation. The historical October 5 PDF limit alone was not evidence for Word import capacity.
+
+A [local 45 MiB image-heavy DOCX smoke test](../../review-evidence/1398/README.md) succeeded through conversion and saved-draft creation. This supports feasibility, but does not establish deployed hosting, concurrency or automated-task capacity. Validate representative documents, request/task limits, memory/time budgets and effects on normal use under #956/#1300/#1303. Unrelated cover-image and standalone Readability Checker limits do not define the ordinary Builder import limit.
 
 ## Decisions required before connectivity or enablement
 
@@ -227,7 +292,7 @@ These are functional owners, not requests for an individual to find another owne
 
 NB returned v2 requirements to AS on November 9 with clarifications for manual pickup and later automated retrieval/import. The revised proposal aligns with separate drafts for new source versions, duplicate reuse, human-controlled replacement, temporary-file cleanup and manual fallback reconciliation. AS agreement on the revisions remains to be recorded under #888.
 
-The supplied document retains original result-writing/source-deletion and archive instructions alongside later qualifications about retry availability, acceptance and cleanup. Keep the current retrieval design while resolving result contents, acknowledgment, folder movement, archive meaning and corresponding permissions under #888/#952/#1302. Final contract decisions must be reflected here before implementation.
+The supplied document retains original result-writing/source-deletion and archive instructions alongside later qualifications about retry availability, acceptance and cleanup. The November 17 product decisions above accept the archive/deletion periods and general result-write/incoming-delete workflow, superseding the earlier read-only exclusion. Resolve detailed result contents, acknowledgment, folder handling and corresponding permissions under #888/#952/#1302. Final contract decisions must be reflected here before implementation.
 
 The 45 MB figure comes from the October 5 answer about the largest PDF AS could accept; it does not establish an exported Word limit. Confirm its applicability to exported Word, exact units and NB handling before automated rollout. Human-download access and machine provisioning are separate milestones. #956 owns manual validation; #954/#1303 own automated integration and UAT.
 
@@ -235,9 +300,9 @@ The 45 MB figure comes from the October 5 answer about the largest PDF AS could 
 
 The requirements review distinguishes **Stage 1: authorized Agile Six users manually download and import** from **Stage 2: NB retrieves and imports using a separately provisioned machine identity**. These requirements labels describe manual versus automated intake; they do not remove the intermediate AS-button/manual-pickup milestone or expand scope to automated PDF return.
 
-- **Word size:** NB sent a follow-up clarifying that 45 MB originated as AS's PDF acceptance limit, and requested an exported Word limit or expected maximum. AS's response and NB capacity validation remain pending. Neither manual nor automated 45 MB import support has been demonstrated. #1300 owns boundary agreement/enforcement; #956 validates the manual upload/import path and #1303 the automated path, including processing time, memory and concurrent-user impact. Standalone Readability Checker limits are not proof of NB import capacity.
-- **Archive proposal:** AS proposed automatic moves into an archive folder at the 30-/60-day thresholds, with continued Agile Six access, to avoid repeated manual check-ins. AS technical approval is pending. This is a proposed alternative to the earlier deletion/review baseline, not a finalized lifecycle rule. Confirm clock starts, ownership, eventual disposal, permissions and how exact source versions remain discoverable and retrievable for recovery under #888/#952/#1302. Moving a file must not silently break a stored source reference.
-- **Success acknowledgment:** AS's S3 publication success establishes publication only. The Stage 2 mechanism for NB to return receipt/import success to AS remains open. Agree event semantics, exact-source correlation, delivery/retry responsibility and whether successful import or explicit designer acceptance starts retention. Track under #888/#1302; do not equate publication, import and acceptance.
+- **Word size:** NB sent a follow-up clarifying that 45 MB originated as AS's PDF acceptance limit, and requested an exported Word limit or expected maximum. At that review, AS's response and NB capacity validation were pending. The November 17 v3 requirements subsequently specified a 45 MB cap and a local 45 MiB import succeeded; see the linked evidence above. Exact units and deployed/manual/automated capacity validation remain to be completed. #1300 owns boundary agreement/enforcement; #956 validates the manual upload/import path and #1303 the automated path, including processing time, memory and concurrent-user impact. Standalone Readability Checker limits are not proof of NB import capacity.
+- **Archive proposal:** AS proposed automatic moves into an archive folder at the 30-/60-day thresholds, with continued Agile Six access, to avoid repeated manual check-ins. This was pending at the November 10 review; the November 17 accepted policy above supersedes its periods and clock assumptions. Confirm implementation ownership, permissions and how exact source versions remain discoverable and retrievable for recovery under #888/#952/#1302. Moving a file must not silently break a stored source reference.
+- **Success acknowledgment:** AS's S3 publication success establishes publication only. The Stage 2 mechanism for NB to return receipt/import success to AS remains open. Agree event semantics, exact-source correlation, delivery/retry responsibility and what event moves a file into processed. The accepted retention clock starts at folder entry. Track under #888/#1302; do not equate publication, import and acceptance.
 - **Manual failure support:** the procedure for manual download/import failures will be defined jointly later. #956 owns manual validation and support readiness; #1302 owns the automated operations runbook.
 
 AS targets returning revised requirements on November 16, with finalization and schedule review targeted for November 17. AS indicated some dates may shift while requirements are finalized; no replacement delivery dates were agreed. These are coordination targets, not access-completion or implementation commitments. Keep implementation estimates and proposed rollout windows in #954 unchanged until revised dates or scope are agreed.
