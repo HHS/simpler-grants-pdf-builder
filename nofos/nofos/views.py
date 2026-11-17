@@ -1107,7 +1107,8 @@ class NofosImportNewView(BaseNofoImportView):
                 messages.warning(
                     request,
                     f"The document’s OpDiv identifies {source_opdiv.upper()}. "
-                    f"Builder applied the {nofo.group.upper()} theme based on your group. "
+                    f"NOFO Builder applied the {nofo.group.upper()} theme "
+                    "based on your group. "
                     "Check that you uploaded the intended document.",
                     extra_tags="import-opdiv-mismatch",
                 )

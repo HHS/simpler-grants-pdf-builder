@@ -114,6 +114,11 @@ class FDAOnboardingTests(TestCase):
                 self.assertContains(
                     response, f"The document’s OpDiv identifies {opdiv}."
                 )
+                self.assertContains(
+                    response,
+                    f"NOFO Builder applied the {user.group.upper()} theme "
+                    "based on your group.",
+                )
                 nofo = Nofo.objects.get(group=user.group)
                 self.assertEqual(nofo.opdiv, opdiv)
                 self.assertEqual(nofo.theme, theme)

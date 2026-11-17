@@ -14,6 +14,8 @@ whether to propose a product change, see
 [quality review and triage](QUALITY_REVIEW_AND_TRIAGE.md#review-triage).
 
 For advisory editor warnings, see [Endnote warnings](ENDNOTE_WARNINGS.md).
+A [Word OpDiv mismatch](UI_PATTERNS.md#word-opdiv-mismatch-warning) is an
+advisory warning after a successful import and has no blocking error code.
 
 ## Adding a new code
 
