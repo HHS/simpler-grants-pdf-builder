@@ -67,3 +67,21 @@ The dry run exercised separate coding and review sessions, a reusable test comma
 ## Second dry run
 
 See [Word email link evaluation](word-email-dry-run.md) for the prompts, scores, and reproducible evidence.
+
+## Inline “Need help?” callout rendering — November 17, 2026
+
+The maintainer requested an evidence record for a rendering change that adds the Contacts and Support icon to qualifying inline help callouts. The PR starts from `17dbf3c71d3605da49916e48c413238e727f79f0`. This entry records one implementation and its verification. The scored pilot measures paired runs on changes to import behavior.
+
+The new match is case-insensitive and checks the opening paragraph of the rendered callout body. It recognizes an opening “Need help?” or “Need any help?” followed by a direction such as “See,” “Visit,” “Go to,” or “Refer to” Contacts and Support. Bold text and link markup are supported. The rule uses the visible destination wording, so it also works when the section name is plain text.
+
+| Example | Observed rendering |
+| --- | --- |
+| `Need help? See Contacts and Support.` | Contact icon before the body |
+| `**Need help?** Visit [Contacts and Support](#contacts-and-support).` | Contact icon before the body, with the link preserved |
+| `Need any help? Please refer to the Contact and Support section.` | Contact icon before the body |
+| `Need help? Visit Grants.gov.` | No icon |
+| `Need help? Email the Contacts and Support team.` | No icon |
+| Heading `Need help?` with body `See Contacts and Support.` | No icon |
+| `See [our guide](#contacts-and-support) if you need help.` | No icon |
+
+From `nofos/`, run `python manage.py test nofos.tests_nofos.test_callout_box nofos.tests_nofos.test_templatetags --noinput`. All 250 tests passed in the local verification checkout, which used the pinned versions of the changed production files over the available upstream checkout. The focused tests render the shared Django template and also cover the thin icon, existing “Have questions?” and Adobe Reader icons, and the inline scope of the new rule.
