@@ -85,3 +85,7 @@ The new match is case-insensitive and checks the opening paragraph of the render
 | `See [our guide](#contacts-and-support) if you need help.` | No icon |
 
 From `nofos/`, run `python manage.py test nofos.tests_nofos.test_callout_box nofos.tests_nofos.test_templatetags --noinput`. All 250 tests passed in the local verification checkout, which used the pinned versions of the changed production files over the available upstream checkout. The focused tests render the shared Django template and also cover the thin icon, existing “Have questions?” and Adobe Reader icons, and the inline scope of the new rule.
+
+## SAMHSA Word import BYB setting — November 17, 2026
+
+[Scored pair, verification, and both patches](samhsa-byb.md).

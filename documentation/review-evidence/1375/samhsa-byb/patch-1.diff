@@ -1,0 +1,349 @@
+diff --git a/documentation/EDITOR_TASKS.md b/documentation/EDITOR_TASKS.md
+index 4d72a0ed..a4fba17f 100644
+--- a/documentation/EDITOR_TASKS.md
++++ b/documentation/EDITOR_TASKS.md
+@@ -108,6 +108,9 @@ is needed, contact the SimplerNOFOs team.
+ 
+ **Notes**
+ 
++- A Word import or reimport sets **Before you begin** to **BYB page with eRA**
++  when the NOFO belongs to the SAMHSA group or the Word **OpDiv** field identifies
++  SAMHSA. Reimport replaces the saved page choice.
+ - New ONC-group imports start with the **ONC** theme and the **Text only** cover.
+   See [Change theme, cover style, or icon style](#task-theme) for the available options.
+ - When the imported OpDiv identifies CMS, Builder suggests **CMS (Light)** under
+diff --git a/documentation/IMPORT_RULES.md b/documentation/IMPORT_RULES.md
+index 0b55fad7..104c156f 100644
+--- a/documentation/IMPORT_RULES.md
++++ b/documentation/IMPORT_RULES.md
+@@ -116,7 +116,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
+ | IMPORT-079 | removal | Metadata Suggestion | Builder: leading standalone `Tagline:` paragraph in an untitled Step 1 subsection → removed | `content_processing.py` |
+ | IMPORT-042 | extraction | Metadata Suggestion | OpDiv / opportunity-number prefix → suggested cover theme | `nofo.py` |
+ | IMPORT-043 | extraction | Metadata Suggestion | Theme prefix → suggested cover style (text-only vs. medium) | `nofo.py` |
+-| IMPORT-044 | extraction | Metadata Suggestion | New import's HRSA theme / user's group → suggested "before you begin" page variant; duplicates copy the saved variant | `nofo.py` |
++| IMPORT-044 | extraction | Metadata Suggestion | SAMHSA group or Word OpDiv → eRA on Builder Word import and re-import; HRSA/NIH defaults on new imports | `nofo.py`, `views.py` |
+ | IMPORT-045 | extraction | Metadata Suggestion | Opportunity number / title substring → suggested cover image | `nofo.py` |
+ | IMPORT-046 | tagging | Non-Visual Tagging | Subsection body vs. canonical policy-language templates → compliance status tag | `policy_language.py` |
+ | IMPORT-047 | extraction | Non-Visual Tagging | `{Prompt}` / `{List: label}` syntax → Composer content-guide variables | `composer/models.py` |
+@@ -772,7 +772,7 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
+ ### IMPORT-042 — Cover theme suggestion
+ - **Type:** extraction
+ - **Trigger:** A new import belongs to the ONC group, or OpDiv text or the opportunity-number prefix matches a known agency (`nih`, `hrsa`, `samhsa`, `acl`, `cdc-`, `acf-`, `acl-`, `cms-`, `ihs-`, `rfa-`). CDC is recognized from the full “Centers for Disease Control and Prevention” OpDiv name or a standalone `CDC` OpDiv acronym before other theme checks. ACF is recognized from an `ACF` opportunity-number segment, the full "Administration for Children and Families" OpDiv name, or a standalone `ACF` OpDiv acronym. SAMHSA is recognized from the full "Substance Abuse and Mental Health Services Administration" OpDiv name or a standalone `SAMHSA` OpDiv acronym. IHS is recognized case-insensitively from the full "Indian Health Service" OpDiv name or a standalone `IHS` acronym. ACL is recognized case-insensitively from the full "Administration for Community Living" OpDiv name or a standalone `ACL` acronym; substrings within unrelated words do not qualify.
+-- **Action:** Suggest the matching portrait theme. A recognized IHS OpDiv selects `portrait-ihs-white` (IHS (Light)) before opportunity-number heuristics, including blank or placeholder numbers and conflicting agency prefixes. Existing NIH, HRSA, SAMHSA and ACL OpDiv checks retain their priority. A recognized ACL OpDiv selects `portrait-acl-white` (ACL Default) before opportunity-number heuristics, including when the number is blank, generic, a template placeholder or has a conflicting agency prefix. Existing NIH, HRSA and SAMHSA OpDiv checks retain their priority. Without a recognized ACL OpDiv, the existing `acl-` number heuristic and other agency rules remain unchanged; unmatched sources still fall back to NIH Light. Author metadata does not select a theme. Apply suggestions only on first-time imports; re-import preserves the saved theme, cover and registration-page variant. No migration or backfill changes previously imported records. CMS is recognized case-insensitively from the full “Centers for Medicare & Medicaid Services” OpDiv name (including “and” in place of “&”) or a standalone `CMS` acronym. A recognized CMS OpDiv selects `portrait-cms-white` (CMS (Light)) before opportunity-number heuristics, including for blank or placeholder numbers. The existing `cms-` opportunity-number rule selects the same theme.
++- **Action:** Suggest the matching portrait theme. A recognized IHS OpDiv selects `portrait-ihs-white` (IHS (Light)) before opportunity-number heuristics, including blank or placeholder numbers and conflicting agency prefixes. Existing NIH, HRSA, SAMHSA and ACL OpDiv checks retain their priority. A recognized ACL OpDiv selects `portrait-acl-white` (ACL Default) before opportunity-number heuristics, including when the number is blank, generic, a template placeholder or has a conflicting agency prefix. Existing NIH, HRSA and SAMHSA OpDiv checks retain their priority. Without a recognized ACL OpDiv, the existing `acl-` number heuristic and other agency rules remain unchanged; unmatched sources still fall back to NIH Light. Author metadata does not select a theme. Apply theme suggestions only on first-time imports. Re-import preserves the saved theme and cover. Registration-page behavior is documented under IMPORT-044. No migration or backfill changes previously imported records. CMS is recognized case-insensitively from the full “Centers for Medicare & Medicaid Services” OpDiv name (including “and” in place of “&”) or a standalone `CMS` acronym. A recognized CMS OpDiv selects `portrait-cms-white` (CMS (Light)) before opportunity-number heuristics, including for blank or placeholder numbers. The existing `cms-` opportunity-number rule selects the same theme.
+   **ONC.** A new import assigned to the ONC group uses `portrait-onc-navy` regardless of agency labels in the uploaded file. The importing user's group, not document metadata, controls access. Re-import preserves the saved theme.
+ - **Source:** `nofo.py::suggest_nofo_theme`, `nofo.py::suggest_all_nofo_fields`, `is_acf_nofo_metadata`
+ - **Status:** active
+@@ -788,8 +788,8 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
+ 
+ ### IMPORT-044 — "Before you begin" page variant suggestion
+ - **Type:** extraction
+-- **Trigger:** Brand-new import whose suggested theme is HRSA (derived from opportunity number / OpDiv), or importing user's group is `"nih"`.
+-- **Action:** Select the persisted `"hrsa"` variant for an HRSA theme, otherwise `"era"` for an NIH user, otherwise `"full"`. The HRSA variant includes the registration/deadline content and an “Application and funding requirements” heading and paragraph before the final internal-links callout. Its four subsection headings are matching semantic `h3` elements below the page's `h2`. Re-imports retain their saved variant, even with a blank/placeholder opportunity number. Adding the choice does not backfill any existing records.
++- **Trigger:** A Builder Word import or re-import where the NOFO belongs to the `"samhsa"` group or the incoming OpDiv field contains the full SAMHSA name or the standalone acronym (case-insensitive). New imports also use the existing HRSA theme and NIH group defaults.
++- **Action:** For qualifying SAMHSA Word imports, save `"era"` (**BYB page with eRA**), replacing the prior variant on re-import, including after opportunity-number confirmation. For other new imports, select the persisted `"hrsa"` variant for a legacy-family HRSA theme, `"full"` for a new-family HRSA theme, `"era"` for an NIH user, or `"full"` otherwise. The HRSA variant includes the registration/deadline content and an “Application and funding requirements” heading and paragraph before the final internal-links callout. Its four subsection headings are matching semantic `h3` elements below the page's `h2`. Other re-imports retain their saved variant, even with a blank/placeholder opportunity number.
+ 
+   **Duplication does not re-suggest anything.** `duplicate_nofo()` clones the record, so a copy carries the saved variant forward whatever it is — a copy of a record imported before the HRSA variant existed still says `"full"`, and gets no HRSA paragraph. That applies equally to the archive snapshot a re-import takes (`is_successor=True`), which must keep the variant the record actually had. Someone can change a copy's variant by hand at `/nofos/<id>/edit/before-you-begin`.
+ 
+@@ -799,8 +799,7 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
+ 
+   The family decision is independent. First-time recognized new-family HRSA
+   imports use full before the NIH-group fallback; recognized legacy HRSA imports
+-  still use hrsa. Other group/theme defaults are unchanged. Re-import preserves
+-  every saved variant; saved hrsa with the new family renders the new full
++  still use hrsa. A retained hrsa variant with the new family renders the new full
+   registration body without resetting the value or adding HRSA-only wording.
+ 
+   Imported-content ownership (IMPORT-065) does not use or expose this generated
+diff --git a/documentation/INTRODUCTORY_PAGE_IMPORT.md b/documentation/INTRODUCTORY_PAGE_IMPORT.md
+index 5d0bd5c2..19bea2b2 100644
+--- a/documentation/INTRODUCTORY_PAGE_IMPORT.md
++++ b/documentation/INTRODUCTORY_PAGE_IMPORT.md
+@@ -42,9 +42,11 @@ registration variant. Existing records have an empty discriminator and keep
+ their legacy presentation and historical Word-export behavior. No content-based
+ backfill runs. A recognized legacy upload stores `legacy`; a recognized new
+ upload stores `get_started`. An absent or ambiguous heading stores the empty
+-legacy fallback. Authorized re-import preserves the saved family and variant;
+-confirmation serializes the captured source family with processed
+-HTML, and failed imports roll back family and content together. Duplication and
++legacy fallback. Authorized re-import preserves the saved family. The saved
++variant is retained except for qualifying SAMHSA Word re-imports, which select
++**BYB page with eRA** under [IMPORT-044](IMPORT_RULES.md#import-044--before-you-begin-page-variant-suggestion).
++Confirmation serializes the captured source family with processed HTML, and
++failed imports roll back family and content together. Duplication and
+ archive snapshots copy both saved values. Composer/Compare do not opt into this
+ Builder family selection; guide Introduction behavior is unchanged.
+ 
+diff --git a/documentation/WORD_METADATA_IMPORT.md b/documentation/WORD_METADATA_IMPORT.md
+index f904469a..51e44dc0 100644
+--- a/documentation/WORD_METADATA_IMPORT.md
++++ b/documentation/WORD_METADATA_IMPORT.md
+@@ -104,9 +104,12 @@ are supported. Tagline and assistance-listing extraction remain independent of t
+ Extraction runs only on explicit import/re-import. Viewing, editing unrelated fields or
+ exporting existing records does not re-extract metadata. Authorized re-import still uses
+ the existing overwrite, validation, status checks and transaction rollback behavior. It
+-preserves stored theme, cover and registration-page variant; a missing incoming title
+-does not replace an existing title with a timestamp default. No migration or backfill is
+-required. New-import cover/theme suggestions use the resolved OpDiv and opportunity number.
++preserves the stored theme and cover. The saved registration-page variant is
++retained except for qualifying SAMHSA Word re-imports, which select **BYB page
++with eRA** under [IMPORT-044](IMPORT_RULES.md#import-044--before-you-begin-page-variant-suggestion).
++A missing incoming title does not replace an existing title with a timestamp default.
++No migration or backfill is required. New-import cover/theme suggestions use the
++resolved OpDiv and opportunity number.
+ 
+ If an earlier import left PDF metadata blank after an Assistance listing field,
+ review and correct **NOFO metadata**, or re-import the source after this fix is
+diff --git a/nofos/nofos/nofo.py b/nofos/nofos/nofo.py
+index f506f692..08912be2 100644
+--- a/nofos/nofos/nofo.py
++++ b/nofos/nofos/nofo.py
+@@ -168,6 +168,11 @@ REQUEST_HEADERS = {
+ ###########################################################
+ 
+ 
++WORD_UPLOAD_CONTENT_TYPE = (
++    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
++)
++
++
+ def parse_uploaded_file_as_html_string(
+     uploaded_file,
+     *,
+@@ -192,10 +197,7 @@ def parse_uploaded_file_as_html_string(
+         # Decode the HTML file
+         return uploaded_file.read().decode("utf-8"), 0
+ 
+-    elif (
+-        content_type
+-        == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+-    ):
++    elif content_type == WORD_UPLOAD_CONTENT_TYPE:
+         # Convert DOCX to HTML
+         try:
+             conversion_file = (
+@@ -1735,6 +1737,13 @@ def suggest_nofo_before_you_begin(
+     return "full"
+ 
+ 
++def _is_samhsa_opdiv(opdiv):
++    opdiv = opdiv.lower()
++    return "substance abuse and mental health services administration" in opdiv or bool(
++        re.search(r"\bsamhsa\b", opdiv)
++    )
++
++
+ def suggest_nofo_theme(nofo_number, opdiv=""):
+     opdiv_lower = (opdiv or "").lower()
+     if "centers for disease control and prevention" in opdiv_lower or re.search(
+@@ -1752,10 +1761,7 @@ def suggest_nofo_theme(nofo_number, opdiv=""):
+     ):
+         return "portrait-hrsa-white"
+ 
+-    if (
+-        "substance abuse and mental health services administration" in opdiv_lower
+-        or re.search(r"\bsamhsa\b", opdiv_lower)
+-    ):
++    if _is_samhsa_opdiv(opdiv_lower):
+         return "portrait-samhsa-white"
+ 
+     if "administration for community living" in opdiv_lower or re.search(
+@@ -1878,7 +1884,7 @@ def suggest_nofo_cover_image(nofo):
+ 
+ 
+ def suggest_all_nofo_fields(
+-    nofo, soup, *, first_time_import=None, imported_tagline=None
++    nofo, soup, *, first_time_import=None, imported_tagline=None, is_word_import=False
+ ):
+     from .introductory_page import introductory_family_from_soup
+ 
+@@ -1935,7 +1941,9 @@ def suggest_all_nofo_fields(
+         )
+     if first_time_import:
+         nofo.cover = suggest_nofo_cover(nofo.theme)  # guess the NOFO cover
+-    if first_time_import:
++    if is_word_import and (nofo.group == "samhsa" or _is_samhsa_opdiv(nofo.opdiv)):
++        nofo.before_you_begin = "era"
++    elif first_time_import:
+         nofo.before_you_begin = suggest_nofo_before_you_begin(
+             nofo.group, nofo.theme, nofo.introductory_page_family
+         )  # guess the NOFO "Before you begin" page
+diff --git a/nofos/nofos/tests_nofos/test_metadata_block_import.py b/nofos/nofos/tests_nofos/test_metadata_block_import.py
+index f3f50dc3..2197de9d 100644
+--- a/nofos/nofos/tests_nofos/test_metadata_block_import.py
++++ b/nofos/nofos/tests_nofos/test_metadata_block_import.py
+@@ -425,6 +425,85 @@ class MetadataWordImportTests(TestCase):
+                             "93.123" if enabled else ("12.345" if reimport else ""),
+                         )
+ 
++    def test_new_word_import_sets_era_for_samhsa_group_or_opdiv(self):
++        for group, opdiv in (
++            ("samhsa", "HRSA"),
++            ("bloom", "Substance Abuse and Mental Health Services Administration"),
++            ("bloom", "HHS (sAmHsA)"),
++        ):
++            with self.subTest(group=group, opdiv=opdiv):
++                self.user.group = group
++                self.user.save(update_fields=["group"])
++                response = self.client.post(
++                    reverse("nofos:nofo_import"),
++                    {"nofo-import": self.upload(opdiv=opdiv)},
++                )
++                nofo = Nofo.objects.latest("created")
++                self.assertRedirects(
++                    response,
++                    reverse("nofos:nofo_import_title", args=[nofo.pk]),
++                    fetch_redirect_response=False,
++                )
++                self.assertEqual(nofo.before_you_begin, "era")
++
++    def test_word_reimport_overrides_samhsa_variant_and_preserves_archive(self):
++        for group, opdiv, number in (
++            ("samhsa", "HHS", "TEST-1096"),
++            ("bloom", "SAMHSA", "TEST-OLD"),
++        ):
++            with self.subTest(group=group, opdiv=opdiv, number=number):
++                nofo = Nofo.objects.create(
++                    title="Existing opportunity",
++                    number=number,
++                    opdiv="HHS",
++                    group=group,
++                    before_you_begin="none",
++                )
++                response = self.client.post(
++                    reverse("nofos:nofo_import_overwrite", args=[nofo.pk]),
++                    {"nofo-import": self.upload(opdiv=opdiv)},
++                )
++                if number != "TEST-1096":
++                    confirm_url = reverse(
++                        "nofos:nofo_import_confirm_overwrite", args=[nofo.pk]
++                    )
++                    self.assertRedirects(
++                        response, confirm_url, fetch_redirect_response=False
++                    )
++                    nofo.refresh_from_db()
++                    self.assertEqual(nofo.before_you_begin, "none")
++                    response = self.client.post(confirm_url)
++                self.assertRedirects(
++                    response,
++                    reverse("nofos:nofo_edit", args=[nofo.pk]),
++                    fetch_redirect_response=False,
++                )
++                nofo.refresh_from_db()
++                self.assertEqual(nofo.before_you_begin, "era")
++                self.assertEqual(
++                    Nofo.objects.get(successor=nofo).before_you_begin, "none"
++                )
++
++    def test_samhsa_opdiv_in_html_upload_keeps_default_variant(self):
++        response = self.client.post(
++            reverse("nofos:nofo_import"),
++            {
++                "nofo-import": SimpleUploadedFile(
++                    "synthetic-metadata.html",
++                    b"<h2>Program</h2><p>About this program.</p>"
++                    b"<p>OpDiv: SAMHSA</p>",
++                    content_type="text/html",
++                )
++            },
++        )
++        nofo = Nofo.objects.get()
++        self.assertRedirects(
++            response,
++            reverse("nofos:nofo_import_title", args=[nofo.pk]),
++            fetch_redirect_response=False,
++        )
++        self.assertEqual(nofo.before_you_begin, "full")
++
+     def test_acl_word_import_selects_acl_theme_from_resolved_opdiv(self):
+         opdiv = "Administration for Community Living (ACL)"
+         for legacy in (False, True):
+diff --git a/nofos/nofos/views.py b/nofos/nofos/views.py
+index 3fcc0bf2..5bcc47be 100644
+--- a/nofos/nofos/views.py
++++ b/nofos/nofos/views.py
+@@ -122,6 +122,7 @@ from .nofo import (
+     END_NOTES_PLACEHOLDER_BODY,
+     END_NOTES_SECTION_HTML_ID,
+     END_NOTES_SECTION_NAME,
++    WORD_UPLOAD_CONTENT_TYPE,
+     add_final_subsection_to_step_3,
+     add_headings_to_document,
+     add_line_breaks_to_key_dates_values,
+@@ -865,6 +866,9 @@ class BaseNofoImportView(View):
+         """
+         # 1. Read uploaded file
+         uploaded_file = request.FILES.get("nofo-import")
++        is_word_import = (
++            getattr(uploaded_file, "content_type", "") == WORD_UPLOAD_CONTENT_TYPE
++        )
+         # Best-effort filename for ImportAttempt logging if parsing fails below;
+         # the real `filename` local (used on success) isn't computed until after.
+         attempt_filename = getattr(uploaded_file, "name", "") or ""
+@@ -901,9 +905,7 @@ class BaseNofoImportView(View):
+                     )
+                     else (
+                         "detect"
+-                        if isinstance(self, NofosImportNewView)
+-                        and getattr(uploaded_file, "content_type", "")
+-                        == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
++                        if isinstance(self, NofosImportNewView) and is_word_import
+                         else "generated"
+                     )
+                 ),
+@@ -1008,6 +1010,7 @@ class BaseNofoImportView(View):
+             *args,
+             warning_count=warning_count,
+             imported_tagline=imported_tagline,
++            is_word_import=is_word_import,
+             **kwargs,
+         )
+ 
+@@ -1079,6 +1082,7 @@ class NofosImportNewView(BaseNofoImportView):
+                 soup,
+                 first_time_import=True,
+                 imported_tagline=imported_tagline,
++                is_word_import=kwargs.get("is_word_import", False),
+             )
+             nofo.filename = filename
+             nofo.designer = (request.user.full_name or "").strip()
+@@ -1232,6 +1236,7 @@ class NofosImportOverwriteView(
+                 "if_preserve_page_breaks": if_preserve_page_breaks,
+                 "warning_count": warning_count,
+                 "imported_tagline": kwargs.get("imported_tagline"),
++                "is_word_import": kwargs.get("is_word_import", False),
+             }
+             return redirect("nofos:nofo_import_confirm_overwrite", pk=nofo.id)
+ 
+@@ -1245,6 +1250,7 @@ class NofosImportOverwriteView(
+             if_preserve_page_breaks,
+             warning_count,
+             imported_tagline=kwargs.get("imported_tagline"),
++            is_word_import=kwargs.get("is_word_import", False),
+         )
+ 
+     @staticmethod
+@@ -1258,6 +1264,7 @@ class NofosImportOverwriteView(
+         warning_count=0,
+         *,
+         imported_tagline=None,
++        is_word_import=False,
+     ):
+         """
+         Handles the actual reimport logic, allowing external calls without requiring an instance.
+@@ -1288,6 +1295,7 @@ class NofosImportOverwriteView(
+                     soup,
+                     first_time_import=False,
+                     imported_tagline=imported_tagline,
++                    is_word_import=is_word_import,
+                 )
+                 nofo.filename = filename
+                 nofo.save()
+@@ -1436,6 +1444,7 @@ class NofosConfirmReimportView(GroupAccessObjectMixin, View):
+             if_preserve_page_breaks,
+             warning_count,
+             imported_tagline=reimport_data.get("imported_tagline"),
++            is_word_import=reimport_data.get("is_word_import", False),
+         )
+ 
+ 
