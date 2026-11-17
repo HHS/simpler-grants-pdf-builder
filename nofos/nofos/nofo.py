@@ -1909,7 +1909,7 @@ def suggest_nofo_cover_image(nofo):
 
 
 def suggest_all_nofo_fields(
-    nofo, soup, *, first_time_import=None, imported_tagline=None
+    nofo, soup, *, first_time_import=None, imported_tagline=None, is_word_import=False
 ):
     from .introductory_page import introductory_family_from_soup
 
@@ -1969,10 +1969,15 @@ def suggest_all_nofo_fields(
         if not nofo.title or not nofo_title.startswith("NOFO: "):
             nofo.title = nofo_title
 
-    # do not reset these during import
     if first_time_import:
-        nofo.cover = suggest_nofo_cover(nofo.theme)  # guess the NOFO cover
-    if first_time_import:
+        nofo.cover = suggest_nofo_cover(nofo.theme)
+
+    if is_word_import and (
+        nofo.group == "samhsa"
+        or suggest_nofo_theme(nofo.number, opdiv=nofo.opdiv) == "portrait-samhsa-white"
+    ):
+        nofo.before_you_begin = "era"
+    elif first_time_import:
         nofo.before_you_begin = suggest_nofo_before_you_begin(
             nofo.group, nofo.theme, nofo.introductory_page_family
         )  # guess the NOFO "Before you begin" page

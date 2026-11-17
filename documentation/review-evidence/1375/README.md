@@ -85,3 +85,21 @@ The new match is case-insensitive and checks the opening paragraph of the render
 | `See [our guide](#contacts-and-support) if you need help.` | No icon |
 
 From `nofos/`, run `python manage.py test nofos.tests_nofos.test_callout_box nofos.tests_nofos.test_templatetags --noinput`. All 250 tests passed in the local verification checkout, which used the pinned versions of the changed production files over the available upstream checkout. The focused tests render the shared Django template and also cover the thin icon, existing “Have questions?” and Adobe Reader icons, and the inline scope of the new rule.
+
+## SAMHSA Word import BYB setting — November 17, 2026
+
+The maintainer requested that new Word imports and re-imports for SAMHSA set
+**BYB page with eRA**. The task changes import behavior and can be verified with
+a small synthetic Word document. This entry records one implementation from
+`98f9a8514a128af6fccb549240ba553364d959da`. The scored pilot requires a pair of fresh coding
+sessions and a separate review.
+
+The [matching import rule](../../IMPORT_RULES.md#import-044--before-you-begin-page-variant-suggestion)
+was consulted before editing and updated with the implementation. The Word upload
+regression tests cover SAMHSA group membership, the abbreviated and full OpDiv
+names, and other OpDivs. They also cover direct and confirmed re-imports, and
+check that the archived revision keeps its previous setting.
+
+Run `python manage.py test nofos.tests_nofos.test_metadata_block_import nofos.tests_nofos.test_hrsa_byb --noinput`
+from `nofos/`. Local execution was blocked when the workspace became unavailable.
+See the implementation PR for CI results.

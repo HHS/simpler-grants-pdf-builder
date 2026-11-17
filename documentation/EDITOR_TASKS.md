@@ -114,6 +114,11 @@ is needed, contact the SimplerNOFOs team.
   Bloom imports use a recognized OpDiv or, when no OpDiv is recognized, the matching opportunity number.
   To use **Standard image** on an FDA notice, upload an image for that NOFO.
   See [Change theme, cover style, or icon style](#task-theme) for the available options.
+- Word imports for SAMHSA set **BYB page setting** to **BYB page with eRA**.
+  This applies to a NOFO in the SAMHSA group or with SAMHSA identified in the
+  uploaded OpDiv. Re-importing from Word sets that value again, even if you
+  previously selected a different setting. Imported introductory content still
+  displays the text from Word.
 - When the imported OpDiv identifies CMS, Builder suggests **CMS (Light)** under
   **NOFO theme options** on a new import, even if the opportunity number is blank
   or a placeholder.

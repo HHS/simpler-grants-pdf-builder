@@ -388,6 +388,65 @@ class MetadataWordImportTests(TestCase):
             content_type=DOCX_CONTENT_TYPE,
         )
 
+    def test_samhsa_word_import_sets_era_byb_from_group_or_opdiv(self):
+        for group, opdiv, expected in (
+            ("samhsa", "HHS", "era"),
+            ("bloom", "SAMHSA", "era"),
+            ("bloom", "Substance Abuse and Mental Health Services Administration", "era"),
+            ("bloom", "HHS", "full"),
+        ):
+            with self.subTest(group=group, opdiv=opdiv):
+                self.user.group = group
+                self.user.save(update_fields=["group"])
+                response = self.client.post(
+                    reverse("nofos:nofo_import"),
+                    {"nofo-import": self.upload(opdiv=opdiv)},
+                )
+                self.assertEqual(response.status_code, 302)
+                nofo = Nofo.objects.latest("created")
+                self.assertEqual(nofo.before_you_begin, expected)
+
+    def test_samhsa_word_reimport_sets_era_and_archives_previous_setting(self):
+        for group, opdiv, old_number, expected in (
+            ("samhsa", "HHS", "TEST-1096", "era"),
+            ("bloom", "SAMHSA", "OLD-1096", "era"),
+            ("bloom", "HHS", "TEST-1096", "sole_source"),
+        ):
+            with self.subTest(group=group, opdiv=opdiv, old_number=old_number):
+                nofo = Nofo.objects.create(
+                    title="Saved",
+                    number=old_number,
+                    opdiv="HHS",
+                    group=group,
+                    status="draft",
+                    before_you_begin="sole_source",
+                )
+                section = Section.objects.create(nofo=nofo, name="Original", order=1)
+                Subsection.objects.create(
+                    section=section, name="", body="Old body", order=1
+                )
+                response = self.client.post(
+                    reverse("nofos:nofo_import_overwrite", kwargs={"pk": nofo.pk}),
+                    {"nofo-import": self.upload(opdiv=opdiv)},
+                )
+                self.assertEqual(response.status_code, 302)
+                if old_number != "TEST-1096":
+                    confirm_url = reverse(
+                        "nofos:nofo_import_confirm_overwrite", kwargs={"pk": nofo.pk}
+                    )
+                    self.assertRedirects(
+                        response, confirm_url, fetch_redirect_response=False
+                    )
+                    nofo.refresh_from_db()
+                    self.assertEqual(nofo.before_you_begin, "sole_source")
+                    response = self.client.post(confirm_url)
+                    self.assertEqual(response.status_code, 302)
+                nofo.refresh_from_db()
+                self.assertEqual(nofo.before_you_begin, expected)
+                self.assertEqual(
+                    Nofo.objects.get(successor=nofo).before_you_begin, "sole_source"
+                )
+
     def test_assistance_listing_word_new_import_and_reimport_save_later_metadata(self):
         for enabled in (False, True):
             for label in ASSISTANCE_LISTING_NUMBER_LABELS:

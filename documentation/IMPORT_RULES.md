@@ -794,8 +794,8 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
 
 ### IMPORT-044 — "Before you begin" page variant suggestion
 - **Type:** extraction
-- **Trigger:** Brand-new import whose suggested theme is HRSA (derived from opportunity number / OpDiv), or importing user's group is `"nih"`.
-- **Action:** Select the persisted `"hrsa"` variant for an HRSA theme, otherwise `"era"` for an NIH user, otherwise `"full"`. The HRSA variant includes the registration/deadline content and an “Application and funding requirements” heading and paragraph before the final internal-links callout. Its four subsection headings are matching semantic `h3` elements below the page's `h2`. Re-imports retain their saved variant, even with a blank/placeholder opportunity number. Adding the choice does not backfill any existing records.
+- **Trigger:** A new import or a Word re-import for a SAMHSA NOFO.
+- **Action:** For Word imports, save `"era"` (**BYB page with eRA**) when the NOFO belongs to the `"samhsa"` group or the incoming OpDiv identifies SAMHSA under the existing theme suggestion rules. This also replaces the current setting on re-import, including after opportunity-number confirmation. Other new imports select `"hrsa"` for a legacy HRSA theme, `"era"` for an NIH user, or `"full"` otherwise. The HRSA variant includes the registration/deadline content and an “Application and funding requirements” heading and paragraph before the final internal-links callout. Its four subsection headings are matching semantic `h3` elements below the page's `h2`. Other re-imports retain their saved variant, even with a blank or placeholder opportunity number. Existing records receive the SAMHSA setting when re-imported from Word.
 
   **Duplication does not re-suggest anything.** `duplicate_nofo()` clones the record, so a copy carries the saved variant forward whatever it is — a copy of a record imported before the HRSA variant existed still says `"full"`, and gets no HRSA paragraph. That applies equally to the archive snapshot a re-import takes (`is_successor=True`), which must keep the variant the record actually had. Someone can change a copy's variant by hand at `/nofos/<id>/edit/before-you-begin`.
 
@@ -805,8 +805,7 @@ These are heuristic *suggestions* pre-filled into NOFO metadata fields (opportun
 
   The family decision is independent. First-time recognized new-family HRSA
   imports use full before the NIH-group fallback; recognized legacy HRSA imports
-  still use hrsa. Other group/theme defaults are unchanged. Re-import preserves
-  every saved variant; saved hrsa with the new family renders the new full
+  still use hrsa. A saved hrsa variant with the new family renders the new full
   registration body without resetting the value or adding HRSA-only wording.
 
   Imported-content ownership (IMPORT-065) does not use or expose this generated
