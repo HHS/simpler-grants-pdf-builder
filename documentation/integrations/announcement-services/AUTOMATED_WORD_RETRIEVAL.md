@@ -37,7 +37,7 @@ The agreed product approach, confirmed November 6, 2026, is automatic creation o
 - The same source identity with different file bytes is a conflict requiring review.
 - Replacing or reimporting into existing design work requires an explicit authorized human decision.
 
-Automatic draft creation is the selected policy for the implementation estimate. The acceptance event that starts AS exchange cleanup still requires agreement with AS, including whether successful import or explicit designer acceptance supplies that event.
+Automatic draft creation is the selected policy for the implementation estimate. The November 17 accepted exchange policy uses time in each folder for archiving and deletion (see below). The event that moves a submission into `processed/` and the acknowledgment to AS still require agreement.
 
 ## Proposed flow
 
@@ -75,10 +75,10 @@ flowchart TD
     V -.-> T
     X -.-> T
     K -.-> O["Acceptance event and acknowledgment to agree with AS"]
-    O -.-> P["AS exchange cleanup baseline: delete 30 days after acceptance; review unclaimed or failed at 60 days"]
+    O -.-> P["AS exchange lifecycle: archive incoming after 60 days and processed after 30 days; delete archived after 60 days"]
 ```
 
-The diagram describes the proposed automated implementation. Discovery and import have independent bounded budgets. Database uniqueness and an atomic draft/result transaction protect concurrent retries. Distinct AM versions produce separate drafts while earlier design work remains available. File cleanup applies to every processing exit, including early validation failure. The acceptance event, acknowledgment, cleanup ownership and 60-day review-clock start require agreement with AS.
+The diagram describes the proposed automated implementation. Discovery and import have independent bounded budgets. Database uniqueness and an atomic draft/result transaction protect concurrent retries. Distinct AM versions produce separate drafts while earlier design work remains available. File cleanup applies to every processing exit, including early validation failure. The exchange archive/deletion periods are accepted as of November 17. Processing transitions, acknowledgment, cleanup ownership and archive recovery access still require agreement with AS.
 
 
 Every solid arrow is proposed integration work, not evidence that an exchange or
@@ -189,7 +189,7 @@ Verification under #954 must include multiple listing pages and more pending fil
 
 | Copy or record | Proposed location and lifetime | Controls and recovery |
 | --- | --- | --- |
-| AS authoritative source and exchange Word | AS-controlled storage. Exchange copy remains the retry source until the agreed handoff/retention policy permits removal. | AS owns encryption, permissions, backups, versions and cleanup. The earlier agreed-in-principle baseline was deletion 30 days after design-handoff acceptance and review of unclaimed/failed submissions at 60 days. A November 10 archive-folder alternative is pending AS technical approval (see below). Confirm acceptance recording, cleanup ownership and the start of the 60-day clock. Resolve exact pinning and availability for retries. |
+| AS authoritative source and exchange Word | AS-controlled storage. Exchange copy remains the retry source until the agreed handoff/retention policy permits removal. | AS owns encryption, permissions, backups, versions and exchange lifecycle configuration. The November 17 accepted policy archives incoming files after 60 days and processed files after 30 days, then deletes archived files after another 60 days. See the lifecycle table below. Confirm transition responsibilities, archive access and exact-source availability for retries; failed-file retention remains unspecified. |
 | Downloaded original Word | Seekable temporary file in the single task's private ephemeral filesystem, only for that attempt. Confirm the exported Word size limit and exact units with AS before automated rollout. The October 5 45 MB answer concerned PDFs AS could accept, not an established exported Word limit; enforce and test the separately agreed Word export boundary. Do not rely on declared length alone. | Restricted directory/file permissions, encrypted approved task storage, no shared mount, persistent volume, public URL or backup. Always close/unlink in `finally`. Task termination ends crash leftovers; verify actual task storage and cleanup configuration. This is not a secure-erasure guarantee. |
 | Conversion buffers and intermediates | Process memory and the same attempt-local scratch directory, only until conversion/validation ends. | Word helpers can rebuild ZIPs and hold multiple copies in memory. Bound expanded ZIP size, entries, conversion memory/time and output size as well as compressed bytes. `DEBUG=False`; prohibit debug HTML dumps, crash payload dumps and content-bearing exception logs. |
 | Imported NOFO and embedded content/assets | Existing Builder database and approved asset locations after successful transaction. Persist intentionally as draft content, not as the original Word archive. | Normal Builder access, editing, retention and backups apply. Embedded images can survive as data in imported content; inspect/test all asset paths. Any external object writes need attempt ownership plus compensating cleanup; database rollback does not delete S3 objects. Never delete shared assets as compensation. |
@@ -203,11 +203,26 @@ over forcing a large original plus expanded conversions into RAM. If approved
 AS retention cannot support retries, revisit private staging explicitly with
 security/records owners; do not silently repurpose the existing image bucket.
 
-### Exchange retention baseline and acceptance
+### Exchange archive and deletion policy — accepted November 17
 
-The October 20 meeting and October 21 written follow-up record AS alignment in principle with deleting retrieved exchange copies 30 days after the design team accepts the handoff and reviewing unclaimed or failed submissions at 60 days before deciding cleanup. AS confirmed it can configure lifecycle rules. This remains the historical baseline; reconcile it with the November 10 archive proposal below before configuring lifecycle actions.
+NB product review accepted the archive/deletion policy in GrantSolutions' November 17, 2026 clean v3 integration requirements. This supersedes the earlier proposal to delete exchange copies 30 days after handoff acceptance and review unclaimed/failed copies at 60 days, and the pending November 10 archive alternative.
 
-Agree whether successful automated import constitutes acceptance or an authorized designer explicitly accepts afterward. Record the chosen event and timestamp durably, define how AS receives the acknowledgment, assign cleanup ownership, and confirm whether the 60-day review clock starts at submission. A 60-day review requires a cleanup decision. Task-local temporary files are removed after each attempt. Preserve access to the exact source version throughout the agreed recovery period.
+| Exchange folder | Accepted lifecycle | Clock start |
+| --- | --- | --- |
+| `incoming/` | Automatically move to `archived/` after 60 days. | Entry into `incoming/`. |
+| `processed/` | Automatically move to `archived/` after 30 days. | Entry into `processed/`. |
+| `archived/` | Automatically delete after 60 days in the archive. | Entry into `archived/`. |
+| `failed/` | No archive/deletion period is specified in v3; confirm separately. | To be agreed. |
+
+The incoming-folder clock above records NB's accepted interpretation: measure from entry into incoming, rather than the contradictory v3 sentence referring to entry into archived. Confirm that wording correction with AS when finalizing implementation.
+
+Archive moves preserve the original filename, source folder and archive timestamp as user-defined S3 object metadata (`x-amz-meta-*` headers). Exact metadata header names remain to be agreed.
+
+For example, a file remaining in incoming reaches deletion approximately 120 days after submission: 60 days incoming plus 60 days archived. A file retained in processed reaches deletion approximately 90 days after entry there: 30 days processed plus 60 days archived. These periods apply to exchange files; they do not delete imported Builder drafts, design work, assets, receipt history or generated PDFs. Task-local original/intermediate files are still removed after each attempt.
+
+Implementation details remain under #888/#952/#1302: define what processed contains (source Word, result/receipt, or both), the event and authorized operator for each transition, acknowledgment semantics, archive read/list permissions, and how recovery locates the exact source after a move. Define failed-file retention explicitly. Acceptance of these periods records the product decision, not evidence of deployed lifecycle configuration or completion of operating/records approvals.
+
+The remaining November 17 requirements are still under review. This decision does not accept broader NB write/delete permissions, change version-selection behavior, confirm a 45 MB Word limit, or define an additional phase.
 
 ## Decisions required before connectivity or enablement
 
@@ -227,7 +242,7 @@ These are functional owners, not requests for an individual to find another owne
 
 NB returned v2 requirements to AS on November 9 with clarifications for manual pickup and later automated retrieval/import. The revised proposal aligns with separate drafts for new source versions, duplicate reuse, human-controlled replacement, temporary-file cleanup and manual fallback reconciliation. AS agreement on the revisions remains to be recorded under #888.
 
-The supplied document retains original result-writing/source-deletion and archive instructions alongside later qualifications about retry availability, acceptance and cleanup. Keep the current retrieval design while resolving result contents, acknowledgment, folder movement, archive meaning and corresponding permissions under #888/#952/#1302. Final contract decisions must be reflected here before implementation.
+The supplied document retains original result-writing/source-deletion and archive instructions alongside later qualifications about retry availability, acceptance and cleanup. Keep the current retrieval design while resolving result contents, acknowledgment, folder movement and corresponding permissions; the archive/deletion periods were subsequently accepted on November 17 under #888/#952/#1302. Final contract decisions must be reflected here before implementation.
 
 The 45 MB figure comes from the October 5 answer about the largest PDF AS could accept; it does not establish an exported Word limit. Confirm its applicability to exported Word, exact units and NB handling before automated rollout. Human-download access and machine provisioning are separate milestones. #956 owns manual validation; #954/#1303 own automated integration and UAT.
 
@@ -236,8 +251,8 @@ The 45 MB figure comes from the October 5 answer about the largest PDF AS could 
 The requirements review distinguishes **Stage 1: authorized Agile Six users manually download and import** from **Stage 2: NB retrieves and imports using a separately provisioned machine identity**. These requirements labels describe manual versus automated intake; they do not remove the intermediate AS-button/manual-pickup milestone or expand scope to automated PDF return.
 
 - **Word size:** NB sent a follow-up clarifying that 45 MB originated as AS's PDF acceptance limit, and requested an exported Word limit or expected maximum. AS's response and NB capacity validation remain pending. Neither manual nor automated 45 MB import support has been demonstrated. #1300 owns boundary agreement/enforcement; #956 validates the manual upload/import path and #1303 the automated path, including processing time, memory and concurrent-user impact. Standalone Readability Checker limits are not proof of NB import capacity.
-- **Archive proposal:** AS proposed automatic moves into an archive folder at the 30-/60-day thresholds, with continued Agile Six access, to avoid repeated manual check-ins. AS technical approval is pending. This is a proposed alternative to the earlier deletion/review baseline, not a finalized lifecycle rule. Confirm clock starts, ownership, eventual disposal, permissions and how exact source versions remain discoverable and retrievable for recovery under #888/#952/#1302. Moving a file must not silently break a stored source reference.
-- **Success acknowledgment:** AS's S3 publication success establishes publication only. The Stage 2 mechanism for NB to return receipt/import success to AS remains open. Agree event semantics, exact-source correlation, delivery/retry responsibility and whether successful import or explicit designer acceptance starts retention. Track under #888/#1302; do not equate publication, import and acceptance.
+- **Archive proposal:** AS proposed automatic moves into an archive folder at the 30-/60-day thresholds, with continued Agile Six access, to avoid repeated manual check-ins. This was pending at the November 10 review; the November 17 accepted policy above supersedes its periods and clock assumptions. Confirm implementation ownership, permissions and how exact source versions remain discoverable and retrievable for recovery under #888/#952/#1302. Moving a file must not silently break a stored source reference.
+- **Success acknowledgment:** AS's S3 publication success establishes publication only. The Stage 2 mechanism for NB to return receipt/import success to AS remains open. Agree event semantics, exact-source correlation, delivery/retry responsibility and what event moves a file into processed. The accepted retention clock starts at folder entry. Track under #888/#1302; do not equate publication, import and acceptance.
 - **Manual failure support:** the procedure for manual download/import failures will be defined jointly later. #956 owns manual validation and support readiness; #1302 owns the automated operations runbook.
 
 AS targets returning revised requirements on November 16, with finalization and schedule review targeted for November 17. AS indicated some dates may shift while requirements are finalized; no replacement delivery dates were agreed. These are coordination targets, not access-completion or implementation commitments. Keep implementation estimates and proposed rollout windows in #954 unchanged until revised dates or scope are agreed.
