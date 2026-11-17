@@ -51,6 +51,15 @@ Apply each raw patch on its own fresh worktree at the base. Make
 python manage.py test test_samhsa_byb_contract nofos.tests_nofos.test_metadata_block_import nofos.tests_nofos.test_hrsa_byb --noinput
 ```
 
+### Supplemental test runs
+
+The usual-prompt session ran the full Django suite. Its result and a separate
+full run on the base both reported 9 failures, 31 errors, and 4 skips, across
+3,082 and 3,079 tests respectively. The aggregate counts match. The full
+candidate log was unavailable for test-by-test comparison. The pointer session
+reported 801 passing tests across its targeted and broader import suites.
+The blind scores use the common 51-test run.
+
 ## Blind review
 
 The separate review session received the two numbered patches and the common
