@@ -117,6 +117,10 @@ is needed, contact the SimplerNOFOs team.
 - When the imported OpDiv identifies CMS, Builder suggests **CMS (Light)** under
   **NOFO theme options** on a new import, even if the opportunity number is blank
   or a placeholder.
+- When the NOFO belongs to the SAMHSA OpDiv group or the Word document's
+  **OpDiv** identifies SAMHSA, Builder selects **BYB page with eRA** under
+  **Before you begin**. Reimport sets this option even if you previously
+  selected another option.
 - A recognized Word **Metadata** block supplies structured fields and is removed
   from the imported content. When several recognized blocks exist, the last is
   authoritative; fields are not combined with earlier blocks or legacy labels.

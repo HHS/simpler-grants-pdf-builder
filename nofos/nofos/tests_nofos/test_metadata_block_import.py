@@ -425,6 +425,80 @@ class MetadataWordImportTests(TestCase):
                             "93.123" if enabled else ("12.345" if reimport else ""),
                         )
 
+    def test_samhsa_word_import_and_reimport_select_era(self):
+        cases = (
+            ("samhsa", "HHS", False),
+            ("bloom", "SaMhSa", False),
+            (
+                "bloom",
+                "Substance Abuse and Mental Health Services Administration",
+                True,
+            ),
+        )
+        for group, opdiv, legacy in cases:
+            with self.subTest(group=group, opdiv=opdiv):
+                self.user.group = group
+                self.user.save(update_fields=["group"])
+                response = self.client.post(
+                    reverse("nofos:nofo_import"),
+                    {"nofo-import": self.upload(opdiv=opdiv, legacy=legacy)},
+                )
+                self.assertEqual(response.status_code, 302)
+                nofo = Nofo.objects.latest("created")
+                self.assertEqual(
+                    (nofo.group, nofo.opdiv, nofo.before_you_begin),
+                    (group, opdiv, "era"),
+                )
+
+                nofo.before_you_begin = "sole_source"
+                nofo.save(update_fields=["before_you_begin"])
+                response = self.client.post(
+                    reverse("nofos:nofo_import_overwrite", args=[nofo.pk]),
+                    {"nofo-import": self.upload(opdiv=opdiv, legacy=legacy)},
+                )
+                self.assertEqual(response.status_code, 302)
+                nofo.refresh_from_db()
+                self.assertEqual(nofo.before_you_begin, "era")
+                self.assertEqual(
+                    Nofo.objects.get(successor=nofo).before_you_begin, "sole_source"
+                )
+
+    def test_samhsa_word_reimport_selects_era_after_number_confirmation(self):
+        nofo = Nofo.objects.create(
+            title="Saved",
+            number="OLD-EXAMPLE",
+            opdiv="HHS",
+            group="bloom",
+            status="draft",
+            before_you_begin="none",
+        )
+        confirm_url = reverse("nofos:nofo_import_confirm_overwrite", args=[nofo.pk])
+        response = self.client.post(
+            reverse("nofos:nofo_import_overwrite", args=[nofo.pk]),
+            {"nofo-import": self.upload(opdiv="SAMHSA")},
+        )
+        self.assertRedirects(response, confirm_url)
+        nofo.refresh_from_db()
+        self.assertEqual(nofo.before_you_begin, "none")
+
+        response = self.client.post(confirm_url)
+        self.assertEqual(response.status_code, 302)
+        nofo.refresh_from_db()
+        self.assertEqual((nofo.number, nofo.before_you_begin), ("TEST-1096", "era"))
+
+    def test_samhsa_html_import_uses_existing_default(self):
+        upload = SimpleUploadedFile(
+            "source.html",
+            b"<h2>Program</h2><h3>Summary</h3><p>Example.</p><p>OpDiv: SAMHSA</p>",
+            content_type="text/html",
+        )
+        response = self.client.post(
+            reverse("nofos:nofo_import"), {"nofo-import": upload}
+        )
+        self.assertEqual(response.status_code, 302)
+        nofo = Nofo.objects.get()
+        self.assertEqual((nofo.opdiv, nofo.before_you_begin), ("SAMHSA", "full"))
+
     def test_acl_word_import_selects_acl_theme_from_resolved_opdiv(self):
         opdiv = "Administration for Community Living (ACL)"
         for legacy in (False, True):

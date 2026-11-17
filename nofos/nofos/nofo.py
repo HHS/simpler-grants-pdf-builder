@@ -168,6 +168,11 @@ REQUEST_HEADERS = {
 ###########################################################
 
 
+WORD_DOCUMENT_CONTENT_TYPE = (
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+)
+
+
 def parse_uploaded_file_as_html_string(
     uploaded_file,
     *,
@@ -192,10 +197,7 @@ def parse_uploaded_file_as_html_string(
         # Decode the HTML file
         return uploaded_file.read().decode("utf-8"), 0
 
-    elif (
-        content_type
-        == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    ):
+    elif content_type == WORD_DOCUMENT_CONTENT_TYPE:
         # Convert DOCX to HTML
         try:
             conversion_file = (
@@ -1744,6 +1746,14 @@ def suggest_nofo_before_you_begin(
     return "full"
 
 
+def is_samhsa_opdiv(opdiv):
+    opdiv_lower = (opdiv or "").lower()
+    return (
+        "substance abuse and mental health services administration" in opdiv_lower
+        or re.search(r"\bsamhsa\b", opdiv_lower) is not None
+    )
+
+
 FDA_NOFO_NUMBER_PATTERN = re.compile(r"^(?:rfa|par|pa|pas|rfp)-fd-\d{2}-\d+", re.I)
 
 
@@ -1778,10 +1788,7 @@ def suggest_nofo_theme(nofo_number, opdiv=""):
     ):
         return "portrait-hrsa-white"
 
-    if (
-        "substance abuse and mental health services administration" in opdiv_lower
-        or re.search(r"\bsamhsa\b", opdiv_lower)
-    ):
+    if is_samhsa_opdiv(opdiv):
         return "portrait-samhsa-white"
 
     if "administration for community living" in opdiv_lower or re.search(
@@ -1909,7 +1916,7 @@ def suggest_nofo_cover_image(nofo):
 
 
 def suggest_all_nofo_fields(
-    nofo, soup, *, first_time_import=None, imported_tagline=None
+    nofo, soup, *, first_time_import=None, imported_tagline=None, word_import=False
 ):
     from .introductory_page import introductory_family_from_soup
 
@@ -1969,10 +1976,12 @@ def suggest_all_nofo_fields(
         if not nofo.title or not nofo_title.startswith("NOFO: "):
             nofo.title = nofo_title
 
-    # do not reset these during import
+    # Preserve the saved cover on re-import.
     if first_time_import:
         nofo.cover = suggest_nofo_cover(nofo.theme)  # guess the NOFO cover
-    if first_time_import:
+    if word_import and (nofo.group == "samhsa" or is_samhsa_opdiv(nofo.opdiv)):
+        nofo.before_you_begin = "era"
+    elif first_time_import:
         nofo.before_you_begin = suggest_nofo_before_you_begin(
             nofo.group, nofo.theme, nofo.introductory_page_family
         )  # guess the NOFO "Before you begin" page
