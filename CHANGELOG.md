@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.63.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.63.0...nofos-v3.63.1) (2026-11-17)
+
+
+### Bug Fixes
+
+* set eRA BYB for SAMHSA Word imports ([947f1b6](https://github.com/HHS/simpler-grants-pdf-builder/commit/947f1b628ea84867a55a7ef23d409e2c702a93aa))
+* show the contact icon in inline help callouts ([#1393](https://github.com/HHS/simpler-grants-pdf-builder/issues/1393)) ([98f9a85](https://github.com/HHS/simpler-grants-pdf-builder/commit/98f9a8514a128af6fccb549240ba553364d959da))
+
+
+### Documentation
+
+* reconcile revised AS exchange requirements and validation ([#1398](https://github.com/HHS/simpler-grants-pdf-builder/issues/1398)) ([4d4eb16](https://github.com/HHS/simpler-grants-pdf-builder/commit/4d4eb16ea0e30df6b902840966841645523def0d))
+* record SAMHSA Word import pilot results ([#1396](https://github.com/HHS/simpler-grants-pdf-builder/issues/1396)) ([60135d8](https://github.com/HHS/simpler-grants-pdf-builder/commit/60135d8de93a3edf8158679780cfea6d5a3069cb))
+
 ## [3.63.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.62.2...nofos-v3.63.0) (2026-11-17)
 
 
