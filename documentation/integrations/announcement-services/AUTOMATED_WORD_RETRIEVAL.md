@@ -250,7 +250,21 @@ For Phase 1a, authorized Agile Six team members select the appropriate latest so
 
 Agree how AS metadata identifies the latest version, when that selection is evaluated, whether older pending submissions remain eligible, and how designers are notified and choose next steps when an update arrives mid-design. Preserve earlier drafts and design work. Do not infer numeric ordering from opaque AM labels or assume arrival order determines the latest version. Track these detailed steps under #888/#954/#1302.
 
-The 45 MB Word limit and undefined additional phase remain separate review points.
+### Phase labels and PDF return — November 17 working interpretation
+
+NB product review interprets the v3 reference to “Phase 1c” as referring to the same later PDF-return capability described as “Phase 2”: Builder makes the designed PDF available for GrantSolutions to retrieve. Confirm this terminology with AS; the document does not establish an additional implementation phase or move PDF return into Phase 1a/1b. Continue tracking PDF return separately under #951/#957.
+
+The “successful receipt” open topic still needs its event and direction clarified. This phase-label interpretation does not settle how NB acknowledges receipt/import of the source Word to AS; that remains part of the Phase 1b operating steps.
+
+### Local 45 MiB Word import probe — November 17
+
+A local application smoke test successfully posted a valid synthetic DOCX of exactly 47,185,920 bytes (45 MiB, exceeding 45 decimal MB) through the authenticated Builder import view. It returned HTTP 302 to the title step, persisted one NOFO and subsection, recorded an import attempt without an error code, and preserved the embedded image in saved content.
+
+The fixture contained ordinary NOFO headings/text and one large valid random RGB PNG; 140,644 bytes of package padding adjusted the total size. This exercises image-heavy content rather than representing a typical text-heavy NOFO or a range of complex document structures. Import took approximately 21.2 seconds. Whole-process peak resident memory was approximately 2.50 GiB, including fixture generation, multipart test-client buffering, conversion and persistence; this is not an isolated production-worker memory measurement.
+
+The probe used the local Python 3.14 environment, SQLite in memory, non-strict import settings and the existing local working checkout (including uncommitted import changes). It used Django's test client, not a browser, deployed proxy, production database or S3 retrieval job. No production or existing local database records were changed.
+
+This demonstrates a successful local 45 MiB import, not a validated production capacity guarantee. Confirm AS's export boundary and exact units, then verify representative documents, deployed request/task limits, memory/time budgets and effects on normal use under #956/#1300/#1303. The current Word import path has no explicit application file-size check; the unrelated cover-image and PDF-checker limits do not apply.
 
 ## Decisions required before connectivity or enablement
 
