@@ -1,13 +1,15 @@
 {% load static martortags callout_box_contents add_classes_to_tables is_floating_callout_box %}
 
-<div {% if not subsection.name %}id="{{ subsection.html_id }}"{% endif %} class="callout-box{% if 'uestions?' in subsection.body %} callout-box--icon callout-box--questions{% endif %}{% if 'Adobe Reader' in subsection.body %} callout-box--icon callout-box--keyboard{% endif %}{% if subsection.html_class %} {{ subsection.html_class }}{% endif %}">
+{% with body=subsection.body|safe_markdown %}
+{% show_contact_callout_icon subsection.body body break_colons as show_contact_icon %}
+<div {% if not subsection.name %}id="{{ subsection.html_id }}"{% endif %} class="callout-box{% if show_contact_icon %} callout-box--icon callout-box--questions{% endif %}{% if 'Adobe Reader' in subsection.body %} callout-box--icon callout-box--keyboard{% endif %}{% if subsection.html_class %} {{ subsection.html_class }}{% endif %}">
   {% if subsection.name %}
     {% with "callout-box--title "|add:subsection.html_class as class %}
       {% include "includes/heading.html" with tag=subsection.tag content=subsection.name id=subsection.html_id class=class only %}
     {% endwith %}
   {% endif %}
   <div class="callout-box--contents">
-    {% if 'uestions?' in subsection.body %}
+    {% if show_contact_icon %}
       {% if "thin" in nofo.icon_style %}
         {% include "includes/icons/thin/7-contact.svg" %}
       {% else %}
@@ -21,9 +23,10 @@
       {% endif %}
     {% endif %}
     {% if break_colons and not subsection|is_application_due_date_callout %}
-      {{ subsection.body|safe_markdown|callout_box_contents }}
+      {{ body|callout_box_contents }}
     {% else %}
-      {{ subsection.body|safe_markdown }}
+      {{ body }}
     {% endif %}
   </div>
 </div>
+{% endwith %}
