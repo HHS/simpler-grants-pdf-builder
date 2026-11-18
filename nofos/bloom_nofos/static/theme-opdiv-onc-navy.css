@@ -48,6 +48,34 @@ h3,
   color: var(--color--onc-navy);
 }
 
+/* Step navigation and contents on white title pages. */
+.section--title-page--header-nav li a {
+  border-top: 4px solid var(--color--med-grey);
+  color: var(--color--med-grey);
+}
+
+.section--title-page--header-nav li a[aria-current],
+.header-nav--running-header li a[aria-current] {
+  border-top-color: var(--color--onc-navy);
+  color: var(--color--onc-navy);
+}
+
+.section--title-page--toc,
+.section--title-page--toc a {
+  color: var(--color--black);
+}
+
+/* Keep the grid visible even when checklist rows have no text. */
+.section--content table th,
+.section--content table td {
+  border: 1px solid var(--color--med-grey);
+}
+
+.section--content table th {
+  background-color: #e0f2ff;
+  color: var(--color--onc-navy);
+}
+
 /* The shared icon artwork uses currentColor for the glyph and circle. */
 :is(.toc--section-name--img, .section--before-you-begin--icon, .section--title-page--icon) svg {
   color: var(--color--onc-navy);
