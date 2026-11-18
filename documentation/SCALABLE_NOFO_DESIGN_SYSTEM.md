@@ -250,6 +250,29 @@ hierarchy, contrast, logos/alternatives, tables, callouts, links, fonts and page
 breaks. Obtain brand approval and accessibility evidence for the actual output.
 Source CSS is evidence of implementation, not either approval.
 
+##### Builder implementation checklist for an OpDiv theme
+
+Use a synthetic NOFO to compare the new theme with an established theme in
+Builder preview and exported PDFs. Record the affected cover layouts and
+components in the PR, with before-and-after evidence for visual changes.
+
+| Area | Implement and verify |
+| --- | --- |
+| Theme registration | Verify the theme option and default for the intended group, access boundaries, layout and icon choices, and compatibility with existing saved selections. If import behavior changes, follow the import rules contribution guidance. |
+| Styles and assets | Verify the shared base and variant stylesheets load in preview and print. Confirm brand colors, font choices and fallbacks, and approved bundled logos or wordmarks. Check any cover image, intrinsic logo proportions, and text alternatives. Reuse shared assets where appropriate. |
+| Cover | Check supported text and image covers, the logo and agency or office names, title and metadata, key dates, cover callouts, rules and borders, and contrast on every cover background. |
+| Contents and step openers | Verify the main Contents, step icon and title, navigation labels and bars, the current-step highlight, and the “In this step” list. In the PDF, check heading links, their destinations, and generated page numbers. |
+| Running pages | Verify running-header indicators and current-step highlighting, footer divider, section label and page number, and legibility on continuation pages. |
+| Body | Check heading hierarchy, body text, links, icons, lists, callout fills and borders, and table headers, row and cell borders, and captions. Include a checklist with intentionally empty cells and a table that spans pages. |
+| Output and accessibility | Check color contrast, visible navigation states, page breaks, and PDF tags, reading order, links and image alternatives. Include a sample with long text or headings to expose clipping and overflow. |
+
+For CI, extend the existing theme onboarding or PDF-source tests when adding
+a theme. Assert that registered theme values resolve to their expected
+stylesheets and bundled assets, and that representative preview and PDF-source
+markup contains the logo, step navigation, contents links and table structure.
+Shared markup and assets can satisfy these checks. Use the rendered evidence
+to verify visibility, contrast and pagination.
+
 #### D. Rename, reorder or duplicate sections
 
 **Options and tradeoffs.** Stable identities independent of titles/order simplify
