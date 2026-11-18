@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.63.2](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.63.1...nofos-v3.63.2) (2026-11-18)
+
+
+### Bug Fixes
+
+* align ONC body callout with published palette ([#1403](https://github.com/HHS/simpler-grants-pdf-builder/issues/1403)) ([ff70a31](https://github.com/HHS/simpler-grants-pdf-builder/commit/ff70a31f4f55b435847f252bdf8f57e1962b165e))
+* restore FDA step navigation and table styling ([#1402](https://github.com/HHS/simpler-grants-pdf-builder/issues/1402)) ([38518b7](https://github.com/HHS/simpler-grants-pdf-builder/commit/38518b7b11a6c70fe534e3785cc3650be79b6d9b))
+* restore ONC step navigation and table styling ([#1399](https://github.com/HHS/simpler-grants-pdf-builder/issues/1399)) ([c90a137](https://github.com/HHS/simpler-grants-pdf-builder/commit/c90a1370cb029cab39b5bb48f6faeb0b00b21d5e))
+* use the full FDA logo on NOFO covers ([#1404](https://github.com/HHS/simpler-grants-pdf-builder/issues/1404)) ([77389e4](https://github.com/HHS/simpler-grants-pdf-builder/commit/77389e428f2e7788dd09864a5fb09eba01df8c99))
+
+
+### Documentation
+
+* add an OpDiv theme onboarding checklist ([#1405](https://github.com/HHS/simpler-grants-pdf-builder/issues/1405)) ([293996c](https://github.com/HHS/simpler-grants-pdf-builder/commit/293996cb7c6065b2912832e34b41c1c911c790c3))
+
+
+### Miscellaneous Chores
+
+* scope temporary Grype exceptions to Python 3.14.10 ([b771149](https://github.com/HHS/simpler-grants-pdf-builder/commit/b77114911844c6af0e229886123f1b754818284d))
+
 ## [3.63.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.63.0...nofos-v3.63.1) (2026-11-17)
 
 
