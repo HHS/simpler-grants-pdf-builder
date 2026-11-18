@@ -36,6 +36,27 @@ ignore:
       version: "3.14.10"
       type: binary
 
+  # Same medium-severity CPython findings as SGG PR #13429, scoped to Builder's runtime.
+  # https://github.com/HHS/simpler-grants-gov/pull/13429
+  # Last checked: 2026-11-18. Review by 2026-12-02.
+  # Remove after adopting a supported patched python:3.14-slim image and
+  # verifying that Anchore passes without these entries.
+  - vulnerability: CVE-2026-124249
+    package:
+      name: python
+      version: "3.14.10"
+      type: binary
+  - vulnerability: CVE-2026-115559
+    package:
+      name: python
+      version: "3.14.10"
+      type: binary
+  - vulnerability: CVE-2026-115791
+    package:
+      name: python
+      version: "3.14.10"
+      type: binary
+
   # CPython hashlib FIPS enforcement regression; only 3.14.10 and only with
   # OpenSSL in FIPS mode (not enabled in our images).
   # Fixed in 3.14.11, which has no python:3.14-slim image yet. Remove once
