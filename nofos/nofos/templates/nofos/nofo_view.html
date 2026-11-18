@@ -84,8 +84,8 @@
           <img class="onc-cover-logo" src="{% static 'img/onc-logo-inverse.png' %}"
             width="487" height="46" alt="Office of the National Coordinator for Health Information Technology logo">
         {% elif nofo_opdiv == 'fda' %}
-          <img class="fda-cover-logo" src="{% static 'img/fda-logo-white.svg' %}"
-            width="66" height="79" alt="U.S. Food and Drug Administration logo">
+          <img class="fda-cover-logo" src="{% static 'img/fda-wordmark-white.svg' %}"
+            width="545" height="114" alt="U.S. Food and Drug Administration logo">
         {% else %}
           {% with "includes/logos/"|add:nofo_opdiv|add:"-logo.svg" as opdiv_logo_path %}
             {% include opdiv_logo_path %}
