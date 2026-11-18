@@ -23,19 +23,51 @@
 }
 
 .callout-box {
-  background-color: #e0f2ff;
-  color: var(--color--fda-dark-blue);
-}
-
-.callout-box .callout-box--title {
-  color: inherit;
+  background-color: var(--color--fda-dark-blue);
+  color: var(--color--white);
 }
 
 :is(h1, h2, h3, h4, h5, h6),
 .toc .toc--section-name .toc--section-name--a,
-.section--content a,
-.callout-box a {
+.section--content a {
   color: var(--color--fda-dark-blue);
+}
+
+.callout-box .callout-box--title,
+.callout-box .callout-box--contents a {
+  color: inherit;
+}
+
+/* Step navigation and contents on white title pages. */
+.section--title-page--header-nav li a {
+  border-top: 4px solid var(--color--med-grey);
+  color: var(--color--med-grey);
+}
+
+.section--title-page--header-nav li a[aria-current],
+.header-nav--running-header li a[aria-current] {
+  border-top-color: var(--color--fda-dark-blue);
+  color: var(--color--fda-dark-blue);
+}
+
+.section--title-page--toc,
+.section--title-page--toc a {
+  color: var(--color--black);
+}
+
+/* Outline empty checklist cells as well as populated ones. */
+.section--content table th,
+.section--content table td {
+  border: 1px solid var(--color--med-grey);
+}
+
+.section--content table th {
+  background-color: var(--color--fda-blue);
+  color: var(--color--white);
+}
+
+.section--content table th a {
+  color: inherit;
 }
 
 :is(.toc--section-name--img, .section--before-you-begin--icon, .section--title-page--icon) svg {
