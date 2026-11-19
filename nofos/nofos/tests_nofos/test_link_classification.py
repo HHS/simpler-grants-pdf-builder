@@ -315,13 +315,15 @@ class LinkClassificationViewTests(TestCase):
         panel = soup.find(id="tabpanel-1")
         self.assertEqual(panel.h3.get_text(), "Warning: review links")
         self.assertEqual(panel.find("button").get_text(strip=True), "Copy links")
-        self.assertEqual(
-            panel.li.a["href"],
-            reverse(
-                "nofos:subsection_edit",
-                args=[self.nofo.pk, self.section.pk, subsection.pk],
-            ),
+        href = panel.li.a["href"]
+        self.assertEqual(href, f"#{subsection.html_id}")
+        target = soup.find(id=href[1:])
+        self.assertIsNotNone(target)
+        edit_url = reverse(
+            "nofos:subsection_edit",
+            args=[self.nofo.pk, self.section.pk, subsection.pk],
         )
+        self.assertIsNotNone(target.find_parent("tr").find("a", href=edit_url))
         self.assertEqual(
             panel.li.code.get_text(),
             "[grants+help@example.gov](mailto:grants+help@example.gov)",
@@ -402,6 +404,8 @@ class LinkClassificationViewTests(TestCase):
         broken, first_email, second_email = panel.select("details ol li")
         self.assertIn("Broken internal link", broken.get_text())
         self.assertEqual(broken.a["href"], "#links")
+        self.assertEqual(first_email.a["href"], broken.a["href"])
+        self.assertEqual(second_email.a["href"], broken.a["href"])
         self.assertIn("Email link needed for", first_email.get_text())
         self.assertEqual(
             first_email.code.get_text(),
@@ -413,4 +417,4 @@ class LinkClassificationViewTests(TestCase):
         )
         self.assertEqual(len(panel.details.find_all("p")), 1)
         self.assertEqual(panel.details.ol.find_next_sibling().name, "p")
-        self.assertIn("use the Markdown in that list item", panel.details.p.get_text())
+        self.assertIn("then select Edit", panel.details.p.get_text())
