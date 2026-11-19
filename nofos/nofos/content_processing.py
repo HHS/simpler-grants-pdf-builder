@@ -592,7 +592,21 @@ def get_subsections_from_sections(
             tag for tag in body if tag.parent.name in ["body", "[document]"]
         ]
 
+        is_review_step = bool(
+            re.fullmatch(
+                r"step 1\s*:\s*review the opportunity",
+                section["name"].casefold(),
+            )
+        )
+        basic_information_tag = "h2" if if_demote_headings else "h3"
+        in_basic_information = False
+
         for index, tag in enumerate(body_descendents):
+            if is_review_step and tag.name == basic_information_tag:
+                in_basic_information = (
+                    clean_string(tag.get_text(" ", strip=True)).casefold()
+                    == "basic information"
+                )
             next_tag = next(
                 (
                     candidate
@@ -616,7 +630,23 @@ def get_subsections_from_sections(
 
                 # make the td a div so that it can live on its own
                 cell.name = "div"
-                heading_tag = extract_first_header(cell)
+                first_block = cell.find(recursive=False)
+                if (
+                    in_basic_information
+                    and first_block
+                    and is_key_callout_title_paragraph(first_block)
+                    and not first_block.find(["img", "a", "br"])
+                    and not clean_string(
+                        "".join(
+                            str(node)
+                            for node in first_block.previous_siblings
+                            if type(node) is NavigableString
+                        )
+                    )
+                ):
+                    heading_tag = first_block.extract()
+                else:
+                    heading_tag = extract_first_header(cell)
                 callout_box_subsection = get_subsection_dict(
                     heading_tag=heading_tag,
                     order=len(section["subsections"]) + 1,
