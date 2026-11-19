@@ -92,4 +92,6 @@ From `nofos/`, run `python manage.py test nofos.tests_nofos.test_callout_box nof
 
 ## Basic information callout headings — November 19, 2026
 
-[PR #1406](https://github.com/HHS/simpler-grants-pdf-builder/pull/1406) records a single implementation run for promoting Key dates, Key facts, and Application due date to H4 callout headings on import and re-import. See the [run evidence](callout-headings/README.md) for the synthetic Word fixture, before-and-after images, and verification. This entry has no paired pilot score.
+[PR #1406](https://github.com/HHS/simpler-grants-pdf-builder/pull/1406) records a single implementation run for promoting Key dates, Key facts, and Application due date to H4 callout headings on import and re-import. See the [run evidence](callout-headings/README.md) for the synthetic Word fixture, before-and-after images, and verification.
+
+[Paired replay, both patches, and blind scores](callout-headings/paired-run.md). The direct-pointer patch passed both checks. The usual-prompt patch failed the manual-line-break follow-up and overstated whitespace normalization in IMPORT-025.
