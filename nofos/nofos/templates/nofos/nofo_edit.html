@@ -340,13 +340,13 @@ Edit “{{ nofo|nofo_name }}”
                 {% for issue in email_link_warnings %}
                   <li>
                     Email link needed for <strong>{{ issue.address }}</strong> in
-                    <a href="{% url 'nofos:subsection_edit' nofo.id issue.section.id issue.subsection.id %}">{{ issue.section.name }}, {{ issue.subsection|subsection_name_or_order }}</a>
+                    <a href="#{{ issue.subsection.html_id }}">{{ issue.section.name }}, {{ issue.subsection|subsection_name_or_order }}</a>
                     <div class="nofo_edit--email-link-markdown"><code>{{ issue.markdown }}</code></div>
                   </li>
                 {% endfor %}
               </ol>
               {% if email_link_warnings %}
-                <p class="usa-alert__text">For each email link issue, open the linked subsection and use the Markdown in that list item to replace the address or its existing link.</p>
+                <p class="usa-alert__text">For each email link issue, follow the link to the subsection, then select Edit. Use the Markdown in the warning to replace the address or its existing link.</p>
               {% endif %}
             </details>
           </div>

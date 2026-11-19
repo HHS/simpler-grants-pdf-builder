@@ -687,7 +687,8 @@ You can make every table in a section use the full page width.
    **Before publishing, address the following**.
 2. Expand the list (for example, **3 link issues to fix**). Find the entry
    labeled **Email link needed for** your address and copy its Markdown.
-3. Follow the subsection link. Replace the address or its existing link
+3. Follow the link to jump to the subsection on the NOFO edit page. Select
+   **Edit** for that subsection, then replace the address or its existing link
    with the copied Markdown, such as
    `[grants@example.gov](mailto:grants@example.gov)`.
 4. Select **Save subsection**. The issue clears once every instance of that
