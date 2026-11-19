@@ -18,17 +18,15 @@ from nofos.nofo_document_context import get_nofo_document_context
 from nofos.templatetags.utils import is_floating_callout_box
 
 
-def deadline_docx(title="Application due date", both=False):
+def deadline_docx(title="Application due date", both=False, plain_titles=False):
     """Reuse the repository's valid Word package, with a synthetic document body."""
 
     def p(text, style=None):
         properties = f'<w:pPr><w:pStyle w:val="{style}"/></w:pPr>' if style else ""
         return f'<w:p>{properties}<w:r><w:t xml:space="preserve">{escape(text)}</w:t></w:r></w:p>'
 
-    def callout(name, content):
-        return (
-            f'<w:tbl><w:tr><w:tc>{p(name, "Heading3")}{content}</w:tc></w:tr></w:tbl>'
-        )
+    def callout(name, content, style="Heading3"):
+        return f"<w:tbl><w:tr><w:tc>{p(name, style)}{content}</w:tc></w:tr></w:tbl>"
 
     date = p("December 1, 2026, at 4:30 p.m. ET")
     link = '<w:p><w:hyperlink w:anchor="other-dates"><w:r><w:t>See other key dates</w:t></w:r></w:hyperlink></w:p>'
@@ -44,10 +42,11 @@ def deadline_docx(title="Application due date", both=False):
         + p("Opportunity Number: CDC-SYNTHETIC-1091")
         + p("This opportunity supports community health.")
     )
-    body += callout(title, deadline)
+    title_style = None if plain_titles else "Heading3"
+    body += callout(title, deadline, title_style)
     if both:
-        body += callout("Key dates", p("Award date: March 1, 2027"))
-    body += callout("Key facts", p("Funding: $100,000"))
+        body += callout("Key dates", p("Award date: March 1, 2027"), title_style)
+    body += callout("Key facts", p("Funding: $100,000"), title_style)
     body += callout("Have questions?", p("Contact the program team."))
     body += '<w:p><w:pPr><w:pStyle w:val="Heading3"/></w:pPr><w:bookmarkStart w:id="42" w:name="other-dates"/><w:r><w:t>Key dates</w:t></w:r><w:bookmarkEnd w:id="42"/></w:p>'
     body += p("Other key dates are listed here.")
@@ -59,6 +58,8 @@ def deadline_docx(title="Application due date", both=False):
         + p("Prepare your application", "Heading3")
         + p("Gather the required documents.")
     )
+    if plain_titles:
+        body += callout("Key facts", p("Outside Basic information."), None)
     document = (
         '<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'
         + body
@@ -139,9 +140,9 @@ class DeadlineCalloutWorkflowTests(TestCase):
         pdf_soup = BeautifulSoup(
             render_to_string("nofos/nofo_pdf.html", pdf_context), "html.parser"
         )
-        self.assertIsNotNone(
-            pdf_soup.select_one(".section--content--right-col").find("h4", string=title)
-        )
+        pdf_sidebar = pdf_soup.select_one(".section--content--right-col")
+        for heading in sidebar.select("h4.callout-box--title"):
+            self.assertIsNotNone(pdf_sidebar.find("h4", string=heading.get_text()))
         return soup
 
     def test_new_deadline_case_spacing_and_plain_names(self):
@@ -194,6 +195,34 @@ class DeadlineCalloutWorkflowTests(TestCase):
                 "h4", string="Key dates"
             )
         )
+
+    def test_plain_callout_titles_on_import_and_reimport(self):
+        def upload():
+            return deadline_docx(both=True, plain_titles=True)
+
+        response = self.client.post(
+            reverse("nofos:nofo_import"), {"nofo-import": upload()}
+        )
+        self.assertEqual(response.status_code, 302)
+        nofo = Nofo.objects.latest("created")
+
+        for overwrite in (False, True):
+            with self.subTest(overwrite=overwrite):
+                if overwrite:
+                    response = self.client.post(
+                        reverse("nofos:nofo_import_overwrite", kwargs={"pk": nofo.pk}),
+                        {"nofo-import": upload()},
+                    )
+                    self.assertEqual(response.status_code, 302)
+                soup = self.assert_presentation(nofo, "Application due date")
+                sidebar = soup.select_one(".section--content--right-col")
+                self.assertIsNotNone(sidebar.find("h4", string="Key dates"))
+                self.assertIsNone(sidebar.find("p", string="Key facts"))
+                outside = Subsection.objects.get(
+                    section__nofo=nofo, section__order=2, callout_box=True
+                )
+                self.assertEqual(outside.name, "")
+                self.assertIn("Key facts", outside.body)
 
     def test_edited_deadline_title_keeps_simple_time_formatting(self):
         nofo = self.import_nofo()
