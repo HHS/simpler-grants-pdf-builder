@@ -4,7 +4,7 @@ This opt-in procedure supports [#1375](https://github.com/HHS/simpler-grants-pdf
 
 ## Start a pilot run
 
-The maintainer starts the evaluation by asking “Run the #1375 pilot for <task>.” The coordinating session reads this guide. An ordinary coding or PR request follows the normal contribution workflow. A file change, issue reference, PR label, or PR creation does not start the pilot. If a pilot patch goes through normal PR review, link its evidence record and #1375 in the PR summary.
+The maintainer can opt in by explicitly requesting the #1375 pilot or by asking the coordinator to assess whether a task qualifies and capture pilot evidence if it does. No exact wording is required. The coordinating session reads this guide and checks eligibility. When an opted-in task qualifies, pin the starting commit, record expected behavior and common verification, and launch both fresh runs before implementing the change or opening a PR. An ordinary coding or PR request follows the normal contribution workflow. A file change, issue reference, PR label, or PR creation alone does not start the pilot. If a pilot patch goes through normal PR review, link its evidence record and #1375 in the PR summary.
 
 ## Enroll scored tasks as they come up
 
