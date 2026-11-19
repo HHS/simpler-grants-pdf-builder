@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.63.3](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.63.2...nofos-v3.63.3) (2026-11-19)
+
+
+### Bug Fixes
+
+* import Basic information callout titles as headings ([#1406](https://github.com/HHS/simpler-grants-pdf-builder/issues/1406)) ([8a785fe](https://github.com/HHS/simpler-grants-pdf-builder/commit/8a785fe5bddc385318880f0cb9aa8cfe38d37ed2))
+* jump to subsections from email link warnings ([#1409](https://github.com/HHS/simpler-grants-pdf-builder/issues/1409)) ([88e542e](https://github.com/HHS/simpler-grants-pdf-builder/commit/88e542e4ef5cb9030d8a6052a7a7a217cf5551b2))
+
 ## [3.63.2](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.63.1...nofos-v3.63.2) (2026-11-18)
 
 
