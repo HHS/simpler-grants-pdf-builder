@@ -4,6 +4,7 @@ This is the repository's canonical documentation directory. Add new repository d
 here—not in a top-level `docs/` directory—and use the placement rules below.
 Link durable guides or topic indexes from this page; individual evidence records are reached through their issue or topic guide.
 
+- [Word export runbook](WORD_EXPORT_RUNBOOK.md) — GrabzIt account ownership, rotation, and verification
 - [Admin styling](ADMIN_STYLING.md) — Keep admin assets aligned with Django and add scoped customizations
 - [SECURITY.md](SECURITY.md) — Security vulnerability reporting through HHS responsible disclosure, research scope and policy contacts
 - [ISSUE_DRAFTING.md](ISSUE_DRAFTING.md) — Shared agent procedure for drafting and filing GitHub issues
