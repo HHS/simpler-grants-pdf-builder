@@ -43,7 +43,8 @@ class ReadabilityWordExportTests(TestCase):
                 "csrfmiddlewaretoken": csrf,
             },
         )
-        self.assertContains(results, "Download metrics as Word")
+        self.assertContains(results, "Download Word")
+        self.assertNotContains(results, "Print / Save as PDF")
         form = BeautifulSoup(results.content, "html.parser").select_one(
             "form[action$='/export-word/']"
         )

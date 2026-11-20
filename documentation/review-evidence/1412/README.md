@@ -10,7 +10,8 @@ screens use upstream main at `d8aaa657`. The after screens use
 | Readability Checker results after uploading a synthetic Word file while signed out | [Before](checker-before.png) | [After](checker-after.png) | [Checker](checker-word-report.png) |
 | Readability metrics panel on a synthetic NOFO edit page | [Before](builder-before.png) | [After](builder-after.png) | [Builder](builder-word-report.png) |
 
-Both download actions use the existing Word export progress dialog. See
+The Checker uses **Download Word** as the primary action and offers **Copy
+metrics** alongside it. Both Word actions use the existing export progress dialog. See
 [Checker progress](checker-word-progress.png), [Builder progress](builder-word-progress.png),
 and [Builder conversion error](builder-word-error.png). Both dialogs closed on
 success. The simulated error could be dismissed while keeping the metrics open.

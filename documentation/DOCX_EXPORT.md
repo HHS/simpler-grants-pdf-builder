@@ -21,7 +21,8 @@ Each export template wraps the document in `<div id="download_target">`. GrabzIt
 
 ### Readability metrics reports
 
-The Readability Checker and the NOFO Builder readability panel use
+The Readability Checker’s **Download Word** action and the NOFO Builder
+readability panel’s **Download metrics as Word** action use
 `generate_html_docx_download_response` in the same module. Both paths use the
 same configured credentials, host allowlist, HTTPS connection, in-memory DOCX
 validation, and attachment handling as full-document Word downloads.

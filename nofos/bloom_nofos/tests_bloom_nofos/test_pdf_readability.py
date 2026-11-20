@@ -426,7 +426,7 @@ class PdfReadabilityPageTests(TestCase):
             response, "not a compliance, accessibility, or clearance determination"
         )
         self.assertNotContains(response, "theme-base.css")
-        self.assertContains(response, "Print / Save as PDF")
+        self.assertNotContains(response, "Print / Save as PDF")
         self.assertContains(response, "1,234")
         self.assertContains(response, "Not available")
         self.assertNotContains(response, "Unavailable · Low reliability")

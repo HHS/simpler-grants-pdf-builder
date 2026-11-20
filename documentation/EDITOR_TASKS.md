@@ -1012,8 +1012,11 @@ then try again. If it's still unavailable, contact the checker operator.
    still count.
    A Word report without a reliability rating explains the tool's limitation;
    it does not mean a problem was detected in your upload.
-5. Select **Copy metrics** or **Print / Save as PDF** before leaving the report.
-   Use **Analyze another document** for another upload.
+5. Select **Download Word**, when available, for a short report with the Tier 2
+   clearance metrics and Tier 1 drafting measure. GrabzIt receives only the
+   metric values and general measurement notes for this conversion. You can
+   also select **Copy metrics** before leaving the report. Use **Analyze
+   another document** for another upload.
 
 Profiles are selected automatically; there is no profile setting to choose.
 Check the report's **Measurement version** when comparing results. Version 0.7.0
@@ -1046,10 +1049,6 @@ did not generate or verify PDFs.
 These tasks apply only to the isolated synthetic profile, not a deployed Builder
 or an ordinary NOFO. They were checked in local Chrome on October 20, 2026.
 See [local host setup and limitations](design-pilot/DESIGN_PILOT_LOCAL_HOST.md).
-
-Select **Download metrics as Word**, when available, for a short report of the
-Tier 2 clearance metrics and the Tier 1 drafting measure. GrabzIt receives
-only the metric values and general measurement notes for this conversion.
 
 <a id="task-design-pilot-import"></a>
 
