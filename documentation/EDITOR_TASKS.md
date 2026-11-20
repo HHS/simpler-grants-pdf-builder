@@ -1018,7 +1018,7 @@ then try again. If it's still unavailable, contact the checker operator.
    also select **Copy metrics** before leaving the report. Use **Analyze
    another document** for another upload. The Checker offers the same Word
    download and report contents whether you are signed in or signed out,
-   whenever you can access the tool.
+   whenever you can access the tool. See [what the Word report includes](DOCX_EXPORT.md#standalone-checker-report-content).
 
 Profiles are selected automatically; there is no profile setting to choose.
 Check the report's **Measurement version** when comparing results. Version 0.7.0

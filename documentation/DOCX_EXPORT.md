@@ -51,6 +51,33 @@ available conversion capacity. Each surface must also have readability
 enabled. To roll back, turn the switch off in Constance. This hides the
 actions on new results and blocks requests from pages already open.
 
+#### Standalone Checker report content
+
+Signed-in and signed-out users who can access the Checker receive the same
+report for the same upload. The report includes four Tier 2 clearance metrics,
+the Tier 1 drafting measure, and a **Text measured** section. An unavailable
+metric is labeled **Not available**.
+
+| Upload or extraction result | What **Text measured** says |
+| --- | --- |
+| Word | The word count uses recovered Word text after skipping recognized covers, tables of contents, template instructions, and Builder metadata. Other draft material may count, and text in headers, footers, text boxes, and images may be missed. |
+| Word with zero words skipped across all recognized categories | The report also says that the Checker recorded no words skipped in those categories. |
+| PDF with usable structure tags | The Checker recovered text using the PDF's structure tags. The report gives the number of pages with extractable text out of the total. |
+| PDF measured from page layout | The Checker reconstructed text from the page layout. Draft instructions and placeholders may count. The report gives the number of pages with extractable text out of the total, which can reveal partial coverage. |
+| Missing measurement counts | The report omits unavailable counts and explains the measurement scope in words. The current PDF analyzer supplies a count of pages with extractable text for every successful PDF result. A PDF with no extractable text yields an analysis error. |
+
+For either file type, the scope section gives the recovered word count and,
+when available, the number of words in complete sentences and the number
+excluded from sentence-based scores. The Word report describes the categories
+of skipped content without listing their individual counts. Its conversion
+input excludes the filename, opportunity identifiers, source excerpts, and
+uploaded file.
+
+For the exact phrasing, see the [report template](../nofos/bloom_nofos/templates/readability_word_report.html)
+and [scope notes](../nofos/nofos/readability_word_export.py). See the [rendered
+examples](review-evidence/1412/README.md#standalone-report-variations) for sample
+results. The numbers in those examples are illustrative.
+
 ## How it works
 
 This section describes full-document exports.
