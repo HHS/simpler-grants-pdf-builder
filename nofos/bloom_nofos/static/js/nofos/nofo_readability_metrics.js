@@ -16,6 +16,7 @@
   const warnings = panel.querySelector("[data-metrics-warnings]");
   const warningCount = panel.querySelector("[data-metrics-warning-count]");
   const warningsList = panel.querySelector("[data-metrics-warnings-list]");
+  const wordExport = panel.querySelector("[data-readability-word-export]");
   const saveButton = panel.querySelector("[data-save-readability]");
   const saveStatus = panel.querySelector("[data-save-readability-status]");
   const savedHistory = panel.querySelector("[data-readability-saved-history]");
@@ -201,7 +202,7 @@
     scopeContainer.hidden = false;
   };
 
-  const showResult = (payload) => {
+  const showResult = (payload, wordReport) => {
     panel.querySelectorAll("[data-metric-id]").forEach((container) => {
       const metricId = container.dataset.metricId;
       showMetric(metricId, metricForDisplay(metricId, payload.metrics));
@@ -211,6 +212,10 @@
     results.hidden = false;
     displayedResult = payload;
     if (saveButton) saveButton.hidden = false;
+    if (wordExport) {
+      wordExport.elements.namedItem("report").value = wordReport || "";
+      wordExport.hidden = !wordReport;
+    }
   };
 
   const saveMetrics = async () => {
@@ -231,7 +236,7 @@
       if (!response.ok) throw new Error(payload.message || `Request failed (${response.status}).`);
       if (!payload.result?.metrics || !payload.checkpoint) throw new Error("The server did not return saved results. Try again.");
       const changed = displayedResult.source?.revision !== payload.result.source?.revision;
-      showResult(payload.result);
+      showResult(payload.result, response.headers.get("X-Readability-Word-Report"));
       status.textContent = "Calculated for the current NOFO. Save these results to keep a snapshot.";
       const automaticEvent = payload.checkpoint.is_automatic && payload.checkpoint.trigger_event;
       const message = !payload.already_saved
@@ -274,6 +279,7 @@
     if (saveButton) { saveButton.disabled = true; saveButton.hidden = true; }
     if (saveStatus) saveStatus.textContent = "";
     displayedResult = null;
+    if (wordExport) wordExport.hidden = true;
     status.textContent = "Calculating metrics…";
     const controller = new AbortController();
     const timeoutId = window.setTimeout(
@@ -302,7 +308,7 @@
         throw new Error(payload.message || `Request failed (${response.status}).`);
       }
 
-      showResult(payload);
+      showResult(payload, response.headers.get("X-Readability-Word-Report"));
       status.textContent = "Calculated for the current NOFO. Save these results to keep a snapshot.";
       summaryStatus.textContent = "Calculated";
       if (summarySaved?.textContent.trim().startsWith("Last saved")) {

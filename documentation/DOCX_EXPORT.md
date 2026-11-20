@@ -9,7 +9,7 @@ For why we chose GrabzIt over other converters, see the ADR: [HTML to DOCX solut
 
 ## Where it is used
 
-All Word downloads go through one helper, `generate_docx_download_response` in [`nofos/bloom_nofos/utils.py`](../nofos/bloom_nofos/utils.py).
+Full-document Word downloads use `generate_docx_download_response` in [`nofos/bloom_nofos/utils.py`](../nofos/bloom_nofos/utils.py).
 
 | Feature | POST handler | Page GrabzIt converts |
 | --- | --- | --- |
@@ -19,7 +19,34 @@ All Word downloads go through one helper, `generate_docx_download_response` in [
 
 Each export template wraps the document in `<div id="download_target">`. GrabzIt converts only that element (`targetElement = "#download_target"`), so the page header, navigation and buttons are left out of the Word file.
 
+### Readability metrics reports
+
+The Readability Checker and the NOFO Builder readability panel use
+`generate_html_docx_download_response` in the same module. Both paths use the
+same configured credentials, host allowlist, HTTPS connection, in-memory DOCX
+validation, and attachment handling as full-document Word downloads.
+
+The app sends a small, dedicated report directly to GrabzIt with
+`HTMLToDOCX`. The request contains four Tier 2 clearance metrics, one Tier 1
+drafting measure, and a general description of the measurement scope. The
+standalone report excludes the uploaded filename, opportunity identifiers,
+and source content. The Builder report adds the NOFO title and opportunity
+number when available, after checking access to the NOFO. Neither report
+forwards session cookies or gives GrabzIt a URL to fetch.
+
+The browser submits a signed copy of the displayed values that expires after
+one hour. Generating the report does not save a readability checkpoint. As with
+other Word exports, GrabzIt may retain the generated document in its capture cache.
+
+`HHS_NOFO_READABILITY_WORD_EXPORT_ENABLED` is off by default. Enable it in
+Django Constance after checking the intended export hosts, GrabzIt account and
+available conversion capacity. Each surface must also have readability
+enabled. To roll back, turn the switch off in Constance. This hides the
+actions on new results and blocks requests from pages already open.
+
 ## How it works
+
+This section describes full-document exports.
 
 **We do not send NOFO HTML to GrabzIt.** We send GrabzIt a URL, along with the user's own session cookies. GrabzIt's servers then fetch the page using the cookies registered for the export host and turn the `#download_target` element into a DOCX.
 
@@ -28,7 +55,6 @@ sequenceDiagram
     autonumber
     actor User as User (browser)
     participant App as NOFO Builder (Django on AWS ECS)
-    participant Tmp as Container /tmp
     participant GZ as GrabzIt API (api.grabz.it)
     participant R as GrabzIt renderer
 
@@ -53,8 +79,6 @@ sequenceDiagram
 
     App->>GZ: getfile (HTTPS)
     GZ-->>App: DOCX bytes
-    App->>Tmp: write /tmp/<document pk>.docx
-    App->>Tmp: read bytes, then delete file
     Note over App: Reject blank or malformed DOCX (502)
     App-->>User: 200 attachment "<short name or title>.docx"
 ```
@@ -68,7 +92,7 @@ Step by step:
 5. The helper registers the user's `sessionid` and `csrftoken` with GrabzIt for that host (`SetCookie`), then asks GrabzIt to convert the URL (`URLToDOCX`).
 6. GrabzIt's renderer fetches the export page from our app using the cookies registered for that host. The app applies its usual permission checks to the session GrabzIt presents.
 7. `SaveTo` waits about 3 seconds, then checks status every 3 seconds until the result is ready, and downloads it. The request is **synchronous**: the gunicorn worker is busy for the whole conversion, and gunicorn stops requests after 89 seconds (see the `Dockerfile`).
-8. The bytes are written to `/tmp/<document pk>.docx`, read back, and the file is deleted in a `finally` block.
+8. The app receives the DOCX bytes in memory.
 9. `is_valid_docx` rejects an empty or malformed result with `502`. Otherwise the DOCX is returned as an attachment.
 
 When the helper returns an error, the download modal shows "Sorry — something went wrong generating the document. Please try again."
@@ -81,8 +105,8 @@ flowchart LR
     Page -- HTTPS --> GZR[GrabzIt renderer]
     GZR --> Cache[(GrabzIt capture cache<br/>DOCX, retention set by GrabzIt)]
     Cookies[User session cookies] -- HTTPS --> GZC[(GrabzIt account cookie store<br/>kept until overwritten)]
-    Cache -- HTTPS --> Tmp[/ECS task /tmp/&lt;pk&gt;.docx<br/>deleted right after read/]
-    Tmp --> Browser[User's download]
+    Cache -- HTTPS --> App[App memory during the request]
+    App --> Browser[User's download]
 ```
 
 | Data | Where | How long | Notes |
@@ -91,7 +115,7 @@ flowchart LR
 | Rendered export page | Produced on request for GrabzIt's renderer | Not stored by us | Sent to GrabzIt over HTTPS. |
 | User's `sessionid` and `csrftoken` | GrabzIt account cookie store, keyed by host | Until replaced or removed. The code does not call `DeleteCookie`. | See [#1330](https://github.com/HHS/simpler-grants-pdf-builder/issues/1330) for account cleanup. |
 | Generated DOCX | GrabzIt servers (capture cache) | Retention period set by GrabzIt | We don't set the SDK's `encryptionKey` option. See the [GrabzIt Trust Center](https://grabz.it/trust/). |
-| Generated DOCX (temporary copy) | ECS task `/tmp/<document pk>.docx` | Removed right after it is read | If removal fails, the file stays until the task is replaced. |
+| Generated DOCX (temporary copy) | App memory | During the download request | The app streams no intermediate file to disk. |
 | Generated DOCX (download) | User's browser or device | Up to the user | The final file. |
 
 We do not store the generated Word file in our database, S3 or logs.
@@ -129,6 +153,8 @@ Any change to these files triggers the check:
 
 - `nofos/bloom_nofos/templates/includes/docx_download_button_form.html`
 - `nofos/bloom_nofos/templates/includes/download_docx_button.html`
+- `nofos/bloom_nofos/templates/readability_word_report.html`
+- `nofos/nofos/readability_word_export.py`
 - `nofos/composer/templates/composer/composer_export.html`
 - `nofos/composer/templates/composer/writer/docx_export.html`
 - `nofos/nofos/templates/nofos/includes/nofo_export_document.html`

@@ -971,6 +971,10 @@ If the panel is absent, this task is unavailable there.
 4. Under **Saved snapshots**, expand a checkpoint to see its results. Select
    **See all snapshots** for the full history when that link appears.
 
+Select **Download metrics as Word**, when available, to keep a separate report
+with the NOFO title and opportunity number. The Word download does not save a
+checkpoint.
+
 Import, reimport, manual saving and successful PDF download each save their own
 checkpoint once per unchanged measurement. Calculation alone does not save a
 manual checkpoint. Historical results remain available after measurement-version
@@ -1042,6 +1046,10 @@ did not generate or verify PDFs.
 These tasks apply only to the isolated synthetic profile, not a deployed Builder
 or an ordinary NOFO. They were checked in local Chrome on October 20, 2026.
 See [local host setup and limitations](design-pilot/DESIGN_PILOT_LOCAL_HOST.md).
+
+Select **Download metrics as Word**, when available, for a short report of the
+Tier 2 clearance metrics and the Tier 1 drafting measure. GrabzIt receives
+only the metric values and general measurement notes for this conversion.
 
 <a id="task-design-pilot-import"></a>
 

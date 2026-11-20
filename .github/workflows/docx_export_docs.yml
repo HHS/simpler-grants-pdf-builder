@@ -51,6 +51,8 @@ jobs:
           EXPORT_FILES = {
               "nofos/bloom_nofos/templates/includes/docx_download_button_form.html",
               "nofos/bloom_nofos/templates/includes/download_docx_button.html",
+              "nofos/bloom_nofos/templates/readability_word_report.html",
+              "nofos/nofos/readability_word_export.py",
               "nofos/composer/templates/composer/composer_export.html",
               "nofos/composer/templates/composer/writer/docx_export.html",
               "nofos/nofos/templates/nofos/includes/nofo_export_document.html",

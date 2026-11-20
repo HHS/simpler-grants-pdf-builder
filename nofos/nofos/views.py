@@ -179,6 +179,12 @@ from .readability import (
     save_automatic_checkpoint,
 )
 from .readability_history import checkpoint_rows
+from .readability_word_export import (
+    add_builder_report_header,
+    builder_salt,
+    download_report,
+    word_export_enabled,
+)
 from .subsection_conflicts import (
     EDIT_FIELDS,
     matches_version,
@@ -496,8 +502,21 @@ class NofoReadabilityMetricsView(GroupAccessObjectMixin, View):
         # The response stays the package's verbatim payload, whether it was just
         # calculated or replayed from a stored snapshot for the same revision.
         response = JsonResponse(payload)
+        add_builder_report_header(response, request, nofo, payload)
         response["Cache-Control"] = "no-store"
         return response
+
+
+class NofoReadabilityWordExportView(GroupAccessObjectMixin, View):
+    def post(self, request, *args, **kwargs):
+        if not config.HHS_NOFO_METRICS_ENABLED:
+            return HttpResponse(
+                "Readability metrics are unavailable.",
+                status=503,
+                headers={"Cache-Control": "no-store"},
+            )
+        nofo = get_object_or_404(Nofo, pk=kwargs["pk"])
+        return download_report(request, salt=builder_salt(request, nofo), nofo=nofo)
 
 
 class NofoReadabilityMetricsSaveView(GroupAccessObjectMixin, View):
@@ -552,6 +571,7 @@ class NofoReadabilityMetricsSaveView(GroupAccessObjectMixin, View):
                     "already_saved": not created,
                 }
             )
+            add_builder_report_header(response, request, nofo, payload)
         response["Cache-Control"] = "no-store"
         return response
 
@@ -563,6 +583,9 @@ class NofosEditView(GroupAccessObjectMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["readability_metrics_enabled"] = config.HHS_NOFO_METRICS_ENABLED
+        context["readability_word_export_enabled"] = context[
+            "readability_metrics_enabled"
+        ] and word_export_enabled(self.request)
         if config.HHS_NOFO_METRICS_ENABLED:
             context["readability_checkpoints"] = checkpoint_rows(self.object, limit=5)
         context["readability_metric_goals"] = normalize_readability_metric_goals(

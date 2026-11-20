@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Readability metrics</title>
+</head>
+<body style="font-family: Arial, sans-serif; font-size: 11pt; color: #171717;">
+  <h1 style="font-size: 22pt;">Readability metrics</h1>
+  {% if title %}<p><strong>{{ title }}</strong></p>{% endif %}
+  {% if number %}<p>Opportunity number {{ number }}</p>{% endif %}
+
+  <h2 style="font-size: 14pt;">Tier 2 clearance metrics</h2>
+  {% for label, value in clearance_rows %}
+    <p>{{ label }}: <strong>{{ value }}</strong></p>
+  {% endfor %}
+
+  <h2 style="font-size: 14pt;">Tier 1 drafting measure</h2>
+  {% for label, value in drafting_rows %}
+    <p>{{ label }}: <strong>{{ value }}</strong></p>
+  {% endfor %}
+
+  <h2 style="font-size: 14pt;">Text measured</h2>
+  <p>{{ scope }} Sentence-based scores use complete sentences and exclude fragments,
+    including some headings, labels, list items, and table cells.</p>
+</body>
+</html>

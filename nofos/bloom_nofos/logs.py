@@ -14,6 +14,7 @@ def is_pdf_readability_request(request):
         "/readability",
         "/nofos/readability",
         "/readability-checker",
+        "/readability-checker/export-word",
         "/nofos/readability-checker",
         "/nofos/readability-checker/comparisons/save",
     }

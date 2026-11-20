@@ -56,6 +56,11 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("readability-checker/", views.pdf_readability, name="pdf_readability"),
     path(
+        "readability-checker/export-word/",
+        views.pdf_readability_word_export,
+        name="pdf_readability_word_export",
+    ),
+    path(
         "readability/",
         views.readability_redirect,
         {"route_name": "pdf_readability"},

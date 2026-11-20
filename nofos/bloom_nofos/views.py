@@ -1,6 +1,5 @@
 import hashlib
 import logging
-import math
 import os
 import time
 import unicodedata
@@ -14,7 +13,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 
 from nofos.pdf_readability import (
     PdfReadabilityError,
@@ -22,9 +21,14 @@ from nofos.pdf_readability import (
     analyze_uploaded_pdf,
 )
 from nofos.pdf_readability_metrics import record_attempt, retention_days
-from nofos.readability_format import format_metric_number
 from nofos.readability_scratch import CheckerDiskUploadHandler, request_workspace
 from nofos.readability_upload_limits import MIB, PDF_UPLOAD_BYTES, WORD_UPLOAD_BYTES
+from nofos.readability_word_export import (
+    CHECKER_SALT,
+    checker_report_token,
+    download_report,
+    format_report_value,
+)
 
 logger = logging.getLogger("django.request.pdf_readability")
 
@@ -74,20 +78,7 @@ def _metric_rows(report):
                 "Estimated number of words recovered from the Word conversion."
             )
         metric = metrics.get(metric_id) or {}
-        value = metric.get("value")
-        if (
-            value is None
-            or isinstance(value, bool)
-            or not isinstance(value, (int, float))
-            or not math.isfinite(value)
-        ):
-            formatted = "Not available"
-        elif metric_id == "word_count":
-            formatted = f"{value:,.0f}"
-        elif metric_id == "passive_sentence_percentage":
-            formatted = f"{format_metric_number(value)}%"
-        else:
-            formatted = format_metric_number(value)
+        formatted = format_report_value(metric_id, metric.get("value"))
         # A metric without evidence must not inherit another metric's rating.
         # Generic PDF extraction retains its explicit low-confidence policy.
         reliability = metric.get("reliability")
@@ -142,6 +133,15 @@ def pdf_readability(request):
     """
     enabled, source = checker_access(request)
     return _pdf_readability_workflow(request, enabled, source)
+
+
+@never_cache
+@require_POST
+def pdf_readability_word_export(request):
+    enabled, _ = checker_access(request)
+    if not enabled:
+        return HttpResponse("The readability checker is unavailable.", status=403)
+    return download_report(request, salt=CHECKER_SALT)
 
 
 @csrf_exempt
@@ -314,6 +314,7 @@ def _pdf_readability_form(request):
                     {
                         "report": report,
                         "metric_rows": _metric_rows(report),
+                        "word_export_report": checker_report_token(request, report),
                         "filename": _safe_upload_name(upload.name),
                         "analysis_date": timezone.localdate(),
                         "source_word": report.get("profile") == "word",

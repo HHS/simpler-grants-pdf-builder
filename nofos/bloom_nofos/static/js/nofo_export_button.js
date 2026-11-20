@@ -14,7 +14,6 @@
     const status = modal.querySelector("[data-docx-status]");
     const doneBtn = modal.querySelector("[data-docx-done-btn]");
     const horseTrack = modal.querySelector("[data-docx-horse-track]");
-    const modalWrapper = modal.closest(".usa-modal-wrapper");
 
     if (!loading || !success || !error || !doneBtn) return;
 
@@ -28,7 +27,7 @@
     }
 
     function isModalOpen() {
-      return modalWrapper?.classList.contains("is-visible");
+      return modal.closest(".usa-modal-wrapper")?.classList.contains("is-visible");
     }
 
     function setState(state, message) {
