@@ -288,7 +288,10 @@ class NofoReadabilityMetricsTests(TestCase):
         )
         self.assertIsNotNone(policy_element)
         goals = json.loads(policy_element.string)
-        self.assertEqual(goals["word_count"][0]["value"], 13_500)
+        self.assertEqual(
+            goals["word_count"],
+            [{"label": "Target", "operator": "at_most", "value": 12_500}],
+        )
         self.assertEqual(goals["words_per_sentence"][0]["value"], 15)
         self.assertEqual(goals["sentences_per_paragraph"][0]["value"], 3)
         self.assertEqual(goals["passive_sentence_percentage"][0]["value"], 8)

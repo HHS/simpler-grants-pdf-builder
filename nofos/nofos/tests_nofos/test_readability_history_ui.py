@@ -28,7 +28,9 @@ class ReadabilityHistoryUiTests(TestCase):
         )
         self.factory = RequestFactory()
 
-    def checkpoint(self, index=0, partial=False, user=None):
+    def checkpoint(
+        self, index=0, partial=False, user=None, *, word_count=None, goals=None
+    ):
         score = NofoReadabilityScore.objects.create(
             nofo=self.nofo,
             nofo_revision=self.nofo.updated + timedelta(seconds=index),
@@ -38,9 +40,13 @@ class ReadabilityHistoryUiTests(TestCase):
             schema_version="1",
             result_basis="structured",
             is_complete=not partial,
+            goals=goals or {},
             result={
                 "metrics": {
-                    "word_count": {"value": 100 + index, "status": "calculated"}
+                    "word_count": {
+                        "value": 100 + index if word_count is None else word_count,
+                        "status": "calculated",
+                    }
                 }
             },
         )
@@ -68,6 +74,21 @@ class ReadabilityHistoryUiTests(TestCase):
             "First snapshot",
         )
         self.assertEqual(response["Cache-Control"], "private, no-store")
+
+    @override_config(HHS_NOFO_METRICS_ENABLED=True)
+    def test_history_compares_word_counts_without_rewriting_old_goals(self):
+        old_goals = {
+            "word_count": [{"label": "Target", "operator": "at_most", "value": 13_500}]
+        }
+        old = self.checkpoint(word_count=12_501, goals=old_goals)
+        self.checkpoint(1, word_count=12_500)
+
+        context, _ = self.get_context("?fragment=1")
+        latest = context["readability_checkpoints"][0]
+        self.assertEqual(latest["change_summary"]["label"], "Improved on 1 metric")
+        self.assertEqual(latest["metrics"][0]["display"], "12,500")
+        old.score.refresh_from_db()
+        self.assertEqual(old.score.goals, old_goals)
 
     @override_config(HHS_NOFO_METRICS_ENABLED=True)
     def test_pagination_predecessor_across_page_boundary(self):

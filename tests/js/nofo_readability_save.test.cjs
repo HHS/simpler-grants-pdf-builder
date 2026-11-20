@@ -7,9 +7,9 @@ const source = readFileSync(join(__dirname, '../../nofos/bloom_nofos/static/js/n
 
 function classes(...initial) {
   const set = new Set(initial);
-  return { add: name => set.add(name), remove: name => set.delete(name), contains: name => set.has(name) };
+  return { add: name => set.add(name), remove: name => set.delete(name), contains: name => set.has(name), toggle: (name, enabled) => enabled ? set.add(name) : set.delete(name) };
 }
-function setup(responses) {
+function setup(responses, goalPolicy = {}) {
   const listeners = {};
   const element = () => ({ hidden: true, disabled: false, textContent: '', classList: classes(), attributes: {}, setAttribute(name, value) { this.attributes[name] = value; }, replaceChildren() {}, append() {} });
   const retry = element(), save = element(), saveStatus = element(), results = element(), history = element();
@@ -17,17 +17,52 @@ function setup(responses) {
   retry.classList = classes('display-none');
   retry.addEventListener = (event, handler) => { listeners.retry = handler; };
   save.addEventListener = (event, handler) => { listeners.save = handler; };
+  const metricCards = Object.fromEntries(Object.keys(goalPolicy).map(metricId => {
+    const items = new Set(), value = element(), status = element();
+    return [metricId, {
+      items,
+      dataset: { metricId },
+      closest: () => null,
+      append(item) {
+        items.add(item);
+        item.remove = () => items.delete(item);
+      },
+      querySelectorAll: () => [...items],
+      querySelector: selector => selector === '[data-metric-value]' ? value : status,
+    }];
+  }));
   const panel = { dataset: { metricsEndpoint: '/calculate', saveEndpoint: '/save', historyEndpoint: '/history?fragment=1', csrfToken: 'synthetic' },
-    querySelector: selector => named[selector] || (named[selector] = element()), querySelectorAll: () => [], addEventListener(event, handler) { if (event === "toggle") listeners.toggle = handler; } };
-  const elements = { 'readability-metrics-panel': panel, 'retry-readability-metrics': retry, 'readability-metrics-results': results, 'readability-metrics-status': element() };
+    querySelector: selector => metricCards[selector.match(/^\[data-metric-id="([^"]+)"\]$/)?.[1]] || named[selector] || (named[selector] = element()), querySelectorAll: () => Object.values(metricCards), addEventListener(event, handler) { if (event === "toggle") listeners.toggle = handler; } };
+  const elements = { 'readability-metrics-panel': panel, 'retry-readability-metrics': retry, 'readability-metrics-results': results, 'readability-metrics-status': element(), 'readability-metric-goals': { textContent: JSON.stringify(goalPolicy) } };
   const calls = [];
-  runInNewContext(source, { document: { querySelector: () => null, getElementById: id => elements[id] || null }, window: { setTimeout: () => 1, clearTimeout() {} }, AbortController, Intl, fetch: async (url, options) => { calls.push({ url, options }); const response = responses.shift(); if (response instanceof Error) throw response; return response; } });
+  runInNewContext(source, { document: { querySelector: () => null, getElementById: id => elements[id] || null, createElement: () => ({ ...element(), dataset: {} }) }, window: { setTimeout: () => 1, clearTimeout() {} }, AbortController, Intl, fetch: async (url, options) => { calls.push({ url, options }); const response = responses.shift(); if (response instanceof Error) throw response; return response; } });
   // Opening the panel is the only way a calculation starts on success.
   listeners.calculate = async () => { panel.open = true; listeners.toggle(); await new Promise(resolve => setImmediate(resolve)); };
-  return { panel, listeners, save, saveStatus, retry, results, history, calls };
+  return { panel, listeners, save, saveStatus, retry, results, history, calls, metricCards };
 }
 const result = value => ({ source: { revision: String(value) }, metrics: { word_count: { value, status: 'calculated' } }, warnings: [] });
 const response = (payload, ok = true) => ({ ok, status: ok ? 200 : 503, json: async () => payload });
+
+test('word count includes 12,500 and grade level still checks the NOFO type between its limits', async () => {
+  const goals = {
+    word_count: [{ label: 'Target', operator: 'at_most', value: 12500 }],
+    flesch_kincaid_grade_level: [{ label: 'Target by NOFO type', operator: 'at_most_by_category', minimum: 11.5, maximum: 12.5 }],
+  };
+  for (const [words, wordAssessment, grade, gradeAssessment] of [
+    [12499, 'Within target', 11.5, 'Within target'],
+    [12500, 'Within target', 12.5, 'Check NOFO type'],
+    [12501, 'Needs improvement', 12.51, 'Needs improvement'],
+  ]) {
+    const payload = result(words);
+    payload.metrics.flesch_kincaid_grade_level = { value: grade, status: 'calculated' };
+    const ui = setup([response(payload)], goals);
+    await ui.listeners.calculate();
+    assert.deepEqual([...ui.metricCards.word_count.items].map(item => item.textContent), [
+      `Target: ${new Intl.NumberFormat().format(12500)} or lower`, wordAssessment,
+    ]);
+    assert.equal([...ui.metricCards.flesch_kincaid_grade_level.items][1].textContent, gradeAssessment);
+  }
+});
 
 test('save hidden until calculation succeeds, separate POST refreshes saved results and history', async () => {
   const ui = setup([response(result(10)), response({ result: result(20), checkpoint: { id: 1 }, already_saved: false }), { ok: true, text: async () => '<p>Saved snapshot</p>' }]);
