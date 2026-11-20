@@ -159,7 +159,9 @@ with a previous snapshot.
 Builder adds presentation-only comparisons without changing the metrics package
 or its result contract. The default targets are:
 
-- word count: 13,500 or fewer;
+- word count: 12,500 or fewer, matching the Word version standard in the
+  [FY 2027 HHS NOFO Content and Clearance Guidance](https://intranet.hhs.gov/sites/default/files/2026-11/fy-2027-nofo-content-clearance-guidance-2026-11-16.pdf)
+  (HHS intranet, November 16, 2026);
 - words per sentence: 15 or fewer;
 - sentences per paragraph: 3 or fewer;
 - Flesch Reading Ease: 39 or higher;

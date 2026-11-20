@@ -683,7 +683,7 @@ DEFAULT_HHS_NOFO_METRIC_GOALS = {
     "word_count": {
         "label": "Target",
         "operator": "at_most",
-        "value": 13_500,
+        "value": 12_500,
     },
     "words_per_sentence": {
         "label": "Target",
