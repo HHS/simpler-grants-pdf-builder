@@ -136,7 +136,8 @@ class ReadabilityWordExportTests(TestCase):
         html = self.grabzit.HTMLToDOCX.call_args.args[0]
         self.assertIn("42 recovered words", html)
         self.assertIn("0 words in 0 complete sentences", html)
-        self.assertIn("Cover pages: 5 words", html)
+        self.assertNotIn("Words skipped in recognized sections", html)
+        self.assertNotIn("Cover pages: 5 words", html)
         self.assertNotIn("private text", html)
 
         report.update(

@@ -37,12 +37,7 @@ SCOPE_NOTES = {
     ),
     "builder": "Word count includes the NOFO text measured by NOFO Builder.",
 }
-WORD_EXCLUSIONS = (
-    ("cover_total", "Cover pages"),
-    ("table_of_contents", "Table of contents"),
-    ("instruction", "Template instructions"),
-    ("metadata", "Builder metadata"),
-)
+WORD_EXCLUSIONS = ("cover_total", "table_of_contents", "instruction", "metadata")
 SCOPE_COUNTS = (
     "recovered_word_count",
     "sentence_word_count",
@@ -109,18 +104,10 @@ def scope_counts(source, keys):
 def checker_scope_details(payload, scope):
     details = scope_counts(payload.get("scope") or {}, SCOPE_COUNTS)
     if scope == "word":
-        excluded = scope_counts(
-            payload.get("word_exclusions") or {}, (key for key, _ in WORD_EXCLUSIONS)
+        excluded = scope_counts(payload.get("word_exclusions") or {}, WORD_EXCLUSIONS)
+        details["no_exclusions"] = len(excluded) == len(WORD_EXCLUSIONS) and not any(
+            excluded.values()
         )
-        if excluded:
-            details["exclusions"] = [
-                (label, excluded[key])
-                for key, label in WORD_EXCLUSIONS
-                if excluded.get(key)
-            ]
-            details["no_exclusions"] = len(excluded) == len(
-                WORD_EXCLUSIONS
-            ) and not any(excluded.values())
     else:
         details.update(
             scope_counts(payload, ("pages_analyzed", "pages_with_text", "pages_total"))

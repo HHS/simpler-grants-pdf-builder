@@ -41,8 +41,12 @@ same standalone report template and rendered with the local converter.
 
 | Result | What the report shows |
 | --- | --- |
-| [Word with recognized exclusions](scope-examples/word-with-exclusions.png) | Counts for recognized cover pages, contents, instructions, and Builder metadata. |
+| [Word with recognized exclusions](scope-examples/word-with-exclusions.png) | A short explanation of the recognized content the Checker skips. |
 | [Word without recognized exclusions](scope-examples/word-without-exclusions.png) | A note that zero words were recorded as skipped in those categories. |
 | [Tagged PDF](scope-examples/tagged-pdf.png) | Extraction via structure tags and the number of pages with extractable text. |
 | [Layout-based PDF with partial coverage](scope-examples/layout-pdf-partial.png) | Reconstruction from layout and the proportion of pages with extractable text. |
-| [PDF with limited counts](scope-examples/pdf-limited-counts.png) | Pages processed when extractable-text coverage is unavailable, plus a qualitative explanation when sentence counts are unavailable. |
+
+The [earlier limited-counts example](scope-examples/pdf-limited-counts.png)
+was generated from a synthetic payload that omitted the count of pages with
+extractable text. A successful analysis in the current PDF worker supplies
+that page count. Sentence counts can still be unavailable independently.
