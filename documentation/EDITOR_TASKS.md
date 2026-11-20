@@ -1014,9 +1014,11 @@ then try again. If it's still unavailable, contact the checker operator.
    it does not mean a problem was detected in your upload.
 5. Select **Download Word**, when available, for a short report with the Tier 2
    clearance metrics and Tier 1 drafting measure. GrabzIt receives only the
-   metric values and general measurement notes for this conversion. You can
+   metric values, measurement counts, and scope notes for this conversion. You can
    also select **Copy metrics** before leaving the report. Use **Analyze
-   another document** for another upload.
+   another document** for another upload. The Checker offers the same Word
+   download and report contents whether you are signed in or signed out,
+   whenever you can access the tool.
 
 Profiles are selected automatically; there is no profile setting to choose.
 Check the report's **Measurement version** when comparing results. Version 0.7.0

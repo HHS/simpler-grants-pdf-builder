@@ -18,7 +18,7 @@ success. The simulated error could be dismissed while keeping the metrics open.
 
 The two browser downloads used the app's real export views and report template
 with a local LibreOffice converter in place of GrabzIt. The renderings show the
-downloaded DOCX files. The Checker report contained only scores, labels, and a
+downloaded DOCX files. The Checker report contained only scores, labels, measurement counts, and a
 general scope note. The Builder report also contained the sample NOFO title and
 opportunity number. Neither download contained the sample filename or body text.
 Live GrabzIt conversion and production rendering remain to be verified.
@@ -27,3 +27,22 @@ To reproduce, use a local app with synthetic data, enable readability for each
 surface and the readability Word export switch, and substitute a local DOCX
 converter at the GrabzIt client boundary. Open each surface and download the
 metrics report. See [Word export behavior and rollout](../../DOCX_EXPORT.md#readability-metrics-reports).
+
+## Standalone report variations
+
+The Checker shows the same **Download Word** action to everyone who can use
+the tool. A signed-in session and a signed-out session downloaded a report
+for the same synthetic Word upload. The HTML sent for conversion was identical
+in both sessions. See the [signed-out actions](checker-after.png) and
+[signed-in actions](checker-signed-in.png).
+
+These single-page examples use synthetic analysis results passed through the
+same standalone report template and rendered with the local converter.
+
+| Result | What the report shows |
+| --- | --- |
+| [Word with recognized exclusions](scope-examples/word-with-exclusions.png) | Counts for recognized cover pages, contents, instructions, and Builder metadata. |
+| [Word without recognized exclusions](scope-examples/word-without-exclusions.png) | A note that zero words were recorded as skipped in those categories. |
+| [Tagged PDF](scope-examples/tagged-pdf.png) | Extraction via structure tags and the number of pages with extractable text. |
+| [Layout-based PDF with partial coverage](scope-examples/layout-pdf-partial.png) | Reconstruction from layout and the proportion of pages with extractable text. |
+| [PDF with limited counts](scope-examples/pdf-limited-counts.png) | Pages processed when extractable-text coverage is unavailable, plus a qualitative explanation when sentence counts are unavailable. |

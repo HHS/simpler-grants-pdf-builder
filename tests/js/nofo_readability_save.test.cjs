@@ -13,7 +13,9 @@ function setup(responses, goalPolicy = {}) {
   const listeners = {};
   const element = () => ({ hidden: true, disabled: false, textContent: '', classList: classes(), attributes: {}, setAttribute(name, value) { this.attributes[name] = value; }, replaceChildren() {}, append() {} });
   const retry = element(), save = element(), saveStatus = element(), results = element(), history = element();
-  const named = { ':scope > summary': element(), '[data-save-readability]': save, '[data-save-readability-status]': saveStatus, '[data-readability-saved-history]': history };
+  const wordReport = { value: '' };
+  const wordExport = { ...element(), elements: { namedItem: name => name === 'report' ? wordReport : null } };
+  const named = { '[data-readability-word-export]': wordExport, ':scope > summary': element(), '[data-save-readability]': save, '[data-save-readability-status]': saveStatus, '[data-readability-saved-history]': history };
   retry.classList = classes('display-none');
   retry.addEventListener = (event, handler) => { listeners.retry = handler; };
   save.addEventListener = (event, handler) => { listeners.save = handler; };
@@ -41,7 +43,7 @@ function setup(responses, goalPolicy = {}) {
   return { panel, listeners, save, saveStatus, retry, results, history, calls, metricCards };
 }
 const result = value => ({ source: { revision: String(value) }, metrics: { word_count: { value, status: 'calculated' } }, warnings: [] });
-const response = (payload, ok = true) => ({ ok, status: ok ? 200 : 503, json: async () => payload });
+const response = (payload, ok = true) => ({ ok, status: ok ? 200 : 503, headers: new Headers(), json: async () => payload });
 
 test('word count includes 12,500 and grade level still checks the NOFO type between its limits', async () => {
   const goals = {
@@ -123,7 +125,7 @@ test('opening again checks current content rather than reusing browser results',
 });
 test('saving remains focusable while duplicate submissions are blocked', async () => {
   let finish;
-  const pending = { ok: true, json: () => new Promise(resolve => { finish = resolve; }) };
+  const pending = { ok: true, headers: new Headers(), json: () => new Promise(resolve => { finish = resolve; }) };
   const ui = setup([response(result(10)), pending, { ok: true, text: async () => 'history' }]);
   await ui.listeners.calculate();
   const saving = ui.listeners.save();
@@ -153,7 +155,7 @@ test('failed calculation shows retry, and retrying hides it again on success', a
 });
 test('reopening the panel during a calculation does not start a second request', async () => {
   let finish;
-  const pending = { ok: true, status: 200, json: () => new Promise(resolve => { finish = resolve; }) };
+  const pending = { ok: true, status: 200, headers: new Headers(), json: () => new Promise(resolve => { finish = resolve; }) };
   const ui = setup([pending]);
   ui.panel.open = true;
   ui.listeners.toggle();

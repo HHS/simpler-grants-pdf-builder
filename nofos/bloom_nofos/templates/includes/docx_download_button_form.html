@@ -16,7 +16,6 @@
     class="usa-button{% if not primary %} usa-button--outline{% endif %}{% if not readability_metrics %} font-sans-2xs text-normal inline-block{% endif %}"
     aria-controls="docx-modal{{ id_suffix }}"
     {% if aria_label %}aria-label="{{ aria_label }}"{% endif %}
-    {% if button_description %}aria-describedby="{{ button_description }}"{% endif %}
     data-open-modal
   >
     {{ button_label|default:"Download<span class='hide-on-tablet'> Word</span>"|safe }}

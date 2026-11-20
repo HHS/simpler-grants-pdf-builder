@@ -93,6 +93,60 @@ class ReadabilityWordExportTests(TestCase):
         )
         self.assertNotIn("Content-Disposition", response)
 
+    def test_checker_report_matches_for_signed_in_and_signed_out_uploads(self):
+        user = BloomUser.objects.create_user(
+            email="checker@example.com", password="test-password", group="bloom"
+        )
+        signed_in = Client()
+        signed_in.force_login(user)
+        exports = []
+        for client in (Client(), signed_in):
+            page = client.post(
+                reverse("pdf_readability"),
+                {"pdf": SimpleUploadedFile("draft.docx", synthetic_docx())},
+            )
+            self.assertContains(page, "Download Word")
+            response = client.post(
+                reverse("pdf_readability_word_export"),
+                {"report": page.context["word_export_report"]},
+            )
+            self.assertEqual(response.content, VALID_DOCX)
+            exports.append(self.grabzit.HTMLToDOCX.call_args.args[0])
+        self.assertEqual(*exports)
+
+    def test_checker_report_uses_only_allowed_measurement_counts(self):
+        from django.test import RequestFactory
+
+        from nofos.readability_word_export import checker_report_token
+
+        request = RequestFactory().get("/")
+        report = {
+            "profile": "word",
+            "scope": {
+                "recovered_word_count": 42,
+                "sentence_word_count": 0,
+                "complete_sentence_count": 0,
+                "excluded_word_count": 42,
+            },
+            "word_exclusions": {"cover_total": 5, "instruction": "private text"},
+            "coverage": "private text",
+        }
+        url = reverse("pdf_readability_word_export")
+        self.client.post(url, {"report": checker_report_token(request, report)})
+        html = self.grabzit.HTMLToDOCX.call_args.args[0]
+        self.assertIn("42 recovered words", html)
+        self.assertIn("0 words in 0 complete sentences", html)
+        self.assertIn("Cover pages: 5 words", html)
+        self.assertNotIn("private text", html)
+
+        report.update(
+            profile="generic", pages_with_text=2, pages_analyzed=5, pages_total=5
+        )
+        self.client.post(url, {"report": checker_report_token(request, report)})
+        html = self.grabzit.HTMLToDOCX.call_args.args[0]
+        self.assertIn("2 of 5 pages contained extractable text", html)
+        self.assertNotIn("Cover pages: 5 words", html)
+
     def test_builder_report_uses_panel_values_and_enforces_record_access(self):
         user = BloomUser.objects.create_user(
             email="editor@example.com",

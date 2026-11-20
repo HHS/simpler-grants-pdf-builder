@@ -24,11 +24,12 @@ DRAFTING_METRICS = (("sentences_per_paragraph", "Sentences per paragraph"),)
 SCOPE_NOTES = {
     "word": (
         "Word count uses recovered Word text after skipping recognized covers, "
-        "tables of contents, and template instructions. Other draft material may count."
+        "tables of contents, template instructions, and Builder metadata. Other draft material may count. "
+        "Text in headers, footers, text boxes, and images may be missed."
     ),
     "generic": (
         "Word count uses text recovered from the PDF page layout. Some text may be "
-        "missed or read out of order."
+        "missed or read out of order. Draft instructions and placeholders may count."
     ),
     "pdf": (
         "Word count uses text recovered using the PDF’s structure tags. Some text "
@@ -36,6 +37,18 @@ SCOPE_NOTES = {
     ),
     "builder": "Word count includes the NOFO text measured by NOFO Builder.",
 }
+WORD_EXCLUSIONS = (
+    ("cover_total", "Cover pages"),
+    ("table_of_contents", "Table of contents"),
+    ("instruction", "Template instructions"),
+    ("metadata", "Builder metadata"),
+)
+SCOPE_COUNTS = (
+    "recovered_word_count",
+    "sentence_word_count",
+    "complete_sentence_count",
+    "excluded_word_count",
+)
 CHECKER_SALT = "readability-word-export.checker"
 
 
@@ -67,8 +80,7 @@ def report_token(request, payload, *, scope, salt):
     if not word_export_enabled(request):
         return ""
     metrics = payload.get("metrics") or {}
-    # Keep only the five formatted values and a fixed scope key. Package payloads
-    # can include source metadata and diagnostic text.
+    # Package payloads can include source metadata and diagnostic text.
     values = {
         metric_id: format_report_value(
             metric_id, (metrics.get(metric_id) or {}).get("value")
@@ -80,7 +92,40 @@ def report_token(request, payload, *, scope, salt):
         values["sentences_per_paragraph"] = format_report_value(
             "sentences_per_paragraph", components.get("sentences_per_paragraph")
         )
-    return signing.dumps({"values": values, "scope": scope}, salt=salt)
+    report = {"values": values, "scope": scope}
+    if scope != "builder":
+        report["details"] = checker_scope_details(payload, scope)
+    return signing.dumps(report, salt=salt)
+
+
+def scope_counts(source, keys):
+    return {
+        key: source[key]
+        for key in keys
+        if type(source.get(key)) is int and source[key] >= 0
+    }
+
+
+def checker_scope_details(payload, scope):
+    details = scope_counts(payload.get("scope") or {}, SCOPE_COUNTS)
+    if scope == "word":
+        excluded = scope_counts(
+            payload.get("word_exclusions") or {}, (key for key, _ in WORD_EXCLUSIONS)
+        )
+        if excluded:
+            details["exclusions"] = [
+                (label, excluded[key])
+                for key, label in WORD_EXCLUSIONS
+                if excluded.get(key)
+            ]
+            details["no_exclusions"] = len(excluded) == len(
+                WORD_EXCLUSIONS
+            ) and not any(excluded.values())
+    else:
+        details.update(
+            scope_counts(payload, ("pages_analyzed", "pages_with_text", "pages_total"))
+        )
+    return details
 
 
 def checker_report_token(request, report):
@@ -125,6 +170,7 @@ def download_report(request, *, salt, nofo=None):
                     (label, values[key]) for key, label in DRAFTING_METRICS
                 ],
                 "scope": SCOPE_NOTES[report["scope"]],
+                "details": report.get("details", {}),
                 "title": nofo.title if nofo else "",
                 "number": nofo.number if nofo else "",
             },

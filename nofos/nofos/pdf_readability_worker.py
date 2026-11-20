@@ -160,6 +160,7 @@ def _safe_result(result, profile_kind: str, page_count: int) -> dict:
         ),
         "reliability": reliability,
         "pages_analyzed": pages_analyzed,
+        "pages_with_text": pages_with_text,
         "pages_total": page_count,
         "coverage": f"{pages_with_text} of {page_count} pages contain extractable text",
         "warnings": warnings,
@@ -184,6 +185,7 @@ def _safe_result(result, profile_kind: str, page_count: int) -> dict:
             + report["word_exclusions"]["cover_position"]
         )
         report.pop("pages_analyzed")
+        report.pop("pages_with_text")
         report.pop("pages_total")
         report["coverage"] = (
             "Word body text converted to HTML; page counts are not available."

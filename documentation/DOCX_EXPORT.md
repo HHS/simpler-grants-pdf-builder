@@ -29,8 +29,14 @@ validation, and attachment handling as full-document Word downloads.
 
 The app sends a small, dedicated report directly to GrabzIt with
 `HTMLToDOCX`. The request contains four Tier 2 clearance metrics, one Tier 1
-drafting measure, and a general description of the measurement scope. The
-standalone report excludes the uploaded filename, opportunity identifiers,
+drafting measure, and a description of the measurement scope. The standalone
+report includes available counts for recovered words, complete sentences and
+words excluded from sentence-based scores. Word uploads list counts for
+recognized sections that were skipped. PDF uploads identify the extraction
+method and report page coverage when available. The
+standalone Checker uses the same download action and report contents for
+signed-in and signed-out users who can access it. The report excludes the
+uploaded filename, opportunity identifiers,
 and source content. The Builder report adds the NOFO title and opportunity
 number when available, after checking access to the NOFO. Neither report
 forwards session cookies or gives GrabzIt a URL to fetch.

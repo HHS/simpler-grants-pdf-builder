@@ -127,14 +127,11 @@
           {% if word_export_report %}
           {% include "includes/document_progress_styles.html" %}
           {% url 'pdf_readability_word_export' as metrics_word_url %}
-          {% include "includes/docx_download_button_form.html" with action_url=metrics_word_url id_suffix="-readability-metrics" button_label="Download Word" primary=True modal_heading="Generating Word report…" button_description="readability-word-export-note" readability_metrics=True report_token=word_export_report %}
+          {% include "includes/docx_download_button_form.html" with action_url=metrics_word_url id_suffix="-readability-metrics" button_label="Download Word" primary=True modal_heading="Generating Word report…" readability_metrics=True report_token=word_export_report %}
           {% endif %}
           <button class="usa-button usa-button--outline" type="button" id="copy-readability-report">Copy metrics</button>
           <a class="usa-link text-bold" href="{% url 'pdf_readability' %}">Analyze another document</a>
         </div>
-        {% if word_export_report %}
-        <p id="readability-word-export-note" class="font-sans-xs no-print">Word download sends your scores and general measurement notes to GrabzIt for conversion.</p>
-        {% endif %}
         <p id="readability-copy-status" role="status" aria-live="polite" class="no-print"></p>
         <textarea id="readability-copy-fallback" class="readability-copy-fallback no-print" aria-label="Report text to copy manually" readonly hidden></textarea>
       </article>
