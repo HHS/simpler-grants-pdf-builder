@@ -1016,8 +1016,12 @@ then try again. If it's still unavailable, contact the checker operator.
    clearance metrics, Tier 1 drafting measure, and a **Document check** that
    says whether the tool recognized the upload as a likely HHS NOFO and whether
    it could verify the NOFO template structure. If you are signed in, the
-   report also shows the file name and, when recognized, the opportunity
-   number, like the NOFO Builder panel report. If you are signed out, the
+   report also shows the file name and the opportunity number, like the NOFO
+   Builder panel report. If the report says **Opportunity number: Not found**,
+   the checker found no labeled number, such as "Opportunity number:
+   HRSA-26-106", near the beginning of your document. Your results are still
+   valid; add the label to a copy and analyze it again if you need the number
+   in the report. If you are signed out, the
    report leaves those out and notes that your document was not saved. GrabzIt
    receives only what appears in the report. You can also select **Copy
    metrics** before leaving the report. Use **Analyze another document** for

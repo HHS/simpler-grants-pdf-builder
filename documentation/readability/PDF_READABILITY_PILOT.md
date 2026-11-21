@@ -189,7 +189,7 @@ longer opportunity number `EPA-R9-SFUND-23-003`. The checker uses this contract 
 a format reference only; upload processing does not call the Simpler.Grants.gov
 API or send document-derived values to another service. The one exception is a
 signed-in user's Word report download: it sends the uploaded file name and the
-matched opportunity number to GrabzIt with the metrics, as the Builder panel
+matched opportunity number (or **Not found** when none matched) to GrabzIt with the metrics, as the Builder panel
 report does with a NOFO's title and number. Recognition returns only the
 matched identifier, never surrounding text. Signed-out reports contain neither
 (see [Word export](../DOCX_EXPORT.md#standalone-checker-report-content)).

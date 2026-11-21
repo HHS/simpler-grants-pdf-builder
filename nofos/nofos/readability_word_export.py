@@ -250,6 +250,11 @@ def download_report(request, *, salt, nofo=None):
                 "document": report.get("document", ""),
                 "title": nofo.title if nofo else "",
                 "number": nofo.number if nofo else report.get("number", ""),
+                # Only signed-in Checker reports carry "document"; say so
+                # when recognition matched no labeled opportunity number.
+                "number_not_found": not nofo
+                and "document" in report
+                and not report.get("number"),
             },
         )
         response = generate_html_docx_download_response(

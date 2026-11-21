@@ -126,8 +126,33 @@ class ReadabilityWordExportTests(TestCase):
         self.assertNotIn("Your document was not saved.", signed_in_html)
         self.assertIn("File: <strong>draft.docx</strong>", signed_in_html)
         self.assertIn("Opportunity number HRSA-26-106", signed_in_html)
+        self.assertNotIn("Not found", signed_in_html)
+        self.assertNotIn("Not found", signed_out_html)
 
-        for html in exports:
+        # A recognized upload without a labeled number says so when signed in.
+        unnumbered = synthetic_docx(
+            "Assistance listing: 93.123. Apply at Grants.gov. "
+            "Applicants should submit a clear plan. The plan should describe needs."
+        )
+        for client in (signed_in, Client()):
+            page = client.post(
+                reverse("pdf_readability"),
+                {"pdf": SimpleUploadedFile("draft.docx", unnumbered)},
+            )
+            client.post(
+                reverse("pdf_readability_word_export"),
+                {"report": page.context["word_export_report"]},
+            )
+            exports.append(self.grabzit.HTMLToDOCX.call_args.args[0])
+        unnumbered_signed_in, unnumbered_signed_out = exports[2:]
+        self.assertIn("File: <strong>draft.docx</strong>", unnumbered_signed_in)
+        self.assertIn(
+            "Opportunity number: <strong>Not found</strong>", unnumbered_signed_in
+        )
+        self.assertNotIn("Opportunity number", unnumbered_signed_out)
+        self.assertIn("Your document was not saved.", unnumbered_signed_out)
+
+        for html in exports[:2]:
             self.assertIn("Tier 2 clearance metrics", html)
             self.assertIn("Document check", html)
             self.assertIn("Recognized as a likely HHS NOFO: <strong>Yes</strong>", html)
@@ -244,6 +269,7 @@ class ReadabilityWordExportTests(TestCase):
         self.assertIn("1,234", html)
         self.assertIn("13.5", html)
         self.assertIn("2.45", html)
+        self.assertNotIn("Not found", html)
         self.assertIn("This NOFO was created in NOFO Builder.", html)
         self.assertNotIn("Your document was not saved.", html)
         self.assertNotIn("Private source excerpt", html)

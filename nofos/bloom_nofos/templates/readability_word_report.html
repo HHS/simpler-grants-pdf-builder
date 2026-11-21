@@ -8,7 +8,7 @@
   <h1 style="font-size: 22pt;">Readability metrics</h1>
   {% if title %}<p><strong>{{ title }}</strong></p>{% endif %}
   {% if document %}<p>File: <strong>{{ document }}</strong></p>{% endif %}
-  {% if number %}<p>Opportunity number {{ number }}</p>{% endif %}
+  {% if number %}<p>Opportunity number {{ number }}</p>{% elif number_not_found %}<p>Opportunity number: <strong>Not found</strong>. The checker looks for a labeled opportunity number, such as “Opportunity number: HRSA-26-106,” near the beginning of the document.</p>{% endif %}
   {% if not_saved_note %}
     <p><strong>Your document was not saved.</strong> The Readability Checker processed it temporarily on HHS-operated systems to calculate these estimates. It was not added to NOFO Builder, and no copy or report history was kept. This Word report contains only the scores and measurement notes below. It does not include your document’s name, text, or identifiers.</p>
   {% endif %}

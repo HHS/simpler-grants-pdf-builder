@@ -55,7 +55,8 @@ that page count. Sentence counts can still be unavailable independently.
 
 After the evidence above was captured, the Checker report changed. The
 screenshots above show the earlier report. Signed-in Checker reports now add the
-file name and recognized opportunity number. Signed-out reports omit them and
+file name and recognized opportunity number, or **Opportunity number: Not
+found** when no labeled number was recognized. Signed-out reports omit them and
 add a note that the document was not saved. All reports add a **Document check**
 section. See [Standalone Checker report content](../../DOCX_EXPORT.md#standalone-checker-report-content).
 Automated coverage: `test_signed_in_checker_report_adds_document_details` and

@@ -37,8 +37,8 @@ method and report page coverage when available. Every report also has a
 **Document check** section (see below). The Builder report adds the NOFO
 title and opportunity number when available, after checking access to the
 NOFO. The standalone Checker report for a signed-in user adds the same kind of
-document details: the uploaded file name and, when the Checker recognized one,
-the opportunity number. The signed-out report excludes the filename and
+document details: the uploaded file name and the opportunity number, or
+**Not found** when the Checker found no labeled opportunity number. The signed-out report excludes the filename and
 opportunity identifiers and instead explains that the document was not saved.
 No report includes source content. Neither report forwards session cookies or
 gives GrabzIt a URL to fetch.
@@ -63,8 +63,17 @@ What the report adds depends on whether the user is signed in:
 
 | User | Added to the report |
 | --- | --- |
-| Signed in | **File** (the uploaded file name, as shown on the results page) and **Opportunity number**, matching the NOFO title and number in the Builder panel report. The opportunity number appears only when NOFO recognition matched a labeled opportunity number in the first pages. |
+| Signed in | **File** (the uploaded file name, as shown on the results page) and **Opportunity number**, matching the NOFO title and number in the Builder panel report. If NOFO recognition matched no labeled opportunity number, the report says **Opportunity number: Not found** and explains that the Checker looks for a labeled number, such as "Opportunity number: HRSA-26-106", near the beginning of the document. |
 | Signed out | A note that the document was not saved: the Checker processed it temporarily on HHS-operated systems, did not add it to NOFO Builder, and kept no copy or report history. The note also says the Word report contains only scores and measurement notes, not the document's name, text or identifiers. This matches the notice on the Checker page. |
+
+The Checker finds an opportunity number only when it is labeled and in the
+expected format, in the first five pages or PDF metadata of a PDF, or near the
+beginning of a Word document. It misses unlabeled numbers, numbers that appear
+only later, and template placeholders such as `HHS-2026-XXX-XXX`. A document
+without a findable number can still be analyzed when two other recognition
+signals are present, so **Not found** does not mean the document failed
+recognition. The Builder report is unchanged: it shows the NOFO's saved number
+and omits the line when the NOFO has none.
 
 Recognition returns only the matched identifier (for example
 `HRSA-26-106`), never the surrounding text. The view removes it from the
