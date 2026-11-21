@@ -764,7 +764,11 @@ CONSTANCE_CONFIG = {
     ),
     "HHS_NOFO_READABILITY_WORD_EXPORT_ENABLED": (
         False,
-        "Allow Word downloads of readability results on both surfaces where readability and GrabzIt Word export are enabled. The checker sends only scores and general scope notes to GrabzIt. Builder also sends the NOFO title and opportunity number.",
+        "Allow Word downloads where readability and GrabzIt Word export are enabled. "
+        "Before enabling, verify the export host, GrabzIt account, and conversion capacity. "
+        "Signed-out Checker downloads send scores and measurement notes to GrabzIt. "
+        "Signed-in Checker downloads also send detected opportunity and Assistance Listing "
+        "numbers when available. Builder downloads also send the NOFO title and opportunity number.",
         bool,
     ),
     "HHS_NOFO_PDF_METRICS_PILOT_ENABLED": (
