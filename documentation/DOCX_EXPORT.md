@@ -243,6 +243,7 @@ DOCX helpers, `download_target`, the export views or the gunicorn `--timeout`):
 - `Dockerfile`
 - `nofos/bloom_nofos/settings.py`
 - `nofos/bloom_nofos/utils.py`
+- `nofos/bloom_nofos/views.py`
 - `nofos/composer/views.py`
 - `nofos/nofos/views.py`
 
@@ -251,7 +252,7 @@ normalization helper and the constants that identify the required DOCX package
 parts and Word text elements.
 
 The check also tracks changes inside the HTML-to-DOCX conversion helper,
-the shared DOCX attachment helper, and the Builder readability Word export view.
+the shared DOCX attachment helper, and both readability Word export views.
 
 When you add or move Word export code, update this list and the matching lists in the workflow,
 [`AGENTS.md`](../AGENTS.md#keep-word-export-docs-current) and the PR template.

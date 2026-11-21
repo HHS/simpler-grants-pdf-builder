@@ -40,7 +40,7 @@ function setup(responses, goalPolicy = {}) {
   runInNewContext(source, { document: { querySelector: () => null, getElementById: id => elements[id] || null, createElement: () => ({ ...element(), dataset: {} }) }, window: { setTimeout: () => 1, clearTimeout() {} }, AbortController, Intl, fetch: async (url, options) => { calls.push({ url, options }); const response = responses.shift(); if (response instanceof Error) throw response; return response; } });
   // Opening the panel is the only way a calculation starts on success.
   listeners.calculate = async () => { panel.open = true; listeners.toggle(); await new Promise(resolve => setImmediate(resolve)); };
-  return { panel, listeners, save, saveStatus, retry, results, history, calls, metricCards };
+  return { panel, listeners, save, saveStatus, retry, results, history, calls, metricCards, wordExport, wordReport };
 }
 const result = value => ({ source: { revision: String(value) }, metrics: { word_count: { value, status: 'calculated' } }, warnings: [] });
 const response = (payload, ok = true) => ({ ok, status: ok ? 200 : 503, headers: new Headers(), json: async () => payload });
@@ -79,6 +79,42 @@ test('save hidden until calculation succeeds, separate POST refreshes saved resu
   assert.equal(ui.history.innerHTML, '<p>Saved snapshot</p>');
   assert.equal(ui.save.disabled, false);
 });
+test('Word download follows fresh results and clears when the export header is absent', async () => {
+  const withReport = (payload, token) => ({
+    ...response(payload),
+    headers: new Headers({ 'X-Readability-Word-Report': token }),
+  });
+  const ui = setup([
+    withReport(result(10), 'calculated-report'),
+    withReport({ result: result(20), checkpoint: { id: 1 } }, 'saved-report'),
+    { ok: true, text: async () => '<p>Saved snapshot</p>' },
+    withReport(result(30), 'reopened-report'),
+    response(result(40)),
+  ]);
+  const reopen = async () => {
+    ui.panel.open = false;
+    ui.listeners.toggle();
+    await ui.listeners.calculate();
+  };
+
+  assert.equal(ui.wordExport.hidden, true);
+  await ui.listeners.calculate();
+  assert.equal(ui.wordExport.hidden, false);
+  assert.equal(ui.wordReport.value, 'calculated-report');
+
+  await ui.listeners.save();
+  assert.equal(ui.wordExport.hidden, false);
+  assert.equal(ui.wordReport.value, 'saved-report');
+
+  await reopen();
+  assert.equal(ui.wordExport.hidden, false);
+  assert.equal(ui.wordReport.value, 'reopened-report');
+
+  await reopen();
+  assert.equal(ui.wordExport.hidden, true);
+  assert.equal(ui.wordReport.value, '');
+});
+
 test('failed calculation never offers save', async () => {
   const ui = setup([response({ message: 'Unavailable' }, false)]);
   await ui.listeners.calculate();
