@@ -261,6 +261,8 @@ If found, you can decide if the new change is better/equivalent. If not then add
 
 ## Environment variables
 
+See the [Word export runbook](documentation/WORD_EXPORT_RUNBOOK.md) for GrabzIt account operations.
+
 No additional environment variables are needed to run the application in dev mode, but to run in production, several are needed.
 
 To manually deploy to production, create a new file `./nofos/bloom_nofos/.env.production`.
