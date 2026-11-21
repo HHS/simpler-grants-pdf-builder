@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.64.1](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.64.0...nofos-v3.64.1) (2026-11-21)
+
+
+### Documentation
+
+* diagram the readability Word export flow ([#1420](https://github.com/HHS/simpler-grants-pdf-builder/issues/1420)) ([4d35ecc](https://github.com/HHS/simpler-grants-pdf-builder/commit/4d35ecc5da374322b4e0450eb2f3902ac3c0bd9d))
+
+
+### Miscellaneous Chores
+
+* **main:** release nofos 3.64.0 ([#1418](https://github.com/HHS/simpler-grants-pdf-builder/issues/1418)) ([48c3d5b](https://github.com/HHS/simpler-grants-pdf-builder/commit/48c3d5b347efdb5cf08eb580416d64a99be4a89e))
+
 ## [3.64.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.63.3...nofos-v3.64.0) (2026-11-21)
 
 
