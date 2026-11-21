@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.64.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.63.3...nofos-v3.64.0) (2026-11-21)
+
+
+### Features
+
+* link to the Readability Checker from NOFO import ([#1416](https://github.com/HHS/simpler-grants-pdf-builder/issues/1416)) ([651f84f](https://github.com/HHS/simpler-grants-pdf-builder/commit/651f84fb094a14a81ace877a28cc605e75563349))
+
+
+### Bug Fixes
+
+* align Builder word count target with FY27 guidance ([#1410](https://github.com/HHS/simpler-grants-pdf-builder/issues/1410)) ([d8aaa65](https://github.com/HHS/simpler-grants-pdf-builder/commit/d8aaa657a4e8581aa4a5a7da4e21051cdfd7755e))
+* use upstream links in the PR checklist ([#1414](https://github.com/HHS/simpler-grants-pdf-builder/issues/1414)) ([f1ca9ee](https://github.com/HHS/simpler-grants-pdf-builder/commit/f1ca9ee3bda05f49f99c44990dccbea8bce9a9fc))
+
+
+### Documentation
+
+* add GrabzIt Word export runbook ([#1415](https://github.com/HHS/simpler-grants-pdf-builder/issues/1415)) ([e3d3450](https://github.com/HHS/simpler-grants-pdf-builder/commit/e3d345044cd38b8955aab56e4988fb15dce15194))
+
+
+### Continuous Integration
+
+* track Word export hostname and validation helpers ([#1417](https://github.com/HHS/simpler-grants-pdf-builder/issues/1417)) ([8009685](https://github.com/HHS/simpler-grants-pdf-builder/commit/80096857ed1a2402e3700cdb130788af21adca04))
+
 ## [3.63.3](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.63.2...nofos-v3.63.3) (2026-11-19)
 
 
