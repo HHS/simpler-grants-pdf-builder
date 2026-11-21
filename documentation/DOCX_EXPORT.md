@@ -144,5 +144,9 @@ DOCX helpers, `download_target`, the export views or the gunicorn `--timeout`):
 - `nofos/composer/views.py`
 - `nofos/nofos/views.py`
 
+In `nofos/bloom_nofos/utils.py`, the check also tracks the full hostname
+normalization helper and the constants that identify the required DOCX package
+parts and Word text elements.
+
 When you add or move Word export code, update this list and the matching lists in the workflow,
 [`AGENTS.md`](../AGENTS.md#keep-word-export-docs-current) and the PR template.

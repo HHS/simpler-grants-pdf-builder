@@ -90,9 +90,30 @@ jobs:
           DECLARATIONS = (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)
           FUNCTIONS = (ast.FunctionDef, ast.AsyncFunctionDef)
 
+          EXPORT_UTILITY_FUNCTIONS = {"_normalize_hostname"}
+          EXPORT_UTILITY_CONSTANTS = {
+              "DOCX_DOCUMENT_PATH",
+              "DOCX_REQUIRED_PATHS",
+              "WORDPROCESSINGML_TEXT_TAG",
+          }
+
+          def is_export_setting(path, name):
+              if path == "nofos/bloom_nofos/settings.py":
+                  return EXPORT_PATTERN.search(name)
+              return (
+                  path == "nofos/bloom_nofos/utils.py"
+                  and name in EXPORT_UTILITY_CONSTANTS
+              )
+
           def export_scopes(tree, path):
               for node in ast.walk(tree):
-                  if isinstance(node, DECLARATIONS) and EXPORT_PATTERN.search(node.name):
+                  if isinstance(node, DECLARATIONS) and (
+                      EXPORT_PATTERN.search(node.name)
+                      or (
+                          path == "nofos/bloom_nofos/utils.py"
+                          and node.name in EXPORT_UTILITY_FUNCTIONS
+                      )
+                  ):
                       yield node
                   elif (
                       path == "nofos/composer/views.py"
@@ -104,15 +125,10 @@ jobs:
                           for member in node.body
                           if isinstance(member, FUNCTIONS) and member.name == "post"
                       )
-                  elif path == "nofos/bloom_nofos/settings.py":
-                      if isinstance(node, ast.Assign):
-                          targets = node.targets
-                      elif isinstance(node, ast.AnnAssign):
-                          targets = [node.target]
-                      else:
-                          continue
+                  elif isinstance(node, (ast.Assign, ast.AnnAssign)):
+                      targets = node.targets if isinstance(node, ast.Assign) else [node.target]
                       if any(
-                          isinstance(target, ast.Name) and EXPORT_PATTERN.search(target.id)
+                          isinstance(target, ast.Name) and is_export_setting(path, target.id)
                           for target in targets
                       ):
                           yield node
