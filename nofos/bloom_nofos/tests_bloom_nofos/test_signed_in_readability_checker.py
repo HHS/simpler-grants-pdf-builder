@@ -55,6 +55,24 @@ class SignedInCheckerTests(TestCase):
             content_type="application/pdf",
         )
 
+    def test_new_nofo_import_links_to_checker_only_when_available(self):
+        self.login()
+        import_url = reverse("nofos:nofo_import")
+        link = f'href="{self.url}"'
+        for public, authenticated in ((False, False), (False, True), (True, False)):
+            with (
+                self.subTest(public=public, authenticated=authenticated),
+                override_config(
+                    HHS_NOFO_PDF_METRICS_PILOT_ENABLED=public,
+                    HHS_NOFO_AUTHENTICATED_PDF_METRICS_PILOT_ENABLED=authenticated,
+                ),
+            ):
+                page = self.client.get(import_url)
+                if public or authenticated:
+                    self.assertContains(page, link)
+                else:
+                    self.assertNotContains(page, link)
+
     def test_word_scope_report_shows_recognized_cover_and_contents_counts(self):
         self.login()
         for cover, toc in ((0, 0), (3, 5)):

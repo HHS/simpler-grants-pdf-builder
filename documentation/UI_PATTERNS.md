@@ -468,6 +468,10 @@ on its one paragraph. Use `role="note"`. Do not use `role="alert"` or
 `usa-alert--warning`; the notice is non-critical information, and `role="alert"`
 would interrupt screen readers on page load.
 
+The **Import a new NOFO** page uses the same slim informational alert above
+its file input to offer the Readability Checker as a separate action. Show the
+link only when the Checker is available to the signed-in user.
+
 The **How we handle your document** disclosure follows the alert, still before
 the file input, so the notice and its details stay together. The file input and
 **Analyze document** then keep the standard 1.5rem button spacing. Because the
