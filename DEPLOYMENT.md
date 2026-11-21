@@ -158,6 +158,8 @@ shows its desktop and mobile states.
 
 ### Word export environment isolation
 
+See the [Word export runbook](documentation/WORD_EXPORT_RUNBOOK.md) for account ownership, credential rotation, and cutover verification.
+
 GrabzIt stores the authentication cookies used for URL-to-DOCX conversion on the provider side. Production credentials must not be installed in another environment. Configure `GRABZIT_APPLICATION_KEY`, `GRABZIT_APPLICATION_SECRET`, and `GRABZIT_WORD_EXPORT_ALLOWED_HOSTS` together:
 
 - Production uses its production-only credentials and allows only `nofos.simpler.grants.gov`.
