@@ -19,7 +19,9 @@
 
     if (!resp.ok) {
       const text = await resp.text().catch(() => "");
-      throw new Error(text || `Request failed (${resp.status})`);
+      const error = new Error(text || `Request failed (${resp.status})`);
+      error.status = resp.status;
+      throw error;
     }
 
     const blob = await resp.blob();

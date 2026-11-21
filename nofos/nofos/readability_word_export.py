@@ -233,6 +233,11 @@ def download_report(request, *, salt, nofo=None):
             or ("owner" in report and report["owner"] != str(request.user.pk))
         ):
             raise signing.BadSignature
+    except signing.SignatureExpired:
+        response = HttpResponse(
+            "Readability results expired. Refresh the results before downloading again.",
+            status=410,
+        )
     except signing.BadSignature:
         response = HttpResponse(
             "These results are no longer available for download. "

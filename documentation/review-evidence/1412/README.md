@@ -71,3 +71,16 @@ The report excludes the upload filename. Chrome downloaded it through the app's
 export view with LibreOffice standing in for GrabzIt. Both readability download
 buttons were disabled during the request and re-enabled after success. The
 Checker button also recovered after a simulated conversion failure.
+
+## Expired-results recovery
+
+Chrome rendered the actual Word download dialog for a simulated expired
+response on the [Readability Checker](checker-word-expired.png) and in the
+[NOFO Builder panel](builder-word-expired.png). Each dialog explained how to
+get fresh results and dismissed with **OK**. A simulated converter failure
+still displayed the generic retry message. Django tests separately verified
+that genuinely expired signed reports return HTTP 410 without contacting
+GrabzIt, and JavaScript tests verified the messages and heading reset.
+
+See the [UI pattern](../../UI_PATTERNS.md#expired-readability-downloads) for the
+current wording and recovery behavior.

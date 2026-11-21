@@ -9,20 +9,25 @@ const source = readFileSync(
   "utf8"
 );
 
-function setup({ readability = true } = {}) {
+function setup({ readability = true, expiredMessage = "" } = {}) {
   let submit;
   const requests = [];
   const button = { disabled: false, getAttribute: () => "docx-modal" };
   const loading = { hidden: true };
   const success = { hidden: true };
   const error = { hidden: true };
+  const heading = { textContent: "Generating Word report…" };
+  const errorText = { textContent: "" };
   const nodes = {
+    ".usa-modal__heading": heading,
+    "[data-docx-error-text]": errorText,
     '[data-docx-state="loading"]': loading,
     '[data-docx-state="success"]': success,
     '[data-docx-state="error"]': error,
     "[data-docx-done-btn]": { addEventListener() {} },
   };
   const form = {
+    dataset: { readabilityExpiredMessage: expiredMessage },
     hasAttribute: (name) => readability && name === "data-readability-word-report",
     querySelector: () => button,
     addEventListener: (_name, listener) => { submit = listener; },
@@ -45,7 +50,7 @@ function setup({ readability = true } = {}) {
     clearTimeout() {},
   });
   return {
-    button, loading, success, error, requests,
+    button, loading, success, error, heading, errorText, requests,
     submit: () => submit({ preventDefault() {} }),
   };
 }
@@ -72,6 +77,8 @@ test("a failed readability Word download re-enables the button for a retry", asy
   await first;
   assert.equal(ui.button.disabled, false);
   assert.equal(ui.error.hidden, false);
+  assert.match(ui.errorText.textContent, /Please try again/);
+  assert.doesNotMatch(ui.errorText.textContent, /Conversion failed/);
 
   const retry = ui.submit();
   assert.equal(ui.button.disabled, true);
@@ -87,4 +94,26 @@ test("full-document Word downloads keep their existing button behavior", async (
   assert.equal(ui.button.disabled, false);
   ui.requests[0].resolve();
   await result;
+});
+
+
+test("expired readability results show the recovery instruction for each surface", async () => {
+  for (const expiredMessage of [
+    "Select Analyze another document and upload your file again. Then select Download Word.",
+    "Close and reopen Readability metrics to refresh the results. Then select Download metrics as Word.",
+  ]) {
+    const ui = setup({ expiredMessage });
+    const first = ui.submit();
+    ui.requests[0].reject(Object.assign(new Error("Untrusted response"), { status: 410 }));
+    await first;
+    assert.equal(ui.heading.textContent, "Readability results expired");
+    assert.equal(ui.errorText.textContent, expiredMessage);
+    assert.equal(ui.error.hidden, false);
+    assert.equal(ui.button.disabled, false);
+
+    const retry = ui.submit();
+    assert.equal(ui.heading.textContent, "Generating Word report…");
+    ui.requests[1].resolve();
+    await retry;
+  }
 });

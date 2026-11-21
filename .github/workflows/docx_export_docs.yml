@@ -73,7 +73,8 @@ jobs:
           # Kept narrow on purpose: Word *import* code also mentions "docx".
           EXPORT_PATTERN = re.compile(
               r"grabzit|is_valid_docx|generate_docx_download_response"
-              r"|download_target|(NOFOs|Composer|WriterInstance)ExportView"
+              r"|generate_html_docx_download_response|_docx_attachment"
+              r"|download_target|(NOFOs|Composer|WriterInstance|NofoReadabilityWord)ExportView"
               r"|--timeout",
               re.IGNORECASE,
           )

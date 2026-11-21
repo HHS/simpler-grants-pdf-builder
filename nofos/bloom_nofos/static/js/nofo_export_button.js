@@ -7,6 +7,8 @@
     const modal = modalId ? document.getElementById(modalId) : null;
     if (!modal) return;
 
+    const heading = modal.querySelector(".usa-modal__heading");
+    const defaultHeading = heading?.textContent;
     const loading = modal.querySelector('[data-docx-state="loading"]');
     const success = modal.querySelector('[data-docx-state="success"]');
     const error = modal.querySelector('[data-docx-state="error"]');
@@ -37,6 +39,7 @@
       error.hidden = state !== "error";
 
       if (state === "loading") {
+        if (heading) heading.textContent = defaultHeading;
         doneBtn.hidden = true;
         if (status) status.textContent = message || "Generating your document.";
 
@@ -89,11 +92,16 @@
         await window.NofoExport.downloadFormAsBlob(form);
         setState("success");
       } catch (err) {
-        console.error(err);
-        setState(
-          "error",
-          "Sorry — something went wrong generating the document. Please try again.",
-        );
+        if (disableWhilePending && err?.status === 410) {
+          if (heading) heading.textContent = "Readability results expired";
+          setState("error", form.dataset.readabilityExpiredMessage);
+        } else {
+          console.error(err);
+          setState(
+            "error",
+            "Sorry — something went wrong generating the document. Please try again.",
+          );
+        }
       } finally {
         if (disableWhilePending) button.disabled = false;
       }

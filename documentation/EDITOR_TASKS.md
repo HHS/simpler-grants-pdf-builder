@@ -976,6 +976,9 @@ If the panel is absent, this task is unavailable there.
 4. Under **Saved snapshots**, expand a checkpoint to see its results. Select
    **See all snapshots** for the full history when that link appears.
 
+If the Word download says the results expired, close and reopen **Readability
+metrics** before trying again.
+
 Select **Download metrics as Word**, when available, to keep a separate report
 with the NOFO title, opportunity number and a **Document check**. The Word download does not save a
 checkpoint.
@@ -1027,6 +1030,10 @@ then try again. If it's still unavailable, contact the checker operator.
    receives only what appears in the report. You can also select **Copy
    metrics** before leaving the report. Use **Analyze another document** for
    another upload. See [what the Word report includes](DOCX_EXPORT.md#standalone-checker-report-content).
+
+If the Word download says the results expired, select **Analyze another document**
+and upload the file again before downloading.
+
 
 Profiles are selected automatically; there is no profile setting to choose.
 Check the report's **Measurement version** when comparing results. Version 0.7.0

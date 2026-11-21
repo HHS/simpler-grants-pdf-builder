@@ -3,7 +3,10 @@
   method="post"
   action="{{ action_url }}"
   class="docx-download-form{% if form_classes %} {{ form_classes }}{% endif %}"
-  {% if readability_metrics %}data-readability-word-report{% endif %}
+  {% if readability_metrics %}
+  data-readability-word-report
+  data-readability-expired-message="{% if metrics_panel %}Close and reopen Readability metrics to refresh the results. Then select Download metrics as Word.{% else %}Select Analyze another document and upload your file again. Then select Download Word.{% endif %}"
+  {% endif %}
   {% if metrics_panel %}data-readability-word-export hidden{% endif %}
 >
   {% csrf_token %}

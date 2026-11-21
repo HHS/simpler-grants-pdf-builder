@@ -44,7 +44,9 @@ No report includes source content. Neither report forwards session cookies or
 gives GrabzIt a URL to fetch.
 
 The browser submits a signed copy of the displayed values that expires after
-one hour. The readability download button is disabled while its request is
+one hour. An expired download opens the [readability recovery
+dialog](UI_PATTERNS.md#expired-readability-downloads) with instructions to
+refresh the results. The readability download button is disabled while its request is
 in progress and re-enabled when it finishes or fails. Generating the report does not save a readability checkpoint. As with
 other Word exports, GrabzIt may retain the generated document in its capture cache.
 
@@ -247,6 +249,9 @@ DOCX helpers, `download_target`, the export views or the gunicorn `--timeout`):
 In `nofos/bloom_nofos/utils.py`, the check also tracks the full hostname
 normalization helper and the constants that identify the required DOCX package
 parts and Word text elements.
+
+The check also tracks changes inside the HTML-to-DOCX conversion helper,
+the shared DOCX attachment helper, and the Builder readability Word export view.
 
 When you add or move Word export code, update this list and the matching lists in the workflow,
 [`AGENTS.md`](../AGENTS.md#keep-word-export-docs-current) and the PR template.

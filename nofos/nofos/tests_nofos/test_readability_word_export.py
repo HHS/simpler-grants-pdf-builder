@@ -1,3 +1,4 @@
+import time
 from unittest.mock import call, patch
 
 from bloom_nofos.tests_bloom_nofos.test_utils import VALID_DOCX
@@ -28,6 +29,14 @@ class ReadabilityWordExportTests(TestCase):
         provider = patch("bloom_nofos.utils.GrabzItClient.GrabzItClient")
         self.grabzit = self.enterContext(provider).return_value
         self.grabzit.SaveTo.return_value = VALID_DOCX
+
+    def assert_expired_download(self, client, url, data):
+        self.grabzit.reset_mock()
+        with patch("django.core.signing.time.time", return_value=time.time() + 3601):
+            response = client.post(url, data)
+        self.assertContains(response, "Readability results expired", status_code=410)
+        self.assertIn("no-store", response["Cache-Control"])
+        self.grabzit.HTMLToDOCX.assert_not_called()
 
     def test_signed_out_checker_converts_only_metrics_and_generic_scope(self):
         client = Client(enforce_csrf_checks=True)
@@ -76,6 +85,10 @@ class ReadabilityWordExportTests(TestCase):
             [call.UseSSL(True), call.HTMLToDOCX(html), call.SaveTo()],
         )
         self.assertFalse(Nofo.objects.exists())
+
+        self.assert_expired_download(
+            client, export_url, {"report": token, "csrfmiddlewaretoken": csrf}
+        )
 
         config.HHS_NOFO_READABILITY_WORD_EXPORT_ENABLED = False
         self.grabzit.reset_mock()
@@ -295,6 +308,8 @@ class ReadabilityWordExportTests(TestCase):
         self.assertIn("This NOFO was created in NOFO Builder.", html)
         self.assertNotIn("Your document was not saved.", html)
         self.assertNotIn("Private source excerpt", html)
+
+        self.assert_expired_download(self.client, export_url, {"report": token})
 
         self.grabzit.reset_mock()
         noop = self.client.post(
