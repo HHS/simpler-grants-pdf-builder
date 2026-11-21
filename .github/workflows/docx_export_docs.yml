@@ -41,6 +41,7 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
+          import ast
           import os
           import re
           import subprocess
@@ -61,8 +62,7 @@ jobs:
           }
 
           # Shared files that hold Word export code next to other code. A change
-          # counts only when a changed line, or the class/function it sits in,
-          # matches EXPORT_PATTERN.
+          # counts when a changed line or its enclosing export scope is tracked.
           SHARED_FILES = {
               "Dockerfile",  # gunicorn timeout
               "nofos/bloom_nofos/settings.py",
@@ -79,28 +79,89 @@ jobs:
           )
 
           base, head = os.environ["BASE_SHA"], os.environ["HEAD_SHA"]
-          revs = f"{base}...{head}"
 
           def git(*args):
               return subprocess.run(
                   ["git", *args], check=True, capture_output=True, text=True
               ).stdout
 
-          changed = set(git("diff", "--name-only", revs).splitlines())
+          merge_base = git("merge-base", base, head).strip()
+          revs = f"{merge_base}..{head}"
+          HUNK = re.compile(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")
+
+          DECLARATIONS = (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)
+          FUNCTIONS = (ast.FunctionDef, ast.AsyncFunctionDef)
+
+          def export_scopes(tree, path):
+              for node in ast.walk(tree):
+                  if isinstance(node, DECLARATIONS) and EXPORT_PATTERN.search(node.name):
+                      yield node
+                  elif (
+                      path == "nofos/composer/views.py"
+                      and isinstance(node, ast.ClassDef)
+                      and node.name == "WriterInstancePreviewView"
+                  ):
+                      yield from (
+                          member
+                          for member in node.body
+                          if isinstance(member, FUNCTIONS) and member.name == "post"
+                      )
+                  elif path == "nofos/bloom_nofos/settings.py":
+                      if isinstance(node, ast.Assign):
+                          targets = node.targets
+                      elif isinstance(node, ast.AnnAssign):
+                          targets = [node.target]
+                      else:
+                          continue
+                      if any(
+                          isinstance(target, ast.Name) and EXPORT_PATTERN.search(target.id)
+                          for target in targets
+                      ):
+                          yield node
+
+          def touches_export(revision, path, ranges):
+              ranges = [span for span in ranges if span]
+              if not ranges:
+                  return False
+
+              source = git("show", f"{revision}:{path}")
+              lines = source.split("\n")
+              if any(
+                  EXPORT_PATTERN.search(lines[number - 1])
+                  for span in ranges
+                  for number in span
+              ):
+                  return True
+
+              if not path.endswith(".py"):
+                  return False
+
+              # Use Python's declaration boundaries, not Git's hunk labels.
+              tree = ast.parse(source, filename=path)
+              for node in export_scopes(tree, path):
+                  decorators = getattr(node, "decorator_list", ())
+                  start = min([node.lineno, *(item.lineno for item in decorators)])
+                  if any(span.start <= node.end_lineno and start < span.stop for span in ranges):
+                      return True
+              return False
+
+          changed = set(git("diff", "--no-renames", "--name-only", revs).splitlines())
           if DOC in changed:
               print(f"{DOC} was updated.")
               raise SystemExit(0)
 
           triggers = sorted(changed & EXPORT_FILES)
           for path in sorted(changed & SHARED_FILES):
-              diff = git("diff", "--unified=0", revs, "--", path)
-              lines = [
-                  line
-                  for line in diff.splitlines()
-                  if line.startswith("@@")
-                  or (line[:1] in "+-" and not line.startswith(("+++", "---")))
-              ]
-              if any(EXPORT_PATTERN.search(line) for line in lines):
+              diff = git("diff", "--no-renames", "--unified=0", revs, "--", path)
+              removed, added = [], []
+              for line in diff.splitlines():
+                  match = HUNK.match(line)
+                  if match:
+                      old_start, old_count, new_start, new_count = match.groups()
+                      old_start, new_start = int(old_start), int(new_start)
+                      removed.append(range(old_start, old_start + int(old_count or 1)))
+                      added.append(range(new_start, new_start + int(new_count or 1)))
+              if touches_export(merge_base, path, removed) or touches_export(head, path, added):
                   triggers.append(path)
 
           if not triggers:

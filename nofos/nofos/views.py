@@ -14,6 +14,7 @@ from bloom_nofos.html_diff import has_diff, html_diff
 from bloom_nofos.import_errors import IMPORT_ERROR_CATALOG
 from bloom_nofos.logs import log_exception
 from bloom_nofos.utils import cast_to_boolean, generate_docx_download_response
+from bloom_nofos.views import checker_access
 from bs4 import BeautifulSoup
 from constance import config
 from django.conf import settings
@@ -877,8 +878,10 @@ class BaseNofoImportView(View):
         """
         Default get method: just render a template.
         """
-        context = {"WORD_IMPORT_STRICT_MODE": config.WORD_IMPORT_STRICT_MODE}
-        return render(request, self.get_template_name(), context)
+        return render(request, self.get_template_name(), self.get_context_data(request))
+
+    def get_context_data(self, request):
+        return {"WORD_IMPORT_STRICT_MODE": config.WORD_IMPORT_STRICT_MODE}
 
     def post(self, request, *args, **kwargs):
         """
@@ -1077,6 +1080,12 @@ class NofosImportNewView(BaseNofoImportView):
     track_import_metrics = True
     remove_word_instruction_boxes = True
     extract_scoped_tagline = True
+
+    def get_context_data(self, request):
+        context = super().get_context_data(request)
+        checker_enabled, _ = checker_access(request)
+        context["show_readability_checker"] = checker_enabled
+        return context
 
     def handle_nofo_create(self, request, soup, sections, filename, *args, **kwargs):
         """

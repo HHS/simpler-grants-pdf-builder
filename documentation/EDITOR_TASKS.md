@@ -108,6 +108,11 @@ is needed, contact the SimplerNOFOs team.
 
 **Notes**
 
+- If you only need readability scores, use the **Readability Checker** link
+  above the import field when available. See [Check Word or PDF
+  readability](#task-readability-upload).
+
+
 - New CDC-, FDA-, and ONC-group imports start with their agency theme and the **Text only** cover.
   When a CDC or FDA editor uploads a document whose OpDiv identifies the other agency,
   Builder keeps the editor’s group theme and asks them to check the uploaded document.
