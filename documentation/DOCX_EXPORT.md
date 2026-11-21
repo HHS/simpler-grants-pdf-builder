@@ -57,7 +57,9 @@ actions on new results and blocks requests from pages already open.
 
 The report includes four Tier 2 clearance metrics, the Tier 1 drafting
 measure, a **Document check** section and a **Text measured** section. An
-unavailable metric is labeled **Not available**.
+unavailable metric is labeled **Not available**. A thin grey horizontal rule
+separates the metrics from the **Document check** and **Text measured** notes
+in every report, including the Builder report.
 
 What the report adds depends on whether the user is signed in:
 

@@ -23,6 +23,9 @@
     <p>{{ label }}: <strong>{{ value }}</strong></p>
   {% endfor %}
 
+  {# Separates the scores from the notes about the document and measurement. #}
+  <hr style="border: none; border-top: 1px solid #a9aeb1; margin: 18pt 0;">
+
   {% if nofo_check %}
   <h2 style="font-size: 14pt;">Document check</h2>
   <p>Recognized as a likely HHS NOFO: <strong>{{ nofo_check.recognized }}</strong>. {{ nofo_check.recognized_note }}</p>

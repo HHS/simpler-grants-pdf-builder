@@ -155,6 +155,9 @@ class ReadabilityWordExportTests(TestCase):
         for html in exports[:2]:
             self.assertIn("Tier 2 clearance metrics", html)
             self.assertIn("Document check", html)
+            # A thin rule separates the scores from the notes below them.
+            self.assertLess(html.index("Tier 1 drafting measure"), html.index("<hr"))
+            self.assertLess(html.index("<hr"), html.index("Document check"))
             self.assertIn("Recognized as a likely HHS NOFO: <strong>Yes</strong>", html)
             self.assertIn(
                 "found an opportunity number and an Assistance Listing number", html
