@@ -13,6 +13,7 @@ from pypdf import PdfReader
 from nofos.pdf_format_recognition import (
     DEFAULT_POLICY,
     RecognitionPolicy,
+    recognition_fields,
     recognize_nofo,
     validate_policy,
 )
@@ -160,6 +161,7 @@ def _safe_result(result, profile_kind: str, page_count: int) -> dict:
         ),
         "reliability": reliability,
         "pages_analyzed": pages_analyzed,
+        "pages_with_text": pages_with_text,
         "pages_total": page_count,
         "coverage": f"{pages_with_text} of {page_count} pages contain extractable text",
         "warnings": warnings,
@@ -184,6 +186,7 @@ def _safe_result(result, profile_kind: str, page_count: int) -> dict:
             + report["word_exclusions"]["cover_position"]
         )
         report.pop("pages_analyzed")
+        report.pop("pages_with_text")
         report.pop("pages_total")
         report["coverage"] = (
             "Word body text converted to HTML; page counts are not available."
@@ -239,7 +242,9 @@ def analyze(
     support = metrics.inspect_adapter_support(source, adapter=TAGGED_ADAPTER)[0][
         "assessment"
     ]["status"]
-    return _analyze_metrics(source, support, page_count)
+    report = _analyze_metrics(source, support, page_count)
+    report.update(recognition_fields(decision))
+    return report
 
 
 def _analyze_metrics(source, support: str, page_count: int) -> dict:
@@ -266,7 +271,10 @@ def analyze_word(path: Path) -> dict:
     from nofos.word_readability import word_html
 
     boundaries = {}
-    html, conversion_warning = word_html(path, scope_boundaries=boundaries)
+    recognition = {}
+    html, conversion_warning = word_html(
+        path, scope_boundaries=boundaries, recognition=recognition
+    )
     try:
         result = metrics.analyze(
             metrics.SourceBundle.from_html(html.encode("utf-8")),
@@ -277,6 +285,7 @@ def analyze_word(path: Path) -> dict:
     except metrics.NofoMetricsError:
         raise ValueError("invalid_word") from None
     report = _safe_result(result, "word", 0)
+    report.update(recognition)
     if conversion_warning:
         report["warnings"].append(
             "The Word converter reported unsupported content or formatting. Some text may be missing."

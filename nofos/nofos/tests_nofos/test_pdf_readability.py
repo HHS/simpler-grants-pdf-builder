@@ -250,6 +250,9 @@ class PdfReadabilityTests(SimpleTestCase):
         self.assertEqual(
             decision.signal_ids, ("hhs_agency_page_text", "opportunity_number")
         )
+        # Only the matched identifier is kept, never the surrounding text.
+        self.assertEqual(decision.opportunity_number, "HRSA-26-106")
+        self.assertNotIn("Health Resources", repr(decision))
 
     def test_agency_in_both_locations_still_counts_once(self):
         decision = recognize_nofo({"/Author": "HRSA"}, "HRSA HRSA HHS NIH")
@@ -278,7 +281,17 @@ class PdfReadabilityTests(SimpleTestCase):
                         return_value={"recognized": True},
                     ):
                         if expected:
-                            self.assertEqual(analyze(path, 150), {"recognized": True})
+                            self.assertEqual(
+                                analyze(path, 150),
+                                {
+                                    "recognized": True,
+                                    "nofo_signals": [
+                                        "hhs_agency_page_text",
+                                        "opportunity_number",
+                                    ],
+                                    "opportunity_number": "HRSA-26-106",
+                                },
+                            )
                         else:
                             with self.assertRaisesRegex(
                                 ValueError, "format_unsupported"
@@ -296,10 +309,9 @@ class PdfReadabilityTests(SimpleTestCase):
                 "nofos.pdf_readability_worker._analyze_metrics",
                 return_value={"recognized": True},
             ) as metrics:
-                self.assertEqual(
-                    analyze(path, 150),
-                    {"recognized": True},
-                )
+                report = analyze(path, 150)
+                self.assertTrue(report["recognized"])
+                self.assertTrue(report["nofo_signals"])
                 metrics.assert_called_once()
 
     def test_real_tagged_pdf_path_with_loose_signals(self):

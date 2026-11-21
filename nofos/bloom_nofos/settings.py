@@ -762,6 +762,15 @@ CONSTANCE_CONFIG = {
         "Whether the provisional readability metrics panel and endpoint are available. Metrics are calculated on demand and saved as revision-scoped snapshots.",
         bool,
     ),
+    "HHS_NOFO_READABILITY_WORD_EXPORT_ENABLED": (
+        False,
+        "Allow Word downloads where readability and GrabzIt Word export are enabled. "
+        "Before enabling, verify the export host, GrabzIt account, and conversion capacity. "
+        "Signed-out Checker downloads send scores and measurement notes to GrabzIt. "
+        "Signed-in Checker downloads also send detected opportunity and Assistance Listing "
+        "numbers when available. Builder downloads also send the NOFO title and opportunity number.",
+        bool,
+    ),
     "HHS_NOFO_PDF_METRICS_PILOT_ENABLED": (
         HHS_NOFO_PDF_METRICS_PILOT_ENABLED_DEFAULT,
         "Whether the Readability Checker at /readability-checker/ accepts PDF and Word uploads from everyone, signed in or not. Uploads and reports are not saved.",

@@ -110,7 +110,13 @@
         </summary>
         <ul class="usa-list margin-top-1" data-metrics-warnings-list></ul>
       </details>
-      <button class="usa-button margin-top-2" type="button" data-save-readability hidden>Save these results</button>
+      <div class="display-flex flex-wrap flex-align-center">
+        <button class="usa-button margin-top-2" type="button" data-save-readability hidden>Save these results</button>
+        {% if readability_word_export_enabled %}
+          {% url 'nofos:nofo_readability_word_export' nofo.id as metrics_word_url %}
+          {% include "includes/docx_download_button_form.html" with action_url=metrics_word_url form_classes="margin-top-2" id_suffix="-readability-metrics" button_label="Download metrics as Word" modal_heading="Generating Word report…" readability_metrics=True metrics_panel=True %}
+        {% endif %}
+      </div>
       <p class="font-sans-xs" data-save-readability-status aria-live="polite" role="status"></p>
     </div>
     <section data-readability-saved-history aria-label="Saved readability snapshots">

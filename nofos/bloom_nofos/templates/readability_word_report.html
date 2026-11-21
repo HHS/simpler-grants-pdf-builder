@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Readability metrics</title>
+</head>
+<body style="font-family: Arial, sans-serif; font-size: 11pt; color: #171717;">
+  <h1 style="font-size: 22pt;">Readability metrics</h1>
+  {% if title %}<p><strong>{{ title }}</strong></p>{% endif %}
+  {% if number %}<p>Opportunity number {{ number }}</p>{% endif %}
+  {% if assistance_listing_number %}<p>Assistance Listing number {{ assistance_listing_number }}</p>{% endif %}
+  {% if not_saved_note %}
+    <p><strong>Your document was not saved.</strong> The Readability Checker processed it temporarily on HHS-operated systems to calculate these estimates. It was not added to NOFO Builder, and no copy or report history was kept. This Word report contains only the scores and measurement notes below. It does not include your document’s name, text, or identifiers.</p>
+  {% endif %}
+
+  <h2 style="font-size: 14pt;">Tier 2 clearance metrics</h2>
+  {% for label, value in clearance_rows %}
+    <p>{{ label }}: <strong>{{ value }}</strong></p>
+  {% endfor %}
+
+  <h2 style="font-size: 14pt;">Tier 1 drafting measure</h2>
+  {% for label, value in drafting_rows %}
+    <p>{{ label }}: <strong>{{ value }}</strong></p>
+  {% endfor %}
+
+  {# Separates the scores from the notes about the document and measurement. #}
+  <hr style="border: none; border-top: 1px solid #a9aeb1; margin: 18pt 0;">
+
+  {% if nofo_check %}
+  <h2 style="font-size: 14pt;">Document check</h2>
+  <p>Recognized as a likely HHS NOFO: <strong>{{ nofo_check.recognized }}</strong>. {{ nofo_check.recognized_note }}</p>
+  <p>NOFO template structure: <strong>{{ nofo_check.structure }}</strong>. {{ nofo_check.structure_note }}</p>
+  {% endif %}
+
+  <h2 style="font-size: 14pt;">Text measured</h2>
+  <p>{{ scope }}{% if details.pages_with_text is not None and details.pages_total %} {{ details.pages_with_text }} of {{ details.pages_total }} pages contained extractable text.{% elif details.pages_analyzed is not None and details.pages_total %} {{ details.pages_analyzed }} of {{ details.pages_total }} pages were processed.{% endif %}</p>
+  {% if details.no_exclusions %}
+    <p>The checker recorded no words skipped in those categories.</p>
+  {% endif %}
+  <p>
+    {% if details.recovered_word_count is not None %}Word count covers {{ details.recovered_word_count }} recovered words. {% endif %}
+    {% if details.sentence_word_count is not None and details.complete_sentence_count is not None %}
+      Sentence-based scores use {{ details.sentence_word_count }} words in {{ details.complete_sentence_count }} complete sentence{{ details.complete_sentence_count|pluralize }}.
+    {% else %}
+      Sentence-based scores use complete sentences.
+    {% endif %}
+    {% if details.excluded_word_count is not None %}
+      They exclude {{ details.excluded_word_count }} words in fragments such as some headings, labels, list items, and table cells.
+    {% else %}
+      They exclude fragments such as some headings, labels, list items, and table cells.
+    {% endif %}
+  </p>
+</body>
+</html>

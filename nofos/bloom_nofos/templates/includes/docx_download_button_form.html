@@ -2,13 +2,22 @@
 <form
   method="post"
   action="{{ action_url }}"
-  class="docx-download-form"
+  class="docx-download-form{% if form_classes %} {{ form_classes }}{% endif %}"
+  {% if readability_metrics %}
+  data-readability-word-report
+  data-readability-expired-message="{% if metrics_panel %}Close and reopen Readability metrics to refresh the results. Then select Download metrics as Word.{% else %}Select Analyze another document and upload your file again. Then select Download Word.{% endif %}"
+  {% endif %}
+  {% if metrics_panel %}data-readability-word-export hidden{% endif %}
 >
   {% csrf_token %}
+  {% if readability_metrics %}
+  <input type="hidden" name="report" value="{{ report_token }}">
+  {% else %}
   <input type="hidden" name="export_action" value="{{ export_action|default:"download" }}" />
+  {% endif %}
   <button
     type="submit"
-    class="usa-button{% if not primary %} usa-button--outline{% endif %} font-sans-2xs text-normal inline-block"
+    class="usa-button{% if not primary %} usa-button--outline{% endif %}{% if not readability_metrics %} font-sans-2xs text-normal inline-block{% endif %}"
     aria-controls="docx-modal{{ id_suffix }}"
     {% if aria_label %}aria-label="{{ aria_label }}"{% endif %}
     data-open-modal

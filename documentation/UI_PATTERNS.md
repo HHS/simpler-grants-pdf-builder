@@ -250,6 +250,22 @@ instead.
 - On success, the modal says the result is ready and closes itself after
   3 seconds. On failure, it shows an error and an OK button.
 
+### Expired readability downloads
+
+When a prepared readability download expires, keep the existing Word download
+dialog open. Use **Readability results expired** as the heading and tell users
+how to get fresh results on the current surface:
+
+- **Readability Checker:** Select **Analyze another document** and upload your
+  file again. Then select **Download Word**.
+- **NOFO Builder:** Close and reopen **Readability metrics** to refresh the
+  results. Then select **Download metrics as Word**.
+
+**OK** dismisses the dialog and returns users to the page. Use this variation
+for an explicit expired-results response. Other conversion failures show the
+generic retry message. Re-enable the download button on either outcome and
+restore the generating heading when a new request starts.
+
 ### Implementation
 
 Include the shared styles and use the track and horse classes:

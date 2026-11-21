@@ -107,6 +107,11 @@ class WordReadabilityTests(SimpleTestCase):
         self.assertGreater(report["metrics"]["word_count"]["value"], 10)
         self.assertNotIn("pages_total", report)
         self.assertNotIn("pages_analyzed", report)
+        # The matched opportunity number is the only identifier returned.
+        self.assertEqual(report.pop("opportunity_number"), "HRSA-26-106")
+        self.assertEqual(
+            report["nofo_signals"], ["opportunity_number", "assistance_listing"]
+        )
         self.assertNotIn("HRSA-26-106", str(report))
         self.assertNotIn("Applicants should", str(report))
         self.assertIn("Recognized template instructions", str(report["warnings"]))

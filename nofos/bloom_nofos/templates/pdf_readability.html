@@ -124,7 +124,11 @@
         {% endif %}
         <p class="margin-top-4">Your document was processed temporarily on HHS-operated systems to calculate these estimates. It was not added to NOFO Builder, and ordinary unsaved reports have no retained history. For an unsaved report, save or copy your results before leaving this page; the report cannot be recovered later.</p>
         <div class="readability-actions no-print">
-          <button class="usa-button" type="button" id="print-readability-report">Print / Save as PDF</button>
+          {% if word_export_report %}
+          {% include "includes/document_progress_styles.html" %}
+          {% url 'pdf_readability_word_export' as metrics_word_url %}
+          {% include "includes/docx_download_button_form.html" with action_url=metrics_word_url id_suffix="-readability-metrics" button_label="Download Word" primary=True modal_heading="Generating Word report…" readability_metrics=True report_token=word_export_report %}
+          {% endif %}
           <button class="usa-button usa-button--outline" type="button" id="copy-readability-report">Copy metrics</button>
           <a class="usa-link text-bold" href="{% url 'pdf_readability' %}">Analyze another document</a>
         </div>
@@ -198,6 +202,10 @@
 {% endblock %}
 
 {% block js_footer %}
-<script src="{% static 'js/pdf_readability.js' %}?v=word-scope-1"></script>
+{% if word_export_report %}
+<script src="{% static 'js/nofo_export.js' %}?v=readability-expiry-1" defer></script>
+<script src="{% static 'js/nofo_export_button.js' %}?v=readability-expiry-1" defer></script>
+{% endif %}
+<script src="{% static 'js/pdf_readability.js' %}?v=word-export-1"></script>
 <script src="{% static 'js/word_comparison.js' %}"></script>
 {% endblock %}

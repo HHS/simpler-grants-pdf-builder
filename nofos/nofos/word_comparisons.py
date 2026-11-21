@@ -107,6 +107,8 @@ def save(request):
         )
     from bloom_nofos.views import _metric_rows
 
+    from .readability_word_export import checker_report_token
+
     report = snapshot["checker"]
     return render(
         request,
@@ -114,6 +116,7 @@ def save(request):
         {
             "report": report,
             "metric_rows": _metric_rows(report),
+            "word_export_report": checker_report_token(request, report),
             "filename": snapshot["filename"],
             "analysis_date": timezone.localdate(
                 timezone.datetime.fromisoformat(snapshot["analyzed_at"])

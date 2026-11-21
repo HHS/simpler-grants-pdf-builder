@@ -7,7 +7,12 @@ Edit “{{ nofo|nofo_name }}”
 
 {% block js %}
   <script src="{% static 'js/nofos/nofo_edit.js' %}?v=3" defer></script>
-  <script src="{% static 'js/nofos/nofo_readability_metrics.js' %}?v=0.5.11" defer></script>
+  {% if readability_word_export_enabled %}
+    {% include "includes/document_progress_styles.html" %}
+    <script src="{% static 'js/nofo_export.js' %}?v=readability-expiry-1" defer></script>
+    <script src="{% static 'js/nofo_export_button.js' %}?v=readability-expiry-1" defer></script>
+  {% endif %}
+  <script src="{% static 'js/nofos/nofo_readability_metrics.js' %}?v=word-export-1" defer></script>
 {% endblock %}
 
 {% block html_class %}html--nofo_edit{% endblock %}

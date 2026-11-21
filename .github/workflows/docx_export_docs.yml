@@ -52,6 +52,8 @@ jobs:
           EXPORT_FILES = {
               "nofos/bloom_nofos/templates/includes/docx_download_button_form.html",
               "nofos/bloom_nofos/templates/includes/download_docx_button.html",
+              "nofos/bloom_nofos/templates/readability_word_report.html",
+              "nofos/nofos/readability_word_export.py",
               "nofos/composer/templates/composer/composer_export.html",
               "nofos/composer/templates/composer/writer/docx_export.html",
               "nofos/nofos/templates/nofos/includes/nofo_export_document.html",
@@ -65,13 +67,15 @@ jobs:
               "Dockerfile",  # gunicorn timeout
               "nofos/bloom_nofos/settings.py",
               "nofos/bloom_nofos/utils.py",
+              "nofos/bloom_nofos/views.py",
               "nofos/composer/views.py",
               "nofos/nofos/views.py",
           }
           # Kept narrow on purpose: Word *import* code also mentions "docx".
           EXPORT_PATTERN = re.compile(
               r"grabzit|is_valid_docx|generate_docx_download_response"
-              r"|download_target|(NOFOs|Composer|WriterInstance)ExportView"
+              r"|generate_html_docx_download_response|_docx_attachment|pdf_readability_word_export"
+              r"|download_target|(NOFOs|Composer|WriterInstance|NofoReadabilityWord)ExportView"
               r"|--timeout",
               re.IGNORECASE,
           )

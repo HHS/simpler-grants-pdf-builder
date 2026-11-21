@@ -32,9 +32,6 @@ function setup({ form = true, error = false, report = false, word = false, valid
   };
   if (error) elements['pdf--error'] = summary;
   if (report) {
-    elements['print-readability-report'] = {
-      addEventListener: (event, handler) => { listeners[`print:${event}`] = handler; },
-    };
     elements['copy-readability-report'] = {
       addEventListener: (event, handler) => { listeners[`copy:${event}`] = handler; },
     };
@@ -61,7 +58,6 @@ function setup({ form = true, error = false, report = false, word = false, valid
   const metrics = [node('Word count 23 words Estimate · Low reliability'),
     node('Flesch-Kincaid Grade Level 8.4 Estimate · Low reliability')];
   const warnings = [node('A layout limitation.'), node('Excluded fragments.')];
-  let printCount = 0;
   let copiedText = null;
   runInNewContext(source, {
     document: {
@@ -70,7 +66,6 @@ function setup({ form = true, error = false, report = false, word = false, valid
         : selector === '#readability-warning-list li' ? warnings : [],
     },
     window: {
-      print: () => { printCount += 1; },
       addEventListener: (event, handler) => { listeners[`window:${event}`] = handler; },
     },
     navigator: { clipboard: clipboard ? {
@@ -81,7 +76,7 @@ function setup({ form = true, error = false, report = false, word = false, valid
     } : undefined },
   });
   return { listeners, submitButton, status, summary, copyStatus, fallback, notes, horseClasses,
-    get printCount() { return printCount; }, get copiedText() { return copiedText; } };
+    get copiedText() { return copiedText; } };
 }
 
 test('valid submission announces progress and prevents a duplicate upload', () => {
@@ -129,12 +124,6 @@ test('duplicate submission is prevented while analysis is pending', () => {
   let prevented = false;
   state.listeners['form:submit']({ preventDefault() { prevented = true; } });
   assert.equal(prevented, true);
-});
-
-test('report print button invokes the browser print dialog', () => {
-  const state = setup({ form: false, report: true });
-  state.listeners['print:click']();
-  assert.equal(state.printCount, 1);
 });
 
 test('print includes calculation notes, then restores a collapsed disclosure', () => {

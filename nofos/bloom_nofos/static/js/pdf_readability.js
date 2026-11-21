@@ -48,9 +48,6 @@
     uploadError.focus();
   }
 
-  const printButton = document.getElementById("print-readability-report");
-  if (printButton) printButton.addEventListener("click", () => window.print());
-
   const calculationNotes = document.getElementById("readability-calculation-notes");
   if (calculationNotes) {
     let wasOpen = false;

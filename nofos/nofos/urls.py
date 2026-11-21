@@ -89,6 +89,11 @@ urlpatterns = [
         views.NofoReadabilityMetricsView.as_view(),
         name="nofo_readability_metrics",
     ),
+    path(
+        "<uuid:pk>/readability-metrics/export-word",
+        views.NofoReadabilityWordExportView.as_view(),
+        name="nofo_readability_word_export",
+    ),
     path("<uuid:pk>/edit", views.NofosEditView.as_view(), name="nofo_edit"),
     path(
         "<uuid:pk>/readability-metrics/save",

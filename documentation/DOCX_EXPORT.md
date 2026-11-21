@@ -9,7 +9,7 @@ For why we chose GrabzIt over other converters, see the ADR: [HTML to DOCX solut
 
 ## Where it is used
 
-All Word downloads go through one helper, `generate_docx_download_response` in [`nofos/bloom_nofos/utils.py`](../nofos/bloom_nofos/utils.py).
+Full-document Word downloads use `generate_docx_download_response` in [`nofos/bloom_nofos/utils.py`](../nofos/bloom_nofos/utils.py).
 
 | Feature | POST handler | Page GrabzIt converts |
 | --- | --- | --- |
@@ -19,7 +19,110 @@ All Word downloads go through one helper, `generate_docx_download_response` in [
 
 Each export template wraps the document in `<div id="download_target">`. GrabzIt converts only that element (`targetElement = "#download_target"`), so the page header, navigation and buttons are left out of the Word file.
 
+### Readability metrics reports
+
+The Readability Checker’s **Download Word** action and the NOFO Builder
+readability panel’s **Download metrics as Word** action use
+`generate_html_docx_download_response` in the same module. Both paths use the
+same configured credentials, host allowlist, HTTPS connection, in-memory DOCX
+validation, and attachment handling as full-document Word downloads.
+
+The app sends a small, dedicated report directly to GrabzIt with
+`HTMLToDOCX`. The request contains four Tier 2 clearance metrics, one Tier 1
+drafting measure, and a description of the measurement scope. The standalone
+report includes available counts for recovered words, complete sentences and
+words excluded from sentence-based scores. Word uploads explain which categories of
+recognized content the Checker skips. PDF uploads identify the extraction
+method and report page coverage when available. Every report also has a
+**Document check** section (see below). The Builder report adds the NOFO
+title and opportunity number when available, after checking access to the
+NOFO. A signed-in Checker report can include a detected opportunity number
+and Assistance Listing number. The download requires the same signed-in user
+who ran the check. The signed-out report explains that the document was not
+saved. All Checker reports omit the uploaded filename and title.
+No report includes source content. Neither report forwards session cookies or
+gives GrabzIt a URL to fetch.
+
+The browser submits a signed copy of the displayed values that expires after
+one hour. An expired download opens the [readability recovery
+dialog](UI_PATTERNS.md#expired-readability-downloads) with instructions to
+refresh the results. The readability download button is disabled while its request is
+in progress and re-enabled when it finishes or fails. Generating the report does not save a readability checkpoint. As with
+other Word exports, GrabzIt may retain the generated document in its capture cache.
+
+`HHS_NOFO_READABILITY_WORD_EXPORT_ENABLED` is off by default. Enable it in
+Django Constance after checking the intended export hosts, GrabzIt account and
+available conversion capacity. Each surface must also have readability
+enabled. To roll back, turn the switch off in Constance. This hides the
+actions on new results and blocks requests from pages already open.
+
+#### Standalone Checker report content
+
+The report includes four Tier 2 clearance metrics, the Tier 1 drafting
+measure, a **Document check** section and a **Text measured** section. An
+unavailable metric is labeled **Not available**. A thin grey horizontal rule
+separates the metrics from the **Document check** and **Text measured** notes
+in every report, including the Builder report.
+
+What the report adds depends on whether the user is signed in:
+
+| User | Added to the report |
+| --- | --- |
+| Signed in | **Opportunity number** and **Assistance Listing number**, when detected. |
+| Signed out | A note that the document was not saved: the Checker processed it temporarily on HHS-operated systems, did not add it to NOFO Builder, and kept no copy or report history. The note also says the Word report contains only scores and measurement notes, not the document's name, text or identifiers. This matches the notice on the Checker page. |
+
+The Checker finds an opportunity number only when it is labeled and in the
+expected format, in the first five pages or PDF metadata of a PDF, or near the
+beginning of a Word document. It misses unlabeled numbers, numbers that appear
+only later, and template placeholders such as `HHS-2026-XXX-XXX`. A document
+without a findable opportunity number can still be analyzed when other
+recognition signals are present. The Builder report shows the NOFO's saved
+opportunity number when available.
+
+Recognition returns only the matched identifier (for example
+`HRSA-26-106`), never the surrounding text. The view removes it from the
+report before rendering the results page or staging a Word comparison, and
+adds it only to a signed-in user's signed Word report token.
+
+#### Document check
+
+The **Document check** section has two lines. Both use fixed wording; no
+document text is used.
+
+| Line | Checker (Word) | Checker (PDF) | Builder |
+| --- | --- | --- | --- |
+| Recognized as a likely HHS NOFO | **Yes**. Only recognized uploads get a report. Lists the details found, such as an HHS agency name, opportunity number, Assistance Listing number or Grants.gov reference. | Same as Word. | **Yes**. The NOFO was created in NOFO Builder. |
+| NOFO template structure | **Yes** when the Checker recognized a template cover page, table of contents or template instructions, and names them. Otherwise **Couldn’t verify**, with a note that this does not mean the document is not a NOFO. | **Couldn’t verify**. The Checker does not compare a PDF's layout or sections with the NOFO template. | **Yes**. Builder measured the NOFO's own sections. |
+
+The result is never "No": a document that fails recognition gets an error
+instead of a report, and a missing template element only means the Checker
+could not confirm the structure. Neither line is a template compliance,
+accessibility, policy or clearance check. Recognition still means only "likely
+HHS NOFO", as described in [Loose NOFO recognition](readability/PDF_READABILITY_PILOT.md#loose-nofo-recognition-969).
+
+| Upload or extraction result | What **Text measured** says |
+| --- | --- |
+| Word | The word count uses recovered Word text after skipping recognized covers, tables of contents, template instructions, and Builder metadata. Other draft material may count, and text in headers, footers, text boxes, and images may be missed. |
+| Word with zero words skipped across all recognized categories | The report also says that the Checker recorded no words skipped in those categories. |
+| PDF with usable structure tags | The Checker recovered text using the PDF's structure tags. The report gives the number of pages with extractable text out of the total. |
+| PDF measured from page layout | The Checker reconstructed text from the page layout. Draft instructions and placeholders may count. The report gives the number of pages with extractable text out of the total, which can reveal partial coverage. |
+| Missing measurement counts | The report omits unavailable counts and explains the measurement scope in words. The current PDF analyzer supplies a count of pages with extractable text for every successful PDF result. A PDF with no extractable text yields an analysis error. |
+
+For either file type, the scope section gives the recovered word count and,
+when available, the number of words in complete sentences and the number
+excluded from sentence-based scores. The Word report describes the categories
+of skipped content without listing their individual counts. Its conversion
+input never includes source excerpts or the uploaded file. Only signed-in Checker downloads can include detected opportunity and
+Assistance Listing numbers.
+
+For the exact phrasing, see the [report template](../nofos/bloom_nofos/templates/readability_word_report.html)
+and [scope notes](../nofos/nofos/readability_word_export.py). See the [rendered
+examples](review-evidence/1412/README.md#standalone-report-variations) for sample
+results. The numbers in those examples are illustrative.
+
 ## How it works
+
+This section describes full-document exports.
 
 **We do not send NOFO HTML to GrabzIt.** We send GrabzIt a URL, along with the user's own session cookies. GrabzIt's servers then fetch the page using the cookies registered for the export host and turn the `#download_target` element into a DOCX.
 
@@ -28,7 +131,6 @@ sequenceDiagram
     autonumber
     actor User as User (browser)
     participant App as NOFO Builder (Django on AWS ECS)
-    participant Tmp as Container /tmp
     participant GZ as GrabzIt API (api.grabz.it)
     participant R as GrabzIt renderer
 
@@ -53,8 +155,6 @@ sequenceDiagram
 
     App->>GZ: getfile (HTTPS)
     GZ-->>App: DOCX bytes
-    App->>Tmp: write /tmp/<document pk>.docx
-    App->>Tmp: read bytes, then delete file
     Note over App: Reject blank or malformed DOCX (502)
     App-->>User: 200 attachment "<short name or title>.docx"
 ```
@@ -68,7 +168,7 @@ Step by step:
 5. The helper registers the user's `sessionid` and `csrftoken` with GrabzIt for that host (`SetCookie`), then asks GrabzIt to convert the URL (`URLToDOCX`).
 6. GrabzIt's renderer fetches the export page from our app using the cookies registered for that host. The app applies its usual permission checks to the session GrabzIt presents.
 7. `SaveTo` waits about 3 seconds, then checks status every 3 seconds until the result is ready, and downloads it. The request is **synchronous**: the gunicorn worker is busy for the whole conversion, and gunicorn stops requests after 89 seconds (see the `Dockerfile`).
-8. The bytes are written to `/tmp/<document pk>.docx`, read back, and the file is deleted in a `finally` block.
+8. The app receives the DOCX bytes in memory.
 9. `is_valid_docx` rejects an empty or malformed result with `502`. Otherwise the DOCX is returned as an attachment.
 
 When the helper returns an error, the download modal shows "Sorry — something went wrong generating the document. Please try again."
@@ -81,8 +181,8 @@ flowchart LR
     Page -- HTTPS --> GZR[GrabzIt renderer]
     GZR --> Cache[(GrabzIt capture cache<br/>DOCX, retention set by GrabzIt)]
     Cookies[User session cookies] -- HTTPS --> GZC[(GrabzIt account cookie store<br/>kept until overwritten)]
-    Cache -- HTTPS --> Tmp[/ECS task /tmp/&lt;pk&gt;.docx<br/>deleted right after read/]
-    Tmp --> Browser[User's download]
+    Cache -- HTTPS --> App[App memory during the request]
+    App --> Browser[User's download]
 ```
 
 | Data | Where | How long | Notes |
@@ -91,7 +191,7 @@ flowchart LR
 | Rendered export page | Produced on request for GrabzIt's renderer | Not stored by us | Sent to GrabzIt over HTTPS. |
 | User's `sessionid` and `csrftoken` | GrabzIt account cookie store, keyed by host | Until replaced or removed. The code does not call `DeleteCookie`. | See [#1330](https://github.com/HHS/simpler-grants-pdf-builder/issues/1330) for account cleanup. |
 | Generated DOCX | GrabzIt servers (capture cache) | Retention period set by GrabzIt | We don't set the SDK's `encryptionKey` option. See the [GrabzIt Trust Center](https://grabz.it/trust/). |
-| Generated DOCX (temporary copy) | ECS task `/tmp/<document pk>.docx` | Removed right after it is read | If removal fails, the file stays until the task is replaced. |
+| Generated DOCX (temporary copy) | App memory | During the download request | The app streams no intermediate file to disk. |
 | Generated DOCX (download) | User's browser or device | Up to the user | The final file. |
 
 We do not store the generated Word file in our database, S3 or logs.
@@ -129,6 +229,8 @@ Any change to these files triggers the check:
 
 - `nofos/bloom_nofos/templates/includes/docx_download_button_form.html`
 - `nofos/bloom_nofos/templates/includes/download_docx_button.html`
+- `nofos/bloom_nofos/templates/readability_word_report.html`
+- `nofos/nofos/readability_word_export.py`
 - `nofos/composer/templates/composer/composer_export.html`
 - `nofos/composer/templates/composer/writer/docx_export.html`
 - `nofos/nofos/templates/nofos/includes/nofo_export_document.html`
@@ -141,12 +243,16 @@ DOCX helpers, `download_target`, the export views or the gunicorn `--timeout`):
 - `Dockerfile`
 - `nofos/bloom_nofos/settings.py`
 - `nofos/bloom_nofos/utils.py`
+- `nofos/bloom_nofos/views.py`
 - `nofos/composer/views.py`
 - `nofos/nofos/views.py`
 
 In `nofos/bloom_nofos/utils.py`, the check also tracks the full hostname
 normalization helper and the constants that identify the required DOCX package
 parts and Word text elements.
+
+The check also tracks changes inside the HTML-to-DOCX conversion helper,
+the shared DOCX attachment helper, and both readability Word export views.
 
 When you add or move Word export code, update this list and the matching lists in the workflow,
 [`AGENTS.md`](../AGENTS.md#keep-word-export-docs-current) and the PR template.

@@ -976,6 +976,13 @@ If the panel is absent, this task is unavailable there.
 4. Under **Saved snapshots**, expand a checkpoint to see its results. Select
    **See all snapshots** for the full history when that link appears.
 
+If the Word download says the results expired, close and reopen **Readability
+metrics** before trying again.
+
+Select **Download metrics as Word**, when available, to keep a separate report
+with the NOFO title, opportunity number and a **Document check**. The Word download does not save a
+checkpoint.
+
 Import, reimport, manual saving and successful PDF download each save their own
 checkpoint once per unchanged measurement. Calculation alone does not save a
 manual checkpoint. Historical results remain available after measurement-version
@@ -1013,8 +1020,20 @@ then try again. If it's still unavailable, contact the checker operator.
    still count.
    A Word report without a reliability rating explains the tool's limitation;
    it does not mean a problem was detected in your upload.
-5. Select **Copy metrics** or **Print / Save as PDF** before leaving the report.
-   Use **Analyze another document** for another upload.
+5. Select **Download Word**, when available, for a short report with the Tier 2
+   clearance metrics, Tier 1 drafting measure, and a **Document check** that
+   says whether the tool recognized the upload as a likely HHS NOFO and whether
+   it could verify the NOFO template structure. If you are signed in, the
+   report also shows the opportunity number and Assistance Listing number
+   when the Checker detects them. If you are signed out, the report omits
+   both numbers and notes that your document was not saved. GrabzIt
+   receives only what appears in the report. You can also select **Copy
+   metrics** before leaving the report. Use **Analyze another document** for
+   another upload. See [what the Word report includes](DOCX_EXPORT.md#standalone-checker-report-content).
+
+If the Word download says the results expired, select **Analyze another document**
+and upload the file again before downloading.
+
 
 Profiles are selected automatically; there is no profile setting to choose.
 Check the report's **Measurement version** when comparing results. Version 0.7.0

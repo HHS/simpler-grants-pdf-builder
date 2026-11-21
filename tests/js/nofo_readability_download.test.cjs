@@ -113,7 +113,7 @@ test('feature flag changing during download does not claim a snapshot', async ()
 
 test('a displayed calculation stays visible and keeps Calculated beside refreshed saved date', async () => {
   const result = { metrics: {}, source: { revision: '1' }, warnings: [] };
-  const ui = setup([{ ok: true, json: async () => result }, pdf(), state()], { open: true });
+  const ui = setup([{ ok: true, headers: new Headers(), json: async () => result }, pdf(), state()], { open: true });
   await ui.calculate();
   await ui.submit();
   assert.equal(ui.named['[data-metrics-summary-status]'].textContent, 'Calculated');

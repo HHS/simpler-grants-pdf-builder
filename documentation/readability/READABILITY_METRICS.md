@@ -138,6 +138,11 @@ endpoint response; metric calculation and source rendering remain server-side.
 The package profile and version remain available in the API response and are
 shown in saved history so editors can identify a measurement change.
 
+Where Word export is available, **Download metrics as Word** exports the
+displayed values as a separate report. See [Word export](../DOCX_EXPORT.md#readability-metrics-reports)
+for report contents and enablement, and [review evidence](../review-evidence/1412/README.md)
+for the local verification.
+
 The accordion's closed heading describes the latest saved checkpoint, not a
 calculation: for example **Last saved Oct 3 automatically on import**, or
 **Not calculated** when the NOFO has no saved checkpoints. This line is

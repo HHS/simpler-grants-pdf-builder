@@ -133,12 +133,7 @@ def generate_docx_download_response(
             f"Host mismatch for DOCX conversion. request_host={request_host}, export_host={export_host}"
         )
 
-    grabzit = GrabzItClient.GrabzItClient(
-        settings.GRABZIT_APPLICATION_KEY,
-        settings.GRABZIT_APPLICATION_SECRET,
-    )
-    # The SDK defaults to HTTP; enable TLS before sending any cookies or requests.
-    grabzit.UseSSL(True)
+    grabzit = _grabzit_docx_client()
 
     # Set cookies only for the exact host GrabzIt will request.
     if not grabzit.SetCookie("sessionid", export_host, session_value):
@@ -154,8 +149,39 @@ def generate_docx_download_response(
     options = GrabzItDOCXOptions.GrabzItDOCXOptions()
     options.targetElement = target_element
 
+    return _docx_attachment(
+        grabzit,
+        lambda: grabzit.URLToDOCX(export_url, options),
+        filename_base,
+        export_host,
+    )
+
+
+def generate_html_docx_download_response(*, request, html, filename_base):
+    """Convert dedicated HTML without forwarding browser cookies or a source URL."""
+    host = _normalize_hostname(request.get_host())
+    if not is_grabzit_word_export_enabled(host):
+        return HttpResponse(
+            "Word export is not available in this environment.", status=503
+        )
+    grabzit = _grabzit_docx_client()
+    return _docx_attachment(
+        grabzit, lambda: grabzit.HTMLToDOCX(html), filename_base, host
+    )
+
+
+def _grabzit_docx_client():
+    grabzit = GrabzItClient.GrabzItClient(
+        settings.GRABZIT_APPLICATION_KEY,
+        settings.GRABZIT_APPLICATION_SECRET,
+    )
+    grabzit.UseSSL(True)
+    return grabzit
+
+
+def _docx_attachment(grabzit, prepare_conversion, filename_base, export_host):
     try:
-        grabzit.URLToDOCX(export_url, options)
+        prepare_conversion()
         # With no path, SaveTo returns the DOCX bytes instead of writing a file,
         # so concurrent exports of the same document can't share a temp file.
         content = grabzit.SaveTo()
