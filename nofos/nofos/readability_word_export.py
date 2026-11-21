@@ -193,16 +193,18 @@ def checker_scope_details(payload, scope):
     return details
 
 
-def checker_report_token(request, report, *, filename="", opportunity_number=None):
-    """Signed-in users get the document details the Builder report shows.
-
-    Signed-out reports omit identifiers and explain that nothing was saved.
-    """
+def checker_report_token(
+    request, report, *, opportunity_number=None, assistance_listing_number=None
+):
     profile = report.get("profile")
     scope = profile if profile in {"word", "generic"} else "pdf"
     user = getattr(request, "user", None)
     if user is not None and user.is_authenticated:
-        extra = {"document": filename or "", "number": opportunity_number or ""}
+        extra = {
+            "owner": str(user.pk),
+            "number": opportunity_number,
+            "assistance_listing_number": assistance_listing_number,
+        }
     else:
         extra = {"not_saved_note": True}
     return report_token(request, report, scope=scope, salt=CHECKER_SALT, extra=extra)
@@ -226,6 +228,11 @@ def download_report(request, *, salt, nofo=None):
 
     try:
         report = signing.loads(request.POST.get("report", ""), salt=salt, max_age=3600)
+        if salt == CHECKER_SALT and (
+            "document" in report
+            or ("owner" in report and report["owner"] != str(request.user.pk))
+        ):
+            raise signing.BadSignature
     except signing.BadSignature:
         response = HttpResponse(
             "These results are no longer available for download. "
@@ -247,14 +254,9 @@ def download_report(request, *, salt, nofo=None):
                 "details": report.get("details", {}),
                 "nofo_check": report.get("nofo_check"),
                 "not_saved_note": report.get("not_saved_note", False),
-                "document": report.get("document", ""),
                 "title": nofo.title if nofo else "",
-                "number": nofo.number if nofo else report.get("number", ""),
-                # Only signed-in Checker reports carry "document"; say so
-                # when recognition matched no labeled opportunity number.
-                "number_not_found": not nofo
-                and "document" in report
-                and not report.get("number"),
+                "number": nofo.number if nofo else report.get("number"),
+                "assistance_listing_number": report.get("assistance_listing_number"),
             },
         )
         response = generate_html_docx_download_response(

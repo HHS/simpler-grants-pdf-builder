@@ -95,6 +95,24 @@ class ReadabilityWordExportTests(TestCase):
         )
         self.assertNotIn("Content-Disposition", response)
 
+    def test_signed_in_checker_download_is_rejected_after_logout(self):
+        user = BloomUser.objects.create_user(
+            email="logout@example.com", password="test-password", group="bloom"
+        )
+        self.client.force_login(user)
+        page = self.client.post(
+            reverse("pdf_readability"),
+            {"pdf": SimpleUploadedFile("draft.docx", synthetic_docx())},
+        )
+        token = page.context["word_export_report"]
+        self.assertTrue(token)
+        self.client.logout()
+        response = self.client.post(
+            reverse("pdf_readability_word_export"), {"report": token}
+        )
+        self.assertEqual(response.status_code, 400)
+        self.grabzit.HTMLToDOCX.assert_not_called()
+
     def test_signed_in_checker_report_adds_document_details(self):
         user = BloomUser.objects.create_user(
             email="checker@example.com", password="test-password", group="bloom"
@@ -124,12 +142,14 @@ class ReadabilityWordExportTests(TestCase):
         self.assertNotIn("Opportunity number", signed_out_html)
 
         self.assertNotIn("Your document was not saved.", signed_in_html)
-        self.assertIn("File: <strong>draft.docx</strong>", signed_in_html)
+        self.assertNotIn("draft.docx", signed_in_html)
+        self.assertIn("Assistance Listing number 93.123", signed_in_html)
+        self.assertNotIn("93.123", signed_out_html)
         self.assertIn("Opportunity number HRSA-26-106", signed_in_html)
         self.assertNotIn("Not found", signed_in_html)
         self.assertNotIn("Not found", signed_out_html)
 
-        # A recognized upload without a labeled number says so when signed in.
+        # A recognized upload can have an Assistance Listing without an opportunity number.
         unnumbered = synthetic_docx(
             "Assistance listing: 93.123. Apply at Grants.gov. "
             "Applicants should submit a clear plan. The plan should describe needs."
@@ -145,10 +165,9 @@ class ReadabilityWordExportTests(TestCase):
             )
             exports.append(self.grabzit.HTMLToDOCX.call_args.args[0])
         unnumbered_signed_in, unnumbered_signed_out = exports[2:]
-        self.assertIn("File: <strong>draft.docx</strong>", unnumbered_signed_in)
-        self.assertIn(
-            "Opportunity number: <strong>Not found</strong>", unnumbered_signed_in
-        )
+        self.assertNotIn("draft.docx", unnumbered_signed_in)
+        self.assertNotIn("Opportunity number", unnumbered_signed_in)
+        self.assertIn("Assistance Listing number 93.123", unnumbered_signed_in)
         self.assertNotIn("Opportunity number", unnumbered_signed_out)
         self.assertIn("Your document was not saved.", unnumbered_signed_out)
 

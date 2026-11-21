@@ -28,6 +28,7 @@ class Recognition:
     # Only the identifier matched by _OPPORTUNITY_NUMBER_RE, never the
     # surrounding text. Callers decide who may see it.
     opportunity_number: str | None = None
+    assistance_listing_number: str | None = None
 
 
 DEFAULT_POLICY = RecognitionPolicy()
@@ -83,7 +84,7 @@ _OPPORTUNITY_NUMBER_RE = re.compile(
 )
 _ASSISTANCE_LISTING_RE = re.compile(
     r"\b(?:federal\s+)?assistance\s+listing"
-    r"(?:\s+(?:number|no\.?|id))?\s*:?\s*[0-9]{2}\.[A-Z0-9]{2,3}\b",
+    r"(?:\s+(?:number|no\.?|id))?\s*:?\s*(?P<number>[0-9]{2}\.[A-Z0-9]{2,3})\b",
     re.IGNORECASE,
 )
 _GRANTS_GOV_RE = re.compile(
@@ -148,7 +149,11 @@ def recognize_nofo(
     )
     if opportunity_match:
         signal_ids.append("opportunity_number")
-    if _ASSISTANCE_LISTING_RE.search(searchable_text):
+    assistance_match = _ASSISTANCE_LISTING_RE.search(searchable_text)
+    assistance_listing_number = (
+        assistance_match.group("number").upper() if assistance_match else None
+    )
+    if assistance_match:
         signal_ids.append("assistance_listing")
     if _GRANTS_GOV_RE.search(searchable_text):
         signal_ids.append("grants_gov")
@@ -156,23 +161,38 @@ def recognize_nofo(
     signals = tuple(signal_ids)
     if len(signals) >= policy.minimum_signals:
         return Recognition(
-            "supported", "minimum_signals_met", signals, opportunity_number
+            "supported",
+            "minimum_signals_met",
+            signals,
+            opportunity_number,
+            assistance_listing_number,
         )
     if not page_text:
         return Recognition(
-            "indeterminate", "first_pages_text_unavailable", signals, opportunity_number
+            "indeterminate",
+            "first_pages_text_unavailable",
+            signals,
+            opportunity_number,
+            assistance_listing_number,
         )
     return Recognition(
-        "unsupported", "insufficient_nofo_signals", signals, opportunity_number
+        "unsupported",
+        "insufficient_nofo_signals",
+        signals,
+        opportunity_number,
+        assistance_listing_number,
     )
 
 
 def recognition_fields(decision: Recognition) -> dict:
     """Report fields for a recognized upload. The view decides who sees the number."""
-    return {
+    fields = {
         "nofo_signals": list(decision.signal_ids),
         "opportunity_number": decision.opportunity_number,
     }
+    if decision.assistance_listing_number:
+        fields["assistance_listing_number"] = decision.assistance_listing_number
+    return fields
 
 
 def recognize_word_nofo(text: str) -> Recognition:
@@ -201,5 +221,6 @@ def recognize_word_nofo(text: str) -> Recognition:
                 "minimum_signals_met",
                 signals,
                 decision.opportunity_number,
+                decision.assistance_listing_number,
             )
     return decision
