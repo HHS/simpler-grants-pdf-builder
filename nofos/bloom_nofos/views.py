@@ -305,6 +305,9 @@ def _pdf_readability_form(request):
                 logger.warning("PDF readability analysis failed unexpectedly.")
             else:
                 request.pdf_readability_outcome = "success"
+                # Only the signed-in Word report shows the opportunity number;
+                # keep it out of the page context and comparison handoff.
+                opportunity_number = report.pop("opportunity_number", None)
                 if comparison_allowed and report.get("profile") == "word":
                     context["comparison_form"] = WordResultsForm()
                     context["comparison_run"] = stage_run(
@@ -314,7 +317,12 @@ def _pdf_readability_form(request):
                     {
                         "report": report,
                         "metric_rows": _metric_rows(report),
-                        "word_export_report": checker_report_token(request, report),
+                        "word_export_report": checker_report_token(
+                            request,
+                            report,
+                            filename=_safe_upload_name(upload.name),
+                            opportunity_number=opportunity_number,
+                        ),
                         "filename": _safe_upload_name(upload.name),
                         "analysis_date": timezone.localdate(),
                         "source_word": report.get("profile") == "word",

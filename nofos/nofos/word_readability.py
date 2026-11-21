@@ -12,7 +12,7 @@ import mammoth
 from bs4 import BeautifulSoup
 
 from .import_transforms import _word_xml, transform_word_document
-from .pdf_format_recognition import recognize_word_nofo
+from .pdf_format_recognition import recognition_fields, recognize_word_nofo
 from .word_instruction_boxes import clean_instruction_boxes
 
 _WORD_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
@@ -26,9 +26,16 @@ DOCX_CONTENT_TYPE = (
 
 
 def word_html(
-    path: Path, *, require_nofo_recognition=True, scope_boundaries=None
+    path: Path,
+    *,
+    require_nofo_recognition=True,
+    scope_boundaries=None,
+    recognition=None,
 ) -> tuple[str, bool]:
-    """Validate the container before the installed converter reads any members."""
+    """Validate the container before the installed converter reads any members.
+
+    Pass a dict as ``recognition`` to receive the NOFO recognition result.
+    """
     try:
         with ZipFile(path) as archive:
             entries = archive.infolist()
@@ -148,6 +155,8 @@ def word_html(
         decision = recognize_word_nofo(text[:50000])
         if require_nofo_recognition and decision.status != "supported":
             raise ValueError("word_format_unsupported")
+        if recognition is not None:
+            recognition.update(recognition_fields(decision))
         return html, bool(converted.messages)
     except ValueError:
         raise

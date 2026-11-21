@@ -45,6 +45,20 @@ SCOPE_COUNTS = (
     "excluded_word_count",
 )
 CHECKER_SALT = "readability-word-export.checker"
+# Fixed recognition codes from pdf_format_recognition, in display order.
+NOFO_SIGNAL_LABELS = {
+    "hhs_agency_metadata": "an HHS agency name",
+    "hhs_agency_page_text": "an HHS agency name",
+    "opportunity_number": "an opportunity number",
+    "assistance_listing": "an Assistance Listing number",
+    "grants_gov": "a Grants.gov reference",
+    "hhs_nofo_template_context": "HHS NOFO template wording",
+}
+TEMPLATE_PARTS = (
+    ("cover_total", "a cover page"),
+    ("table_of_contents", "a table of contents"),
+    ("instruction", "template instructions"),
+)
 
 
 def builder_salt(request, nofo):
@@ -71,7 +85,7 @@ def word_export_enabled(request):
     )
 
 
-def report_token(request, payload, *, scope, salt):
+def report_token(request, payload, *, scope, salt, extra=None):
     if not word_export_enabled(request):
         return ""
     metrics = payload.get("metrics") or {}
@@ -87,10 +101,74 @@ def report_token(request, payload, *, scope, salt):
         values["sentences_per_paragraph"] = format_report_value(
             "sentences_per_paragraph", components.get("sentences_per_paragraph")
         )
-    report = {"values": values, "scope": scope}
+    report = {"values": values, "scope": scope, **(extra or {})}
     if scope != "builder":
         report["details"] = checker_scope_details(payload, scope)
+    report["nofo_check"] = nofo_check(payload, scope)
     return signing.dumps(report, salt=salt)
+
+
+def join_labels(labels):
+    labels = list(dict.fromkeys(labels))
+    if len(labels) < 3:
+        return " and ".join(labels)
+    return f"{', '.join(labels[:-1])}, and {labels[-1]}"
+
+
+def nofo_check(payload, scope):
+    """Fixed-text summary of what the tool verified about the document format.
+
+    Only fixed codes and counts feed this; no document text is used.
+    """
+    if scope == "builder":
+        return {
+            "recognized": "Yes",
+            "recognized_note": "This NOFO was created in NOFO Builder.",
+            "structure": "Yes",
+            "structure_note": (
+                "NOFO Builder measured the NOFO’s own sections and subsections."
+            ),
+        }
+    signals = payload.get("nofo_signals")
+    labels = [
+        NOFO_SIGNAL_LABELS[code]
+        for code in (signals if isinstance(signals, list) else [])
+        if code in NOFO_SIGNAL_LABELS
+    ]
+    check = {
+        # Only uploads the checker recognized as an HHS NOFO receive a report.
+        "recognized": "Yes",
+        "recognized_note": (
+            f"The checker found {join_labels(labels)} near the beginning."
+            if labels
+            else "The checker found basic HHS NOFO details near the beginning."
+        ),
+    }
+    if scope == "word":
+        exclusions = payload.get("word_exclusions") or {}
+        found = [
+            label
+            for key, label in TEMPLATE_PARTS
+            if type(exclusions.get(key)) is int and exclusions[key] > 0
+        ]
+        if found:
+            check["structure"] = "Yes"
+            check["structure_note"] = (
+                f"The checker recognized {join_labels(found)} from the HHS NOFO template."
+            )
+            return check
+        check["structure_note"] = (
+            "The checker did not recognize a NOFO template cover page, table of "
+            "contents, or template instructions. This does not mean the document "
+            "is not a NOFO."
+        )
+    else:
+        check["structure_note"] = (
+            "The checker does not compare a PDF’s layout or sections with the "
+            "NOFO template. This does not mean the document is not a NOFO."
+        )
+    check["structure"] = "Couldn’t verify"
+    return check
 
 
 def scope_counts(source, keys):
@@ -115,10 +193,19 @@ def checker_scope_details(payload, scope):
     return details
 
 
-def checker_report_token(request, report):
+def checker_report_token(request, report, *, filename="", opportunity_number=None):
+    """Signed-in users get the document details the Builder report shows.
+
+    Signed-out reports omit identifiers and explain that nothing was saved.
+    """
     profile = report.get("profile")
     scope = profile if profile in {"word", "generic"} else "pdf"
-    return report_token(request, report, scope=scope, salt=CHECKER_SALT)
+    user = getattr(request, "user", None)
+    if user is not None and user.is_authenticated:
+        extra = {"document": filename or "", "number": opportunity_number or ""}
+    else:
+        extra = {"not_saved_note": True}
+    return report_token(request, report, scope=scope, salt=CHECKER_SALT, extra=extra)
 
 
 def add_builder_report_header(response, request, nofo, payload):
@@ -158,8 +245,11 @@ def download_report(request, *, salt, nofo=None):
                 ],
                 "scope": SCOPE_NOTES[report["scope"]],
                 "details": report.get("details", {}),
+                "nofo_check": report.get("nofo_check"),
+                "not_saved_note": report.get("not_saved_note", False),
+                "document": report.get("document", ""),
                 "title": nofo.title if nofo else "",
-                "number": nofo.number if nofo else "",
+                "number": nofo.number if nofo else report.get("number", ""),
             },
         )
         response = generate_html_docx_download_response(

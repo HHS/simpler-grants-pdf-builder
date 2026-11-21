@@ -33,13 +33,15 @@ drafting measure, and a description of the measurement scope. The standalone
 report includes available counts for recovered words, complete sentences and
 words excluded from sentence-based scores. Word uploads explain which categories of
 recognized content the Checker skips. PDF uploads identify the extraction
-method and report page coverage when available. The
-standalone Checker uses the same download action and report contents for
-signed-in and signed-out users who can access it. The report excludes the
-uploaded filename, opportunity identifiers,
-and source content. The Builder report adds the NOFO title and opportunity
-number when available, after checking access to the NOFO. Neither report
-forwards session cookies or gives GrabzIt a URL to fetch.
+method and report page coverage when available. Every report also has a
+**Document check** section (see below). The Builder report adds the NOFO
+title and opportunity number when available, after checking access to the
+NOFO. The standalone Checker report for a signed-in user adds the same kind of
+document details: the uploaded file name and, when the Checker recognized one,
+the opportunity number. The signed-out report excludes the filename and
+opportunity identifiers and instead explains that the document was not saved.
+No report includes source content. Neither report forwards session cookies or
+gives GrabzIt a URL to fetch.
 
 The browser submits a signed copy of the displayed values that expires after
 one hour. Generating the report does not save a readability checkpoint. As with
@@ -53,10 +55,37 @@ actions on new results and blocks requests from pages already open.
 
 #### Standalone Checker report content
 
-Signed-in and signed-out users who can access the Checker receive the same
-report for the same upload. The report includes four Tier 2 clearance metrics,
-the Tier 1 drafting measure, and a **Text measured** section. An unavailable
-metric is labeled **Not available**.
+The report includes four Tier 2 clearance metrics, the Tier 1 drafting
+measure, a **Document check** section and a **Text measured** section. An
+unavailable metric is labeled **Not available**.
+
+What the report adds depends on whether the user is signed in:
+
+| User | Added to the report |
+| --- | --- |
+| Signed in | **File** (the uploaded file name, as shown on the results page) and **Opportunity number**, matching the NOFO title and number in the Builder panel report. The opportunity number appears only when NOFO recognition matched a labeled opportunity number in the first pages. |
+| Signed out | A note that the document was not saved: the Checker processed it temporarily on HHS-operated systems, did not add it to NOFO Builder, and kept no copy or report history. The note also says the Word report contains only scores and measurement notes, not the document's name, text or identifiers. This matches the notice on the Checker page. |
+
+Recognition returns only the matched identifier (for example
+`HRSA-26-106`), never the surrounding text. The view removes it from the
+report before rendering the results page or staging a Word comparison, and
+adds it only to a signed-in user's signed Word report token.
+
+#### Document check
+
+The **Document check** section has two lines. Both use fixed wording; no
+document text is used.
+
+| Line | Checker (Word) | Checker (PDF) | Builder |
+| --- | --- | --- | --- |
+| Recognized as a likely HHS NOFO | **Yes**. Only recognized uploads get a report. Lists the details found, such as an HHS agency name, opportunity number, Assistance Listing number or Grants.gov reference. | Same as Word. | **Yes**. The NOFO was created in NOFO Builder. |
+| NOFO template structure | **Yes** when the Checker recognized a template cover page, table of contents or template instructions, and names them. Otherwise **Couldn’t verify**, with a note that this does not mean the document is not a NOFO. | **Couldn’t verify**. The Checker does not compare a PDF's layout or sections with the NOFO template. | **Yes**. Builder measured the NOFO's own sections. |
+
+The result is never "No": a document that fails recognition gets an error
+instead of a report, and a missing template element only means the Checker
+could not confirm the structure. Neither line is a template compliance,
+accessibility, policy or clearance check. Recognition still means only "likely
+HHS NOFO", as described in [Loose NOFO recognition](readability/PDF_READABILITY_PILOT.md#loose-nofo-recognition-969).
 
 | Upload or extraction result | What **Text measured** says |
 | --- | --- |
@@ -70,8 +99,8 @@ For either file type, the scope section gives the recovered word count and,
 when available, the number of words in complete sentences and the number
 excluded from sentence-based scores. The Word report describes the categories
 of skipped content without listing their individual counts. Its conversion
-input excludes the filename, opportunity identifiers, source excerpts, and
-uploaded file.
+input never includes source excerpts or the uploaded file. The filename and
+opportunity number are included only for signed-in users.
 
 For the exact phrasing, see the [report template](../nofos/bloom_nofos/templates/readability_word_report.html)
 and [scope notes](../nofos/nofos/readability_word_export.py). See the [rendered

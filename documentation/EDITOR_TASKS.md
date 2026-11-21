@@ -972,7 +972,7 @@ If the panel is absent, this task is unavailable there.
    **See all snapshots** for the full history when that link appears.
 
 Select **Download metrics as Word**, when available, to keep a separate report
-with the NOFO title and opportunity number. The Word download does not save a
+with the NOFO title, opportunity number and a **Document check**. The Word download does not save a
 checkpoint.
 
 Import, reimport, manual saving and successful PDF download each save their own
@@ -1013,12 +1013,15 @@ then try again. If it's still unavailable, contact the checker operator.
    A Word report without a reliability rating explains the tool's limitation;
    it does not mean a problem was detected in your upload.
 5. Select **Download Word**, when available, for a short report with the Tier 2
-   clearance metrics and Tier 1 drafting measure. GrabzIt receives only the
-   metric values, measurement counts, and scope notes for this conversion. You can
-   also select **Copy metrics** before leaving the report. Use **Analyze
-   another document** for another upload. The Checker offers the same Word
-   download and report contents whether you are signed in or signed out,
-   whenever you can access the tool. See [what the Word report includes](DOCX_EXPORT.md#standalone-checker-report-content).
+   clearance metrics, Tier 1 drafting measure, and a **Document check** that
+   says whether the tool recognized the upload as a likely HHS NOFO and whether
+   it could verify the NOFO template structure. If you are signed in, the
+   report also shows the file name and, when recognized, the opportunity
+   number, like the NOFO Builder panel report. If you are signed out, the
+   report leaves those out and notes that your document was not saved. GrabzIt
+   receives only what appears in the report. You can also select **Copy
+   metrics** before leaving the report. Use **Analyze another document** for
+   another upload. See [what the Word report includes](DOCX_EXPORT.md#standalone-checker-report-content).
 
 Profiles are selected automatically; there is no profile setting to choose.
 Check the report's **Measurement version** when comparing results. Version 0.7.0

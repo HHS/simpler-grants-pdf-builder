@@ -187,7 +187,12 @@ digits, a period, and two or three alphanumeric characters, including documented
 examples such as `45.C9` and `45.1C9`; its search documentation also shows the
 longer opportunity number `EPA-R9-SFUND-23-003`. The checker uses this contract as
 a format reference only; upload processing does not call the Simpler.Grants.gov
-API or send document-derived values to another service.
+API or send document-derived values to another service. The one exception is a
+signed-in user's Word report download: it sends the uploaded file name and the
+matched opportunity number to GrabzIt with the metrics, as the Builder panel
+report does with a NOFO's title and number. Recognition returns only the
+matched identifier, never surrounding text. Signed-out reports contain neither
+(see [Word export](../DOCX_EXPORT.md#standalone-checker-report-content)).
 
 This gate is modest abuse deterrence for the public Readability Checker. It can
 admit an unrelated document that contains two signals and can reject an unusually

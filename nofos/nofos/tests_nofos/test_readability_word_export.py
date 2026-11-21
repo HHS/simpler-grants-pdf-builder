@@ -68,6 +68,8 @@ class ReadabilityWordExportTests(TestCase):
         self.assertIn("recovered Word text", html)
         self.assertNotIn("unpublished-opportunity", html)
         self.assertNotIn("Opportunity number", html)
+        self.assertNotIn("HRSA-26-106", html)
+        self.assertIn("Your document was not saved.", html)
         self.assertNotIn("Applicants should submit a clear plan", html)
         self.assertEqual(
             self.grabzit.method_calls,
@@ -93,7 +95,7 @@ class ReadabilityWordExportTests(TestCase):
         )
         self.assertNotIn("Content-Disposition", response)
 
-    def test_checker_report_matches_for_signed_in_and_signed_out_uploads(self):
+    def test_signed_in_checker_report_adds_document_details(self):
         user = BloomUser.objects.create_user(
             email="checker@example.com", password="test-password", group="bloom"
         )
@@ -106,13 +108,59 @@ class ReadabilityWordExportTests(TestCase):
                 {"pdf": SimpleUploadedFile("draft.docx", synthetic_docx())},
             )
             self.assertContains(page, "Download Word")
+            # The identifier stays out of the rendered page for everyone.
+            self.assertNotIn("opportunity_number", page.context["report"])
             response = client.post(
                 reverse("pdf_readability_word_export"),
                 {"report": page.context["word_export_report"]},
             )
             self.assertEqual(response.content, VALID_DOCX)
             exports.append(self.grabzit.HTMLToDOCX.call_args.args[0])
-        self.assertEqual(*exports)
+        signed_out_html, signed_in_html = exports
+
+        self.assertIn("Your document was not saved.", signed_out_html)
+        self.assertNotIn("draft.docx", signed_out_html)
+        self.assertNotIn("HRSA-26-106", signed_out_html)
+        self.assertNotIn("Opportunity number", signed_out_html)
+
+        self.assertNotIn("Your document was not saved.", signed_in_html)
+        self.assertIn("File: <strong>draft.docx</strong>", signed_in_html)
+        self.assertIn("Opportunity number HRSA-26-106", signed_in_html)
+
+        for html in exports:
+            self.assertIn("Tier 2 clearance metrics", html)
+            self.assertIn("Document check", html)
+            self.assertIn("Recognized as a likely HHS NOFO: <strong>Yes</strong>", html)
+            self.assertIn(
+                "found an opportunity number and an Assistance Listing number", html
+            )
+            self.assertIn(
+                "NOFO template structure: <strong>Couldn’t verify</strong>", html
+            )
+            self.assertNotIn("Applicants should submit a clear plan", html)
+
+    def test_document_check_reports_recognized_template_parts(self):
+        from nofos.readability_word_export import nofo_check
+
+        word = {
+            "nofo_signals": ["grants_gov", "hhs_nofo_template_context", "bogus"],
+            "word_exclusions": {"cover_total": 12, "table_of_contents": 40},
+        }
+        check = nofo_check(word, "word")
+        self.assertEqual(check["structure"], "Yes")
+        self.assertIn("a cover page and a table of contents", check["structure_note"])
+        self.assertIn(
+            "a Grants.gov reference and HHS NOFO template wording",
+            check["recognized_note"],
+        )
+        self.assertNotIn("bogus", check["recognized_note"])
+
+        check = nofo_check({"word_exclusions": {"instruction": 0}}, "word")
+        self.assertEqual(check["structure"], "Couldn’t verify")
+        self.assertIn("basic HHS NOFO details", check["recognized_note"])
+
+        self.assertEqual(nofo_check({}, "pdf")["structure"], "Couldn’t verify")
+        self.assertEqual(nofo_check({}, "builder")["structure"], "Yes")
 
     def test_checker_report_uses_only_allowed_measurement_counts(self):
         from django.test import RequestFactory
@@ -196,6 +244,8 @@ class ReadabilityWordExportTests(TestCase):
         self.assertIn("1,234", html)
         self.assertIn("13.5", html)
         self.assertIn("2.45", html)
+        self.assertIn("This NOFO was created in NOFO Builder.", html)
+        self.assertNotIn("Your document was not saved.", html)
         self.assertNotIn("Private source excerpt", html)
 
         self.grabzit.reset_mock()

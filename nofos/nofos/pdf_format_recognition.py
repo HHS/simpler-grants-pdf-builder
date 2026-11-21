@@ -1,8 +1,9 @@
 """Lightweight, content-free recognition for the PDF readability pilot.
 
 Recognition is deliberately a loose abuse-deterrence check, not template,
-accessibility, policy, or clearance validation. Only fixed signal identifiers
-leave this module; document text and metadata are never returned or logged.
+accessibility, policy, or clearance validation. Fixed signal identifiers and,
+when one matches the strict pattern below, the opportunity number itself leave
+this module. Other document text and metadata are never returned or logged.
 """
 
 from __future__ import annotations
@@ -24,6 +25,9 @@ class Recognition:
     status: str  # supported, unsupported, indeterminate
     reason: str  # fixed code; never source text
     signal_ids: tuple[str, ...]
+    # Only the identifier matched by _OPPORTUNITY_NUMBER_RE, never the
+    # surrounding text. Callers decide who may see it.
+    opportunity_number: str | None = None
 
 
 DEFAULT_POLICY = RecognitionPolicy()
@@ -74,7 +78,7 @@ _HHS_AGENCY_RE = re.compile(
 )
 _OPPORTUNITY_NUMBER_RE = re.compile(
     r"\b(?:funding\s+)?opportunity\s+(?:number|no\.?|id)\s*:?\s*"
-    r"[A-Z0-9]+(?:-[A-Z0-9]+){1,10}-[0-9]{3,4}\b",
+    r"(?P<number>[A-Z0-9]+(?:-[A-Z0-9]+){1,10}-[0-9]{3,4})\b",
     re.IGNORECASE,
 )
 _ASSISTANCE_LISTING_RE = re.compile(
@@ -138,7 +142,11 @@ def recognize_nofo(
         # Print-to-PDF often drops descriptive agency metadata. Count page text
         # as an alternative location for the same signal, never a second vote.
         signal_ids.append("hhs_agency_page_text")
-    if _OPPORTUNITY_NUMBER_RE.search(searchable_text):
+    opportunity_match = _OPPORTUNITY_NUMBER_RE.search(searchable_text)
+    opportunity_number = (
+        opportunity_match.group("number").upper() if opportunity_match else None
+    )
+    if opportunity_match:
         signal_ids.append("opportunity_number")
     if _ASSISTANCE_LISTING_RE.search(searchable_text):
         signal_ids.append("assistance_listing")
@@ -147,10 +155,24 @@ def recognize_nofo(
 
     signals = tuple(signal_ids)
     if len(signals) >= policy.minimum_signals:
-        return Recognition("supported", "minimum_signals_met", signals)
+        return Recognition(
+            "supported", "minimum_signals_met", signals, opportunity_number
+        )
     if not page_text:
-        return Recognition("indeterminate", "first_pages_text_unavailable", signals)
-    return Recognition("unsupported", "insufficient_nofo_signals", signals)
+        return Recognition(
+            "indeterminate", "first_pages_text_unavailable", signals, opportunity_number
+        )
+    return Recognition(
+        "unsupported", "insufficient_nofo_signals", signals, opportunity_number
+    )
+
+
+def recognition_fields(decision: Recognition) -> dict:
+    """Report fields for a recognized upload. The view decides who sees the number."""
+    return {
+        "nofo_signals": list(decision.signal_ids),
+        "opportunity_number": decision.opportunity_number,
+    }
 
 
 def recognize_word_nofo(text: str) -> Recognition:
@@ -174,5 +196,10 @@ def recognize_word_nofo(text: str) -> Recognition:
     ):
         signals = (*decision.signal_ids, "hhs_nofo_template_context")
         if len(signals) >= DEFAULT_POLICY.minimum_signals:
-            return Recognition("supported", "minimum_signals_met", signals)
+            return Recognition(
+                "supported",
+                "minimum_signals_met",
+                signals,
+                decision.opportunity_number,
+            )
     return decision

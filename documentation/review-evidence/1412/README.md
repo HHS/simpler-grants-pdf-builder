@@ -50,3 +50,14 @@ The [earlier limited-counts example](scope-examples/pdf-limited-counts.png)
 was generated from a synthetic payload that omitted the count of pages with
 extractable text. A successful analysis in the current PDF worker supplies
 that page count. Sentence counts can still be unavailable independently.
+
+## Follow-up: signed-in details, not-saved note and Document check
+
+After the evidence above was captured, the Checker report changed. The
+screenshots above show the earlier report. Signed-in Checker reports now add the
+file name and recognized opportunity number. Signed-out reports omit them and
+add a note that the document was not saved. All reports add a **Document check**
+section. See [Standalone Checker report content](../../DOCX_EXPORT.md#standalone-checker-report-content).
+Automated coverage: `test_signed_in_checker_report_adds_document_details` and
+`test_document_check_reports_recognized_template_parts` in
+`nofos/nofos/tests_nofos/test_readability_word_export.py`.
