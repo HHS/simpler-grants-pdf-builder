@@ -10,6 +10,7 @@ Versioning since version 1.0.0.
 
 ### Features
 
+* add Word downloads for readability metrics ([#1413](https://github.com/HHS/simpler-grants-pdf-builder/issues/1413)) ([cf0613f](https://github.com/HHS/simpler-grants-pdf-builder/commit/cf0613f58a7395f4533c3dfceeea11032af0a6b8))
 * link to the Readability Checker from NOFO import ([#1416](https://github.com/HHS/simpler-grants-pdf-builder/issues/1416)) ([651f84f](https://github.com/HHS/simpler-grants-pdf-builder/commit/651f84fb094a14a81ace877a28cc605e75563349))
 
 
