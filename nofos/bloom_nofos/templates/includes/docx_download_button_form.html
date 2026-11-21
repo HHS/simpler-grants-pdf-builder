@@ -3,6 +3,7 @@
   method="post"
   action="{{ action_url }}"
   class="docx-download-form{% if form_classes %} {{ form_classes }}{% endif %}"
+  {% if readability_metrics %}data-readability-word-report{% endif %}
   {% if metrics_panel %}data-readability-word-export hidden{% endif %}
 >
   {% csrf_token %}

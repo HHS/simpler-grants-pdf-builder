@@ -204,7 +204,7 @@
 {% block js_footer %}
 {% if word_export_report %}
 <script src="{% static 'js/nofo_export.js' %}" defer></script>
-<script src="{% static 'js/nofo_export_button.js' %}" defer></script>
+<script src="{% static 'js/nofo_export_button.js' %}?v=readability-pending-1" defer></script>
 {% endif %}
 <script src="{% static 'js/pdf_readability.js' %}?v=word-export-1"></script>
 <script src="{% static 'js/word_comparison.js' %}"></script>

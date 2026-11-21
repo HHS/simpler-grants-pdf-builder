@@ -62,3 +62,12 @@ section. See [Standalone Checker report content](../../DOCX_EXPORT.md#standalone
 Automated coverage: `test_signed_in_checker_report_adds_document_details` and
 `test_document_check_reports_recognized_template_parts` in
 `nofos/nofos/tests_nofos/test_readability_word_export.py`.
+
+## Signed-in identifiers and download button
+
+The [signed-in Word report](checker-signed-in-word-report.png) shows the
+opportunity and Assistance Listing numbers detected in a synthetic Word upload.
+The report excludes the upload filename. Chrome downloaded it through the app's
+export view with LibreOffice standing in for GrabzIt. Both readability download
+buttons were disabled during the request and re-enabled after success. The
+Checker button also recovered after a simulated conversion failure.

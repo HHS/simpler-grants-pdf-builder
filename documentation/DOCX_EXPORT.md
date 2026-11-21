@@ -44,7 +44,8 @@ No report includes source content. Neither report forwards session cookies or
 gives GrabzIt a URL to fetch.
 
 The browser submits a signed copy of the displayed values that expires after
-one hour. Generating the report does not save a readability checkpoint. As with
+one hour. The readability download button is disabled while its request is
+in progress and re-enabled when it finishes or fails. Generating the report does not save a readability checkpoint. As with
 other Word exports, GrabzIt may retain the generated document in its capture cache.
 
 `HHS_NOFO_READABILITY_WORD_EXPORT_ENABLED` is off by default. Enable it in

@@ -17,6 +17,7 @@
 
     if (!loading || !success || !error || !doneBtn) return;
 
+    const disableWhilePending = form.hasAttribute("data-readability-word-report");
     let closeTimer = null;
 
     function clearCloseTimer() {
@@ -80,6 +81,8 @@
 
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
+      if (button.disabled) return;
+      if (disableWhilePending) button.disabled = true;
       setState("loading");
 
       try {
@@ -91,6 +94,8 @@
           "error",
           "Sorry — something went wrong generating the document. Please try again.",
         );
+      } finally {
+        if (disableWhilePending) button.disabled = false;
       }
     });
 
