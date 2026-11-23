@@ -229,6 +229,11 @@
           <li class="toc--section-name toc--no-icon toc--before-you-begin toc--imported-introduction">
             <a href="#section--before-you-begin">{{ nofo.introductory_page_title }}</a>
           </li>
+        {% elif forloop.first and nofo.has_fy27_contents and nofo.before_you_begin == 'none' and section.html_id == 'before-you-get-started' %}
+          {# Older drafts can retain the FY27 introduction as an ordinary section. #}
+          <li class="toc--section-name toc--no-icon toc--before-you-begin">
+            <a href="#{{ section.html_id }}">{{ section.name|strip_br }}</a>
+          </li>
         {% elif section.has_section_page %}
           <li class="toc--section-name">
             <div class="toc--section-name--img">

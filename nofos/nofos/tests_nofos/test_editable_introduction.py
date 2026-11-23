@@ -84,6 +84,46 @@ class EditableIntroductionProcessingTests(SimpleTestCase):
             extract_scoped_tagline=True,
         )
 
+    def test_intro_role_and_link_survive_word_bookmark_placement(self):
+        for heading in (
+            '<p><a id="original-intro"></a></p><h1>Before You Get Started</h1>',
+            '<h1><a id="original-intro"></a>Before You Get Started</h1>',
+        ):
+            with self.subTest(heading=heading):
+                html = source_html().replace(
+                    '<h1 id="original-intro">Before You Get Started</h1>', heading
+                )
+                result = self.process(html)
+                introduction = result.sections[0]
+                self.assertEqual(introduction["role"], "introduction")
+                self.assertEqual(introduction["html_id"], INTRO_ANCHOR)
+                self.assertFalse(introduction["has_section_page"])
+                self.assertIsNotNone(result.soup.find("a", href=f"#{INTRO_ANCHOR}"))
+
+    def test_intro_redirects_adjacent_bookmarks_and_leaves_duplicate_links_unlinked(self):
+        html = source_html().replace(
+            '<h1 id="original-intro">Before You Get Started</h1>',
+            '<p><a id="original-intro"></a></p><a id="second-intro"></a>'
+            '<p><a id="duplicate-intro"></a></p><h1>Before You Get Started</h1>',
+        ).replace(
+            "<p>Retain appendix.</p>",
+            '<p>Retain appendix. <a id="duplicate-intro"></a>'
+            '<a href="#second-intro">second bookmark</a> '
+            '<a href="#duplicate-intro">duplicate bookmark</a></p>',
+        )
+        result = self.process(html)
+        self.assertEqual(result.sections[0]["role"], "introduction")
+        self.assertEqual(result.sections[0]["html_id"], INTRO_ANCHOR)
+        self.assertEqual(
+            [
+                link.get_text(strip=True)
+                for link in result.soup.find_all("a", href=f"#{INTRO_ANCHOR}")
+            ],
+            ["the introduction", "second bookmark"],
+        )
+        self.assertIn("duplicate bookmark", result.soup.get_text())
+        self.assertIsNone(result.soup.find("a", string="duplicate bookmark"))
+
     def test_compound_structure_preserves_source_and_orders_without_shifting_steps(
         self,
     ):
