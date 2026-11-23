@@ -44,6 +44,32 @@ class Fy27PdfContentsTests(TestCase):
             force_password_reset=False,
         )
 
+    def test_saved_key_facts_title_variants_keep_inline_spacing(self):
+        self.client.force_login(self.user)
+        callout = Subsection.objects.create(
+            section=self.nofo.sections.get(order=1),
+            name="Key facts",
+            html_id="review--key-facts",
+            order=3,
+            tag="h4",
+            callout_box=True,
+            body="**Opportunity name:** {Insert name}",
+        )
+        for title in ("Key facts", "Key Facts", "  Key Facts  "):
+            with self.subTest(title=title):
+                callout.name = title
+                callout.save(update_fields=["name"])
+                response = self.client.get(reverse("nofos:nofo_view", args=[self.nofo.pk]))
+                self.assertEqual(response.status_code, 200)
+                page = BeautifulSoup(response.content, "html.parser")
+                placeholder = page.select_one(
+                    ".section--content--right-col p .md-curly-variable"
+                )
+                self.assertIsNotNone(placeholder)
+                self.assertEqual(
+                    placeholder.parent.get_text(), "Opportunity name: {Insert name}"
+                )
+
     def pdf_document(self):
         with patch("nofos.pdf_service.docraptor.DocApi") as provider:
             provider.return_value.create_doc.return_value = b"%PDF"

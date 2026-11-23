@@ -367,7 +367,7 @@
               {% if callouts %}
                 <div class="section--content--right-col{% if callouts|get_combined_wordcount_for_subsections > 99 %} section--content--right-col--tiny{% elif callouts|get_combined_wordcount_for_subsections > 79 %} section--content--right-col--smaller{% endif %}">
                   {% for subsection in callouts %}
-                    {% if subsection.name == "Key facts" %}
+                    {% if subsection.name.strip|lower == "key facts" %}
                       {% include "includes/callout_box.html" with subsection=subsection nofo=nofo break_colons=True only %}
                     {% else %}
                       {% spaceless %}
