@@ -56,6 +56,25 @@ available conversion capacity. Each surface must also have readability
 enabled. To roll back, turn the switch off in Constance. This hides the
 actions on new results and blocks requests from pages already open.
 
+#### Readability report download flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as User (browser)
+    participant App as NOFO Builder
+    participant GZ as GrabzIt
+
+    User->>App: POST the signed readability results
+    Note over App: Check access, export settings, and result expiry.<br/>Render the metrics report in memory.
+    App->>GZ: Convert report HTML to DOCX over HTTPS
+    Note over GZ: Receives only the report HTML.<br/>No browser cookies or export URL.
+    App->>GZ: Wait for the conversion and retrieve the result
+    GZ-->>App: DOCX bytes
+    Note over App: Validate the DOCX in memory.
+    App-->>User: Download readability-metrics.docx
+```
+
 #### Standalone Checker report content
 
 The report includes four Tier 2 clearance metrics, the Tier 1 drafting
@@ -122,9 +141,9 @@ results. The numbers in those examples are illustrative.
 
 ## How it works
 
-This section describes full-document exports.
+### Full-document download flow
 
-**We do not send NOFO HTML to GrabzIt.** We send GrabzIt a URL, along with the user's own session cookies. GrabzIt's servers then fetch the page using the cookies registered for the export host and turn the `#download_target` element into a DOCX.
+For a full-document download, the app sends GrabzIt a URL and the user’s session cookies. GrabzIt fetches the export page using the cookies registered for that host and converts the `#download_target` element to DOCX.
 
 ```mermaid
 sequenceDiagram
@@ -175,6 +194,8 @@ When the helper returns an error, the download modal shows "Sorry — something 
 
 ## What data is stored, and where
 
+### Full-document data flow
+
 ```mermaid
 flowchart LR
     DB[(NOFO Builder database<br/>permanent)] --> Page[Export page<br/>rendered on request]
@@ -194,7 +215,9 @@ flowchart LR
 | Generated DOCX (temporary copy) | App memory | During the download request | The app streams no intermediate file to disk. |
 | Generated DOCX (download) | User's browser or device | Up to the user | The final file. |
 
-We do not store the generated Word file in our database, S3 or logs.
+For both export paths, the app keeps the generated DOCX in memory during the
+request and returns it to the browser. GrabzIt may retain the file in its
+capture cache. Only the full-document path registers session cookies.
 
 ## Troubleshooting
 
@@ -202,15 +225,16 @@ Once [#1354](https://github.com/HHS/simpler-grants-pdf-builder/pull/1354) is dep
 
 ## Known gaps
 
-- **Overlapping exports can use a different session.** Exports on the same host register cookies under the same names on the GrabzIt account. If another export overwrites those cookies before the renderer fetches the first export page, the app can evaluate its permissions against the other session.
-- **Session cookies and cached documents stay with GrabzIt after the export.** Cleaning up the account's stored cookies and choosing a cache retention suitable for pre-decisional content are tracked in [#1330](https://github.com/HHS/simpler-grants-pdf-builder/issues/1330).
+- **Overlapping full-document exports can use a different session.** Full-document exports on the same host register cookies under the same names on the GrabzIt account. If another export overwrites those cookies before the renderer fetches the first export page, the app can evaluate its permissions against the other session.
+- **GrabzIt retains cached DOCX files and cookies registered by full-document exports.** Cleaning up the account's stored cookies and choosing a cache retention suitable for pre-decisional content are tracked in [#1330](https://github.com/HHS/simpler-grants-pdf-builder/issues/1330).
 - **No customer encryption key.** The ADR lists encryption at rest with a customer-provided key as a reason for choosing GrabzIt. The code does not set `encryptionKey`.
-- **Temporary file names can collide.** Exports of the same document running at the same time on one task share `/tmp/<pk>.docx`, for example the standard and clearance copies of one NOFO.
 
 ## Configuration
 
 - `GRABZIT_APPLICATION_KEY`, `GRABZIT_APPLICATION_SECRET` and `GRABZIT_WORD_EXPORT_ALLOWED_HOSTS` are environment settings in [`nofos/bloom_nofos/settings.py`](../nofos/bloom_nofos/settings.py). Configure them together, as described in [`DEPLOYMENT.md` § Word export environment isolation](../DEPLOYMENT.md#word-export-environment-isolation).
-- GrabzIt has to reach the app's public HTTPS host. Local `http://localhost` exports don't work.
+- Full-document exports require GrabzIt to reach the app’s public HTTPS host.
+  Readability report exports send HTML directly and still require configured
+  credentials and an allowed host.
 - Never test Word export from a non-production environment with production credentials.
 
 ## Workarounds in the export templates

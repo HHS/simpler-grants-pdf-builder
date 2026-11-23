@@ -90,6 +90,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 | IMPORT-025 | conversion | Tables | Callout title (including a standalone first paragraph under Step 1 Basic information) matching "Key facts"/"Key dates"/"Application due date" → forced to `h4`, canonical casing | `content_processing.py` |
 | IMPORT-026 | repair | Tables | `<span>` inside table cells → unwrapped | `nofo.py` |
 | IMPORT-081 | conversion | Tables | HRSA expense table → full width with equal columns | `nofo_markdown.py` |
+| IMPORT-082 | repair | Tables | FY27 Word Key facts labels → bold colon followed by one space | `nofo.py` |
 | IMPORT-027 | conversion | Tables | Any cell with `colspan`/`rowspan` ≠ 1 → whole table kept as raw HTML; header width classes auto-assigned | `nofo_markdown.py` |
 | IMPORT-057 | repair | Tables | Caption before the first row does not suppress the Markdown table separator | `nofo_markdown.py` |
 | IMPORT-054 | conversion | Tables | "Point value"/"Points" header + short point-value cells → header marked `{: .col--points }` (fit-to-content, no-wrap column) | `nofo_markdown.py` |
@@ -489,6 +490,14 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Trigger:** A `<span>` inside any `<td>`/`<th>`.
 - **Action:** Unwrapped, keeping the text content.
 - **Source:** `content_processing.py::clean_table_cells`
+- **Status:** active
+
+### IMPORT-082 — FY27 Word Key facts label spacing
+
+- **Type:** repair
+- **Trigger:** A Builder Word import or re-import has a recognized Metadata block and a named Key facts callout under Step 1: Review the Opportunity → Basic information.
+- **Action:** For bold Opportunity name, Opportunity number, Assistance listing, Cost sharing, and NOFO version labels, keep the colon bold and use one space before any supplied value. Preserve value content and inline markup. The portrait Key facts sidebar renders that space even when a curly-brace placeholder is wrapped in its own HTML tag.
+- **Source:** `nofo.py::normalize_fy27_key_facts_spacing`, called by the Builder Word import view.
 - **Status:** active
 
 ### IMPORT-081 — HRSA expense table widths
