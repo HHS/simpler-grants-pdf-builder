@@ -21,8 +21,8 @@ Ratios use WCAG 2.2 relative luminance. Compare normal text to the [4.5:1 minimu
 
 | Foreground | Background | Ratio | Use |
 | --- | --- | ---: | --- |
-| White `#FFFFFF` | Navy `#162E51` | 13.60:1 | Cover header, Filled icon glyphs and group label |
-| Navy `#162E51` | White `#FFFFFF` | 13.60:1 | Headings, Contents, active step and Outlined icons |
+| White `#FFFFFF` | Navy `#162E51` | 13.60:1 | Filled icon glyphs and group label |
+| Navy `#162E51` | White `#FFFFFF` | 13.60:1 | Cover header text, headings, Contents, active step and Outlined icons |
 | Navy `#162E51` | Light lavender `#F2F2FA` | 12.22:1 | Callout headings, text and links, and checklist header text |
 | Navy `#162E51` | Gold `#FACE00` | 9.00:1 | Cover update notice, Have questions? callout, and their links |
 | Primary blue `#005EA2` | White `#FFFFFF` | 6.72:1 | Body links |
@@ -33,6 +33,6 @@ The callout and checklist tint matches the computed `#F2F2FA` **Stay Connected**
 
 ## Logo source
 
-The cover uses the [official Health.gov header SVG](https://health.gov/themes/custom/oash_uswds/images/logo_oash.svg) on white. The SVG is bundled with Builder and has the full office name as alternative text. Chromium verified that the logo loads and fits both desktop cover variants and the mobile Text only cover.
+The cover uses the [official Health.gov header SVG](https://health.gov/themes/custom/oash_uswds/images/logo_oash.svg) directly on the white cover header. The SVG is bundled with Builder and has the full office name as alternative text. Chromium verified that the logo loads and fits both desktop cover variants and the mobile Text only cover.
 
 The review covers rendered HTML. Tagged PDF verification still needs a DocRaptor export, including cover reading order, running headers, printed page numbers, and link destinations.

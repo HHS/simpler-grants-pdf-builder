@@ -5,8 +5,8 @@
   --color--oash-gold: #face00;
 }
 .nofo--cover-page--header {
-  background-color: var(--color--oash-navy);
-  color: var(--color--white);
+  background-color: var(--color--white);
+  color: var(--color--oash-navy);
   border-bottom: 4px solid var(--color--oash-gold);
 }
 
@@ -16,8 +16,6 @@
   max-width: 100%;
   height: auto;
   margin-bottom: 0.5rem;
-  padding: 0.625rem;
-  background-color: var(--color--white);
 }
 
 .nofo--cover-page--header .nofo--cover-page--header--logo--subheading p {
