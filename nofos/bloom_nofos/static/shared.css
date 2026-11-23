@@ -26,6 +26,7 @@
   --color--ihs-blue: #012f52;
   --color--nih-blue: var(--color--acl-blue);
   --color--nih-grey: #65666a;
+  --color--oash-navy: #162e51;
   --color--onc-navy: #081f7a;
   --color--fda-blue: #007cba;
   --color--fda-dark-blue: #222c67;
@@ -190,6 +191,10 @@ table.table--fixed-layout,
 
 .bg-group--nih {
   background-color: var(--color--nih-grey);
+}
+
+.bg-group--oash {
+  background-color: var(--color--oash-navy);
 }
 
 .bg-group--onc {

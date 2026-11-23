@@ -2,6 +2,7 @@
 
 from constance import config
 
+from .models import PER_NOTICE_COVER_IMAGE_THEMES
 from .nofo import get_cover_image, get_step_2_section
 
 
@@ -13,7 +14,9 @@ def get_nofo_document_context(nofo):
         "nofo_opdiv": opdiv,
         "nofo_theme_orientation": orientation,
         "nofo_cover_image": (
-            "" if opdiv == "fda" and not nofo.cover_image else get_cover_image(nofo)
+            ""
+            if nofo.theme in PER_NOTICE_COVER_IMAGE_THEMES and not nofo.cover_image
+            else get_cover_image(nofo)
         ),
         "step_2_section": get_step_2_section(nofo),
         "assistance_listing_on_cover_enabled": (

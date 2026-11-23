@@ -87,7 +87,16 @@ STATUS_CHOICES = [
 ]
 
 
-GROUP_DEFAULT_THEMES = {"fda": "portrait-fda-blue", "onc": "portrait-onc-navy"}
+GROUP_DEFAULT_THEMES = {
+    "fda": "portrait-fda-blue",
+    "oash": "portrait-oash-navy",
+    "onc": "portrait-onc-navy",
+}
+
+PER_NOTICE_COVER_IMAGE_THEMES = {
+    GROUP_DEFAULT_THEMES["fda"],
+    GROUP_DEFAULT_THEMES["oash"],
+}
 
 THEME_CHOICES = [
     ("landscape-cdc-blue", "CDC Landscape (Default)"),
@@ -111,6 +120,7 @@ THEME_CHOICES = [
     ("portrait-ihs-white", "IHS (Light)"),
     ("portrait-samhsa-white", "SAMHSA (Light)"),
     ("portrait-nih-white", "NIH (Light)"),
+    ("portrait-oash-navy", "OASH"),
     ("portrait-onc-navy", "ONC"),
 ]
 

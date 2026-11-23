@@ -141,11 +141,11 @@ from .nofo import (
     find_matches_with_context,
     find_same_or_higher_heading_levels_consecutive,
     find_subsections_with_nofo_field_value,
-    get_cdc_or_fda_opdiv,
     get_cover_image,
     get_nofo_action_links,
     get_side_nav_links,
     get_subsection_action_availability,
+    get_theme_warning_opdiv,
     is_hrsa_nofo_import,
     modifications_update_announcement_text,
     normalize_fy27_key_facts_spacing,
@@ -1137,9 +1137,9 @@ class NofosImportNewView(BaseNofoImportView):
                 request, nofo, NofoReadabilityCheckpoint.TRIGGER_IMPORT
             )
 
-            source_opdiv = get_cdc_or_fda_opdiv(nofo.opdiv)
+            source_opdiv = get_theme_warning_opdiv(nofo.opdiv)
             if (
-                nofo.group in {"cdc", "fda"}
+                nofo.group in {"cdc", "fda", "oash"}
                 and source_opdiv
                 and source_opdiv != nofo.group
             ):
