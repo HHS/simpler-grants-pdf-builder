@@ -88,3 +88,57 @@ class OashOnboardingTests(TestCase):
         data["theme"] = "portrait-fda-blue"
         form = NofoThemeOptionsForm(data, user=self.editor, instance=nofo)
         self.assertIn("theme", form.errors)
+
+    def test_covers_without_upload_omit_cover_artwork(self):
+        self.client.force_login(self.editor)
+        for cover in ("text", "medium"):
+            with self.subTest(cover=cover):
+                nofo = Nofo.objects.create(
+                    group="oash",
+                    theme="portrait-oash-navy",
+                    cover=f"nofo--cover-page--{cover}",
+                    title="Synthetic OASH notice",
+                    opdiv="OASH",
+                )
+                response = self.client.get(reverse("nofos:nofo_view", args=[nofo.pk]))
+                self.assertContains(response, "oash-wordmark.svg")
+                self.assertNotContains(response, 'class="nofo--cover-page--hero-image"')
+                self.assertNotContains(
+                    response, 'class="nofo--cover-page--footer--image"'
+                )
+
+    def test_standard_cover_uses_uploaded_artwork_and_alt_text(self):
+        nofo = Nofo.objects.create(
+            group="oash",
+            theme="portrait-oash-navy",
+            cover="nofo--cover-page--medium",
+            title="Synthetic OASH notice",
+            opdiv="OASH",
+        )
+        self.client.force_login(self.editor)
+        key = "img/cover-img/synthetic.png"
+        image_url = "https://example.test/synthetic.png"
+        with patch("nofos.nofo.upload_file_to_s3", return_value=key):
+            response = self.client.post(
+                reverse("nofos:nofo_upload_cover_image", args=[nofo.pk]),
+                {
+                    "cover_image": SimpleUploadedFile(
+                        "synthetic.png", b"fixture", content_type="image/png"
+                    ),
+                    "cover_image_alt_text": "Synthetic cover artwork",
+                },
+            )
+        self.assertRedirects(
+            response,
+            reverse("nofos:nofo_edit", args=[nofo.pk]),
+            fetch_redirect_response=False,
+        )
+        nofo.refresh_from_db()
+        self.assertEqual(nofo.cover_image, key)
+        with patch("nofos.nofo.get_image_url_from_s3", return_value=image_url):
+            response = self.client.get(reverse("nofos:nofo_view", args=[nofo.pk]))
+        self.assertContains(
+            response,
+            f'<img alt="Synthetic cover artwork" src="{image_url}">',
+            html=True,
+        )
