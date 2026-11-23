@@ -681,6 +681,10 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Source:** `introductory_page.py::prepare_editable_introduction`; `content_processing.py::process_document_content`, `get_sections_and_subsections_from_soup`; `views.py::BaseNofoImportView`, `duplicate_nofo`; `models.py::Nofo`, `Section`
 - **Status:** active (Builder Word only for first-time selection; authorized re-import of imported ownership can use Word or HTML). See [editable introduction behavior and verification policy](EDITABLE_INTRODUCTION.md).
 
+  The dedicated introduction keeps its reserved heading ID during bookmark
+  cleanup. A Word bookmark immediately before the heading or inside it can
+  still be resolved to the introduction without changing its section role.
+
 ### IMPORT-063 — Builder Metadata source consumption
 - **Type:** removal
 - **Trigger:** Explicit Builder import/re-import with one or more recognized Metadata blocks under IMPORT-041.
