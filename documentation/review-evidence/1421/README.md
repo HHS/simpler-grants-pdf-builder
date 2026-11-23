@@ -23,18 +23,16 @@ Ratios use WCAG 2.2 relative luminance. Compare normal text to the [4.5:1 minimu
 | --- | --- | ---: | --- |
 | White `#FFFFFF` | Navy `#162E51` | 13.60:1 | Cover header, Filled icon glyphs and group label |
 | Navy `#162E51` | White `#FFFFFF` | 13.60:1 | Headings, Contents, active step and Outlined icons |
-| Navy `#162E51` | Pale blue `#E5FAFF` | 12.60:1 | Callout headings, text and links, and checklist header text |
+| Navy `#162E51` | Light lavender `#F2F2FA` | 12.22:1 | Callout headings, text and links, and checklist header text |
 | Navy `#162E51` | Gold `#FACE00` | 9.00:1 | Cover update notice, Have questions? callout, and their links |
 | Primary blue `#005EA2` | White `#FFFFFF` | 6.72:1 | Body links |
 | Gray `#5C5C5C` | White `#FFFFFF` | 6.69:1 | Inactive step labels and checklist grid |
-| Gray `#5C5C5C` | Pale blue `#E5FAFF` | 6.19:1 | Checklist header grid |
+| Gray `#5C5C5C` | Light lavender `#F2F2FA` | 6.00:1 | Checklist header grid |
 
-The [HHS.gov web palette](https://www.hhs.gov/branding/index.html) is the design source. White on the alternate dark blue `#1A4480` is 9.62:1. Navy on teal `#1DC2AE` is 6.08:1. Keep gold and teal out of white-text treatments, where they give 1.51:1 and 2.24:1 respectively. This implementation uses one navy theme.
+The callout and checklist tint matches the computed `#F2F2FA` **Stay Connected** background on [Health.gov](https://health.gov/). Its **News** panel uses a warm cream, `#FFFBF1`. The navy and gold accents use the [HHS.gov web palette](https://www.hhs.gov/branding/index.html).
 
-## Logo references
+## Logo source
 
-- [OASH and ORI webinar slides](https://ori.hhs.gov/sites/default/files/2022-01/2022-Final_IR-ORI-21-002%20%28ORI%20Conferences%29%20TA%20Webinar.pdf) show the full-color OASH wordmark next to the HHS mark on the opening slide.
-- The [OASH recruitment postcard](https://health.gov/sites/oash/files/transcripts/2024-04/Benefits%20Postcard.pdf) shows the white OASH wordmark at the upper left.
-- [OASH’s official site](https://health.gov/about-oash) gives the office name used in the preview. The cover shows that name as text and uses Builder’s existing HHS mark. The standalone OASH artwork and final palette need confirmation from OASH before rollout.
+The cover uses the [official Health.gov header SVG](https://health.gov/themes/custom/oash_uswds/images/logo_oash.svg) on white. The SVG is bundled with Builder and has the full office name as alternative text. Chromium verified that the logo loads and fits both desktop cover variants and the mobile Text only cover.
 
 The review covers rendered HTML. Tagged PDF verification still needs a DocRaptor export, including cover reading order, running headers, printed page numbers, and link destinations.

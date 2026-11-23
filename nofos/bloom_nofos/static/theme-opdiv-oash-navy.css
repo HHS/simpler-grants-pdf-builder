@@ -1,7 +1,7 @@
-/* Candidate palette from HHS.gov Brand Guidance. */
+/* The lavender tint comes from the Stay Connected section of Health.gov. */
 :root {
   --color--oash-blue: #005ea2;
-  --color--oash-pale-blue: #e5faff;
+  --color--oash-lavender: #f2f2fa;
   --color--oash-gold: #face00;
 }
 .nofo--cover-page--header {
@@ -10,9 +10,14 @@
   border-bottom: 4px solid var(--color--oash-gold);
 }
 
-.nofo--cover-page--header .oash-cover-name {
-  font-weight: 700;
-  margin: 0 0 0.5rem;
+.nofo--cover-page--header .oash-cover-logo {
+  display: block;
+  width: 19rem;
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 0.5rem;
+  padding: 0.625rem;
+  background-color: var(--color--white);
 }
 
 .nofo--cover-page--header .nofo--cover-page--header--logo--subheading p {
@@ -25,7 +30,7 @@
 }
 
 .callout-box {
-  background-color: var(--color--oash-pale-blue);
+  background-color: var(--color--oash-lavender);
   color: var(--color--oash-navy);
 }
 
@@ -77,7 +82,7 @@
 }
 
 .section--content table th {
-  background-color: var(--color--oash-pale-blue);
+  background-color: var(--color--oash-lavender);
   color: var(--color--oash-navy);
 }
 

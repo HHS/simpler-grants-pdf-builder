@@ -87,7 +87,8 @@
           <img class="fda-cover-logo" src="{% static 'img/fda-wordmark-white.svg' %}"
             width="545" height="114" alt="U.S. Food and Drug Administration logo">
         {% elif nofo_opdiv == 'oash' %}
-          <p class="oash-cover-name">Office of the Assistant Secretary for Health</p>
+          <img class="oash-cover-logo" src="{% static 'img/oash-wordmark.svg' %}"
+            width="271" height="42" alt="Office of the Assistant Secretary for Health">
         {% else %}
           {% with "includes/logos/"|add:nofo_opdiv|add:"-logo.svg" as opdiv_logo_path %}
             {% include opdiv_logo_path %}
