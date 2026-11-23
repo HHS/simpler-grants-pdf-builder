@@ -56,6 +56,37 @@ class Fy27PdfContentsTests(TestCase):
         return BeautifulSoup(html, "html.parser")
 
     @override_config(HHS_NOFO_FY27_PDF_CONTENTS_ENABLED=True)
+    def test_existing_intro_section_gets_a_plain_first_contents_entry(self):
+        self.nofo.before_you_begin = "none"
+        self.nofo.sections.update(order=2)
+        intro_section = Section.objects.create(
+            nofo=self.nofo,
+            name="Before you get started",
+            html_id="before-you-get-started",
+            order=1,
+            has_section_page=True,
+        )
+
+        Subsection.objects.create(
+            section=intro_section,
+            name="Get registered",
+            html_id="before-you-get-started--get-registered",
+            order=1,
+            tag="h3",
+        )
+
+        document = self.pdf_document()
+        entries = document.select("#section--toc > ol > li")
+        intro = entries[0]
+        self.assertIn("toc--fy27-columns", document.select_one("#section--toc")["class"])
+        self.assertIn("toc--before-you-begin", intro["class"])
+        self.assertEqual(intro.get_text(strip=True), "Before you get started")
+        self.assertIsNone(intro.select_one("svg, ol"))
+        self.assertEqual(intro.a["href"], "#before-you-get-started")
+        self.assertIsNotNone(document.select_one(intro.a["href"]))
+        self.assertEqual(entries[1].a["href"], "#review")
+
+    @override_config(HHS_NOFO_FY27_PDF_CONTENTS_ENABLED=True)
     def test_new_pdf_modes_keep_cover_order_and_same_individual_links(self):
         columns = self.pdf_document()
         self.nofo.pdf_contents_layout = Nofo.PdfContentsLayout.SINGLE
