@@ -148,6 +148,7 @@ from .nofo import (
     get_subsection_action_availability,
     is_hrsa_nofo_import,
     modifications_update_announcement_text,
+    normalize_fy27_key_facts_spacing,
     nofo_has_appendix_section,
     nofo_has_end_notes_section,
     overwrite_nofo,
@@ -1092,6 +1093,8 @@ class NofosImportNewView(BaseNofoImportView):
         Create a new NOFO with the parsed data.
         """
         warning_count = kwargs.get("warning_count", 0)
+        if kwargs.get("word_import", False):
+            normalize_fy27_key_facts_spacing(soup, sections)
         try:
             nofo_title = suggest_nofo_title(soup)
             opdiv = suggest_nofo_opdiv(soup)
@@ -1317,6 +1320,8 @@ class NofosImportOverwriteView(
         """
         Handles the actual reimport logic, allowing external calls without requiring an instance.
         """
+        if word_import:
+            normalize_fy27_key_facts_spacing(soup, sections)
         try:
             with transaction.atomic():
                 page_breaks = {}

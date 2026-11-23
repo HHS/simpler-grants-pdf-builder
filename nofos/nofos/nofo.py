@@ -2416,6 +2416,69 @@ def add_final_subsection_to_step_3(sections):
 KEY_DATES_FIELD_NAME_WORD_RE = re.compile(r"^[A-Za-z][A-Za-z'-]*$")
 
 
+FY27_KEY_FACTS_LABELS = {
+    "opportunity name",
+    "opportunity number",
+    "assistance listing",
+    "cost sharing",
+    "nofo version",
+}
+
+
+def normalize_fy27_key_facts_spacing(soup, sections):
+    """Apply IMPORT-082 to the FY27 Word Basic information callout."""
+    if recognized_metadata_block(soup) is None:
+        return
+
+    for section in sections:
+        if not re.fullmatch(
+            r"step 1\s*:\s*review the opportunity", section["name"], re.IGNORECASE
+        ):
+            continue
+
+        in_basic_information = False
+        for subsection in section["subsections"]:
+            if subsection["tag"] == "h3":
+                in_basic_information = (
+                    subsection["name"].casefold() == "basic information"
+                )
+            if (
+                in_basic_information
+                and subsection["name"] == "Key facts"
+                and subsection["is_callout_box"]
+            ):
+                for paragraph in subsection["body"].find_all("p", recursive=False):
+                    _normalize_key_fact_label(paragraph)
+
+
+def _normalize_key_fact_label(paragraph):
+    label = paragraph.contents[0] if paragraph.contents else None
+    if not isinstance(label, Tag) or label.name != "strong":
+        return
+
+    text = label.get_text().rstrip()
+    if text.removesuffix(":").casefold() not in FY27_KEY_FACTS_LABELS:
+        return
+
+    value = label.next_sibling
+    if not text.endswith(":"):
+        if not isinstance(value, NavigableString) or not value.startswith(":"):
+            return
+        text += ":"
+        value.replace_with(NavigableString(value[1:]))
+        value = label.next_sibling
+
+    label.string = text
+    while isinstance(value, NavigableString) and not value.strip():
+        following = value.next_sibling
+        value.extract()
+        value = following
+    if isinstance(value, NavigableString):
+        value.replace_with(NavigableString(value.lstrip()))
+    if value is not None:
+        label.insert_after(NavigableString(" "))
+
+
 def add_line_breaks_to_key_dates_values(sections):
     """
     This function accepts a list of section dicts, _not_ Section objects, and mutates
