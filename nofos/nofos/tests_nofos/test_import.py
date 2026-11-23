@@ -12,11 +12,14 @@ from django.urls import reverse
 from martor.utils import markdownify
 from users.models import BloomUser
 
+from nofos.document_processing import process_document_content
 from nofos.models import ImportAttempt, Nofo, Section, Subsection
 from nofos.nofo import (
+    get_as_markdown,
     get_sections_from_soup,
     get_subsections_from_sections,
     merge_funding_details_label_value_paragraphs,
+    normalize_fy27_key_facts_spacing,
     parse_uploaded_file_as_html_string,
     process_nofo_html,
     replace_chars,
@@ -330,6 +333,36 @@ class TestFundingDetailsParagraphNormalization(TestCase):
 
 
 class TestKeyCalloutDocxImport(TestCase):
+    def test_fy27_key_facts_spacing_preserves_supplied_values(self):
+        html = """
+            <h1>Step 1: Review the Opportunity</h1>
+            <h2>Basic information</h2>
+            <table><tr><td><h3>Key facts</h3>
+                <p><strong>Opportunity name:</strong>{Insert name}</p>
+                <p><strong>Opportunity number</strong>:   <em>ABC: 123</em></p>
+                <p><strong>Cost sharing: </strong>None</p>
+                <p><strong>NOFO version:</strong></p>
+                <p><strong>Other label:</strong>Other value</p>
+            </td></tr></table>
+        """
+        metadata = "<h2>Metadata</h2><p>OpDiv: ACL</p>"
+        for source in (html, html + metadata):
+            with self.subTest(has_metadata=source.endswith(metadata)):
+                document = process_document_content(
+                    source, builder_import=True, extract_scoped_tagline=True
+                )
+                normalize_fy27_key_facts_spacing(document.soup, document.sections)
+                key_facts = document.sections[0]["subsections"][1]["body"]
+                body = get_as_markdown(key_facts)
+                if source == html:
+                    self.assertIn("**Opportunity name:**{Insert name}", body)
+                    continue
+                self.assertIn("**Opportunity name:** {Insert name}", body)
+                self.assertIn("**Opportunity number:** *ABC: 123*", body)
+                self.assertIn("**Cost sharing:** None", body)
+                self.assertIn("**NOFO version:**\n", body)
+                self.assertIn("**Other label:**Other value", body)
+
     def parse_fixture(self, fixture_name):
         fixture_path = os.path.join(
             settings.BASE_DIR, "nofos", "fixtures", "docx", fixture_name
