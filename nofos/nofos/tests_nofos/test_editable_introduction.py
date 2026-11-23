@@ -84,6 +84,22 @@ class EditableIntroductionProcessingTests(SimpleTestCase):
             extract_scoped_tagline=True,
         )
 
+    def test_intro_role_and_link_survive_word_bookmark_placement(self):
+        for heading in (
+            '<p><a id="original-intro"></a></p><h1>Before You Get Started</h1>',
+            '<h1><a id="original-intro"></a>Before You Get Started</h1>',
+        ):
+            with self.subTest(heading=heading):
+                html = source_html().replace(
+                    '<h1 id="original-intro">Before You Get Started</h1>', heading
+                )
+                result = self.process(html)
+                introduction = result.sections[0]
+                self.assertEqual(introduction["role"], "introduction")
+                self.assertEqual(introduction["html_id"], INTRO_ANCHOR)
+                self.assertFalse(introduction["has_section_page"])
+                self.assertIsNotNone(result.soup.find("a", href=f"#{INTRO_ANCHOR}"))
+
     def test_compound_structure_preserves_source_and_orders_without_shifting_steps(
         self,
     ):
