@@ -2294,7 +2294,14 @@ def preserve_heading_links(soup):
     headings.extend(soup.find_all(is_h7))
 
     # Process all headings
+    from .introductory_page import INTRO_ANCHOR, imported_introduction
+
+    has_editable_intro = imported_introduction(soup)
     for heading in headings:
+        if has_editable_intro and heading.get("id") == INTRO_ANCHOR:
+            # Import already resolved links to this section's reserved destination.
+            continue
+
         # Store found empty anchors
         heading_id_anchors = []
         preceding_id_anchors = []
