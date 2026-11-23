@@ -38,7 +38,8 @@
   color: var(--color--oash-blue);
 }
 
-.nofo--cover-page--callout-box {
+.nofo--cover-page--callout-box,
+.section--content--right-col .callout-box--questions {
   background-color: var(--color--oash-gold);
   color: var(--color--oash-navy);
 }
@@ -146,7 +147,8 @@
     margin-right: 0;
   }
 
-  .nofo--cover-page--callout-box {
+  .nofo--cover-page--callout-box,
+.section--content--right-col .callout-box--questions {
     margin-right: 0;
   }
 

@@ -9,7 +9,7 @@ These screenshots show Builder’s HTML preview for a synthetic NOFO in Chromium
 | Text only cover and update banner | [Desktop](cover-text.jpg) · [Mobile](cover-mobile.jpg) |
 | Standard image cover | [Desktop](cover-image.jpg) |
 | Table of contents | [Outlined icons](contents-outlined.jpg) · [Filled icons](contents-filled.jpg) |
-| Basic information | [Key facts and Key dates](basic-information.jpg) |
+| Basic information | [Have questions?, Key facts, and Key dates](basic-information.jpg) |
 | Help with systems | [Registration callout](help-with-systems.jpg) |
 | Contact and support | [Support callout](contact-and-support.jpg) |
 | Interstitial step pages | [Review the Opportunity](step-review.jpg) · [Contacts and Support](step-contact.jpg) |
@@ -24,7 +24,7 @@ Ratios use WCAG 2.2 relative luminance. Compare normal text to the [4.5:1 minimu
 | White `#FFFFFF` | Navy `#162E51` | 13.60:1 | Cover header, Filled icon glyphs and group label |
 | Navy `#162E51` | White `#FFFFFF` | 13.60:1 | Headings, Contents, active step and Outlined icons |
 | Navy `#162E51` | Pale blue `#E5FAFF` | 12.60:1 | Callout headings, text and links, and checklist header text |
-| Navy `#162E51` | Gold `#FACE00` | 9.00:1 | Cover update notice and link |
+| Navy `#162E51` | Gold `#FACE00` | 9.00:1 | Cover update notice, Have questions? callout, and their links |
 | Primary blue `#005EA2` | White `#FFFFFF` | 6.72:1 | Body links |
 | Gray `#5C5C5C` | White `#FFFFFF` | 6.69:1 | Inactive step labels and checklist grid |
 | Gray `#5C5C5C` | Pale blue `#E5FAFF` | 6.19:1 | Checklist header grid |
