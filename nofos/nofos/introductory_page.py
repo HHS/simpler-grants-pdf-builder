@@ -200,17 +200,20 @@ def capture_introductory_page(soup):
         soup.body[FAMILY_ATTRIBUTE] = HEADING_NAMES[name]
     targets = []
     # Mammoth can emit a named bookmark inside the heading, immediately
-    # before it, or in an otherwise empty preceding paragraph.
+    # before it, or in consecutive otherwise empty preceding paragraphs.
     for heading in headings:
         targets.extend([heading] + heading.find_all(id=True))
         previous = heading.find_previous_sibling()
-        if previous and not previous.get_text(strip=True):
+        while previous and not previous.get_text(strip=True):
             if previous.name == "a":
                 targets.append(previous)
             elif previous.name == "p" and all(
-                t.name == "a" for t in previous.find_all(recursive=False)
+                tag.name == "a" for tag in previous.find_all(recursive=False)
             ):
                 targets.extend(previous.find_all("a", id=True))
+            else:
+                break
+            previous = previous.find_previous_sibling()
     for target in targets:
         target_id = target.get("id")
         if not target_id:

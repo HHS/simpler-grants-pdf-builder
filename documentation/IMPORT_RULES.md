@@ -682,8 +682,9 @@ The example that prompted this document: detecting a footnote/endnote list and f
 - **Status:** active (Builder Word only for first-time selection; authorized re-import of imported ownership can use Word or HTML). See [editable introduction behavior and verification policy](EDITABLE_INTRODUCTION.md).
 
   The dedicated introduction keeps its reserved heading ID during bookmark
-  cleanup. A Word bookmark immediately before the heading or inside it can
-  still be resolved to the introduction without changing its section role.
+  cleanup. Links to unique Word bookmarks inside the heading or in a
+  consecutive run immediately before it resolve to the introduction. Links
+  to duplicate bookmark IDs become plain text.
 
 ### IMPORT-063 — Builder Metadata source consumption
 - **Type:** removal
