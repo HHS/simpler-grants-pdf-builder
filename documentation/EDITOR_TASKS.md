@@ -113,11 +113,11 @@ is needed, contact the SimplerNOFOs team.
   readability](#task-readability-upload).
 
 
-- New CDC-, FDA-, and ONC-group imports start with their agency theme and the **Text only** cover.
-  When a CDC or FDA editor uploads a document whose OpDiv identifies the other agency,
+- New CDC-, FDA-, OASH-, and ONC-group imports start with their agency theme and the **Text only** cover.
+  When a CDC, FDA, or OASH editor uploads a document whose OpDiv identifies another of those agencies,
   Builder keeps the editor’s group theme and asks them to check the uploaded document.
   Bloom imports use a recognized OpDiv or, when no OpDiv is recognized, the matching opportunity number.
-  To use **Standard image** on an FDA notice, upload an image for that NOFO.
+  To use **Standard image** on an FDA or OASH notice, upload an image for that NOFO.
   See [Change theme, cover style, or icon style](#task-theme) for the available options.
 - When the imported OpDiv identifies CMS, Builder suggests **CMS (Light)** under
   **NOFO theme options** on a new import, even if the opportunity number is blank
@@ -846,9 +846,9 @@ to use an image cover.
 
 **Notes**
 
-- FDA and ONC editors see their agency theme on their group’s notices. Choose
+- FDA, OASH, and ONC editors see their agency theme on their group’s notices. Choose
   **Text only** or **Standard image** and either **Filled** or **Outlined** icons.
-  Bloom editors can select FDA and ONC alongside other OpDiv themes.
+  Bloom editors can select FDA, OASH, and ONC alongside other OpDiv themes.
 
 - New imports that identify SAMHSA start with **Text only**. To use an image
   cover, choose **Standard image** in **Cover style**.

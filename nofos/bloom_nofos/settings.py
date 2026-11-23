@@ -842,6 +842,7 @@ GROUP_CHOICES = [
     ("hrsa", "HRSA: Health Resources and Services Administration"),
     ("ihs", "IHS: Indian Health Service"),
     ("nih", "NIH: National Institutes of Health"),
+    ("oash", "OASH: Office of the Assistant Secretary for Health"),
     (
         "onc",
         "ONC: Office of the National Coordinator for Health Information Technology",

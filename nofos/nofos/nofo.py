@@ -114,7 +114,13 @@ from .import_transforms import (
     omit_leading_word_title,
     transform_word_document,
 )
-from .models import GROUP_DEFAULT_THEMES, Nofo, Section, Subsection
+from .models import (
+    GROUP_DEFAULT_THEMES,
+    PER_NOTICE_COVER_IMAGE_THEMES,
+    Nofo,
+    Section,
+    Subsection,
+)
 from .nofo_markdown import MISSING_ALT_TEXT_ATTR, PRESERVE_BOOKMARK_TARGET_ATTR, md
 from .pdf_metadata import normalize_pdf_metadata_value
 from .policy_language import detect_policy_language_status, get_candidate_slots
@@ -1725,6 +1731,7 @@ def suggest_nofo_cover(nofo_theme):
             "fda-",
             "hrsa-",
             "nih-",
+            "oash-",
             "onc-",
             "samhsa-",
         ]
@@ -1757,7 +1764,7 @@ def is_samhsa_opdiv(opdiv):
 FDA_NOFO_NUMBER_PATTERN = re.compile(r"^(?:rfa|par|pa|pas|rfp)-fd-\d{2}-\d+", re.I)
 
 
-def get_cdc_or_fda_opdiv(opdiv):
+def get_theme_warning_opdiv(opdiv):
     opdiv_lower = (opdiv or "").lower()
     if "centers for disease control and prevention" in opdiv_lower or re.search(
         r"\bcdc\b", opdiv_lower
@@ -1767,16 +1774,21 @@ def get_cdc_or_fda_opdiv(opdiv):
     if re.search(r"\b(?:food (?:and|&) drug administration|fda)\b", opdiv_lower):
         return "fda"
 
+    if re.search(
+        r"\b(?:office of the assistant secretary for health|oash)\b", opdiv_lower
+    ):
+        return "oash"
+
     return None
 
 
 def suggest_nofo_theme(nofo_number, opdiv=""):
     opdiv_lower = (opdiv or "").lower()
-    agency = get_cdc_or_fda_opdiv(opdiv)
+    agency = get_theme_warning_opdiv(opdiv)
     if agency == "cdc":
         return "portrait-cdc-blue"
-    if agency == "fda":
-        return GROUP_DEFAULT_THEMES["fda"]
+    if agency:
+        return GROUP_DEFAULT_THEMES[agency]
 
     if "national institutes of health" in opdiv_lower or re.search(
         r"\bnih\b", opdiv_lower
@@ -1966,7 +1978,7 @@ def suggest_all_nofo_fields(
     if (
         not nofo.cover_image
         and not preserve_hrsa_image
-        and nofo.theme != GROUP_DEFAULT_THEMES["fda"]
+        and nofo.theme not in PER_NOTICE_COVER_IMAGE_THEMES
     ):
         nofo.cover_image = suggest_nofo_cover_image(nofo)  # guess NOFO cover image
 
