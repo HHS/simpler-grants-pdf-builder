@@ -1,5 +1,5 @@
 # CHANGED: add an alias so we can copy from this stage later
-FROM python:3.14-slim AS builder
+FROM python:3.15-slim AS builder
 
 # set work directory
 WORKDIR /app
