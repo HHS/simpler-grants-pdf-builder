@@ -10,7 +10,9 @@ from django.db import migrations
 
 
 def clear_attempts(apps, schema_editor):
-    apps.get_model("nofos", "PdfReadabilityAttempt").objects.all().delete()
+    Attempt = apps.get_model("nofos", "PdfReadabilityAttempt")
+    # Delete from the database being migrated, not whatever "default" is.
+    Attempt.objects.using(schema_editor.connection.alias).all().delete()
 
 
 class Migration(migrations.Migration):
