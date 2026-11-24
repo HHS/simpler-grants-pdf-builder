@@ -1,0 +1,13 @@
+@font-face{font-family:"Source Sans Pro Web";font-style:normal;font-weight:400;src:url(../../../nofos/bloom_nofos/static/fonts/source-sans-pro/sourcesanspro-regular-webfont.woff2)}
+@font-face{font-family:"Source Sans Pro Web";font-style:normal;font-weight:700;src:url(../../../nofos/bloom_nofos/static/fonts/source-sans-pro/sourcesanspro-bold-webfont.woff2)}
+@font-face{font-family:"Merriweather Web";font-style:normal;font-weight:700;src:url(../../../nofos/bloom_nofos/static/fonts/merriweather/Latin-Merriweather-Bold.woff2)}
+*{box-sizing:border-box}body{font-family:"Source Sans Pro Web",Arial,sans-serif;color:#1b1b1b;line-height:1.5}
+main{max-width:76rem!important}.preview{padding:1rem;border:1px solid #a9aeb1;background:#f9f9f9}
+.preview h3{font-size:1.2rem}.status{border-left:5px solid #005ea2;padding:.6rem 1rem;background:#e7f6f8}
+blockquote{border-left:4px solid #71767a;margin:1rem 0;padding:.5rem 1rem}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:22rem;overflow:auto;font-size:.8rem}
+button{margin-bottom:.4rem!important;max-width:100%;white-space:normal}textarea{box-sizing:border-box;width:100%;max-width:100%!important}sup a{margin:0 .15rem}
+details,section{min-width:0}details{overflow-wrap:anywhere}
+[hidden]{display:none!important}.stale{font-weight:bold;color:#b50909}
+.usa-alert--info .usa-alert__body::before{background-image:none;-webkit-mask-image:url(../../../nofos/bloom_nofos/static/img/usa-icons/info.svg);mask-image:url(../../../nofos/bloom_nofos/static/img/usa-icons/info.svg)}
+.usa-select{background-image:url(../../../nofos/bloom_nofos/static/img/usa-icons/unfold_more.svg)}
