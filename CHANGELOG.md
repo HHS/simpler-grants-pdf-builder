@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.65.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.64.0...nofos-v3.65.0) (2026-11-24)
+
+
+### Features
+
+* add command to clear readability checker usage records ([#1428](https://github.com/HHS/simpler-grants-pdf-builder/issues/1428)) ([7e163d4](https://github.com/HHS/simpler-grants-pdf-builder/commit/7e163d49313893bf1edcaca85fe82cf86ab5f95f))
+* add OASH group and draft portrait theme ([#1423](https://github.com/HHS/simpler-grants-pdf-builder/issues/1423)) ([3f98abc](https://github.com/HHS/simpler-grants-pdf-builder/commit/3f98abc967f50e7f18c6664f8f7e046716ae7508))
+
+
+### Bug Fixes
+
+* preserve FY27 introductions through Word bookmark cleanup ([#1424](https://github.com/HHS/simpler-grants-pdf-builder/issues/1424)) ([16cd333](https://github.com/HHS/simpler-grants-pdf-builder/commit/16cd33321b217946720b76dfba32af63b841927b))
+* preserve FY27 Key facts label spacing ([9d856f9](https://github.com/HHS/simpler-grants-pdf-builder/commit/9d856f978ad97f6b503b4946cd43884a60e55e90))
+
+
+### Documentation
+
+* diagram the readability Word export flow ([#1420](https://github.com/HHS/simpler-grants-pdf-builder/issues/1420)) ([4d35ecc](https://github.com/HHS/simpler-grants-pdf-builder/commit/4d35ecc5da374322b4e0450eb2f3902ac3c0bd9d))
+
+
+### Miscellaneous Chores
+
+* **main:** release nofos 3.64.0 ([#1418](https://github.com/HHS/simpler-grants-pdf-builder/issues/1418)) ([48c3d5b](https://github.com/HHS/simpler-grants-pdf-builder/commit/48c3d5b347efdb5cf08eb580416d64a99be4a89e))
+
 ## [3.64.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.63.3...nofos-v3.64.0) (2026-11-21)
 
 
