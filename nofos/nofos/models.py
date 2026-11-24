@@ -1438,7 +1438,9 @@ class NofoReadabilityCheckpoint(models.Model):
 
 
 class PdfReadabilityAttempt(models.Model):
-    """Content-free outcomes; application only inserts, retention cleanup deletes."""
+    """Content-free outcomes. The application only inserts; rows are deleted by
+    the retention cleanup command or the operator-run clear_pdf_readability_attempts
+    reset."""
 
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     outcome = models.CharField(max_length=32)

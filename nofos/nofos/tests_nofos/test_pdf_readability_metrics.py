@@ -13,7 +13,7 @@ from django.urls import reverse
 from django.utils import timezone
 from users.models import BloomUser
 
-from nofos.models import PdfReadabilityAttempt
+from nofos.models import PdfReadabilityAttempt, WordComparison
 from nofos.pdf_readability import _ERRORS, PDF_READABILITY_OUTCOMES, PdfReadabilityError
 
 
@@ -413,3 +413,77 @@ class MetricsTests(TestCase):
                 list(PdfReadabilityAttempt.objects.values_list("pk", flat=True)),
                 [recent.pk],
             )
+
+
+class ClearAttemptsCommandTests(TestCase):
+    def setUp(self):
+        for source in ("public", "public", "authenticated", "unknown"):
+            PdfReadabilityAttempt.objects.create(
+                outcome="success", http_status=200, duration_ms=1, source=source
+            )
+        old = PdfReadabilityAttempt.objects.create(
+            outcome="invalid_pdf", http_status=400, duration_ms=1, source="public"
+        )
+        # Age plays no part, unlike the retention cleanup command.
+        PdfReadabilityAttempt.objects.filter(pk=old.pk).update(
+            created_at=timezone.now() - timedelta(days=500)
+        )
+        self.comparison = WordComparison.objects.create(
+            filename="Synthetic.docx",
+            fingerprint="a" * 64,
+            analyzed_at=timezone.now(),
+            version="synthetic-1",
+            checker={},
+            passive=1,
+            word_passive=2,
+        )
+
+    def run_command(self, **options):
+        out = StringIO()
+        call_command("clear_pdf_readability_attempts", stdout=out, **options)
+        return out.getvalue()
+
+    @override_settings(
+        PDF_READABILITY_ATTEMPT_RETENTION_DAYS=None,
+        AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS=None,
+    )
+    def test_dry_run_is_default_and_needs_no_retention_window(self):
+        output = self.run_command()
+        self.assertIn("would delete 5 ", output)
+        self.assertIn("--confirm", output)
+        self.assertEqual(PdfReadabilityAttempt.objects.count(), 5)
+
+    def test_confirm_deletes_every_source_and_keeps_word_comparisons(self):
+        output = self.run_command(confirm=True)
+        self.assertIn("Deleted 5 ", output)
+        self.assertFalse(PdfReadabilityAttempt.objects.exists())
+        self.assertEqual(
+            list(WordComparison.objects.values_list("pk", flat=True)),
+            [self.comparison.pk],
+        )
+
+    def test_source_filter_limits_dry_run_and_deletion(self):
+        self.assertIn("would delete 3 public ", self.run_command(source="public"))
+        self.assertIn(
+            "Deleted 1 authenticated ",
+            self.run_command(source="authenticated", confirm=True),
+        )
+        self.assertEqual(
+            sorted(PdfReadabilityAttempt.objects.values_list("source", flat=True)),
+            ["public", "public", "public", "unknown"],
+        )
+
+    def test_invalid_source_is_rejected(self):
+        with self.assertRaises(CommandError):
+            self.run_command(source="everyone", confirm=True)
+        self.assertEqual(PdfReadabilityAttempt.objects.count(), 5)
+
+    @override_settings(PDF_READABILITY_ATTEMPT_RECORDING_ENABLED=True)
+    def test_recording_still_works_after_clearing(self):
+        from time import monotonic
+
+        from nofos.pdf_readability_metrics import record_attempt
+
+        self.run_command(confirm=True)
+        record_attempt("success", 200, monotonic(), source="public")
+        self.assertEqual(PdfReadabilityAttempt.objects.count(), 1)

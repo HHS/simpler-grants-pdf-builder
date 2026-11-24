@@ -105,7 +105,9 @@ python manage.py cleanup_pdf_readability_attempts --source authenticated
 
 Default cleanup targets public and legacy/unknown rows using public retention.
 Explicit `--source unknown` targets unknown only. Authenticated cleanup uses its
-own window and can't delete public or unknown rows.
+own window and can't delete public or unknown rows. To clear all records
+regardless of age, see
+[resetting usage records](PDF_READABILITY_PILOT.md#resetting-usage-records-1427).
 
 Stored facts are timestamp, label, attempted file category (PDF, DOCX or
 unknown), fixed outcome code, HTTP status and duration. There is no filename,
