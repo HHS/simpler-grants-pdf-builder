@@ -163,7 +163,9 @@ Migration `0168_clear_pdf_readability_attempts` deleted every
 checker. Deploys run migrations automatically, so each environment was cleared on
 its first deploy that included 0168, without operator access to the
 environment. Django records the migration as applied, so later deploys don't
-clear the table again. Saved [Word comparisons](WORD_COMPARISONS.md) were not
+clear the table again while 0168 remains applied. Reversing to 0167 and
+reapplying 0168 deletes all attempts again, including those recorded since the
+first reset. Saved [Word comparisons](WORD_COMPARISONS.md) were not
 touched, and the recording and retention settings were unchanged. Reversing the
 migration restores nothing. After the deploy, confirm the usage page shows zero
 attempts (or only uploads made since) and the Comparisons tab is unchanged, and

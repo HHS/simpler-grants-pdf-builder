@@ -2,8 +2,10 @@
 
 Deploys run migrations automatically, so this clears the usage page in each
 environment on its next deploy without operator access to the environment.
-Django records the migration as applied, so later deploys never clear the table
-again. Saved Word comparisons are not touched. Reversing restores nothing.
+Django records the migration as applied, so later deploys don't clear the table
+again while 0168 remains applied. Reversing restores nothing, and reversing to
+0167 then reapplying 0168 deletes every attempt again, including ones recorded
+since the first reset. Saved Word comparisons are not touched.
 """
 
 from django.db import migrations
