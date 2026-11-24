@@ -158,25 +158,27 @@ briefly make aggregates differ; refresh for a new snapshot.
 
 #### Resetting usage records (#1427)
 
-To discard usage records that don't reflect real use (for example, test traffic
-before a launch), an operator can clear the usage page regardless of record age
-or retention settings. From `nofos/` in the target environment, after a deploy
-that includes the command:
+Migration `0168_clear_pdf_readability_attempts` deleted every
+`PdfReadabilityAttempt` row once, to discard records that predate real use of the
+checker. Deploys run migrations automatically, so each environment was cleared on
+its first deploy that included 0168, without operator access to the
+environment. Django records the migration as applied, so later deploys don't
+clear the table again while 0168 remains applied. Reversing to 0167 and
+reapplying 0168 deletes all attempts again, including those recorded since the
+first reset. Saved [Word comparisons](WORD_COMPARISONS.md) were not
+touched, and the recording and retention settings were unchanged. Reversing the
+migration restores nothing. After the deploy, confirm the usage page shows zero
+attempts (or only uploads made since) and the Comparisons tab is unchanged, and
+note the environment and date in the tracking issue.
 
-```text
-poetry run python manage.py clear_pdf_readability_attempts
-poetry run python manage.py clear_pdf_readability_attempts --confirm
-```
-
-The first command is a dry run that prints how many rows would be deleted. Only
-`--confirm` deletes. Add `--source public`, `--source authenticated` or
-`--source unknown` to clear one label; omit it to clear every label. The command
-outputs only a row count. It deletes `PdfReadabilityAttempt` rows only: saved
-[Word comparisons](WORD_COMPARISONS.md) are not touched, and the recording and
-retention settings are unchanged, so new uploads keep being recorded when
-recording is on. A reset can't be undone. Afterward, confirm the usage page shows
-zero attempts and the Comparisons tab is unchanged, and note the environment,
-date and deleted count in the tracking issue.
+For a future reset, the `clear_pdf_readability_attempts` management command
+deletes all rows regardless of age, or one label with `--source public`,
+`--source authenticated` or `--source unknown`. It is a dry run that prints only
+a row count unless `--confirm` is passed. Deployed environments have no
+interactive shell, so it must run as a one-off task from the deployed image, for
+example with `bin/run-command` in
+[simpler-grants-gov](https://github.com/HHS/simpler-grants-gov). That requires
+infrastructure access; without it, ship another one-time data migration instead.
 
 Track remaining enablement work in [#968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968).
 Reuse the [source-based safeguards inventory](PDF_READABILITY_SAFEGUARDS.md)
