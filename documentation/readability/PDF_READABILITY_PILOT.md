@@ -142,7 +142,9 @@ source, outcome, returned HTTP status and processing duration, plus Django's
 internal row ID.
 No filename, document hash/size/pages/text/signals/metrics, request headers,
 IP address, session or user ID is stored. The application inserts rows only;
-they are not registered for admin editing or exposed through a write API.
+they are not registered for admin editing or exposed through a write API. Rows
+are deleted only by the retention cleanup command or an operator-run
+[full reset](#resetting-usage-records-1427).
 Recording runs after the analysis slot releases. Database failure leaves the
 response unchanged and emits only a fixed warning, without exception details.
 The duration ends before the database write. GETs, CSRF rejections and upstream
@@ -153,6 +155,28 @@ agreement before merge. A disabled route records `disabled` only when recording
 has separately been approved/enabled. Zero records with recording disabled is
 not evidence of zero use. Retention cleanup concurrent with a page read may
 briefly make aggregates differ; refresh for a new snapshot.
+
+#### Resetting usage records (#1427)
+
+To discard usage records that don't reflect real use (for example, test traffic
+before a launch), an operator can clear the usage page regardless of record age
+or retention settings. From `nofos/` in the target environment, after a deploy
+that includes the command:
+
+```text
+poetry run python manage.py clear_pdf_readability_attempts
+poetry run python manage.py clear_pdf_readability_attempts --confirm
+```
+
+The first command is a dry run that prints how many rows would be deleted. Only
+`--confirm` deletes. Add `--source public`, `--source authenticated` or
+`--source unknown` to clear one label; omit it to clear every label. The command
+outputs only a row count. It deletes `PdfReadabilityAttempt` rows only: saved
+[Word comparisons](WORD_COMPARISONS.md) are not touched, and the recording and
+retention settings are unchanged, so new uploads keep being recorded when
+recording is on. A reset can't be undone. Afterward, confirm the usage page shows
+zero attempts and the Comparisons tab is unchanged, and note the environment,
+date and deleted count in the tracking issue.
 
 Track remaining enablement work in [#968](https://github.com/HHS/simpler-grants-pdf-builder/issues/968).
 Reuse the [source-based safeguards inventory](PDF_READABILITY_SAFEGUARDS.md)
