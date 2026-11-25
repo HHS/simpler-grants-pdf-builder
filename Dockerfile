@@ -9,14 +9,17 @@ WORKDIR /app
 # python:3.14-slim before the base image is rebuilt. Upgrading is preferred over
 # adding .grype.yml entries because Debian fixes are available.
 # Remove packages from this line once the base image includes the fixed versions.
-# Last checked: 09/14/2026
+# Last checked: 11/25/2026
 RUN apt-get update && \
   apt-get install -y --only-upgrade --no-install-recommends \
   util-linux \
   gzip \
   libpcre2-8-0 \
   libsqlite3-0 \
-  zlib1g && \
+  zlib1g \
+  libzstd1 \
+  login.defs \
+  passwd && \
   apt-get install -y --no-install-recommends \
   build-essential \
   curl \
