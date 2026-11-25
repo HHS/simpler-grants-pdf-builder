@@ -4,7 +4,9 @@
   Recording shipped in [#1433](https://github.com/HHS/simpler-grants-pdf-builder/pull/1433);
   these captures are for the follow-up that adds the page and its navigation.
 - Captured: November 25, 2026.
-- After: commit `3e87bff4` (branch `claude/word-downloads-metrics-page`).
+- After: commit `3e87bff4` (branch `claude/word-downloads-metrics-page`), later
+  rebased onto the #1433 review fixes as `7483109b`. The rebase moved the
+  recording switch to Constance and did not change the page markup or styles.
   Before: commit `8297a931` (recording only, before the page existed).
 - Environment: local `runserver` with SQLite, `DEBUG=True`,
   `HHS_NOFO_METRICS_ENABLED=true`, `WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED=true`,
