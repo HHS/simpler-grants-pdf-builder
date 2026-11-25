@@ -49,3 +49,4 @@ retain useful rationale and evidence. No automatic age-based deletion applies.
 Other folders retain their issue or descriptive names and capture records.
 
 - [Word passive sentence comparisons — #1248](1248/README.md)
+- [Word downloads metrics page — #1432](1432/README.md)
