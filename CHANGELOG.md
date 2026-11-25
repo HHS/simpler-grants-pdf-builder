@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.66.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.65.0...nofos-v3.66.0) (2026-11-25)
+
+
+### Features
+
+* add Word downloads metrics page ([#1434](https://github.com/HHS/simpler-grants-pdf-builder/issues/1434)) ([041a200](https://github.com/HHS/simpler-grants-pdf-builder/commit/041a2004187583bb31d8f3a72f1d40d96746cdfb))
+* record Word download attempts for usage metrics ([#1433](https://github.com/HHS/simpler-grants-pdf-builder/issues/1433)) ([09d7ebd](https://github.com/HHS/simpler-grants-pdf-builder/commit/09d7ebdc2af33805610b7c1c5a0496ebe06469ec))
+
+
+### Bug Fixes
+
+* clear readability checker usage records on deploy ([#1429](https://github.com/HHS/simpler-grants-pdf-builder/issues/1429)) ([901f4d5](https://github.com/HHS/simpler-grants-pdf-builder/commit/901f4d5514db012e020383eb280b9fda2ac19b84))
+
 ## [3.65.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.64.0...nofos-v3.65.0) (2026-11-24)
 
 
