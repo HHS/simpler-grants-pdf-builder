@@ -286,3 +286,101 @@ class WordDownloadsByMonthTests(TestCase):
         self.assertEqual(word_downloads_by_month(months)[-1], 2)
         self.assertEqual(word_downloads_by_month(months, "cdc")[-1], 1)
         self.assertIsNone(word_downloads_by_month(months, "hrsa")[-1])
+
+
+@override_config(WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED=True)
+class WordDownloadCheckerScopeTests(TestCase):
+    """The Checker row, its signed-in/public split and the navigation all
+    follow the active filters (review of #1434)."""
+
+    def setUp(self):
+        self.url = reverse("nofos:builder_metrics_word_downloads")
+        user = BloomUser.objects.create_user(
+            email="word-downloads-scope@example.com",
+            password=None,
+            group="bloom",
+            force_password_reset=False,
+        )
+        user.user_permissions.add(
+            Permission.objects.get(codename="view_builder_metrics")
+        )
+        self.client.force_login(user)
+
+    def checker_attempt(self, group="", **fields):
+        return attempt(
+            source="readability_checker",
+            authenticated=bool(group),
+            metrics_group=group,
+            metrics_included=True if group else None,
+            **fields,
+        )
+
+    def checker_row(self, data):
+        return next(
+            row for row in data["by_source"] if row["code"] == "readability_checker"
+        )
+
+    def test_checker_keeps_the_opdiv_for_navigation_only(self):
+        for _ in range(51):
+            self.checker_attempt()
+        self.checker_attempt("hrsa")
+
+        page = self.client.get(
+            self.url, {"source": "readability_checker", "group": "cdc"}
+        )
+
+        metrics = page.context["metrics"]
+        # Figures ignore the OpDiv: all 52 Checker downloads count.
+        self.assertEqual(metrics["total_attempts"], 52)
+        self.assertEqual(metrics["group"], "all")
+        self.assertEqual(metrics["nav_group"], "cdc")
+        soup = BeautifulSoup(page.content, "html.parser")
+        self.assertEqual(
+            soup.select_one(".back-link a")["href"],
+            reverse("nofos:builder_metrics") + "?group=cdc",
+        )
+        hidden = soup.select_one("#word-downloads-filters input[name=group]")
+        self.assertEqual(hidden["type"], "hidden")
+        self.assertEqual(hidden["value"], "cdc")
+        self.assertIn(
+            "group=cdc&page=2", soup.select_one(".pilot-pagination a")["href"]
+        )
+        self.assertContains(
+            page, "The CDC OpDiv filter doesn’t apply to Readability Checker downloads"
+        )
+
+        # Switching back to all sources restores the CDC filter.
+        back = self.client.get(self.url, {"source": "all", "group": "cdc"})
+        self.assertEqual(back.context["metrics"]["group"], "cdc")
+        self.assertEqual(back.context["metrics"]["total_attempts"], 0)
+
+    def test_signed_in_filter_applies_to_the_selected_checker_row(self):
+        self.checker_attempt()
+        self.checker_attempt(outcome="results_expired")
+        self.checker_attempt("cdc", duration_ms=9000)
+
+        data = self.client.get(
+            self.url,
+            {"source": "readability_checker", "signed_in": "public"},
+            HTTP_ACCEPT="application/json",
+        ).json()
+
+        row = self.checker_row(data)
+        self.assertEqual(row["attempts"], data["total_attempts"])
+        self.assertEqual(row["attempts"], 2)
+        self.assertEqual(row["successes"], data["successes"])
+        self.assertEqual(row["success_rate_pct"], data["success_rate_pct"])
+        self.assertEqual(row["p50_duration_ms"], 1000)
+        self.assertEqual(data["checker_split"], {"authenticated": 0, "public": 2})
+
+    def test_checker_split_follows_the_opdiv_filter(self):
+        self.checker_attempt("cdc")
+        self.checker_attempt("hrsa")
+        self.checker_attempt()
+
+        data = self.client.get(
+            self.url, {"group": "cdc"}, HTTP_ACCEPT="application/json"
+        ).json()
+
+        self.assertEqual(self.checker_row(data)["attempts"], 1)
+        self.assertEqual(data["checker_split"], {"authenticated": 1, "public": 0})

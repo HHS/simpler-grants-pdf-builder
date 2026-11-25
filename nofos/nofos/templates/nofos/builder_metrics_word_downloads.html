@@ -56,6 +56,8 @@
       {% for code, label in signed_in_choices %}<option value="{{ code }}" {% if metrics.signed_in == code %}selected{% endif %}>{{ label }}</option>{% endfor %}
     </select>
   </div>
+  {# Not applied to Checker figures, but kept so switching back restores it. #}
+  <input type="hidden" name="group" value="{{ metrics.nav_group }}">
   {% else %}
   <div class="pilot-source-filter margin-bottom-2">
     <label class="usa-label margin-top-0" for="word-downloads-group">OpDiv group</label>
@@ -68,7 +70,7 @@
   {% endif %}
   <noscript><button type="submit" class="usa-button margin-bottom-2">Apply filters</button></noscript>
 </form>
-<p>Selected source: <strong>{{ metrics.source_label }}</strong>{% if metrics.source == 'readability_checker' %} · Signed in: <strong>{% if metrics.signed_in == 'authenticated' %}Signed in{% elif metrics.signed_in == 'public' %}Public{% else %}Signed in and public{% endif %}</strong>{% else %} · OpDiv group: <strong>{{ metrics.group_label }}</strong>{% endif %} · All retained attempts matching these filters.</p>
+<p>Selected source: <strong>{{ metrics.source_label }}</strong>{% if metrics.source == 'readability_checker' %} · Signed in: <strong>{% if metrics.signed_in == 'authenticated' %}Signed in{% elif metrics.signed_in == 'public' %}Public{% else %}Signed in and public{% endif %}</strong>{% if metrics.nav_group != 'all' %} · The {{ metrics.nav_group|upper }} OpDiv filter doesn’t apply to Readability Checker downloads{% endif %}{% else %} · OpDiv group: <strong>{{ metrics.group_label }}</strong>{% endif %} · All retained attempts matching these filters.</p>
 {% if not metrics.recording_enabled %}<p class="border-left-05 border-info padding-left-2">Word download recording is off. New downloads will not appear here.</p>{% endif %}
 <div class="grid-row grid-gap-2 margin-top-3">
   <div class="tablet:grid-col-4"><h2 class="font-heading-sm">Download attempts</h2><p class="font-heading-xl margin-y-1">{{ metrics.total_attempts }}</p></div>
@@ -104,7 +106,7 @@
 <p class="font-sans-2xs">Chart gaps mean no retained observations; they do not establish zero usage.</p>
 <h2 class="font-heading-md margin-top-4">Recent download attempts</h2>
 <div class="pilot-scroll"><table class="pilot-table"><thead><tr><th scope="col">Time</th><th scope="col">Source</th><th scope="col">Signed in</th><th scope="col">OpDiv</th><th scope="col">Result</th></tr></thead><tbody>{% for row in metrics.recent_attempts %}<tr><th scope="row">{{ row.created_at|date:"M j, Y, g:i:s a" }}</th><td>{{ row.source_label }}</td><td>{{ row.authenticated|yesno:"Yes,No" }}</td><td>{% if row.group %}{{ row.group|upper }}{% else %}—{% endif %}</td><td>{{ row.outcome_label }}</td></tr>{% empty %}<tr><td colspan="5">No recorded attempts.</td></tr>{% endfor %}</tbody></table></div>
-{% if attempts_page.has_other_pages %}<nav class="pilot-pagination margin-top-2" aria-label="Word download attempt pages">{% if attempts_page.has_previous %}<a href="?source={{ metrics.source }}&amp;signed_in={{ metrics.signed_in }}&amp;group={{ metrics.group }}&amp;page={{ attempts_page.previous_page_number }}">Previous</a>{% endif %} Page {{ attempts_page.number }} of {{ attempts_page.paginator.num_pages }} {% if attempts_page.has_next %}<a href="?source={{ metrics.source }}&amp;signed_in={{ metrics.signed_in }}&amp;group={{ metrics.group }}&amp;page={{ attempts_page.next_page_number }}">Next</a>{% endif %}</nav>{% endif %}
+{% if attempts_page.has_other_pages %}<nav class="pilot-pagination margin-top-2" aria-label="Word download attempt pages">{% if attempts_page.has_previous %}<a href="?source={{ metrics.source }}&amp;signed_in={{ metrics.signed_in }}&amp;group={{ metrics.nav_group }}&amp;page={{ attempts_page.previous_page_number }}">Previous</a>{% endif %} Page {{ attempts_page.number }} of {{ attempts_page.paginator.num_pages }} {% if attempts_page.has_next %}<a href="?source={{ metrics.source }}&amp;signed_in={{ metrics.signed_in }}&amp;group={{ metrics.nav_group }}&amp;page={{ attempts_page.next_page_number }}">Next</a>{% endif %}</nav>{% endif %}
 <h2 class="font-heading-md margin-top-4">Processing time</h2>
 <table class="pilot-table"><tbody><tr><th scope="row">Median time to finish a download request</th><td>{% if metrics.p50_seconds is None %}No data{% else %}{{ metrics.p50_seconds }} s{% endif %}</td></tr><tr><th scope="row">95th percentile time</th><td>{% if metrics.p95_seconds is None %}No data{% else %}{{ metrics.p95_seconds }} s{% endif %}</td></tr><tr><th scope="row">GrabzIt failures</th><td>{{ metrics.provider_failure_rate_pct|default_if_none:"No data" }}{% if metrics.total_attempts %}% of attempts{% endif %}</td></tr></tbody></table>
 <p class="font-sans-2xs">Time runs from the request arriving to the response leaving, so it includes the GrabzIt round trip. GrabzIt failures are rejected cookies, conversion errors and unusable documents. Percentiles use nearest rank across all retained attempts for the selected filters.</p>

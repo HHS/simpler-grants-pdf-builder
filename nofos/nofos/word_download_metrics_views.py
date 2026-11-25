@@ -75,8 +75,10 @@ class WordDownloadMetricsView(MetricsViewerRequiredMixin, TemplateView):
     attempts_per_page = 50
 
     def get(self, request, *args, **kwargs):
-        group = request.GET.get("group", "all")
-        if group not in {"all", *dict(opdiv_choices())}:
+        # The OpDiv the reader arrived with. It is kept in the back link, the
+        # filter form and pagination even when it doesn't apply to the figures.
+        nav_group = request.GET.get("group", "all")
+        if nav_group not in {"all", *dict(opdiv_choices())}:
             return HttpResponseBadRequest("Choose a valid OpDiv group.")
         source = request.GET.get("source", "all")
         if source not in {"all", *SOURCE_LABELS}:
@@ -86,11 +88,12 @@ class WordDownloadMetricsView(MetricsViewerRequiredMixin, TemplateView):
             # Every Builder download requires sign-in, so the split only
             # means something for the Readability Checker.
             signed_in = "all"
-        if source == "readability_checker":
-            # Checker downloads have no NOFO, and public ones have no group.
-            group = "all"
+        # Checker downloads have no NOFO, and public ones have no group, so the
+        # OpDiv filter doesn't apply to their figures.
+        group = "all" if source == "readability_checker" else nav_group
 
         data, page = self.metrics(request, group, source, signed_in)
+        data["nav_group"] = nav_group
         if request.headers.get("Accept") == "application/json":
             response = JsonResponse(data)
         else:
@@ -102,7 +105,7 @@ class WordDownloadMetricsView(MetricsViewerRequiredMixin, TemplateView):
                     "source_choices": WordDownloadAttempt.SOURCE_CHOICES,
                     "signed_in_choices": SIGNED_IN_CHOICES,
                     "metrics_href": "{}?group={}".format(
-                        reverse("nofos:builder_metrics"), group
+                        reverse("nofos:builder_metrics"), nav_group
                     ),
                 }
             )
@@ -130,9 +133,16 @@ class WordDownloadMetricsView(MetricsViewerRequiredMixin, TemplateView):
         def rate(count, denominator=total):
             return round(100 * count / denominator, 1) if denominator else None
 
+        def source_rows(code):
+            rows = scoped.filter(source=code)
+            if code == source and signed_in != "all":
+                # Keep the selected row in step with the summary above it.
+                rows = rows.filter(authenticated=signed_in == "authenticated")
+            return rows
+
         by_source = []
         for code, label in WordDownloadAttempt.SOURCE_CHOICES:
-            rows = scoped.filter(source=code)
+            rows = source_rows(code)
             row_total = rows.count()
             row_success = rows.filter(outcome="success").count()
             row_p50 = _percentile(rows, row_total, 0.5)
@@ -151,7 +161,8 @@ class WordDownloadMetricsView(MetricsViewerRequiredMixin, TemplateView):
                 }
             )
 
-        checker = eligible_word_downloads().filter(source="readability_checker")
+        # Same OpDiv and signed-in scope as the Checker row it sits under.
+        checker = source_rows("readability_checker")
         checker_split = {
             "authenticated": checker.filter(authenticated=True).count(),
             "public": checker.filter(authenticated=False).count(),

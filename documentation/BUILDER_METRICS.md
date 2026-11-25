@@ -268,7 +268,11 @@ The page is at `/nofos/metrics/word-downloads` and shows:
   recording are on, and the retention window
 
 Filters: source; OpDiv group (signed-in downloads by that OpDiv's users); and,
-for the Readability Checker only, signed in vs. public. Bloomworks and staging
+for the Readability Checker only, signed in vs. public. Checker downloads ignore
+the OpDiv filter, but the page keeps the selected OpDiv in its back link, filter
+form and pagination, so switching back to another source restores it. The
+by-source table's selected row and the Checker signed-in/public counts use the
+same filters as the totals above them. Bloomworks and staging
 downloads are excluded everywhere, as on the dashboard. Add
 `Accept: application/json` for the same figures as JSON. Screenshots:
 [review evidence for #1432](review-evidence/1432/README.md).
