@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% block title %}Word downloads{% endblock %}
+{% block css %}
+<style>
+  .pilot-table, .metrics-data-table { width: 100%; border-collapse: collapse; }
+  .pilot-table th, .pilot-table td { text-align: left; padding: .5rem; border-bottom: 1px solid #ccc; vertical-align: top; }
+  .pilot-scroll { overflow-x: auto; }
+  .pilot-source-filter { width: 24rem; max-width: 100%; }
+  .word-downloads-source-location { display: block; font-weight: normal; }
+  .word-downloads-row-muted { color: var(--color--text-grey); }
+  .metrics-chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 1rem; }
+  .metrics-chart-card h3 { font-size: .95rem; font-weight: 700; margin: 0; }
+  .metrics-chart-card svg { width: 100%; height: auto; display: block; }
+  .metrics-data-table { margin-top: .75rem; }
+  .metrics-data-table caption { text-align: left; font-weight: 700; }
+  .metrics-data-table th, .metrics-data-table td { text-align: left; padding: .25rem; }
+  .pilot-chart-label { fill: var(--color--text-grey); font-size: 12px; }
+  .pilot-chart-grid { stroke: var(--color--light-grey); }
+  .pilot-chart-bar { fill: var(--color--usa-link); }
+  .word-downloads-chart-failed { fill: var(--color--usa-error-message); }
+  .word-downloads-legend { display: flex; flex-wrap: wrap; gap: 1rem; }
+  .word-downloads-swatch { display: inline-block; width: .875rem; height: .875rem; margin-right: .375rem; vertical-align: middle; }
+  .word-downloads-swatch--returned { background: var(--color--usa-link); }
+  .word-downloads-swatch--failed { background: var(--color--usa-error-message); }
+  @media print { .no-print, .back-link, .pilot-pagination, header.usa-header, footer.usa-footer { display: none !important; } .metrics-chart-card { break-inside: avoid; } }
+</style>
+{% endblock %}
+{% block content %}
+{% include "includes/page_heading.html" with title="Word downloads" back_text="Back to usage &amp; quality metrics" back_href=metrics_href only %}
+<p class="margin-top-3">These metrics count Word (.docx) download attempts from the NOFO export page, the readability metrics panel and the Readability Checker. A download counts as successful when NOFO Builder returns a Word document. Downloads that fail in the browser after that are not counted.</p>
+<details class="margin-top-2 margin-bottom-3 border-1px border-base-lighter radius-md padding-2">
+  <summary class="text-bold">About these metrics</summary>
+  <div class="usa-prose">
+    <p>Figures cover currently retained attempts, not lifetime usage. Each attempt records its source, outcome, HTTP status, duration, whether the person was signed in, their OpDiv group at the time and, for Builder downloads, the NOFO. No document text, readability values, filenames or user IDs are stored. Requests rejected before the download starts (sign-in, permission and CSRF checks) are not counted.</p>
+    <p>Bloomworks and staging accounts are excluded, as on Usage &amp; quality metrics. Every Builder download requires sign-in, so the signed-in filter applies only to the Readability Checker. An OpDiv filter keeps only signed-in downloads by that OpDiv’s users, so public Checker downloads appear only under All OpDivs.</p>
+    <p>Chart windows are the last 30 days and 12 weeks. Missing observations show “No data,” not zero: recording may have been off or retention may have removed records. The current day and week are in progress. Weeks start Monday; dates use the application time zone.</p>
+  </div>
+</details>
+<form method="get" class="no-print" id="word-downloads-filters">
+  <div class="pilot-source-filter margin-bottom-2">
+    <label class="usa-label margin-top-0" for="word-downloads-source">Source</label>
+    <span class="usa-hint" id="word-downloads-source-hint">Where the download started.</span>
+    <select class="usa-select" id="word-downloads-source" name="source" aria-describedby="word-downloads-source-hint">
+      <option value="all" {% if metrics.source == 'all' %}selected{% endif %}>All sources</option>
+      {% for code, label in source_choices %}<option value="{{ code }}" {% if metrics.source == code %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  {% if metrics.source == 'readability_checker' %}
+  <div class="pilot-source-filter margin-bottom-2">
+    <label class="usa-label margin-top-0" for="word-downloads-signed-in">Signed in</label>
+    <span class="usa-hint" id="word-downloads-signed-in-hint">Whether the person was signed in when they downloaded.</span>
+    <select class="usa-select" id="word-downloads-signed-in" name="signed_in" aria-describedby="word-downloads-signed-in-hint">
+      <option value="all" {% if metrics.signed_in == 'all' %}selected{% endif %}>Signed in and public</option>
+      {% for code, label in signed_in_choices %}<option value="{{ code }}" {% if metrics.signed_in == code %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  {% else %}
+  <div class="pilot-source-filter margin-bottom-2">
+    <label class="usa-label margin-top-0" for="word-downloads-group">OpDiv group</label>
+    <span class="usa-hint" id="word-downloads-group-hint">Signed-in downloads by this OpDiv’s users.</span>
+    <select class="usa-select" id="word-downloads-group" name="group" aria-describedby="word-downloads-group-hint">
+      <option value="all" {% if metrics.group == 'all' %}selected{% endif %}>All OpDivs</option>
+      {% for value, label in opdiv_choices %}<option value="{{ value }}" {% if metrics.group == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  {% endif %}
+  <noscript><button type="submit" class="usa-button margin-bottom-2">Apply filters</button></noscript>
+</form>
+<p>Selected source: <strong>{{ metrics.source_label }}</strong>{% if metrics.source == 'readability_checker' %} · Signed in: <strong>{% if metrics.signed_in == 'authenticated' %}Signed in{% elif metrics.signed_in == 'public' %}Public{% else %}Signed in and public{% endif %}</strong>{% else %} · OpDiv group: <strong>{{ metrics.group_label }}</strong>{% endif %} · All retained attempts matching these filters.</p>
+{% if not metrics.recording_enabled %}<p class="border-left-05 border-info padding-left-2">Word download recording is off. New downloads will not appear here.</p>{% endif %}
+<div class="grid-row grid-gap-2 margin-top-3">
+  <div class="tablet:grid-col-4"><h2 class="font-heading-sm">Download attempts</h2><p class="font-heading-xl margin-y-1">{{ metrics.total_attempts }}</p></div>
+  <div class="tablet:grid-col-4"><h2 class="font-heading-sm">Documents returned</h2><p class="font-heading-xl margin-y-1">{{ metrics.successes }}</p><p>{{ metrics.success_rate_pct|default_if_none:"No data" }}{% if metrics.total_attempts %}% of attempts{% endif %}</p></div>
+  <div class="tablet:grid-col-4"><h2 class="font-heading-sm">Failed downloads</h2><p class="font-heading-xl margin-y-1">{{ metrics.failed }}</p><p>No document returned</p></div>
+</div>
+<h2 class="font-heading-md margin-top-4">Downloads by source</h2>
+<div class="pilot-scroll"><table class="pilot-table"><thead><tr><th scope="col">Source</th><th scope="col">Attempts</th><th scope="col">Returned</th><th scope="col">Failed</th><th scope="col">Success rate</th><th scope="col">Median time</th></tr></thead><tbody>{% for row in metrics.by_source %}<tr{% if not row.selected %} class="word-downloads-row-muted"{% endif %}><th scope="row">{{ row.label }}<span class="word-downloads-source-location font-sans-2xs">{{ row.location }}</span></th><td>{{ row.attempts }}</td><td>{{ row.successes }}</td><td>{{ row.failed }}</td><td>{% if row.success_rate_pct is None %}No data{% else %}{{ row.success_rate_pct }}%{% endif %}</td><td>{% if row.p50_duration_ms is None %}No data{% else %}{{ row.p50_duration_ms }} ms{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+<p class="font-sans-2xs">Readability Checker downloads: signed in {{ metrics.checker_split.authenticated }} · public {{ metrics.checker_split.public }}.{% if metrics.group != 'all' %} Rows above count only downloads by {{ metrics.group_label }} users.{% endif %}</p>
+<h2 class="font-heading-md margin-top-4">What prevented a download</h2>
+{% if metrics.failed %}
+<div class="pilot-scroll"><table class="pilot-table"><thead><tr><th scope="col">Reason</th><th scope="col">Attempts</th><th scope="col">Share of all attempts</th></tr></thead><tbody>{% for row in metrics.outcomes %}{% if row.code != 'success' and row.attempts %}<tr><th scope="row">{{ row.label }}</th><td>{{ row.attempts }}</td><td>{{ row.rate_pct }}%</td></tr>{% endif %}{% endfor %}</tbody></table></div>
+{% else %}<p>{% if metrics.total_attempts %}No failed downloads recorded.{% else %}No recorded attempts for these filters.{% endif %}</p>{% endif %}
+<details class="margin-top-2 font-sans-2xs"><summary>Outcome codes and explanations</summary><table class="pilot-table"><thead><tr><th scope="col">Code</th><th scope="col">Meaning</th><th scope="col">Attempts</th></tr></thead><tbody>{% for row in metrics.outcomes %}<tr><th scope="row"><code>{{ row.code }}</code></th><td>{{ row.meaning }}</td><td>{{ row.attempts }}</td></tr>{% endfor %}</tbody></table></details>
+<h2 class="font-heading-md margin-top-4">Usage over time</h2>
+<div class="metrics-chart-grid">
+  <section class="metrics-chart-card border-1px border-base-lighter radius-md padding-2">
+    <h3>Daily downloads · Last 30 days</h3><p class="font-sans-2xs text-italic margin-y-05">Current day in progress</p>
+    <svg id="word-downloads-daily-chart" role="img" aria-label="Daily Word download attempts over the last 30 days, returned and failed"></svg>
+    <details class="metrics-data-details margin-top-2 font-sans-2xs"><summary><span>View daily data<span class="usa-sr-only"> for Word download attempts</span></span></summary>
+      <table class="metrics-data-table"><caption>Daily Word download attempts</caption><thead><tr><th scope="col">Day</th><th scope="col">Attempts</th><th scope="col">Failed</th></tr></thead><tbody>{% for row in metrics.chart_daily %}<tr><th scope="row">{{ row.period|date:"M j, Y" }}{% if forloop.last %} (in progress){% endif %}</th><td>{{ row.attempts|default_if_none:"No data" }}</td><td>{{ row.failed|default_if_none:"No data" }}</td></tr>{% endfor %}</tbody></table>
+    </details>
+  </section>
+  <section class="metrics-chart-card border-1px border-base-lighter radius-md padding-2">
+    <h3>Weekly downloads · Last 12 weeks</h3><p class="font-sans-2xs text-italic margin-y-05">Current week in progress</p>
+    <svg id="word-downloads-weekly-chart" role="img" aria-label="Weekly Word download attempts over the last 12 weeks, returned and failed"></svg>
+    <details class="metrics-data-details margin-top-2 font-sans-2xs"><summary><span>View weekly data<span class="usa-sr-only"> for Word download attempts</span></span></summary>
+      <table class="metrics-data-table"><caption>Weekly Word download attempts</caption><thead><tr><th scope="col">Week beginning</th><th scope="col">Attempts</th><th scope="col">Failed</th></tr></thead><tbody>{% for row in metrics.chart_weekly %}<tr><th scope="row">{{ row.period|date:"M j, Y" }}{% if forloop.last %} (in progress){% endif %}</th><td>{{ row.attempts|default_if_none:"No data" }}</td><td>{{ row.failed|default_if_none:"No data" }}</td></tr>{% endfor %}</tbody></table>
+    </details>
+  </section>
+</div>
+<p class="word-downloads-legend font-sans-2xs margin-top-1"><span><span class="word-downloads-swatch word-downloads-swatch--returned" aria-hidden="true"></span>Returned</span><span><span class="word-downloads-swatch word-downloads-swatch--failed" aria-hidden="true"></span>Failed</span></p>
+<p class="font-sans-2xs">Chart gaps mean no retained observations; they do not establish zero usage.</p>
+<h2 class="font-heading-md margin-top-4">Recent download attempts</h2>
+<div class="pilot-scroll"><table class="pilot-table"><thead><tr><th scope="col">Time</th><th scope="col">Source</th><th scope="col">Signed in</th><th scope="col">OpDiv</th><th scope="col">Result</th></tr></thead><tbody>{% for row in metrics.recent_attempts %}<tr><th scope="row">{{ row.created_at|date:"M j, Y, g:i:s a" }}</th><td>{{ row.source_label }}</td><td>{{ row.authenticated|yesno:"Yes,No" }}</td><td>{% if row.group %}{{ row.group|upper }}{% else %}—{% endif %}</td><td>{{ row.outcome_label }}</td></tr>{% empty %}<tr><td colspan="5">No recorded attempts.</td></tr>{% endfor %}</tbody></table></div>
+{% if attempts_page.has_other_pages %}<nav class="pilot-pagination margin-top-2" aria-label="Word download attempt pages">{% if attempts_page.has_previous %}<a href="?source={{ metrics.source }}&amp;signed_in={{ metrics.signed_in }}&amp;group={{ metrics.group }}&amp;page={{ attempts_page.previous_page_number }}">Previous</a>{% endif %} Page {{ attempts_page.number }} of {{ attempts_page.paginator.num_pages }} {% if attempts_page.has_next %}<a href="?source={{ metrics.source }}&amp;signed_in={{ metrics.signed_in }}&amp;group={{ metrics.group }}&amp;page={{ attempts_page.next_page_number }}">Next</a>{% endif %}</nav>{% endif %}
+<h2 class="font-heading-md margin-top-4">Processing time</h2>
+<table class="pilot-table"><tbody><tr><th scope="row">Median time to finish a download request</th><td>{{ metrics.p50_duration_ms|default_if_none:"No data" }}{% if metrics.total_attempts %} ms{% endif %}</td></tr><tr><th scope="row">95th percentile time</th><td>{{ metrics.p95_duration_ms|default_if_none:"No data" }}{% if metrics.total_attempts %} ms{% endif %}</td></tr><tr><th scope="row">GrabzIt failures</th><td>{{ metrics.provider_failure_rate_pct|default_if_none:"No data" }}{% if metrics.total_attempts %}% of attempts{% endif %}</td></tr></tbody></table>
+<p class="font-sans-2xs">Time runs from the request arriving to the response leaving, so it includes the GrabzIt round trip. GrabzIt failures are rejected cookies, conversion errors and unusable documents. Percentiles use nearest rank across all retained attempts for the selected filters.</p>
+<h2 class="font-heading-md margin-top-4">Word export availability and recording</h2>
+<table class="pilot-table"><thead><tr><th scope="col">Setting</th><th scope="col">Status</th></tr></thead><tbody><tr><th scope="row">GrabzIt Word export on this host</th><td>{{ metrics.word_export_enabled|yesno:"Enabled,Disabled" }}</td></tr><tr><th scope="row">Clearance export</th><td>{{ metrics.clearance_export_enabled|yesno:"Enabled,Disabled" }}</td></tr><tr><th scope="row">Readability Word report</th><td>{{ metrics.readability_word_export_enabled|yesno:"Enabled,Disabled" }}</td></tr><tr><th scope="row">Download recording</th><td>{{ metrics.recording_enabled|yesno:"Enabled,Disabled" }}</td></tr></tbody></table>
+<p>Retention: {% if metrics.retention_days %}{{ metrics.retention_days }} days (optional cleanup){% else %}No automatic expiration{% endif %}.</p>
+<details class="margin-top-2 font-sans-2xs"><summary>Recent technical details</summary><table class="pilot-table"><thead><tr><th scope="col">Time</th><th scope="col">Outcome code</th><th scope="col">HTTP status</th><th scope="col">Duration (ms)</th></tr></thead><tbody>{% for row in metrics.recent_attempts %}<tr><th scope="row">{{ row.created_at|date:"M j, Y, g:i:s a" }}</th><td>{{ row.outcome }}</td><td>{{ row.http_status }}</td><td>{{ row.duration_ms }}</td></tr>{% empty %}<tr><td colspan="4">No recorded attempts.</td></tr>{% endfor %}</tbody></table></details>
+{{ metrics|json_script:"word-downloads-chart-data" }}
+{% endblock %}
+{% block js_footer %}
+<script>
+(function () {
+  var form = document.getElementById('word-downloads-filters');
+  form.querySelectorAll('select').forEach(function (select) {
+    select.addEventListener('change', function () { form.submit(); });
+  });
+  var data = JSON.parse(document.getElementById('word-downloads-chart-data').textContent);
+  var ns = 'http://www.w3.org/2000/svg';
+  function chart(id, rows) {
+    var svg = document.getElementById(id);
+    var width = Math.max(280, svg.parentElement.clientWidth - 32), height = 210;
+    var left = 40, top = 25, bottom = 45, plotWidth = width - left - 16, plotHeight = height - top - bottom;
+    svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+    svg.replaceChildren();
+    function add(tag, attrs, text) {
+      var el = document.createElementNS(ns, tag);
+      Object.keys(attrs).forEach(function (key) { el.setAttribute(key, attrs[key]); });
+      if (text !== undefined) el.textContent = text;
+      svg.appendChild(el); return el;
+    }
+    var observed = rows.filter(function (row) { return row.attempts !== null; });
+    var max = Math.max(1, ...observed.map(function (row) { return row.attempts; }));
+    var ticks = Array.from(new Set([0, Math.ceil(max / 2), max]));
+    ticks.forEach(function (value) {
+      var y = top + plotHeight * (1 - value / max);
+      add('line', {x1:left, x2:width-16, y1:y, y2:y, class:'pilot-chart-grid'});
+      add('text', {x:left-8, y:y+4, 'text-anchor':'end', class:'pilot-chart-label'}, value);
+    });
+    add('text', {x:left, y:14, class:'pilot-chart-label'}, 'Attempts');
+    var step = plotWidth / rows.length;
+    rows.forEach(function (row, i) {
+      if (row.attempts === null) return;
+      var returned = row.attempts - row.failed;
+      var x = left + i * step + 2, barWidth = Math.max(1, step - 4);
+      var returnedHeight = plotHeight * returned / max, failedHeight = plotHeight * row.failed / max;
+      var label = row.period + ': ' + row.attempts + ' attempts, ' + row.failed + ' failed';
+      [[returnedHeight, top + plotHeight - returnedHeight, 'pilot-chart-bar'],
+       [failedHeight, top + plotHeight - returnedHeight - failedHeight, 'word-downloads-chart-failed']].forEach(function (part) {
+        if (!part[0]) return;
+        var bar = add('rect', {x:x, y:part[1], width:barWidth, height:part[0], class:part[2]});
+        var title = document.createElementNS(ns, 'title'); title.textContent = label; bar.appendChild(title);
+      });
+    });
+    [0, Math.floor((rows.length-1)/2), rows.length-1].forEach(function (i) {
+      add('text', {x:left+(i+.5)*step, y:height-15, 'text-anchor':i===0?'start':i===rows.length-1?'end':'middle', class:'pilot-chart-label'}, rows[i].period.slice(5));
+    });
+    if (!observed.length) add('text', {x:left+plotWidth/2, y:top+plotHeight/2, 'text-anchor':'middle', class:'pilot-chart-label'}, 'No data');
+  }
+  function draw() { chart('word-downloads-daily-chart', data.chart_daily); chart('word-downloads-weekly-chart', data.chart_weekly); }
+  draw();
+  new ResizeObserver(draw).observe(document.querySelector('.metrics-chart-grid'));
+  var disclosureState = null;
+  window.addEventListener('beforeprint', function () {
+    if (disclosureState !== null) return;
+    disclosureState = Array.from(document.querySelectorAll('.metrics-data-details')).map(function (el) {
+      var state = {element:el, open:el.open}; el.open = true; return state;
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    if (disclosureState === null) return;
+    disclosureState.forEach(function (state) { state.element.open = state.open; }); disclosureState = null;
+  });
+})();
+</script>
+{% endblock %}

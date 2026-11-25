@@ -4,6 +4,7 @@ from . import views, word_comparisons
 from .pdf_readability_metrics import PdfReadabilityMetricsView
 from .readability_history_views import NofoReadabilityHistoryView
 from .readability_overview import BuilderReadabilityScoresView
+from .word_download_metrics_views import WordDownloadMetricsView
 
 app_name = "nofos"
 
@@ -243,6 +244,11 @@ urlpatterns = [
     ),
     path("search", views.NofoSearchView.as_view(), name="nofo_search"),
     path("metrics", views.BuilderMetricsView.as_view(), name="builder_metrics"),
+    path(
+        "metrics/word-downloads",
+        WordDownloadMetricsView.as_view(),
+        name="builder_metrics_word_downloads",
+    ),
     path(
         "metrics/import-errors",
         views.BuilderMetricsImportErrorsView.as_view(),

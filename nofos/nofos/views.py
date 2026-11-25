@@ -106,6 +106,7 @@ from .metrics import (
     recent_import_errors,
     time_to_first_live_pdf_by_month,
     total_users_by_month,
+    word_downloads_by_month,
 )
 from .mixins import (
     GroupAccessObjectMixinFactory,
@@ -3394,6 +3395,10 @@ class BuilderMetricsView(MetricsViewerRequiredMixin, TemplateView):
             # after the filter re-renders the cards.
             "importErrorsUrl": "{}?group={}".format(
                 reverse("nofos:builder_metrics_import_errors"), group
+            ),
+            "wordDownloads": word_downloads_by_month(months, group),
+            "wordDownloadsUrl": "{}?group={}".format(
+                reverse("nofos:builder_metrics_word_downloads"), group
             ),
         }
         return context
