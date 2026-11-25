@@ -8,15 +8,16 @@ const template = readFileSync(join(__dirname,
   '../../nofos/nofos/templates/nofos/builder_metrics.html'), 'utf8');
 const source = template.match(/<script>([\s\S]*?)<\/script>/)[1];
 
-function render(values, disclosures = [], events = {}, extra = {}) {
+function render(values, disclosures = [], events = {}, extra = {}, elements = {}) {
   const cards = [];
   const raw = { months: values.map((_, i) => `Month ${i + 1}`), ...extra };
   for (const key of ['totalUsers', 'activeUsers', 'nofosCreated',
-    'timeToPdfHours', 'errorRatePct', 'avgWarnings']) raw[key] = values;
+    'timeToPdfHours', 'errorRatePct', 'avgWarnings', 'wordDownloads']) raw[key] = values;
   const document = {
     getElementById(id) {
       if (id === 'metrics-data') return { textContent: JSON.stringify(raw) };
       if (id === 'metrics-tooltip') return { classList: { remove: () => {} } };
+      if (id in elements) return elements[id];
       return { addEventListener: () => {}, appendChild: el => { if (id === 'metrics-chart-grid') cards.push(el.innerHTML); } };
     },
     createElement: () => ({}),
@@ -101,4 +102,32 @@ test('printing opens all tables and restores mixed states, including repeated pr
   events.beforeprint();
   events.afterprint();
   assert.deepEqual(disclosures.map(el => el.open), [true, true, false]);
+});
+
+test('the Word downloads card links to its page only when given a URL', () => {
+  const url = '/nofos/metrics/word-downloads?group=cdc';
+  const cards = render([1, 2], [], {}, { wordDownloadsUrl: url });
+  const linked = cards.filter(card => card.includes('Review Word downloads'));
+
+  assert.equal(linked.length, 1);
+  assert.match(linked[0], /<h3>Word downloads<\/h3>/);
+  assert.match(linked[0], new RegExp(
+    '</details><p class="font-sans-2xs margin-top-1"><a href="'
+    + url.replace('?', '\\?') + '">Review Word downloads</a></p>'
+    + '<p class="metrics-chart-def'));
+  for (const card of render([1, 2])) {
+    assert.doesNotMatch(card, /Review Word downloads/);
+  }
+});
+
+test('the related-links Word downloads link follows the selected OpDiv', () => {
+  const link = { href: '/nofos/metrics/word-downloads?group=all' };
+  render([1, 2], [], {}, { wordDownloadsUrl: '/nofos/metrics/word-downloads?group=hrsa' },
+    { 'metrics-word-downloads-link': link });
+  assert.equal(link.href, '/nofos/metrics/word-downloads?group=hrsa');
+
+  // Without a URL in the payload, the server-rendered link is left alone.
+  const untouched = { href: '/nofos/metrics/word-downloads?group=all' };
+  render([1, 2], [], {}, {}, { 'metrics-word-downloads-link': untouched });
+  assert.equal(untouched.href, '/nofos/metrics/word-downloads?group=all');
 });
