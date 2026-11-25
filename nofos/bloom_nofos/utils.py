@@ -2,6 +2,7 @@ import io
 import logging
 import re
 import zipfile
+import zlib
 from socket import gaierror, gethostbyname, gethostname
 from urllib.parse import urlparse
 from xml.etree import ElementTree
@@ -89,7 +90,18 @@ def is_valid_docx(content):
             if not DOCX_REQUIRED_PATHS.issubset(archive.namelist()):
                 return False
             document = ElementTree.fromstring(archive.read(DOCX_DOCUMENT_PATH))
-    except (ElementTree.ParseError, KeyError, zipfile.BadZipFile, zipfile.LargeZipFile):
+    except (
+        ElementTree.ParseError,
+        KeyError,
+        zipfile.BadZipFile,
+        zipfile.LargeZipFile,
+        # A corrupt or unsupported compressed entry, or an encrypted package.
+        zlib.error,
+        EOFError,
+        NotImplementedError,
+        RuntimeError,
+        ValueError,
+    ):
         return False
 
     return any(
@@ -158,21 +170,27 @@ def generate_docx_download_response(
     grabzit = _grabzit_docx_client()
 
     # Set cookies only for the exact host GrabzIt will request.
-    if not grabzit.SetCookie("sessionid", export_host, session_value):
-        return with_word_download_outcome(
-            HttpResponseServerError(
-                "Failed to set session cookie for GrabzIt conversion."
-            ),
-            "cookie_rejected",
-        )
-
-    if not grabzit.SetCookie("csrftoken", export_host, csrf_value):
-        return with_word_download_outcome(
-            HttpResponseServerError(
-                "Failed to set csrf cookie for GrabzIt conversion."
-            ),
-            "cookie_rejected",
-        )
+    for name, value, label in (
+        ("sessionid", session_value, "session"),
+        ("csrftoken", csrf_value, "csrf"),
+    ):
+        try:
+            registered = grabzit.SetCookie(name, export_host, value)
+        except Exception as exc:
+            # A network error or timeout reaching GrabzIt. Log neither the
+            # cookie value nor the provider's error text.
+            logger.error(
+                "GrabzIt cookie registration failed",
+                extra={"export_host": export_host, "error_type": type(exc).__name__},
+            )
+            registered = False
+        if not registered:
+            return with_word_download_outcome(
+                HttpResponseServerError(
+                    f"Failed to set {label} cookie for GrabzIt conversion."
+                ),
+                "cookie_rejected",
+            )
 
     options = GrabzItDOCXOptions.GrabzItDOCXOptions()
     options.targetElement = target_element

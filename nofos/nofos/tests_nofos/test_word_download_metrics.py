@@ -1,9 +1,12 @@
+import io
 import time
+import zipfile
 from datetime import timedelta
 from io import StringIO
 from unittest.mock import patch
 
 from bloom_nofos.tests_bloom_nofos.test_utils import VALID_DOCX
+from constance import config
 from constance.test import override_config
 from django.core.management import CommandError, call_command
 from django.http import HttpResponse
@@ -19,6 +22,22 @@ from nofos.readability_word_export import (
     report_token,
 )
 from nofos.word_download_metrics import outcome_for, record_word_download
+
+
+def corrupt_deflated_docx():
+    """A package whose ZIP directory is intact but whose compressed
+    word/document.xml stream is not: reading it raises zlib.error."""
+    output = io.BytesIO()
+    with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("[Content_Types].xml", "<Types/>")
+        archive.writestr("word/document.xml", "<w:document>" + "text " * 200)
+    data = bytearray(output.getvalue())
+    entry = zipfile.ZipFile(io.BytesIO(bytes(data))).getinfo("word/document.xml")
+    start = entry.header_offset + 30 + len(entry.filename) + len(entry.extra)
+    for offset in range(start, start + 20):
+        data[offset] ^= 0xFF
+    return bytes(data)
+
 
 CHECKER_REPORT = {
     "profile": "word",
@@ -36,12 +55,12 @@ CHECKER_REPORT = {
     HHS_NOFO_READABILITY_WORD_EXPORT_ENABLED=True,
     HHS_NOFO_PDF_METRICS_PILOT_ENABLED=True,
     HHS_NOFO_POLICY_EXPORT_ENABLED=True,
+    WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED=True,
 )
 @override_settings(
     GRABZIT_APPLICATION_KEY="synthetic-key",
     GRABZIT_APPLICATION_SECRET="synthetic-secret",
     GRABZIT_WORD_EXPORT_ALLOWED_HOSTS=("testserver",),
-    WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED=True,
 )
 class WordDownloadRecordingTests(TestCase):
     @classmethod
@@ -262,7 +281,7 @@ class WordDownloadRecordingTests(TestCase):
 
     # Recording rules
 
-    @override_settings(WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED=False)
+    @override_config(WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED=False)
     def test_nothing_is_recorded_when_recording_is_off(self):
         response = self.client.post(
             self.export_url, {"export_action": "download"}, secure=True
@@ -270,6 +289,61 @@ class WordDownloadRecordingTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertFalse(WordDownloadAttempt.objects.exists())
+
+    @override_config(WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED=False)
+    def test_recording_switch_applies_without_a_restart(self):
+        download = lambda: self.client.post(  # noqa: E731
+            self.export_url, {"export_action": "download"}, secure=True
+        )
+        download()
+        self.assertEqual(WordDownloadAttempt.objects.count(), 0)
+
+        # What saving the switch in Django admin does: the next request reads it.
+        config.WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED = True
+        download()
+        self.assertEqual(WordDownloadAttempt.objects.count(), 1)
+
+        config.WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED = False
+        download()
+        self.assertEqual(WordDownloadAttempt.objects.count(), 1)
+
+    def test_cookie_registration_error_is_recorded_once(self):
+        self.grabzit.SetCookie.side_effect = TimeoutError("synthetic-session timed out")
+
+        with self.assertLogs("bloom_nofos.utils", "ERROR") as logs:
+            response = self.client.post(
+                self.export_url, {"export_action": "download"}, secure=True
+            )
+
+        self.assertEqual(response.status_code, 500)
+        attempt = self.only_attempt()
+        self.assertEqual(attempt.outcome, "cookie_rejected")
+        self.assertEqual(attempt.http_status, 500)
+        self.grabzit.URLToDOCX.assert_not_called()
+        logged = "\n".join(logs.output)
+        self.assertNotIn("synthetic-session", logged)
+        self.assertNotIn(self.client.cookies["sessionid"].value, logged)
+
+    def test_corrupt_compressed_document_is_recorded_as_invalid(self):
+        self.grabzit.SaveTo.return_value = corrupt_deflated_docx()
+
+        response = self.client.post(
+            self.export_url, {"export_action": "download"}, secure=True
+        )
+
+        self.assertEqual(response.status_code, 502)
+        self.assertEqual(self.only_attempt().outcome, "invalid_docx")
+
+    def test_attempts_are_never_audited(self):
+        from easyaudit.models import CRUDEvent
+        from easyaudit.signals.model_signals import should_audit
+
+        self.assertFalse(should_audit(WordDownloadAttempt()))
+        self.client.post(self.export_url, {"export_action": "download"}, secure=True)
+        self.only_attempt()
+        self.assertFalse(
+            CRUDEvent.objects.filter(content_type__model="worddownloadattempt").exists()
+        )
 
     def test_recording_failure_does_not_break_the_download(self):
         with patch(
@@ -320,7 +394,7 @@ class WordDownloadRecordingTests(TestCase):
         )
 
 
-@override_settings(WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED=True)
+@override_config(WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED=True)
 class WordDownloadOutcomeTests(TestCase):
     def test_tagged_outcome_wins(self):
         response = HttpResponse(status=500)

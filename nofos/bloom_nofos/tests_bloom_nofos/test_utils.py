@@ -224,9 +224,12 @@ class DocxTransportTests(SimpleTestCase):
                 side_effect=StopBeforeNetwork,
             ) as https,
         ):
-            with self.assertRaises(StopBeforeNetwork):
-                self.export()
+            # A connection failure during cookie registration is caught and
+            # returned as a tagged failure, so it can still be recorded.
+            response = self.export()
 
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.word_download_outcome, "cookie_rejected")
         http.assert_not_called()
         https.assert_called_once_with("api.grabz.it", 443)
 
@@ -244,6 +247,13 @@ class DocxSafeguardTests(SimpleTestCase):
         self.assertFalse(
             is_grabzit_word_export_enabled("nofos.simpler.grants.gov.attacker.example")
         )
+
+    def test_docx_validation_rejects_corrupt_compressed_content(self):
+        from nofos.tests_nofos.test_word_download_metrics import (
+            corrupt_deflated_docx,
+        )
+
+        self.assertFalse(is_valid_docx(corrupt_deflated_docx()))
 
     def test_docx_validation_requires_package_and_meaningful_text(self):
         self.assertTrue(is_valid_docx(VALID_DOCX))

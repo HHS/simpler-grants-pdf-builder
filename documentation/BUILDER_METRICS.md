@@ -232,10 +232,20 @@ metrics write is logged without exception text and never affects the download.
 Downloads that fail in the browser after the server returns the document, and
 requests rejected before the view runs (sign-in, permission, CSRF), are not counted.
 
-| Setting | Default |
-|---|---|
-| `WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED` | off |
-| `WORD_DOWNLOAD_ATTEMPT_RETENTION_DAYS` | unset (no automatic expiration) |
+| Setting | Where | Default |
+|---|---|---|
+| `WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED` | Constance switch in Django admin; the environment variable of the same name only sets its starting value | off |
+| `WORD_DOWNLOAD_ATTEMPT_RETENTION_DAYS` | Environment variable | unset (no automatic expiration) |
+
+**Rollout:** in Django admin › Constance › Config, turn on
+`WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED` and save. The next download records a
+row; no restart or deploy is needed. **Rollback:** turn the switch off. Recording
+stops on the next request and existing rows stay until the cleanup command
+removes them. A value saved in admin takes precedence over the environment
+variable.
+
+Rows are excluded from EasyAudit (`DJANGO_EASY_AUDIT_UNREGISTERED_CLASSES_EXTRA`),
+so no audit copy with user or request details outlives retention cleanup.
 
 With a retention window set, delete older rows with
 `python manage.py cleanup_word_download_attempts --dry-run`, then without

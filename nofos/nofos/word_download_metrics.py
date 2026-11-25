@@ -7,6 +7,7 @@ Each entry point records exactly one row per attempt via record_word_download.
 import logging
 import time
 
+from constance import config
 from django.conf import settings
 from django.db import transaction
 
@@ -39,12 +40,13 @@ def outcome_for(response):
 
 def record_word_download(request, *, source, response, started, nofo=None):
     """Record one attempt. Never raises: a metrics failure must not break a download."""
-    if not settings.WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED:
-        return
     if source not in SOURCES:
         logger.warning("Word download outcome has an unknown source.")
         return
     try:
+        # A Constance read can reach the database, so it stays inside the guard.
+        if not config.WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED:
+            return
         user = getattr(request, "user", None)
         authenticated = bool(user and user.is_authenticated)
         group = (getattr(user, "group", "") or "") if authenticated else ""
