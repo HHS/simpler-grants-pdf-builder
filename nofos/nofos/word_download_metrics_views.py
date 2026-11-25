@@ -6,7 +6,6 @@ from datetime import timedelta
 
 from bloom_nofos.utils import is_grabzit_word_export_enabled
 from constance import config
-from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Count
 from django.db.models.functions import TruncDay, TruncWeek
@@ -257,7 +256,7 @@ class WordDownloadMetricsView(MetricsViewerRequiredMixin, TemplateView):
             "word_export_enabled": is_grabzit_word_export_enabled(request.get_host()),
             "clearance_export_enabled": config.HHS_NOFO_POLICY_EXPORT_ENABLED,
             "readability_word_export_enabled": config.HHS_NOFO_READABILITY_WORD_EXPORT_ENABLED,
-            "recording_enabled": settings.WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED,
+            "recording_enabled": config.WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED,
             "retention_days": retention_days(),
         }
         return data, page

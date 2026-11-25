@@ -3,7 +3,7 @@ from datetime import timedelta
 from bs4 import BeautifulSoup
 from constance.test import override_config
 from django.contrib.auth.models import Permission
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from users.models import BloomUser
@@ -26,7 +26,7 @@ def attempt(source="nofo_export", outcome="success", **fields):
     )
 
 
-@override_settings(WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED=True)
+@override_config(WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED=True)
 class WordDownloadMetricsPageTests(TestCase):
     def setUp(self):
         self.url = reverse("nofos:builder_metrics_word_downloads")
@@ -69,7 +69,7 @@ class WordDownloadMetricsPageTests(TestCase):
         self.assertContains(page, "Retention: No automatic expiration")
         self.assertEqual(page["Cache-Control"], "private, no-store")
 
-    @override_settings(WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED=False)
+    @override_config(WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED=False)
     def test_recording_off_notice(self):
         self.login_viewer()
         self.assertContains(
