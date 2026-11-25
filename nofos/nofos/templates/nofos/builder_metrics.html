@@ -129,6 +129,9 @@
     document.getElementById('metrics-kpi-row').innerHTML = '';
     document.getElementById('metrics-chart-grid').innerHTML = '';
     document.getElementById('metrics-applied-group').textContent = raw.groupLabel;
+    // Keep the related-links row's Word downloads link on the selected OpDiv.
+    var wordDownloadsLink = document.getElementById('metrics-word-downloads-link');
+    if (wordDownloadsLink && raw.wordDownloadsUrl) wordDownloadsLink.href = raw.wordDownloadsUrl;
     var months = raw.months;
     var lastIndex = months.length - 1;
 
@@ -176,6 +179,14 @@
         title: "Warnings per import", unit: "avg count", type: "bar", color: "var(--color--usa-error-message)",
         good: "down", data: raw.avgWarnings, fmt: fmtWarnings,
         def: "Average number of non-blocking formatting warnings shown on successful imports. The import still goes through, but the flagged content may need manual cleanup."
+      },
+      wordDownloads: {
+        title: "Word downloads", unit: "successful per month", type: "bar", color: "var(--color--usa-link)",
+        good: "up", data: raw.wordDownloads, fmt: fmtCount,
+        def: "Word documents returned from the NOFO export page, the readability metrics panel and the Readability Checker. Months with no recorded download attempts show “No data.” An OpDiv filter counts only signed-in downloads by that OpDiv’s users.",
+        link: raw.wordDownloadsUrl
+          ? { href: raw.wordDownloadsUrl, text: "Review Word downloads" }
+          : null
       }
     };
 

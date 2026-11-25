@@ -249,4 +249,30 @@ so no audit copy with user or request details outlives retention cleanup.
 
 With a retention window set, delete older rows with
 `python manage.py cleanup_word_download_attempts --dry-run`, then without
-`--dry-run`. The metrics page for these rows is a follow-up to #1432.
+`--dry-run`.
+
+### Word downloads page
+
+Metrics viewers open it from **Word downloads** in the link row under the
+Usage & quality metrics title, or from **Review Word downloads** on the Word
+downloads card in Monthly trends (successful downloads per month). Both links
+and the page's **Back to usage & quality metrics** link keep the OpDiv filter.
+The page is at `/nofos/metrics/word-downloads` and shows:
+
+- download attempts, documents returned and failed downloads
+- downloads by source, with success rate and median time
+- what prevented a download, with every outcome code explained
+- daily (30 days) and weekly (12 weeks) charts of returned and failed attempts
+- recent attempts (50 per page), processing time and the GrabzIt failure rate
+- whether Word export, the clearance export, the readability Word report and
+  recording are on, and the retention window
+
+Filters: source; OpDiv group (signed-in downloads by that OpDiv's users); and,
+for the Readability Checker only, signed in vs. public. Checker downloads ignore
+the OpDiv filter, but the page keeps the selected OpDiv in its back link, filter
+form and pagination, so switching back to another source restores it. The
+by-source table's selected row and the Checker signed-in/public counts use the
+same filters as the totals above them. Bloomworks and staging
+downloads are excluded everywhere, as on the dashboard. Add
+`Accept: application/json` for the same figures as JSON. Screenshots:
+[review evidence for #1432](review-evidence/1432/README.md).

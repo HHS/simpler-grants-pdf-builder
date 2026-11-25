@@ -14,7 +14,13 @@ from django.conf import settings
 from django.db.models import Avg, Count, Max
 from django.utils import timezone
 
-from .models import ImportAttempt, MetricsActivity, MetricsActor, MetricsNofo
+from .models import (
+    ImportAttempt,
+    MetricsActivity,
+    MetricsActor,
+    MetricsNofo,
+    WordDownloadAttempt,
+)
 
 # When NOFO Builder metrics tracking started (see #865) - not a hard cutoff,
 # just where every metrics view's window begins. `months_from()` has no upper
@@ -216,3 +222,34 @@ def recent_import_errors(months, group="all"):
         .select_related("nofo")
         .order_by("-created_at", "-id")
     )
+
+
+def eligible_word_downloads():
+    """Word download attempts that count toward metrics (#1432).
+
+    Excludes Bloomworks and staging accounts, like every other dashboard metric.
+    Signed-out Readability Checker downloads have no group (metrics_included is
+    null) and stay in: they are external usage, not unknown attribution.
+    """
+    return WordDownloadAttempt.objects.exclude(metrics_included=False)
+
+
+def word_downloads_by_month(months, group="all"):
+    """Successful Word downloads per month.
+
+    None (shown as "No data") when nothing was recorded that month, since
+    recording is off by default and missing rows don't establish zero usage.
+    An OpDiv filter keeps only signed-in downloads by that group's users.
+    """
+    results = []
+    for start, end in months:
+        attempts = for_opdiv(
+            eligible_word_downloads().filter(created_at__gte=start, created_at__lt=end),
+            group,
+            "metrics_group",
+        )
+        if not attempts.exists():
+            results.append(None)
+            continue
+        results.append(attempts.filter(outcome="success").count())
+    return results

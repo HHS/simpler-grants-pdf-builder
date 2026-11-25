@@ -4,10 +4,12 @@
     <a href="{% url 'nofos:word_comparisons' %}">Passive sentence comparisons</a>
     {% else %}
     {% if readability_metrics_enabled %}
-    <a href="{% url 'nofos:builder_metrics_readability_scores' %}">NOFO readability metrics</a>
+    <a href="{% url 'nofos:builder_metrics_readability_scores' %}">Readability metrics</a>
     <span aria-hidden="true"> | </span>
     {% endif %}
     <a href="{% url 'nofos:builder_metrics_readability_pilot' %}">Readability Checker usage</a>
+    <span aria-hidden="true"> | </span>
+    <a id="metrics-word-downloads-link" href="{% url 'nofos:builder_metrics_word_downloads' %}?group={{ selected_group|default:'all' }}">Word downloads</a>
     {% endif %}
   </p>
 </nav>
