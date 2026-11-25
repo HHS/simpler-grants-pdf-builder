@@ -214,6 +214,7 @@ flowchart LR
 | Generated DOCX | GrabzIt servers (capture cache) | Retention period set by GrabzIt | We don't set the SDK's `encryptionKey` option. See the [GrabzIt Trust Center](https://grabz.it/trust/). |
 | Generated DOCX (temporary copy) | App memory | During the download request | The app streams no intermediate file to disk. |
 | Generated DOCX (download) | User's browser or device | Up to the user | The final file. |
+| Download outcome (no content) | NOFO Builder database (`WordDownloadAttempt`), only when `WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED` is on | Until `cleanup_word_download_attempts` removes it under `WORD_DOWNLOAD_ATTEMPT_RETENTION_DAYS` | Source, outcome, status, duration, signed-in state, group and NOFO. No document text, readability values, filenames or user IDs. See [Builder metrics § Word download recording](BUILDER_METRICS.md#word-download-recording-1432). |
 
 For both export paths, the app keeps the generated DOCX in memory during the
 request and returns it to the browser. GrabzIt may retain the file in its
@@ -236,6 +237,7 @@ Once [#1354](https://github.com/HHS/simpler-grants-pdf-builder/pull/1354) is dep
   Readability report exports send HTML directly and still require configured
   credentials and an allowed host.
 - Never test Word export from a non-production environment with production credentials.
+- `WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED` (default off) and `WORD_DOWNLOAD_ATTEMPT_RETENTION_DAYS` (unset) control download outcome recording for usage metrics. The NOFO export view, the readability panel export view and the Checker export view each record one row per attempt; Composer downloads are not recorded. See [Builder metrics § Word download recording](BUILDER_METRICS.md#word-download-recording-1432).
 
 ## Workarounds in the export templates
 
