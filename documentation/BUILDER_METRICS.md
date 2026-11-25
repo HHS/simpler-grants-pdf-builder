@@ -204,3 +204,49 @@ counts can sum to less than the all-agency count for older history. Current grou
 are a best-effort baseline, not a reconstruction of historical membership. Once
 captured, group facts survive account/NOFO deletion and are not refreshed from
 current records. No agency-transfer workflow or correction UI is introduced.
+
+## Word download recording (#1432)
+
+Builder can record one content-free row (`WordDownloadAttempt`) for each Word
+(.docx) download attempt from four sources:
+
+| Source | Where it starts |
+|---|---|
+| `nofo_export` | NOFO export page › **Download Word** |
+| `nofo_clearance` | NOFO export page › **Download for Clearance** |
+| `readability_panel` | NOFO edit page › readability metrics › **Download metrics as Word** |
+| `readability_checker` | Readability Checker › **Download Word** |
+
+Each row holds the source, outcome, HTTP status, duration, whether the person was
+signed in, their group at download time (`metrics_group`, with `metrics_included`
+false for Bloomworks and staging and empty for signed-out people), and the NOFO
+when there is one. It holds no document text, readability values, filenames or
+user IDs. Composer downloads use the same GrabzIt helper but are not recorded.
+
+Outcomes: `success`, `export_disabled`, `missing_cookies`, `invalid_export_url`,
+`host_mismatch`, `cookie_rejected`, `conversion_failed`, `invalid_docx`,
+`results_expired`, `results_invalid` and `unknown`. The GrabzIt helpers in
+`bloom_nofos/utils.py` and `download_report()` tag each response with its outcome;
+the entry-point views record it through `nofos.word_download_metrics`. A failed
+metrics write is logged without exception text and never affects the download.
+Downloads that fail in the browser after the server returns the document, and
+requests rejected before the view runs (sign-in, permission, CSRF), are not counted.
+
+| Setting | Where | Default |
+|---|---|---|
+| `WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED` | Constance switch in Django admin; the environment variable of the same name only sets its starting value | off |
+| `WORD_DOWNLOAD_ATTEMPT_RETENTION_DAYS` | Environment variable | unset (no automatic expiration) |
+
+**Rollout:** in Django admin › Constance › Config, turn on
+`WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED` and save. The next download records a
+row; no restart or deploy is needed. **Rollback:** turn the switch off. Recording
+stops on the next request and existing rows stay until the cleanup command
+removes them. A value saved in admin takes precedence over the environment
+variable.
+
+Rows are excluded from EasyAudit (`DJANGO_EASY_AUDIT_UNREGISTERED_CLASSES_EXTRA`),
+so no audit copy with user or request details outlives retention cleanup.
+
+With a retention window set, delete older rows with
+`python manage.py cleanup_word_download_attempts --dry-run`, then without
+`--dry-run`. The metrics page for these rows is a follow-up to #1432.

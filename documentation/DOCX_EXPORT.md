@@ -184,11 +184,11 @@ Step by step:
 2. The helper returns `503 Word export is not available in this environment.` unless GrabzIt credentials are configured and the request host is in `GRABZIT_WORD_EXPORT_ALLOWED_HOSTS`. Only production is allowed today, and the button is disabled with an explanation in every other environment.
 3. The helper needs the `sessionid` and `csrftoken` cookies, an `https` export URL, and a request host that matches the export URL host. The host check means cookies are only handed over for the host they came from.
 4. `UseSSL(True)` switches the GrabzIt client to HTTPS before any call. The SDK defaults to HTTP; this was fixed in [#883](https://github.com/HHS/simpler-grants-pdf-builder/pull/883).
-5. The helper registers the user's `sessionid` and `csrftoken` with GrabzIt for that host (`SetCookie`), then asks GrabzIt to convert the URL (`URLToDOCX`).
+5. The helper registers the user's `sessionid` and `csrftoken` with GrabzIt for that host (`SetCookie`), then asks GrabzIt to convert the URL (`URLToDOCX`). If registration is refused or raises (for example, a timeout reaching GrabzIt), the helper returns `500` without logging the cookie values or the provider's error text.
 6. GrabzIt's renderer fetches the export page from our app using the cookies registered for that host. The app applies its usual permission checks to the session GrabzIt presents.
 7. `SaveTo` waits about 3 seconds, then checks status every 3 seconds until the result is ready, and downloads it. The request is **synchronous**: the gunicorn worker is busy for the whole conversion, and gunicorn stops requests after 89 seconds (see the `Dockerfile`).
 8. The app receives the DOCX bytes in memory.
-9. `is_valid_docx` rejects an empty or malformed result with `502`. Otherwise the DOCX is returned as an attachment.
+9. `is_valid_docx` rejects an empty or malformed result with `502`, including a package whose compressed contents are corrupt. Otherwise the DOCX is returned as an attachment.
 
 When the helper returns an error, the download modal shows "Sorry — something went wrong generating the document. Please try again."
 
@@ -214,6 +214,7 @@ flowchart LR
 | Generated DOCX | GrabzIt servers (capture cache) | Retention period set by GrabzIt | We don't set the SDK's `encryptionKey` option. See the [GrabzIt Trust Center](https://grabz.it/trust/). |
 | Generated DOCX (temporary copy) | App memory | During the download request | The app streams no intermediate file to disk. |
 | Generated DOCX (download) | User's browser or device | Up to the user | The final file. |
+| Download outcome (no content) | NOFO Builder database (`WordDownloadAttempt`), only when the `WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED` Constance switch is on. Not copied into EasyAudit. | Until `cleanup_word_download_attempts` removes it under `WORD_DOWNLOAD_ATTEMPT_RETENTION_DAYS` | Source, outcome, status, duration, signed-in state, group and NOFO. No document text, readability values, filenames or user IDs. See [Builder metrics § Word download recording](BUILDER_METRICS.md#word-download-recording-1432). |
 
 For both export paths, the app keeps the generated DOCX in memory during the
 request and returns it to the browser. GrabzIt may retain the file in its
@@ -236,6 +237,7 @@ Once [#1354](https://github.com/HHS/simpler-grants-pdf-builder/pull/1354) is dep
   Readability report exports send HTML directly and still require configured
   credentials and an allowed host.
 - Never test Word export from a non-production environment with production credentials.
+- The `WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED` Constance switch (default off; changes apply without restarting workers) and the `WORD_DOWNLOAD_ATTEMPT_RETENTION_DAYS` environment setting (unset) control download outcome recording for usage metrics. The NOFO export view, the readability panel export view and the Checker export view each record one row per attempt; Composer downloads are not recorded. See [Builder metrics § Word download recording](BUILDER_METRICS.md#word-download-recording-1432).
 
 ## Workarounds in the export templates
 

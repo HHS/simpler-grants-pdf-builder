@@ -2,6 +2,7 @@ import io
 import logging
 import re
 import zipfile
+import zlib
 from socket import gaierror, gethostbyname, gethostname
 from urllib.parse import urlparse
 from xml.etree import ElementTree
@@ -16,6 +17,16 @@ DOCX_REQUIRED_PATHS = {"[Content_Types].xml", DOCX_DOCUMENT_PATH}
 WORDPROCESSINGML_TEXT_TAG = (
     "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}t"
 )
+
+
+def with_word_download_outcome(response, outcome):
+    """Tag a Word download response with why it ended, for usage metrics.
+
+    The attribute stays on the server-side response object; it is never sent
+    to the browser. See nofos.word_download_metrics.
+    """
+    response.word_download_outcome = outcome
+    return response
 
 
 def cast_to_boolean(value_str):
@@ -79,7 +90,18 @@ def is_valid_docx(content):
             if not DOCX_REQUIRED_PATHS.issubset(archive.namelist()):
                 return False
             document = ElementTree.fromstring(archive.read(DOCX_DOCUMENT_PATH))
-    except (ElementTree.ParseError, KeyError, zipfile.BadZipFile, zipfile.LargeZipFile):
+    except (
+        ElementTree.ParseError,
+        KeyError,
+        zipfile.BadZipFile,
+        zipfile.LargeZipFile,
+        # A corrupt or unsupported compressed entry, or an encrypted package.
+        zlib.error,
+        EOFError,
+        NotImplementedError,
+        RuntimeError,
+        ValueError,
+    ):
         return False
 
     return any(
@@ -107,16 +129,22 @@ def generate_docx_download_response(
                 "allowed_export_hosts": settings.GRABZIT_WORD_EXPORT_ALLOWED_HOSTS,
             },
         )
-        return HttpResponse(
-            "Word export is not available in this environment.", status=503
+        return with_word_download_outcome(
+            HttpResponse(
+                "Word export is not available in this environment.", status=503
+            ),
+            "export_disabled",
         )
 
     session_value = request.COOKIES.get("sessionid")
     csrf_value = request.COOKIES.get("csrftoken")
 
     if not session_value or not csrf_value:
-        return HttpResponseServerError(
-            "Missing session/csrf cookies for DOCX conversion."
+        return with_word_download_outcome(
+            HttpResponseServerError(
+                "Missing session/csrf cookies for DOCX conversion."
+            ),
+            "missing_cookies",
         )
 
     parsed = urlparse(export_url)
@@ -124,27 +152,45 @@ def generate_docx_download_response(
     export_scheme = parsed.scheme
 
     if not export_host or export_scheme != "https":
-        return HttpResponseServerError("Invalid export URL for DOCX conversion.")
+        return with_word_download_outcome(
+            HttpResponseServerError("Invalid export URL for DOCX conversion."),
+            "invalid_export_url",
+        )
 
     # Defensive check: the cookies we are copying came from this incoming request,
     # so the request host should match the host GrabzIt will fetch.
     if request_host != export_host:
-        return HttpResponseServerError(
-            f"Host mismatch for DOCX conversion. request_host={request_host}, export_host={export_host}"
+        return with_word_download_outcome(
+            HttpResponseServerError(
+                f"Host mismatch for DOCX conversion. request_host={request_host}, export_host={export_host}"
+            ),
+            "host_mismatch",
         )
 
     grabzit = _grabzit_docx_client()
 
     # Set cookies only for the exact host GrabzIt will request.
-    if not grabzit.SetCookie("sessionid", export_host, session_value):
-        return HttpResponseServerError(
-            "Failed to set session cookie for GrabzIt conversion."
-        )
-
-    if not grabzit.SetCookie("csrftoken", export_host, csrf_value):
-        return HttpResponseServerError(
-            "Failed to set csrf cookie for GrabzIt conversion."
-        )
+    for name, value, label in (
+        ("sessionid", session_value, "session"),
+        ("csrftoken", csrf_value, "csrf"),
+    ):
+        try:
+            registered = grabzit.SetCookie(name, export_host, value)
+        except Exception as exc:
+            # A network error or timeout reaching GrabzIt. Log neither the
+            # cookie value nor the provider's error text.
+            logger.error(
+                "GrabzIt cookie registration failed",
+                extra={"export_host": export_host, "error_type": type(exc).__name__},
+            )
+            registered = False
+        if not registered:
+            return with_word_download_outcome(
+                HttpResponseServerError(
+                    f"Failed to set {label} cookie for GrabzIt conversion."
+                ),
+                "cookie_rejected",
+            )
 
     options = GrabzItDOCXOptions.GrabzItDOCXOptions()
     options.targetElement = target_element
@@ -161,8 +207,11 @@ def generate_html_docx_download_response(*, request, html, filename_base):
     """Convert dedicated HTML without forwarding browser cookies or a source URL."""
     host = _normalize_hostname(request.get_host())
     if not is_grabzit_word_export_enabled(host):
-        return HttpResponse(
-            "Word export is not available in this environment.", status=503
+        return with_word_download_outcome(
+            HttpResponse(
+                "Word export is not available in this environment.", status=503
+            ),
+            "export_disabled",
         )
     grabzit = _grabzit_docx_client()
     return _docx_attachment(
@@ -193,8 +242,12 @@ def _docx_attachment(grabzit, prepare_conversion, filename_base, export_host):
             "GrabzIt Word export request failed",
             extra={"export_host": export_host, "error_type": type(exc).__name__},
         )
-        return HttpResponse(
-            "Word export could not be completed. Please try again later.", status=502
+        return with_word_download_outcome(
+            HttpResponse(
+                "Word export could not be completed. Please try again later.",
+                status=502,
+            ),
+            "conversion_failed",
         )
 
     if not is_valid_docx(content):
@@ -202,8 +255,12 @@ def _docx_attachment(grabzit, prepare_conversion, filename_base, export_host):
             "GrabzIt returned an invalid or empty DOCX",
             extra={"export_host": export_host, "response_size": len(content)},
         )
-        return HttpResponse(
-            "Word export could not be completed. Please try again later.", status=502
+        return with_word_download_outcome(
+            HttpResponse(
+                "Word export could not be completed. Please try again later.",
+                status=502,
+            ),
+            "invalid_docx",
         )
 
     response = HttpResponse(
@@ -211,4 +268,4 @@ def _docx_attachment(grabzit, prepare_conversion, filename_base, export_host):
         content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     )
     response["Content-Disposition"] = f'attachment; filename="{filename_base}.docx"'
-    return response
+    return with_word_download_outcome(response, "success")

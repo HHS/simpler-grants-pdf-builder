@@ -160,6 +160,33 @@ class DocxTransportTests(SimpleTestCase):
 
         self.assertEqual(response.status_code, 502)
 
+    @patch("bloom_nofos.utils.GrabzItClient.GrabzItClient")
+    def test_each_exit_is_tagged_with_its_download_outcome(self, client_class):
+        self.provider_returns(client_class, VALID_DOCX)
+        self.assertEqual(self.export().word_download_outcome, "success")
+
+        client_class.return_value.SetCookie.return_value = False
+        self.assertEqual(self.export().word_download_outcome, "cookie_rejected")
+
+        response = generate_docx_download_response(
+            request=self.request,
+            export_url="http://synthetic.example/export",
+            target_element="#download_target",
+            filename_base="synthetic",
+        )
+        self.assertEqual(response.word_download_outcome, "invalid_export_url")
+
+        response = generate_docx_download_response(
+            request=self.request,
+            export_url="https://other.example/export",
+            target_element="#download_target",
+            filename_base="synthetic",
+        )
+        self.assertEqual(response.word_download_outcome, "host_mismatch")
+
+        self.request.COOKIES = {}
+        self.assertEqual(self.export().word_download_outcome, "missing_cookies")
+
     def test_real_sdk_save_to_without_path_returns_bytes(self):
         from GrabzIt.GrabzItClient import GrabzItClient as RealClient
 
@@ -197,9 +224,12 @@ class DocxTransportTests(SimpleTestCase):
                 side_effect=StopBeforeNetwork,
             ) as https,
         ):
-            with self.assertRaises(StopBeforeNetwork):
-                self.export()
+            # A connection failure during cookie registration is caught and
+            # returned as a tagged failure, so it can still be recorded.
+            response = self.export()
 
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.word_download_outcome, "cookie_rejected")
         http.assert_not_called()
         https.assert_called_once_with("api.grabz.it", 443)
 
@@ -217,6 +247,13 @@ class DocxSafeguardTests(SimpleTestCase):
         self.assertFalse(
             is_grabzit_word_export_enabled("nofos.simpler.grants.gov.attacker.example")
         )
+
+    def test_docx_validation_rejects_corrupt_compressed_content(self):
+        from nofos.tests_nofos.test_word_download_metrics import (
+            corrupt_deflated_docx,
+        )
+
+        self.assertFalse(is_valid_docx(corrupt_deflated_docx()))
 
     def test_docx_validation_requires_package_and_meaningful_text(self):
         self.assertTrue(is_valid_docx(VALID_DOCX))

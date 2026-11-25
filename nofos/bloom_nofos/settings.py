@@ -68,6 +68,18 @@ AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS = env.int(
     "AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS", default=None
 )
 
+# Content-free Word (.docx) download outcomes from the NOFO export page, the
+# readability metrics panel and the Readability Checker. Default-off, like the
+# readability attempt recording above. This is only the starting value for the
+# WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED Constance switch; a value saved in
+# Django admin takes precedence and applies without restarting workers.
+WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED = env.bool(
+    "WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED", default=False
+)
+WORD_DOWNLOAD_ATTEMPT_RETENTION_DAYS = env.int(
+    "WORD_DOWNLOAD_ATTEMPT_RETENTION_DAYS", default=None
+)
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = cast_to_boolean(env.get_value("DEBUG", default=True))
 print("=====")
@@ -604,6 +616,7 @@ DJANGO_EASY_AUDIT_UNREGISTERED_CLASSES_EXTRA = [
     "nofos.DocumentAuditEvent",
     # Audit events can attach request/user metadata: never audit anonymous outcomes.
     "nofos.PdfReadabilityAttempt",
+    "nofos.WordDownloadAttempt",
     "nofos.WordComparison",
     "nofos.NofoReadabilityScore",
     "nofos.NofoReadabilityCheckpoint",
@@ -735,6 +748,11 @@ CONSTANCE_CONFIG = {
     "HHS_NOFO_WORD_COMPARISONS_ENABLED": (
         False,
         "Enable saving new Word comparisons. Requires separate save permission. Metrics viewers can always access the comparison page and retained document names and results. Disabling prevents new saves without hiding or deleting records.",
+        bool,
+    ),
+    "WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED": (
+        WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED,
+        "Record a content-free outcome for each Word download from the NOFO export page, the readability metrics panel and the Readability Checker. Changes apply without restarting workers; disable to stop recording. Existing rows stay until cleanup_word_download_attempts removes them.",
         bool,
     ),
     "DOCUMENT_HISTORY_INDEX_ENABLED": (
