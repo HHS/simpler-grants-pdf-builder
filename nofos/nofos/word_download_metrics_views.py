@@ -53,6 +53,11 @@ SIGNED_IN_CHOICES = [
 ]
 
 
+def _seconds(duration_ms):
+    """Downloads take seconds, not milliseconds, so show them that way."""
+    return None if duration_ms is None else round(duration_ms / 1000, 1)
+
+
 def _percentile(attempts, total, fraction):
     if not total:
         return None
@@ -131,6 +136,7 @@ class WordDownloadMetricsView(MetricsViewerRequiredMixin, TemplateView):
             rows = scoped.filter(source=code)
             row_total = rows.count()
             row_success = rows.filter(outcome="success").count()
+            row_p50 = _percentile(rows, row_total, 0.5)
             by_source.append(
                 {
                     "code": code,
@@ -140,7 +146,8 @@ class WordDownloadMetricsView(MetricsViewerRequiredMixin, TemplateView):
                     "successes": row_success,
                     "failed": row_total - row_success,
                     "success_rate_pct": rate(row_success, row_total),
-                    "p50_duration_ms": _percentile(rows, row_total, 0.5),
+                    "p50_duration_ms": row_p50,
+                    "p50_seconds": _seconds(row_p50),
                     "selected": source in ("all", code),
                 }
             )
@@ -183,6 +190,9 @@ class WordDownloadMetricsView(MetricsViewerRequiredMixin, TemplateView):
                     }
                 )
             return periods
+
+        p50 = _percentile(attempts, total, 0.5)
+        p95 = _percentile(attempts, total, 0.95)
 
         page = Paginator(
             attempts.order_by("-created_at", "-pk"), self.attempts_per_page
@@ -235,8 +245,10 @@ class WordDownloadMetricsView(MetricsViewerRequiredMixin, TemplateView):
             "provider_failure_rate_pct": rate(
                 sum(counts.get(code, 0) for code in PROVIDER_OUTCOMES)
             ),
-            "p50_duration_ms": _percentile(attempts, total, 0.5),
-            "p95_duration_ms": _percentile(attempts, total, 0.95),
+            "p50_duration_ms": p50,
+            "p95_duration_ms": p95,
+            "p50_seconds": _seconds(p50),
+            "p95_seconds": _seconds(p95),
             "chart_daily": chart_periods(TruncDay, 30),
             "chart_weekly": chart_periods(TruncWeek, 12, weekly=True),
             "recent_attempts": recent,

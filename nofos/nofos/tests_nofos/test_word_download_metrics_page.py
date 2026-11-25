@@ -105,6 +105,8 @@ class WordDownloadMetricsPageTests(TestCase):
         self.assertEqual(by_source["nofo_export"]["attempts"], 2)
         self.assertEqual(by_source["nofo_export"]["success_rate_pct"], 50.0)
         self.assertEqual(by_source["nofo_export"]["p50_duration_ms"], 1000)
+        self.assertEqual(by_source["nofo_export"]["p50_seconds"], 1.0)
+        self.assertEqual(data["p95_seconds"], 3.0)
         self.assertEqual(data["checker_split"], {"authenticated": 0, "public": 1})
         outcomes = {row["code"]: row for row in data["outcomes"]}
         self.assertEqual(outcomes["conversion_failed"]["attempts"], 1)
