@@ -1,9 +1,11 @@
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 
 from bs4 import BeautifulSoup
 from constance.test import override_config
 from django.contrib.auth.models import Permission
+from django.db import connection
 from django.test import TestCase
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
 from users.models import BloomUser
@@ -384,3 +386,49 @@ class WordDownloadCheckerScopeTests(TestCase):
 
         self.assertEqual(self.checker_row(data)["attempts"], 1)
         self.assertEqual(data["checker_split"], {"authenticated": 1, "public": 0})
+
+
+@override_config(WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED=True)
+class WordDownloadChartWindowTests(TestCase):
+    def setUp(self):
+        self.url = reverse("nofos:builder_metrics_word_downloads")
+        user = BloomUser.objects.create_user(
+            email="word-downloads-window@example.com",
+            password=None,
+            group="bloom",
+            force_password_reset=False,
+        )
+        user.user_permissions.add(
+            Permission.objects.get(codename="view_builder_metrics")
+        )
+        self.client.force_login(user)
+
+    def at(self, when):
+        row = attempt()
+        WordDownloadAttempt.objects.filter(pk=row.pk).update(created_at=when)
+
+    def test_daily_window_starts_at_local_midnight(self):
+        first_day = timezone.localdate() - timedelta(days=29)
+        midnight = timezone.make_aware(datetime.combine(first_day, time.min))
+        self.at(midnight - timedelta(minutes=1))  # the day before the window
+        self.at(midnight + timedelta(minutes=1))
+
+        data = self.client.get(self.url, HTTP_ACCEPT="application/json").json()
+
+        self.assertEqual(data["chart_daily"][0]["period"], first_day.isoformat())
+        self.assertEqual(data["chart_daily"][0]["attempts"], 1)
+        self.assertEqual(data["total_attempts"], 2)
+
+    def test_chart_cutoff_compares_raw_timestamps(self):
+        # A date cast on created_at would stop its index serving the cutoff.
+        with CaptureQueriesContext(connection) as queries:
+            self.client.get(self.url, HTTP_ACCEPT="application/json")
+        chart_queries = [
+            q["sql"]
+            for q in queries.captured_queries
+            if "worddownloadattempt" in q["sql"]
+        ]
+        self.assertTrue(chart_queries)
+        for sql in chart_queries:
+            self.assertNotIn("cast_date", sql)
+            self.assertNotRegex(sql, r"(?i)\bDATE\(")

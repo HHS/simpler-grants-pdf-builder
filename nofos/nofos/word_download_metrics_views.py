@@ -2,7 +2,7 @@
 downloaded, where downloads start, and why they fail."""
 
 import math
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 
 from bloom_nofos.utils import is_grabzit_word_export_enabled
 from constance import config
@@ -173,8 +173,11 @@ class WordDownloadMetricsView(MetricsViewerRequiredMixin, TemplateView):
             end = today - timedelta(days=today.weekday()) if weekly else today
             step = 7 if weekly else 1
             start = end - timedelta(days=step * (count - 1))
+            # Compare the raw timestamp to local midnight so the created_at
+            # index serves the cutoff; __date would convert every row first.
+            cutoff = timezone.make_aware(datetime.combine(start, time.min))
             rows = (
-                attempts.filter(created_at__date__gte=start)
+                attempts.filter(created_at__gte=cutoff)
                 .annotate(period=truncation("created_at"))
                 .values("period", "outcome")
                 .annotate(attempts=Count("pk"))
