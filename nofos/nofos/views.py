@@ -1,6 +1,7 @@
 import io
 import json
 import logging
+import time
 import uuid
 from datetime import datetime
 
@@ -13,7 +14,11 @@ from bloom_nofos.error_helpers import (
 from bloom_nofos.html_diff import has_diff, html_diff
 from bloom_nofos.import_errors import IMPORT_ERROR_CATALOG
 from bloom_nofos.logs import log_exception
-from bloom_nofos.utils import cast_to_boolean, generate_docx_download_response
+from bloom_nofos.utils import (
+    cast_to_boolean,
+    generate_docx_download_response,
+    with_word_download_outcome,
+)
 from bloom_nofos.views import checker_access
 from bs4 import BeautifulSoup
 from constance import config
@@ -196,6 +201,7 @@ from .subsection_conflicts import (
     saved_values,
 )
 from .utils import create_nofo_audit_event, create_subsection_html_id, user_is_nih_group
+from .word_download_metrics import record_word_download
 
 GroupAccessObjectMixin = GroupAccessObjectMixinFactory(Nofo)
 
@@ -440,15 +446,18 @@ class NOFOsExportView(DetailView):
         return context
 
     def post(self, request, *args, **kwargs):
+        started = time.monotonic()
         nofo = self.get_object()
         action = request.POST.get("export_action")
 
         if action == "download":
+            source = "nofo_export"
             export_url = request.build_absolute_uri(
                 reverse_lazy("nofos:nofo_export", args=[nofo.pk])
             )
             filename_base = nofo.short_name or nofo.title
         elif action == "download_stripped" and config.HHS_NOFO_POLICY_EXPORT_ENABLED:
+            source = "nofo_clearance"
             export_url = request.build_absolute_uri(
                 "{}?policy_stripped=1".format(
                     reverse_lazy("nofos:nofo_export", args=[nofo.pk])
@@ -457,15 +466,33 @@ class NOFOsExportView(DetailView):
             filename_base = "{} (Policy Language Stripped)".format(
                 nofo.short_name or nofo.title
             )
+        elif action == "download_stripped":
+            # A clearance download while the clearance export is turned off.
+            response = with_word_download_outcome(
+                HttpResponseBadRequest("Unknown action."), "export_disabled"
+            )
+            record_word_download(
+                request,
+                source="nofo_clearance",
+                response=response,
+                started=started,
+                nofo=nofo,
+            )
+            return response
         else:
+            # Not a Word download button: nothing to record.
             return HttpResponseBadRequest("Unknown action.")
 
-        return generate_docx_download_response(
+        response = generate_docx_download_response(
             request=request,
             export_url=export_url,
             target_element="#download_target",
             filename_base=filename_base,
         )
+        record_word_download(
+            request, source=source, response=response, started=started, nofo=nofo
+        )
+        return response
 
 
 class NofoReadabilityMetricsView(GroupAccessObjectMixin, View):
@@ -511,14 +538,29 @@ class NofoReadabilityMetricsView(GroupAccessObjectMixin, View):
 
 class NofoReadabilityWordExportView(GroupAccessObjectMixin, View):
     def post(self, request, *args, **kwargs):
-        if not config.HHS_NOFO_METRICS_ENABLED:
-            return HttpResponse(
-                "Readability metrics are unavailable.",
-                status=503,
-                headers={"Cache-Control": "no-store"},
-            )
+        started = time.monotonic()
         nofo = get_object_or_404(Nofo, pk=kwargs["pk"])
-        return download_report(request, salt=builder_salt(request, nofo), nofo=nofo)
+        if not config.HHS_NOFO_METRICS_ENABLED:
+            response = with_word_download_outcome(
+                HttpResponse(
+                    "Readability metrics are unavailable.",
+                    status=503,
+                    headers={"Cache-Control": "no-store"},
+                ),
+                "export_disabled",
+            )
+        else:
+            response = download_report(
+                request, salt=builder_salt(request, nofo), nofo=nofo
+            )
+        record_word_download(
+            request,
+            source="readability_panel",
+            response=response,
+            started=started,
+            nofo=nofo,
+        )
+        return response
 
 
 class NofoReadabilityMetricsSaveView(GroupAccessObjectMixin, View):

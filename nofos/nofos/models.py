@@ -1468,6 +1468,76 @@ class PdfReadabilityAttempt(models.Model):
         ordering = ["-created_at", "-pk"]
 
 
+class WordDownloadAttempt(models.Model):
+    """
+    One Word (.docx) download attempt from the NOFO export page, the readability
+    metrics panel or the Readability Checker - successful or not.
+
+    Content-free: no document text, readability values, filenames or user IDs.
+    The application only inserts; rows are deleted by the retention cleanup
+    command (cleanup_word_download_attempts).
+    """
+
+    SOURCE_CHOICES = [
+        ("nofo_export", "NOFO Word export"),
+        ("nofo_clearance", "NOFO clearance export"),
+        ("readability_panel", "Readability metrics panel"),
+        ("readability_checker", "Readability Checker"),
+    ]
+    OUTCOME_CHOICES = [
+        ("success", "Document returned"),
+        ("export_disabled", "Word export disabled"),
+        ("missing_cookies", "Session cookies missing"),
+        ("invalid_export_url", "Invalid export URL"),
+        ("host_mismatch", "Export host mismatch"),
+        ("cookie_rejected", "GrabzIt rejected session cookies"),
+        ("conversion_failed", "Word conversion failed (GrabzIt)"),
+        ("invalid_docx", "GrabzIt returned an invalid document"),
+        ("results_expired", "Readability results expired"),
+        ("results_invalid", "Readability results invalid"),
+        ("unknown", "Unknown"),
+    ]
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    source = models.CharField(max_length=24, choices=SOURCE_CHOICES, db_index=True)
+    outcome = models.CharField(max_length=32, choices=OUTCOME_CHOICES)
+    http_status = models.PositiveSmallIntegerField()
+    duration_ms = models.PositiveIntegerField()
+    authenticated = models.BooleanField(
+        help_text="Whether the person was signed in. Builder downloads always are."
+    )
+    metrics_group = models.CharField(
+        max_length=16, blank=True, default="", db_index=True, editable=False
+    )
+    metrics_included = models.BooleanField(
+        null=True,
+        editable=False,
+        help_text=(
+            "Eligibility at download time, from the user's group; null when the "
+            "person was not signed in."
+        ),
+    )
+    nofo = models.ForeignKey(
+        Nofo,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="word_download_attempts",
+        help_text=(
+            "The NOFO the download was for. Empty for Readability Checker "
+            "downloads, and set to null if the NOFO is later deleted."
+        ),
+    )
+
+    class Meta:
+        ordering = ["-created_at", "-pk"]
+        verbose_name = "Word download attempt"
+        verbose_name_plural = "Word download attempts"
+
+    def __str__(self):
+        return f"{self.get_source_display()}: {self.outcome} ({self.created_at:%Y-%m-%d %H:%M})"
+
+
 class ImportAttempt(models.Model):
     """
     A record of one NOFO import attempt - new import or reimport, successful or

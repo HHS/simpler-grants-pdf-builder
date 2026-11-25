@@ -5,6 +5,7 @@ import time
 import unicodedata
 from pathlib import Path
 
+from bloom_nofos.utils import with_word_download_outcome
 from constance import config
 from django.conf import settings
 from django.core.files.uploadhandler import TemporaryFileUploadHandler
@@ -29,6 +30,7 @@ from nofos.readability_word_export import (
     download_report,
     format_report_value,
 )
+from nofos.word_download_metrics import record_word_download
 
 logger = logging.getLogger("django.request.pdf_readability")
 
@@ -138,10 +140,19 @@ def pdf_readability(request):
 @never_cache
 @require_POST
 def pdf_readability_word_export(request):
+    started = time.monotonic()
     enabled, _ = checker_access(request)
     if not enabled:
-        return HttpResponse("The readability checker is unavailable.", status=403)
-    return download_report(request, salt=CHECKER_SALT)
+        response = with_word_download_outcome(
+            HttpResponse("The readability checker is unavailable.", status=403),
+            "export_disabled",
+        )
+    else:
+        response = download_report(request, salt=CHECKER_SALT)
+    record_word_download(
+        request, source="readability_checker", response=response, started=started
+    )
+    return response
 
 
 @csrf_exempt

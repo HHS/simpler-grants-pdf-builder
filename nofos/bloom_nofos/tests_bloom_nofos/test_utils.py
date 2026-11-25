@@ -160,6 +160,33 @@ class DocxTransportTests(SimpleTestCase):
 
         self.assertEqual(response.status_code, 502)
 
+    @patch("bloom_nofos.utils.GrabzItClient.GrabzItClient")
+    def test_each_exit_is_tagged_with_its_download_outcome(self, client_class):
+        self.provider_returns(client_class, VALID_DOCX)
+        self.assertEqual(self.export().word_download_outcome, "success")
+
+        client_class.return_value.SetCookie.return_value = False
+        self.assertEqual(self.export().word_download_outcome, "cookie_rejected")
+
+        response = generate_docx_download_response(
+            request=self.request,
+            export_url="http://synthetic.example/export",
+            target_element="#download_target",
+            filename_base="synthetic",
+        )
+        self.assertEqual(response.word_download_outcome, "invalid_export_url")
+
+        response = generate_docx_download_response(
+            request=self.request,
+            export_url="https://other.example/export",
+            target_element="#download_target",
+            filename_base="synthetic",
+        )
+        self.assertEqual(response.word_download_outcome, "host_mismatch")
+
+        self.request.COOKIES = {}
+        self.assertEqual(self.export().word_download_outcome, "missing_cookies")
+
     def test_real_sdk_save_to_without_path_returns_bytes(self):
         from GrabzIt.GrabzItClient import GrabzItClient as RealClient
 

@@ -68,6 +68,16 @@ AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS = env.int(
     "AUTHENTICATED_PDF_READABILITY_ATTEMPT_RETENTION_DAYS", default=None
 )
 
+# Content-free Word (.docx) download outcomes from the NOFO export page, the
+# readability metrics panel and the Readability Checker. Default-off, like the
+# readability attempt recording above.
+WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED = env.bool(
+    "WORD_DOWNLOAD_ATTEMPT_RECORDING_ENABLED", default=False
+)
+WORD_DOWNLOAD_ATTEMPT_RETENTION_DAYS = env.int(
+    "WORD_DOWNLOAD_ATTEMPT_RETENTION_DAYS", default=None
+)
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = cast_to_boolean(env.get_value("DEBUG", default=True))
 print("=====")

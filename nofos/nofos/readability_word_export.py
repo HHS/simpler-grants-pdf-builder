@@ -5,6 +5,7 @@ import math
 from bloom_nofos.utils import (
     generate_html_docx_download_response,
     is_grabzit_word_export_enabled,
+    with_word_download_outcome,
 )
 from constance import config
 from django.core import signing
@@ -220,8 +221,11 @@ def add_builder_report_header(response, request, nofo, payload):
 
 def download_report(request, *, salt, nofo=None):
     if not word_export_enabled(request):
-        response = HttpResponse(
-            "Word export is not available in this environment.", status=503
+        response = with_word_download_outcome(
+            HttpResponse(
+                "Word export is not available in this environment.", status=503
+            ),
+            "export_disabled",
         )
         add_never_cache_headers(response)
         return response
@@ -234,15 +238,21 @@ def download_report(request, *, salt, nofo=None):
         ):
             raise signing.BadSignature
     except signing.SignatureExpired:
-        response = HttpResponse(
-            "Readability results expired. Refresh the results before downloading again.",
-            status=410,
+        response = with_word_download_outcome(
+            HttpResponse(
+                "Readability results expired. Refresh the results before downloading again.",
+                status=410,
+            ),
+            "results_expired",
         )
     except signing.BadSignature:
-        response = HttpResponse(
-            "These results are no longer available for download. "
-            "Check readability again and retry the download.",
-            status=400,
+        response = with_word_download_outcome(
+            HttpResponse(
+                "These results are no longer available for download. "
+                "Check readability again and retry the download.",
+                status=400,
+            ),
+            "results_invalid",
         )
     else:
         values = report["values"]
