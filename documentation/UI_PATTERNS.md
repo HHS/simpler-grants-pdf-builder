@@ -771,6 +771,14 @@ The comparison page is a child page: its H1 is **Passive sentence comparisons**
 and its shared back-arrow reads **Back to Readability Checker usage**. It does
 not repeat the usage/comparison links as peer tabs.
 
+The Word downloads page (#1432) follows the same pattern. Usage & quality
+metrics links to it from the bold text row under its title (**Readability
+metrics | Readability Checker usage | Word downloads**) and from **Review Word
+downloads** on its Monthly trends card. Its back-arrow reads **Back to usage &
+quality metrics**. All three carry the selected OpDiv (`?group=`), and the
+main page's script updates the row link when the OpDiv filter changes. The
+Word downloads page has no related-links row of its own.
+
 Pass the title, back_text and back_href to the shared include with **only**.
 For example, resolve nofos:builder_metrics into metrics_href and use
 back_text="Back to usage &amp; quality metrics". Check the arrow, link focus,
