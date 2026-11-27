@@ -229,6 +229,22 @@ tint.
 | ONC | `#081f7a` | `#ebedf4` | `#081f7a` | 14.12:1 | 12.07:1 |
 | SAMHSA (Light) | `#1a6986` | `#edf3f5` | `#1a6986` | 6.16:1 | 5.50:1 |
 
+**Pagination.** A note stays on the same page as the content just before it,
+such as the table it qualifies, unless the note has its own page break.
+
+**Edge cases**
+
+- **Lead-in without bold.** The note keeps its box and rule, but the lead-in
+  isn't coloured. "Note:" still names it, and reimport still finds it.
+- **No lead-in.** The note is shown, but only colour marks it as a note
+  (WCAG 1.4.1), and a Word export and reimport turn it into a plain
+  paragraph. The editor shows a warning until a label is added.
+- **More than one paragraph, a list or a heading.** These display, but a Word
+  export and reimport keep only the first paragraph as the note.
+- **Long notes.** The "lots of content" warning only checks box callouts.
+- **Before you get started.** Introductory text can be a note, or plain text,
+  but not a box callout or a heading.
+
 See [TASK-NOTE-CALLOUT](EDITOR_TASKS.md#task-note-callout) to add or edit a
 note, and [IMPORT-080](IMPORT_RULES.md#import-080--applicant-note-labels-and-note-callouts)
 for how Word imports create them.

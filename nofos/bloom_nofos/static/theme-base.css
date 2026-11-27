@@ -1201,9 +1201,13 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
     break-after: avoid;
   }
 
-  /* Tag the note as a Div so screen readers don't announce a quotation. */
+  /* Tag the note as a Div so screen readers don't announce a quotation.
+     Keep a note on the same page as the content before it, such as a table
+     it qualifies (#1349's keep-together, now across subsections). */
   .note-callout {
     -prince-pdf-tag-type: Div;
+    page-break-before: avoid;
+    break-before: avoid;
   }
 
   @prince-pdf {
@@ -1283,7 +1287,8 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
   table .page-break-before,
   .page-break--hr--container .page-break-before,
   .page-break-before--heading,
-  .callout-box.page-break-before {
+  .callout-box.page-break-before,
+  .note-callout.page-break-before {
     break-before: page !important;
     page-break-before: always !important;
   }

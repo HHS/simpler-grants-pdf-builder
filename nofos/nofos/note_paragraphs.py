@@ -145,5 +145,12 @@ def normalize_note_labels(soup):
             paragraph[NOTE_CALLOUT_MARKER] = "true"
 
 
+def has_note_label(markdown):
+    """True when Markdown content starts with a note label such as "Note:" or
+    "**Note for applicants:**". Leading emphasis markers are ignored."""
+    text = re.sub(r"^\s*(?:\*\*|__|\*|_)", "", markdown or "")
+    return bool(_IMPORT_LABEL.match(text))
+
+
 def is_note_paragraph(element):
     return bool(_RENDER_LABEL.match(element.get_text()))

@@ -645,6 +645,14 @@ The example that prompted this document: detecting a footnote/endnote list and f
   - If a top-level label has no text after it (a bare `Note:` line), join the next ordinary paragraph into it, skipping empty spacer paragraphs. Do not join a following list, table, heading, empty paragraph or another note label.
   - A top-level note paragraph that is not between two lists of the same kind becomes its own subsection: `callout_box` on, `callout_style` `note`, no heading. Content after it starts a new unnamed subsection, as after a callout box. Notes in list items, table cells (including 1×1 callout tables) and between items of one list stay ordinary paragraphs.
 - **Source:** `note_paragraphs.py::normalize_note_labels` marks standalone notes, and `content_processing.py::get_subsections_from_sections` creates the note subsection. Called by the Builder import path in `content_processing.py`. Compare and Composer do not opt in. The import-only marker is removed before storage.
+- **Limits:**
+  - "Between items of one list" means the nearest non-empty siblings on both sides are lists of the same kind. A note between two separate lists of the same kind is not converted; a note between a numbered and a bulleted list is.
+  - A bare label line followed by a list, table, heading or another label stays a plain label paragraph.
+  - `Note for the following items: …` matches, because "for" plus up to eight words is an audience.
+  - Only the word "Note" is normalized: `NOTE FOR HRSA APPLICANTS:` becomes `Note FOR HRSA APPLICANTS:`.
+  - Labels whose audience is longer than eight words or eighty bracketed characters, and labels inside links, are not matched.
+  - Compare and Composer do not create note subsections, so comparing a Builder NOFO with a Word file can show a note as an added or removed subsection.
+  - A note split out of a subsection tagged as policy language can change how that subsection aligns with its policy-language slot. This has not been measured.
 - **Status:** active for new imports and reimports (#1437). Saved records are not rewritten: legacy NOFOs keep their notes as ordinary paragraphs, with the bold label, until they are reimported. Notes have no paragraph styling. At render time, `keep_tables_with_following_notes` only keeps a table on the same page as a standalone `Note:` paragraph directly after it.
 
 ### IMPORT-077 — Unwrap isolated bold on trailing punctuation

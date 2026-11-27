@@ -38,6 +38,11 @@
   **Is callout box?**. Only one can be checked: checking one unchecks the
   other, and the server rejects a form that sends both.
 
+Label warning: if a note doesn't start with a label such as `**Note:**`,
+the editor shows this non-blocking warning, updated as you type:
+
+[![](after-editor-note-label-warning.png)](after-editor-note-label-warning.png)
+
 ## Every OpDiv theme
 
 [![](after-all-opdiv-themes.png)](after-all-opdiv-themes.png)

@@ -14,9 +14,13 @@ from django.urls import reverse
 from users.models import BloomUser
 
 from nofos.content_processing import process_document_content
-from nofos.forms import SubsectionCreateForm
-from nofos.models import THEME_CHOICES, Nofo
-from nofos.note_paragraphs import NOTE_CALLOUT_MARKER, normalize_note_labels
+from nofos.forms import SubsectionCreateForm, SubsectionEditForm
+from nofos.models import THEME_CHOICES, Nofo, Section, Subsection
+from nofos.note_paragraphs import (
+    NOTE_CALLOUT_MARKER,
+    has_note_label,
+    normalize_note_labels,
+)
 from nofos.pdf_service import generate_nofo_pdf
 from nofos.templatetags.add_classes_to_paragraphs import (
     keep_tables_with_following_notes,
@@ -344,3 +348,91 @@ class NoteCalloutThemeTests(SimpleTestCase):
                 self.assertGreaterEqual(_contrast(values["rule"], "#ffffff"), 3)
                 self.assertGreaterEqual(_contrast(values["label"], values["tint"]), 4.5)
                 self.assertGreaterEqual(_contrast("#000000", values["tint"]), 4.5)
+
+
+class NoteLabelWarningTests(SimpleTestCase):
+    def test_has_note_label(self):
+        for body in (
+            "**Note:** Keep it.",
+            "Note for applicants: Keep it.",
+            "**NOTE (new applicants):** Keep it.",
+            "__Note -__ Keep it.",
+            "N.B. Keep it.",
+        ):
+            with self.subTest(body=body):
+                self.assertTrue(has_note_label(body))
+        for body in ("Keep it.", "**Notes from the webinar:** x", "", None):
+            with self.subTest(body=body):
+                self.assertFalse(has_note_label(body))
+
+    def test_pdf_keeps_a_note_with_the_content_before_it(self):
+        css = (
+            Path(settings.BASE_DIR) / "bloom_nofos" / "static" / "theme-base.css"
+        ).read_text()
+        rule = re.search(r"@media print \{.*?\.note-callout \{([^}]*)\}", css, re.S)
+        self.assertIn("break-before: avoid", rule.group(1))
+        self.assertIn(".note-callout.page-break-before", css)
+
+
+class NoteCalloutEditorTests(TestCase):
+    def setUp(self):
+        self.user = BloomUser.objects.create_user(
+            email="note-edge@example.test",
+            password=None,
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.client.force_login(self.user)
+        self.nofo = Nofo.objects.create(
+            title="Note edge NOFO", group="bloom", opdiv="HRSA"
+        )
+        self.intro = Section.objects.create(
+            nofo=self.nofo,
+            name="Before you get started",
+            html_id="before-you-get-started",
+            order=1,
+            role="introduction",
+        )
+
+    def note(self, section, body="**Note:** Keep the signed form."):
+        return Subsection.objects.create(
+            section=section,
+            order=section.subsections.count() + 1,
+            callout_box=True,
+            callout_style="note",
+            body=body,
+        )
+
+    def edit_form(self, subsection, **data):
+        return SubsectionEditForm(
+            instance=subsection, data={"body": subsection.body, **data}
+        )
+
+    def test_introduction_note_can_be_kept_or_turned_into_text(self):
+        subsection = self.note(self.intro)
+        self.assertTrue(self.edit_form(subsection, callout_style="note").is_valid())
+        form = self.edit_form(subsection)
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertFalse(form.cleaned_data["callout_box"])
+        self.assertFalse(self.edit_form(subsection, callout_box="on").is_valid())
+
+    def test_label_warning_shows_only_for_notes_without_a_label(self):
+        for body, hidden in (
+            ("**Note:** Keep the signed form.", True),
+            ("Keep the signed form.", False),
+        ):
+            with self.subTest(body=body):
+                subsection = self.note(self.intro, body=body)
+                page = BeautifulSoup(
+                    self.client.get(
+                        reverse(
+                            "nofos:subsection_edit",
+                            args=[self.nofo.pk, self.intro.pk, subsection.pk],
+                        )
+                    ).content,
+                    "html.parser",
+                )
+                warning = page.select_one("#note-label-warning")
+                self.assertEqual(warning.has_attr("hidden"), hidden)
+                self.assertFalse(page.select_one("#callout_style").has_attr("disabled"))
+                self.assertTrue(page.select_one("#callout_box").has_attr("disabled"))

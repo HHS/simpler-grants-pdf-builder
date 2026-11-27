@@ -435,6 +435,14 @@ ordinary text, uncheck **Is note?**.
 - NOFOs imported before #1437 keep their notes as ordinary paragraphs with a
   bold `Note:` label. Reimport the NOFO, or follow these steps, to make them
   note callouts.
+- If a note doesn't start with a label such as `**Note:**`, the editor shows a
+  warning. You can still save it, but readers then rely on colour alone, and a
+  Word export and reimport won't recreate the note.
+- Keep the lead-in bold. Without bold the lead-in isn't shown in the theme
+  colour.
+- A Word export and reimport keep only a note's first paragraph as the note.
+- In **Before you get started**, text can be a note or plain text, but not a
+  box callout.
 
 ---
 

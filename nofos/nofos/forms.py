@@ -412,7 +412,13 @@ class SubsectionEditForm(forms.ModelForm):
             and self.instance.section.is_introduction
             and not self.instance.tag
         ):
-            if name or tag or cleaned_data.get("callout_box"):
+            # Introductory prose can be a note (imports create them there),
+            # but not a box callout or a heading.
+            is_box = (
+                cleaned_data.get("callout_box")
+                and cleaned_data.get("callout_style") != "note"
+            )
+            if name or tag or is_box:
                 raise forms.ValidationError(
                     "The introductory heading is fixed. Leave this body's title and heading level blank, and edit its content below."
                 )

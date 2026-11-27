@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static nofo_name input_type get_value_or_none whitespaceless %}
+{% load static nofo_name input_type get_value_or_none whitespaceless note_label %}
 
 {% block title %}
   New subsection
@@ -124,6 +124,15 @@
       {% if form.errors.callout_style %}
         <div class="usa-error-message" id="callout_style--error">Error: {{ form.errors.callout_style.0 }}</div>
       {% endif %}
+      <div id="note-label-warning-region" aria-live="polite" aria-atomic="true">
+        <div id="note-label-warning"
+          class="margin-top-2 padding-1 border-solid border-top-width-0 border-bottom-width-0 border-right-width-0 border-left-width-05 border-accent-warm-dark text-accent-warm-dark"
+          {% if form.callout_style.value != "note" or form.body.value|has_note_label %}hidden{% endif %}>
+          <strong>This note doesn’t start with a note label.</strong>
+          Start the content with a bold lead-in, such as <code>**Note:**</code> or <code>**Note for applicants:**</code>.
+          Without it, only the color shows this is a note, and a Word export and reimport won’t recreate it.
+        </div>
+      </div>
 
       <!-- body -->
       <div class="form-group margin-top-4">

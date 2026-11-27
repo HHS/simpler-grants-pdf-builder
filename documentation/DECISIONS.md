@@ -30,6 +30,10 @@ boxes and could split lists, or grey text that was easy to miss.
   paragraphs.
 - Remove the grey `p.nofo-note` style. Legacy NOFOs are not rewritten: their
   notes show as ordinary paragraphs with the bold label until reimported.
+- Keep a note on the same page as the content before it, so a table and its
+  note stay together across subsections.
+- Warn, without blocking, when a note has no label. Allow notes, but not box
+  callouts, in introductory text.
 
 **Alternatives considered:** restyling notes at render time without saving
 them (keeps legacy NOFOs identical, but notes stay invisible in the editor); a
