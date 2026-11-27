@@ -527,6 +527,11 @@ def _build_document(
                 "section": model_section,
             }
 
+            if hasattr(SubsectionModel, "callout_style"):
+                subsection_fields["callout_style"] = subsection.get(
+                    "callout_style", "box"
+                )
+
             if hasattr(SubsectionModel, "comparison_type"):
                 subsection_fields["comparison_type"] = subsection.get(
                     "comparison_type", "body"

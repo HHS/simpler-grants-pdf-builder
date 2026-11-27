@@ -1679,6 +1679,18 @@ main .back-link a::before,
   margin-bottom: 1rem;
 }
 
+/* "Is callout box?" and "Is note?" tiles sit side by side, then stack. */
+.subsection-callout-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.subsection-callout-options > .usa-checkbox {
+  flex: 1 1 18rem;
+  max-width: 30rem;
+}
+
 /* Keep the recovery editor usable in a half-width column and on phones. */
 .subsection-recovery .martor-toolbar,
 .subsection-recovery .martor-toolbar .btn-group {

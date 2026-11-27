@@ -4,16 +4,101 @@ import re
 
 from bs4 import NavigableString, Tag
 
+# IMPORT-080: "Note", "Notes", "Please note" or "N.B.", optionally followed by
+# an audience ("for" plus up to eight words) and/or a bracketed audience, then a
+# colon or dash. Ordinary sentences such as "Note that…" never match.
 _IMPORT_LABEL = re.compile(
-    r"^\s*(?:(?:please\s+)?notes?\s*[:\-–—]|n\.\s*b\.(?:\s*[:\-–—])?(?=\s|$))\s*",
-    re.IGNORECASE,
+    r"""^\s*(?:
+        (?:please\s+)?notes?
+        (?P<audience>
+            (?:\s+for(?:\s+[^\s:()–—]+){1,8})?
+            (?:\s*\([^()]{1,80}\))?
+        )
+        \s*[:\-–—]
+      |
+        n\.\s*b\.(?:\s*[:\-–—])?(?=\s|$)
+    )\s*""",
+    re.IGNORECASE | re.VERBOSE,
 )
 _RENDER_LABEL = re.compile(r"^\s*Note:")
 _INLINE_WRAPPERS = {"b", "strong", "em", "i", "span"}
+_TOP_LEVEL_PARENTS = {"body", "[document]"}
+
+# Marks a standalone note paragraph for the section parser. Set and removed
+# during Builder import only; it is never stored.
+NOTE_CALLOUT_MARKER = "data-nofo-note-callout"
+
+
+def _label_text(match):
+    """ "Note:" plus any audience, kept as written apart from whitespace."""
+    audience = re.sub(r"\s+", " ", match.group("audience") or "").strip()
+    return f"Note {audience}:" if audience else "Note:"
+
+
+def _is_empty_paragraph(tag):
+    return tag.name == "p" and not tag.get_text(strip=True) and not tag.find(True)
+
+
+def _next_block(tag):
+    """The next sibling element, skipping whitespace and empty spacer paragraphs."""
+    for sibling in tag.next_siblings:
+        if isinstance(sibling, Tag):
+            if _is_empty_paragraph(sibling):
+                continue
+            return sibling
+        if str(sibling).strip():
+            return None
+    return None
+
+
+def _previous_block(tag):
+    for sibling in tag.previous_siblings:
+        if isinstance(sibling, Tag):
+            if _is_empty_paragraph(sibling):
+                continue
+            return sibling
+        if str(sibling).strip():
+            return None
+    return None
+
+
+def is_between_list_items(element):
+    """True when a paragraph interrupts a list: a list of the same kind on both sides."""
+    previous, following = _previous_block(element), _next_block(element)
+    return (
+        previous is not None
+        and following is not None
+        and previous.name in {"ol", "ul"}
+        and previous.name == following.name
+    )
+
+
+def is_in_list_or_table(element):
+    return bool(element.find_parent(["li", "td", "th"]))
+
+
+def _join_following_paragraph(paragraph):
+    """Give a bare "Note:" label line the text of the paragraph that follows it."""
+    following = _next_block(paragraph)
+    if (
+        following is None
+        or following.name != "p"
+        or _IMPORT_LABEL.match(following.get_text())
+        or not following.get_text(strip=True)
+    ):
+        return
+    paragraph.append(" ")
+    for child in list(following.contents):
+        paragraph.append(child.extract())
+    following.decompose()
 
 
 def normalize_note_labels(soup):
-    """Normalize only the label, keeping the original inline body nodes."""
+    """Normalize only the label, keeping the original inline body nodes.
+
+    Standalone top-level notes are also marked so the section parser can make
+    each one its own "Note" callout subsection.
+    """
     for paragraph in soup.find_all("p"):
         match = _IMPORT_LABEL.match(paragraph.get_text())
         if not match:
@@ -47,10 +132,17 @@ def normalize_note_labels(soup):
             if not wrapper.contents:
                 wrapper.extract()
         label = soup.new_tag("strong")
-        label.string = "Note:"
+        label.string = _label_text(match)
         paragraph.insert(0, label)
         if paragraph.contents[1:]:
             paragraph.insert(1, " ")
+
+        if paragraph.parent is None or paragraph.parent.name not in _TOP_LEVEL_PARENTS:
+            continue
+        if not paragraph.contents[1:]:
+            _join_following_paragraph(paragraph)
+        if paragraph.contents[1:] and not is_between_list_items(paragraph):
+            paragraph[NOTE_CALLOUT_MARKER] = "true"
 
 
 def is_note_paragraph(element):

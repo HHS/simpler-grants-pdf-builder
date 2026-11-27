@@ -125,7 +125,7 @@ A few rules sit right on the boundary between two types — most notably **IMPOR
 
 | IMPORT-075 | repair | Emphasis | Explicit line breaks inside bold/italic text survive Markdown conversion | `nofo_markdown.py` |
 | IMPORT-077 | repair | Emphasis | Unwrap isolated bold on trailing punctuation | `content_processing.py` |
-| IMPORT-080 | repair | Emphasis | Paragraph-opening applicant note labels → bold `Note:` | `note_paragraphs.py` |
+| IMPORT-080 | repair + conversion | Emphasis / Callouts | Paragraph-opening applicant note labels → bold `Note…:`; standalone notes → note callout subsections | `note_paragraphs.py`, `content_processing.py` |
 
 ---
 
@@ -636,12 +636,16 @@ The example that prompted this document: detecting a footnote/endnote list and f
 
 ---
 
-### IMPORT-080 — Applicant note labels
+### IMPORT-080 — Applicant note labels and note callouts
 
-- **Type:** repair
-- **Trigger:** A Builder import or reimport contains a paragraph beginning with a note label such as `Please note:`, `Note -` or `N.B.`, including paragraphs in table cells. Matching ignores case and handles labels split across plain formatting runs. Ordinary sentences and embedded labels are not matches.
-- **Action:** Standardize the label and its separator to bold `Note:`. Preserve remaining text and inline markup. Skip prefixes that cross links, bookmarks, breaks, or other structural content.
-- **Source:** `note_paragraphs.py::normalize_note_labels`, called by the Builder import path in `content_processing.py`. Compare and Composer do not opt in.
+- **Type:** repair (label) and conversion (standalone notes become note callouts)
+- **Trigger:** A Builder import or reimport contains a paragraph beginning with a note label: `Note`, `Notes`, `Please note` or `N.B.`, optionally followed by an audience (`for` plus up to eight words) and/or a bracketed audience, then a colon or dash. Examples: `Note:`, `Note -`, `N.B.`, `Note for applicants:`, `Note (competing supplement applicants):`. Matching ignores case and bold, and handles labels split across plain formatting runs. Ordinary sentences (`Note that…`, `Note the following requirements: …`) and embedded labels are not matches.
+- **Action:**
+  - Standardize the label and its separator to a bold `Note:`, or `Note <audience>:` with the audience kept as written apart from whitespace. Preserve remaining text and inline markup. Skip prefixes that cross links, bookmarks, breaks, or other structural content. This applies everywhere, including table cells and list items.
+  - If a top-level label has no text after it (a bare `Note:` line), join the next ordinary paragraph into it, skipping empty spacer paragraphs. Do not join a following list, table, heading, empty paragraph or another note label.
+  - A top-level note paragraph that is not between two lists of the same kind becomes its own subsection: `callout_box` on, `callout_style` `note`, no heading. Content after it starts a new unnamed subsection, as after a callout box. Notes in list items, table cells (including 1×1 callout tables) and between items of one list stay ordinary paragraphs.
+- **Source:** `note_paragraphs.py::normalize_note_labels` marks standalone notes, and `content_processing.py::get_subsections_from_sections` creates the note subsection. Called by the Builder import path in `content_processing.py`. Compare and Composer do not opt in. The import-only marker is removed before storage.
+- **Status:** active for new imports and reimports (#1437). Saved records are not rewritten: legacy NOFOs keep their notes as ordinary paragraphs, with the bold label, until they are reimported. Notes have no paragraph styling. At render time, `keep_tables_with_following_notes` only keeps a table on the same page as a standalone `Note:` paragraph directly after it.
 
 ### IMPORT-077 — Unwrap isolated bold on trailing punctuation
 

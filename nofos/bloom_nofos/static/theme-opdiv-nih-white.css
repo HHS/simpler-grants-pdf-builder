@@ -229,3 +229,11 @@ table td {
 .section--step-5-submit-your-application table tr:last-of-type td {
   border-bottom: 2px solid var(--color--light-grey);
 }
+
+/* Note callouts (#1437): rule and lead-in use this theme's table-header
+   colour on an 8% tint. Checked: rule ≥ 3:1 on white, lead-in ≥ 4.5:1 on the tint. */
+:root {
+  --color--note-rule: #08508f;
+  --color--note-tint: #ebf1f6;
+  --color--note-label: #08508f;
+}

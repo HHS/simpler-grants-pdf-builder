@@ -26,7 +26,7 @@ from .endnotes import (
     remove_duplicate_native_note_custom_marks,
 )
 from .nofo_markdown import MISSING_ALT_TEXT_ATTR, PRESERVE_BOOKMARK_TARGET_ATTR, md
-from .note_paragraphs import normalize_note_labels
+from .note_paragraphs import NOTE_CALLOUT_MARKER, normalize_note_labels
 from .typed_bullets import repair_typed_bullets
 
 
@@ -678,6 +678,19 @@ def get_subsections_from_sections(
                     key_callout_title=get_key_callout_title(tag),
                 )
                 section["subsections"].append(heading_subsection)
+
+            # IMPORT-080: a standalone applicant note becomes its own
+            # "Note" callout subsection. Only Builder import marks these.
+            elif tag.name == "p" and tag.has_attr(NOTE_CALLOUT_MARKER):
+                del tag[NOTE_CALLOUT_MARKER]
+                note_subsection = get_subsection_dict(
+                    heading_tag=None,
+                    order=len(section["subsections"]) + 1,
+                    is_callout_box=True,
+                    body=[tag],
+                )
+                note_subsection["callout_style"] = "note"
+                section["subsections"].append(note_subsection)
 
             # if not a heading or callout_box table add to existing subsection
             else:
@@ -2705,6 +2718,10 @@ def process_document_content(
         )
     else:
         sections = section_parser(soup, top_heading_level)
+    if builder_import:
+        # The parser may work on a copy; never leave the import-only marker behind.
+        for marked in soup.select(f"[{NOTE_CALLOUT_MARKER}]"):
+            del marked[NOTE_CALLOUT_MARKER]
     return ProcessedDocumentContent(
         soup, sections, instructions_tables, imported_tagline
     )

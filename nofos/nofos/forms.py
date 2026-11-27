@@ -352,8 +352,32 @@ class NofoMetadataForm(forms.ModelForm):
 
 
 # body needs a custom field and a custom widget so don't use the factory function
+NOTE_CALLOUT_BOTH_ERROR = "Choose either a callout box or a note, not both."
+NOTE_CALLOUT_HEADING_ERROR = (
+    "A note has no heading. Clear the subsection name and heading level, "
+    "or choose the Box callout style."
+)
+
+
+def clean_callout_style(form, cleaned_data):
+    """A "Note" callout style is always a callout box without a heading."""
+    style = cleaned_data.get("callout_style") or "box"
+    cleaned_data["callout_style"] = style
+    if style == "note":
+        # The editor offers "Is callout box?" and "Is note?" as one choice.
+        if form.data.get("callout_box"):
+            form.add_error("callout_style", NOTE_CALLOUT_BOTH_ERROR)
+        cleaned_data["callout_box"] = True
+        if cleaned_data.get("name") or cleaned_data.get("tag"):
+            form.add_error("callout_style", NOTE_CALLOUT_HEADING_ERROR)
+    return cleaned_data
+
+
 class SubsectionEditForm(forms.ModelForm):
     body = MartorFormField(required=False)
+    callout_style = forms.ChoiceField(
+        choices=Subsection.CALLOUT_STYLE_CHOICES, required=False
+    )
     edit_version = forms.CharField(widget=forms.HiddenInput, required=False)
     recovery = forms.CharField(widget=forms.HiddenInput, required=False)
 
@@ -364,7 +388,7 @@ class SubsectionEditForm(forms.ModelForm):
 
     class Meta:
         model = Subsection
-        fields = ["name", "tag", "callout_box", "html_class", "body"]
+        fields = ["name", "tag", "callout_box", "callout_style", "html_class", "body"]
         widgets = {
             "name": forms.TextInput(),
         }
@@ -379,6 +403,8 @@ class SubsectionEditForm(forms.ModelForm):
 
         if tag and not name:
             self.add_error("name", "Subsection name can’t be empty.")
+
+        clean_callout_style(self, cleaned_data)
 
         if (
             self.instance.pk
@@ -396,10 +422,13 @@ class SubsectionEditForm(forms.ModelForm):
 
 class SubsectionCreateForm(forms.ModelForm):
     body = MartorFormField(required=False)
+    callout_style = forms.ChoiceField(
+        choices=Subsection.CALLOUT_STYLE_CHOICES, required=False
+    )
 
     class Meta:
         model = Subsection
-        fields = ["name", "tag", "callout_box", "body"]
+        fields = ["name", "tag", "callout_box", "callout_style", "body"]
         widgets = {
             "name": forms.TextInput(),
         }
@@ -418,6 +447,8 @@ class SubsectionCreateForm(forms.ModelForm):
 
         if tag and not name:
             self.add_error("name", "Subsections with a heading level must have a name.")
+
+        clean_callout_style(self, cleaned_data)
 
         if not name and not body and not tag:
             raise forms.ValidationError(

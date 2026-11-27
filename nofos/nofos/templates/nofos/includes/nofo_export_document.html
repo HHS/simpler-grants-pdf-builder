@@ -63,7 +63,12 @@
               {% if subsection.body %}
                 <div class="{% if subsection.callout_box %}margin-top-4{% else %}margin-top-2{% endif %} margin-bottom-2">
               {% endif %}
-              {% if subsection.callout_box %}
+              {% if subsection.callout_box and subsection.callout_style == "note" %}
+                {# Note callouts export as their plain paragraph so a reimport recreates the note (IMPORT-080). #}
+                <div class="styled-subsection-body">
+                  {{ subsection.body|safe_markdown|introductory_page_links:nofo|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs|truncate_anchor_links_for_docx }}
+                </div>
+              {% elif subsection.callout_box %}
                 <p>&nbsp;</p> <!-- remove this if grabzit fixes their issue -->
                 <table class="callout-box">
                   <tr>

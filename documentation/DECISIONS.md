@@ -8,6 +8,39 @@ the shared [ADR template](template.md), and link the record here when relevant.
 
 ---
 
+## 2026-11-27 — Save applicant notes as note callouts
+
+**Context:** #1349 (#1331) standardized imported note labels and gave note
+paragraphs a restrained grey style, with no new component. A Builder feedback
+review showed an HRSA NOFO using notes throughout to add caveats for specific
+applicant groups. Those notes were either 1×1 tables, which became full callout
+boxes and could split lists, or grey text that was easy to miss.
+
+**Decision:**
+
+- Save each standalone imported note as its own subsection, a callout with the
+  new `callout_style` of `note` (#1437). Designers can add, edit and remove
+  notes like other callouts.
+- Show notes with a left rule and light tint in the OpDiv theme colour and a
+  bold lead-in. Every OpDiv theme defines the three `--color--note-*` values,
+  checked for contrast by a test.
+- Extend IMPORT-080 to audience labels (`Note for applicants:`,
+  `Note (…):`) and bare `Note:` label lines.
+- Notes in list items, table cells or between items of one list stay ordinary
+  paragraphs.
+- Remove the grey `p.nofo-note` style. Legacy NOFOs are not rewritten: their
+  notes show as ordinary paragraphs with the bold label until reimported.
+
+**Alternatives considered:** restyling notes at render time without saving
+them (keeps legacy NOFOs identical, but notes stay invisible in the editor); a
+custom Word paragraph style (unrealistic for writers).
+
+Tracked in [#1437](https://github.com/HHS/simpler-grants-pdf-builder/issues/1437).
+See [design standards: notes](DESIGN_STANDARDS.md#notes) and
+[evidence](review-evidence/1437/README.md).
+
+---
+
 ## 2026-11-16 — Link the footer to the HHS Digital Accessibility Statement
 
 **Context:** The "HHS policies and resources" footer row, added in #1343, is
