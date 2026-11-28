@@ -166,9 +166,15 @@ def heading(level, hid, inner_html, label_text, extra_class=""):
     its own name is "Link to this section: <heading>".
     """
     cls = f' class="{extra_class}"' if extra_class else ""
+    if level <= 6:
+        tag_open, tag_close = f"<h{level}", f"</h{level}>"
+    else:
+        # HTML stops at h6. Deeper levels use the Builder's own pattern for H7:
+        # a div with role="heading" and aria-level, so the depth is still announced.
+        tag_open, tag_close = f'<div role="heading" aria-level="{level}"', "</div>"
     return (
         f'<div class="nofo-heading nofo-heading--h{level}">'
-        f'<h{level} id="{hid}" tabindex="-1"{cls}>{inner_html}</h{level}>'
+        f'{tag_open} id="{hid}" tabindex="-1"{cls}>{inner_html}{tag_close}'
         f'<a class="nofo-anchor" href="#{hid}" data-anchor>'
         f'{icon("link")}<span class="usa-sr-only">Link to this section: {esc(label_text)}</span>'
         f'<span class="nofo-anchor__status" aria-hidden="true"></span></a></div>'
@@ -557,8 +563,9 @@ body{background:#fff;color:#1b1b1b;margin:0}
 .nofo-heading--h2{margin-top:0}
 .nofo-heading--h3{margin-top:2.75rem}
 .nofo-heading--h5{margin-top:1.5rem}
-.nofo-heading>:is(h2,h3,h4,h5,h6){margin:0;flex:0 1 auto}
-.nofo-heading>:is(h2,h3,h4,h5,h6):focus{outline:0}
+.nofo-heading>:is(h2,h3,h4,h5,h6,[role=heading]){margin:0;flex:0 1 auto}
+.nofo-heading>[role=heading]{font-size:1rem;font-weight:700;line-height:1.3}
+.nofo-heading>:is(h2,h3,h4,h5,h6,[role=heading]):focus{outline:0}
 .usa-summary-box .nofo-heading{margin-top:0}
 .nofo-anchor{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:.25rem;min-width:2rem;min-height:2rem;margin-top:.1em;padding:0 .25rem;border-radius:.25rem;color:var(--nofo-muted);text-decoration:none;font-size:.875rem;font-weight:600}
 .nofo-anchor .usa-icon{width:1.25rem;height:1.25rem}
