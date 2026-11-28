@@ -136,6 +136,7 @@ This summary is from the design systems' published guidance as we know it; the s
 
 - **Opportunity listing:** the real listing data for CMS-2U2-25-001 in the site's layout. It adds a "Read the NOFO" header button and a NOFO section under the summary, with read-online and PDF buttons and "Go straight to" links into Eligibility, Merit review criteria, the Application checklist and other sections. The Documents table lists the NOFO web page and PDF.
 - **NOFO inside the site** ([screenshot](screenshots/sgg-nofo-page.png)): header, footer, breadcrumbs (Search › Opportunity listing › Notice of funding opportunity) and links back to the listing. A deep link from the listing lands on the section with the target highlight ([screenshot](screenshots/sgg-deep-link-target.png)).
+- **Walkthrough:** a 33-second recording of the whole flow is attached to PR #1439 as a GIF and an MP4: the listing, "Read the NOFO online", scrolling while "On this page" follows along, jumping from the list, copying a section link, and a deep link from the listing into the merit review criteria. The files aren't committed, to keep the repository small; `scripts/record_walkthrough.cjs` re-records it.
 - **NOFO on its own:** the same page without site chrome. This is the self-contained file #851 proposes attaching through the Simpler.Grants.gov API.
 
 **Data findings on Simpler.Grants.gov** (live API, 2026-11-28):
@@ -312,6 +313,20 @@ SGG_REPO=/tmp/simpler-grants-gov PYTHON="$(poetry env info --executable)" ./buil
 ```
 
 `build.sh` installs USWDS 3.8.1, Sass and PurgeCSS into `scripts/node_modules` (ignored by git), generates every prototype from the fixture, and replaces `prototypes/`. Python needs `markdown` and `beautifulsoup4`, both already in the Builder's Poetry environment. The committed prototypes are this script's output from 2026-11-28; an earlier rebuild matched them except for trailing whitespace, which the script now strips.
+
+To re-record the walkthrough after changing the prototypes:
+
+```bash
+cd documentation/review-evidence/851/scripts
+python3 -m http.server 8771 --directory ../prototypes &
+node record_walkthrough.cjs http://localhost:8771/simpler-grants/ /tmp/walkthrough
+V=$(ls /tmp/walkthrough/*.webm)
+ffmpeg -i "$V" -c:v libx264 -pix_fmt yuv420p -crf 26 -movflags +faststart walkthrough.mp4
+ffmpeg -i "$V" -vf "fps=6,scale=860:-1:flags=lanczos,palettegen=max_colors=64" pal.png
+ffmpeg -i "$V" -i pal.png -lavfi "fps=6,scale=860:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=none" walkthrough.gif
+```
+
+The GIF settings keep it under GitHub's 10 MB image limit (about 7.5 MB); the MP4 is sharper and about 4 MB.
 
 ## Suggested follow-ups
 
