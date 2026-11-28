@@ -94,6 +94,25 @@ def replace_checkboxes(fragment):
     return fragment
 
 
+def stackable(table):
+    """Two or three columns, short header labels, no merged cells, even rows."""
+    rows = table.find_all("tr")
+    if (
+        len(rows) < 2
+        or table.find(attrs={"colspan": True})
+        or table.find(attrs={"rowspan": True})
+    ):
+        return False
+    headers = rows[0].find_all("th")
+    if not 2 <= len(headers) <= 3 or len(headers) != len(
+        rows[0].find_all(["th", "td"])
+    ):
+        return False
+    if any(len(h.get_text(" ", strip=True)) > 32 for h in headers):
+        return False
+    return all(len(r.find_all(["td", "th"])) == len(headers) for r in rows[1:])
+
+
 def enhance(fragment):
     """USWDS-ify rendered markdown: tables, external links, endnote refs, checkboxes."""
     soup = BeautifulSoup(replace_checkboxes(fragment), "html.parser")
@@ -130,6 +149,24 @@ def enhance(fragment):
         seen[name] = seen.get(name, 0) + 1
         if seen[name] > 1:
             name = f"{name} ({seen[name]})"
+        # first row of bold-only cells in a header-less table becomes a header row
+        if not table.find("th"):
+            first = table.find("tr")
+            if first and all(td.find(["strong", "b"]) for td in first.find_all("td")):
+                for td in first.find_all("td"):
+                    td.name = "th"
+                    td["scope"] = "col"
+        if stackable(table):
+            # Simple tables use USWDS stacked tables, as Simpler.Grants.gov does for its
+            # Documents table: on phones each row becomes a labelled block.
+            headers = [
+                th.get_text(" ", strip=True) for th in table.find("tr").find_all("th")
+            ]
+            table["class"].append("usa-table--stacked")
+            for tr in table.find_all("tr")[1:]:
+                for label, cell in zip(headers, tr.find_all(["td", "th"])):
+                    cell["data-label"] = label
+            continue
         wrap = soup.new_tag(
             "div",
             attrs={
@@ -140,13 +177,6 @@ def enhance(fragment):
             },
         )
         table.wrap(wrap)
-        # first row of bold-only cells in a header-less table becomes a header row
-        if not table.find("th"):
-            first = table.find("tr")
-            if first and all(td.find(["strong", "b"]) for td in first.find_all("td")):
-                for td in first.find_all("td"):
-                    td.name = "th"
-                    td["scope"] = "col"
     for a in soup.find_all("a", href=True):
         if a.has_attr("data-anchor"):
             continue
@@ -580,10 +610,10 @@ body{background:#fff;color:#1b1b1b;margin:0}
 @keyframes nofo-target{from{background:#ffe396}to{background:#fef0c8}}
 #nofo-content:focus{outline:0}
 /* Windows high contrast / forced colors keep both indicators */
-@media (forced-colors:active){.nofo-heading:has(>:target){outline:3px solid Highlight;box-shadow:none}.nofo-anchor:focus,.nofo-pager a:focus{outline:3px solid Highlight}}
+@media (forced-colors:active){.nofo-heading:has(>:target){outline:3px solid Highlight;box-shadow:none}.nofo-anchor:focus,.nofo-pagination a:focus{outline:3px solid Highlight}}
 .nofo-sidebar__all{margin:1rem 0 0;font-size:.9375rem;line-height:1.4}
 .nofo-sidebar__all span{display:block;color:var(--nofo-muted);font-size:.875rem}
-@media print{.usa-skipnav,.nofo-mock,.nofo-sidebar,.nofo-pager,.nofo-anchor,.usa-in-page-nav,.nofo-backtop,.nofo-title .usa-button-group{display:none!important}.nofo-layout{display:block}.nofo-heading{background:none!important;box-shadow:none!important;outline:0!important}.nofo-content{max-width:none}a.usa-link--external::after{content:" (" attr(href) ")";background:none;display:inline;width:auto;height:auto;margin:0;font-size:.8em}}
+@media print{.usa-skipnav,.nofo-mock,.nofo-sidebar,.nofo-pagination,.nofo-anchor,.usa-in-page-nav,.nofo-backtop,.nofo-title .usa-button-group{display:none!important}.nofo-layout{display:block}.nofo-heading{background:none!important;box-shadow:none!important;outline:0!important}.nofo-content{max-width:none}a.usa-link--external::after{content:" (" attr(href) ")";background:none;display:inline;width:auto;height:auto;margin:0;font-size:.8em}}
 .nofo-summary,.nofo-callout{margin-block:1.5rem}
 .nofo-facts{margin:0}
 .nofo-facts__row{display:grid;grid-template-columns:minmax(0,13rem) minmax(0,1fr);gap:.25rem 1rem;padding-block:.5rem;border-top:1px solid rgba(0,0,0,.1)}
@@ -612,15 +642,17 @@ body{background:#fff;color:#1b1b1b;margin:0}
 .nofo-checkbox{width:1.25rem;height:1.25rem;vertical-align:-.25em;margin-right:.35rem;fill:currentColor}
 .nofo-table{font-size:.9375rem;width:100%}
 .nofo-table-wrap .nofo-table th,.nofo-table-wrap .nofo-table td{vertical-align:top;white-space:normal;min-width:10rem}
-.nofo-pager{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--nofo-border);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem}
-.nofo-pager a{display:block;text-decoration:none;padding:1rem;border:1px solid var(--nofo-border);border-radius:.25rem;color:var(--nofo-accent)}
-.nofo-pager a:hover{border-color:var(--nofo-accent);background:var(--nofo-accent-bg)}
-.nofo-pager a:focus{outline:.25rem solid #2491ff;outline-offset:0}
-.nofo-pager .dir{display:flex;align-items:center;gap:.25rem;font-size:.9375rem;color:var(--nofo-muted-dark)}
-.nofo-pager .t{display:block;font-weight:700;font-size:1.0625rem;margin-top:.25rem}
-.nofo-pager .next{text-align:right;grid-column:2}
-.nofo-pager .next .dir{justify-content:flex-end}
-@media(max-width:30em){.nofo-pager{grid-template-columns:minmax(0,1fr)}.nofo-pager .next{grid-column:1}}
+.nofo-pagination{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--nofo-border)}
+.nofo-pagination .usa-pagination__list{justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.nofo-pagination .usa-pagination__link-text{display:inline}
+.nofo-pagination__title{display:block;font-weight:700}
+.nofo-pagination .usa-pagination__next-page{text-align:right}
+/* USWDS hides previous/next arrows below 40em, expecting numbered pages on phones;
+   these step pages only have previous/next, so keep them and stack them. */
+.nofo-pagination .usa-pagination__arrow{display:flex}
+.nofo-pagination .usa-pagination__item{height:auto;min-height:2.75rem;justify-content:flex-start}
+.nofo-pagination .usa-pagination__item:has(.usa-pagination__next-page){justify-content:flex-end}
+@media(max-width:39.99em){.nofo-pagination .usa-pagination__list{flex-direction:column;align-items:stretch}.nofo-pagination .usa-pagination__item{margin:0}.nofo-pagination .usa-pagination__next-page{justify-content:flex-end}}
 .nofo-onepage .usa-in-page-nav-container{display:block}
 .nofo-onepage .usa-in-page-nav{display:block;margin:0 0 2rem;padding:1rem 1.25rem;border:1px solid var(--nofo-border);border-radius:.25rem}
 .nofo-onepage .usa-in-page-nav__nav{position:static;max-height:none;padding:0;margin:0}
@@ -868,18 +900,27 @@ def build(nofo, out):
         )
 
     def pager(i):
-        out = []
+        """USWDS pagination (previous/next), as on Simpler.Grants.gov search results,
+        with each destination's title in the link so it's clear where it goes."""
+        items = []
         if i > 0:
             p = pages[i - 1]
-            out.append(
-                f'<a class="prev" href="{p["file"]}"><span class="dir">{icon("navigate_before")}Previous</span><span class="t">{esc(p["section"]["name"])}</span></a>'
+            items.append(
+                f'<li class="usa-pagination__item usa-pagination__arrow"><a href="{p["file"]}" class="usa-pagination__link usa-pagination__previous-page">'
+                f'{icon("navigate_before")}<span class="usa-pagination__link-text">Previous<span class="usa-sr-only">:</span> '
+                f'<span class="nofo-pagination__title">{esc(p["section"]["name"])}</span></span></a></li>'
             )
         if i < len(pages) - 1:
             p = pages[i + 1]
-            out.append(
-                f'<a class="next" href="{p["file"]}"><span class="dir">Next{icon("navigate_next")}</span><span class="t">{esc(p["section"]["name"])}</span></a>'
+            items.append(
+                f'<li class="usa-pagination__item usa-pagination__arrow"><a href="{p["file"]}" class="usa-pagination__link usa-pagination__next-page">'
+                f'<span class="usa-pagination__link-text">Next<span class="usa-sr-only">:</span> '
+                f'<span class="nofo-pagination__title">{esc(p["section"]["name"])}</span></span>{icon("navigate_next")}</a></li>'
             )
-        return f'<nav class="nofo-pager" aria-label="Previous and next sections">{"".join(out)}</nav>'
+        return (
+            '<nav aria-label="Previous and next sections" class="usa-pagination nofo-pagination">'
+            f'<ul class="usa-pagination__list">{"".join(items)}</ul></nav>'
+        )
 
     # render all pages, then fix in-document anchors to point across pages
     rendered = {}

@@ -64,13 +64,8 @@ CSS = """
 .nofo-fons{list-style:none;padding:0;margin:.25rem 0 0}
 .nofo-fons li{margin:0 0 .25rem;max-width:none}
 .nofo-fons .v{font-weight:700;white-space:nowrap}
-.ec-dates{list-style:none;margin:0;padding:0;border-left:3px solid var(--nofo-border)}
-.ec-dates li{position:relative;margin:0 0 1rem;padding-left:1.25rem;max-width:none}
-.ec-dates li::before{content:"";position:absolute;left:-.55rem;top:.35rem;width:.8rem;height:.8rem;border-radius:50%;background:#fff;border:3px solid var(--nofo-border)}
-.ec-dates .is-next::before{background:var(--nofo-accent);border-color:var(--nofo-accent)}
-.ec-dates .is-past{color:var(--nofo-muted)}
-.ec-dates .d{display:block;font-weight:700;font-size:1.0625rem}
-.ec-dates .is-past .d{font-weight:600}
+.usa-process-list .ec-past{color:var(--nofo-muted)}
+.usa-process-list__heading{font-size:1.0625rem}
 .ec-state{display:inline-block;font-size:.8125rem;font-weight:700;margin-left:.5rem;padding:0 .4rem;border-radius:2px}
 .ec-state--next{background:var(--nofo-accent);color:#fff}
 .ec-state--past{background:#e6e6e2;color:#1b1b1b}
@@ -160,14 +155,14 @@ def patterns():
             "Several deadlines, rounds or two-phase applications",
             "Letters of intent, pre-applications with invited full applications, multiple funding rounds, standard recurring due dates, or rolling review.",
             """
-<span class="ec-frame-label">Key dates as a timeline</span>
+<span class="ec-frame-label">Key dates as a USWDS process list</span>
 <h3>Key dates</h3>
 <p class="margin-top-0">All times are 11:59 p.m. Eastern Time.</p>
-<ol class="ec-dates">
-  <li class="is-past"><span class="d">Oct 1, 2026<span class="ec-state ec-state--past">Passed</span></span>Letter of intent (required)</li>
-  <li class="is-next"><span class="d">Dec 1, 2026<span class="ec-state ec-state--next">Next deadline</span></span>Pre-application, all applicants</li>
-  <li><span class="d">Mar 15, 2027</span>Full application, by invitation only</li>
-  <li><span class="d">Sep 30, 2027</span>Expected award date</li>
+<ol class="usa-process-list">
+  <li class="usa-process-list__item ec-past"><h4 class="usa-process-list__heading">Oct 1, 2026 <span class="ec-state ec-state--past">Passed</span></h4><p class="margin-top-05">Letter of intent (required)</p></li>
+  <li class="usa-process-list__item"><h4 class="usa-process-list__heading">Dec 1, 2026 <span class="ec-state ec-state--next">Next deadline</span></h4><p class="margin-top-05">Pre-application, all applicants</p></li>
+  <li class="usa-process-list__item"><h4 class="usa-process-list__heading">Mar 15, 2027</h4><p class="margin-top-05">Full application, by invitation only</p></li>
+  <li class="usa-process-list__item"><h4 class="usa-process-list__heading">Sep 30, 2027</h4><p class="margin-top-05">Expected award date</p></li>
 </ol>""",
             [
                 "State the time zone once, prominently. CommonGrants event times carry no time zone, so the publishing side has to supply it.",

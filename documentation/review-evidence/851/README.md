@@ -146,6 +146,37 @@ This summary is from the design systems' published guidance as we know it; the s
 - A 2020 State Department listing is still marked Forecasted, with no close date and the whole NOFO pasted into its description field.
 - The site's footer markup (a `grid-gap-lg` row in a container with 1rem padding) caused 8px of sideways scroll at 320px in the prototype. It was patched locally; the live site should be checked.
 
+### Simpler.Grants.gov components
+
+Counted on 2026-11-28 across 514 non-test source files in `HHS/simpler-grants-gov/frontend/src`, by files importing each `@trussworks/react-uswds` component or using its `usa-*` classes.
+
+| Component | Use | Where Simpler.Grants.gov uses it | In the NOFO prototypes |
+| --- | --- | --- | --- |
+| Grid / GridContainer | 78 files | Layout everywhere | Used |
+| Button, ButtonGroup | 46 files | Actions | Used |
+| Icons | 48 references | Buttons, links, statuses | Used |
+| Lists (often unstyled) | 39 references | Sidebars, footers, dates | Used |
+| Alert | 29 files | Status and errors | Used for status and modification banners |
+| Modal | 27 files | Save, sign in, start an application | Not needed |
+| Form controls | 21 files | Search, application forms | Not needed |
+| Table | 11 files | Documents table (stacked on phones), workspace | Stacked for simple tables, scrolling for wide ones (see below) |
+| In-page navigation | 12 references | Application form's `LeftHandFormNav`, permissions pages | Used; on the left in the Simpler.Grants.gov theme (see below) |
+| Breadcrumbs | 1 shared component | Workspace pages | Used, with the same schema.org markup |
+| Summary box | 3 files | Application information cards | Used for key facts |
+| Accordion | 3 files | Search filters | Not used: hides text from find and print; the long assistance-listing list uses a native disclosure |
+| Tag | 2 files | Opportunity status | Used for status |
+| Pagination | 2 files | Search results | Used for the step pages' previous/next links |
+
+**Changes made to align with the site:**
+
+- **In-page navigation on the left** in the Simpler.Grants.gov theme, matching the application form's `LeftHandFormNav`, so reading the NOFO and filling in the application share one layout. The plain USWDS theme keeps the USWDS default on the right.
+- **Breadcrumbs** carry the same schema.org `BreadcrumbList` microdata as the site's `Breadcrumbs` component.
+- **USWDS pagination** replaces the custom previous/next cards on the step pages, with each destination's title in the link. USWDS hides previous/next arrows below 40em because it expects numbered pages there; with only previous and next, the prototypes keep them visible and stack them on phones.
+- **Stacked tables** for simple tables (two or three columns, short headers, no merged cells), as the site's Documents table does: on phones each row becomes a labelled block. Wider tables, such as merit criteria, keep scrolling in their own container.
+- **USWDS process list** for the several-deadlines key dates, replacing a custom timeline. The site doesn't use it yet, but it is the standard USWDS component for ordered steps.
+
+**Not to copy:** `LeftHandFormNav` gives its nav heading `tabIndex={0}`, making a non-interactive heading a tab stop, and uses an h4 that can skip heading levels. The prototypes avoid both; it may be worth a separate issue in the Simpler.Grants.gov repository.
+
 ### CommonGrants
 
 Read from the protocol source (v0.5.0); commongrants.org could not be opened from this environment.
@@ -206,7 +237,7 @@ Patterns for each case are on the edge-case pages ([plain USWDS](prototypes/uswd
 | One NOFO, several opportunity numbers | One document posted per track, applicant type or clinical-trial option | One `number` text field | List every number with what it is for; every listing links to the same NOFO, and the NOFO links to every listing |
 | Multi-component or multi-track | Components with different eligibility, funding or deadlines | Content only | Comparison table near the top; "Component B only" tags beside headings; label content rather than hiding it |
 | Status lifecycle | Forecasted, open, closed, archived, cancelled | `status` covers drafting only | One status banner above the title; never delete closed NOFOs; link newer versions |
-| Several deadlines or two phases | LOI, pre-application then invited application, rounds, rolling | One `application_deadline` text field | Timeline with "Passed" and "Next deadline" labels; time zone stated once |
+| Several deadlines or two phases | LOI, pre-application then invited application, rounds, rolling | One `application_deadline` text field | USWDS process list with "Passed" and "Next deadline" labels; time zone stated once |
 | Modified or amended | Deadline moved, eligibility changed after posting | `modifications` date adds a PDF notice and section | Banner with a "see what changed" link; "Updated" tags on changed sections; stable anchors; same version on web and PDF |
 | Reissues and year-over-year | FY 2027 version of a FY 2025 program; "reissue of PAR-…" | `successor` links versions | "What's new" callout, which the Compare tool could draft; links in both directions |
 | Limited competition | Current recipients or named organizations only | Content only | Warning at the top of Step 1 and on the listing |

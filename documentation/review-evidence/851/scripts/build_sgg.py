@@ -37,6 +37,8 @@ SGG_VARS = (
     ".theme-sgg .nofo-content h2{font-size:2rem}"
     ".theme-sgg .nofo-onepage .nofo-content>section+section{border-top-color:#171716}"
     ".nofo-crumbs .usa-breadcrumb{padding-top:0;padding-bottom:1rem}"
+    # In-page navigation on the left, as in the site's application form (LeftHandFormNav)
+    "@media(min-width:64em){.theme-sgg .nofo-onepage .usa-in-page-nav{order:0}}"
     ".sgg-nofo-card{border:1px solid #e6e6e2;border-left:.5rem solid #34a37e;border-radius:.5rem;padding:1.25rem 1.5rem;margin-top:1.5rem}"
     ".sgg-nofo-card h3{margin-top:0}"
     ".sgg-jump{columns:2 14rem;column-gap:2rem;padding-left:0;list-style:none;margin:1rem 0 0}"
@@ -279,10 +281,10 @@ def nofo_page(nofo, opp, chrome_parts, standalone, listing_href="opportunity.htm
         ""
         if standalone or not listing
         else f"""
-  <nav class="usa-breadcrumb nofo-crumbs" aria-label="Breadcrumbs"><ol class="usa-breadcrumb__list">
-    <li class="usa-breadcrumb__list-item"><a href="https://simpler.grants.gov/search" class="usa-breadcrumb__link"><span>Search</span></a></li>
-    <li class="usa-breadcrumb__list-item"><a href="{listing}" class="usa-breadcrumb__link"><span>Opportunity listing</span></a></li>
-    <li class="usa-breadcrumb__list-item usa-current" aria-current="page"><span>Notice of funding opportunity</span></li>
+  <nav class="usa-breadcrumb nofo-crumbs" aria-label="Breadcrumbs"><ol class="usa-breadcrumb__list" itemscope itemtype="https://schema.org/BreadcrumbList">
+    <li class="usa-breadcrumb__list-item" itemscope itemprop="itemListElement" itemtype="https://schema.org/ListItem"><a href="https://simpler.grants.gov/search" class="usa-breadcrumb__link" itemscope itemprop="item" itemtype="https://schema.org/WebPage" itemid="https://simpler.grants.gov/search"><span itemprop="name">Search</span></a></li>
+    <li class="usa-breadcrumb__list-item" itemscope itemprop="itemListElement" itemtype="https://schema.org/ListItem"><a href="{listing}" class="usa-breadcrumb__link" itemscope itemprop="item" itemtype="https://schema.org/WebPage" itemid="{listing}"><span itemprop="name">Opportunity listing</span></a></li>
+    <li class="usa-breadcrumb__list-item usa-current" aria-current="page" itemscope itemprop="itemListElement" itemtype="https://schema.org/ListItem"><span itemprop="name">Notice of funding opportunity</span></li>
   </ol></nav>"""
     )
     if standalone:
