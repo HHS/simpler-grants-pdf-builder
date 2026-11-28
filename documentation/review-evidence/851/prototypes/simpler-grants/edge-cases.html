@@ -100,6 +100,7 @@ body{background:#fff;color:#1b1b1b;margin:0}
 .nofo-onepage .nofo-content{flex:1 1 auto}}
 .nofo-onepage .nofo-content>section+section{margin-top:3.5rem;padding-top:2rem;border-top:3px solid #1b1b1b}
 .usa-in-page-nav__link:focus{outline:.25rem solid #2491ff;outline-offset:0}
+.nofo-nav--collapsible .usa-in-page-nav__item:not(.usa-in-page-nav__item--primary):not(.is-open){display:none}
 .nofo-backtop{display:inline-flex;align-items:center;gap:.25rem;margin-top:1rem;font-size:.9375rem}body.theme-sgg{--nofo-accent:#286846;--nofo-accent-bg:#dbf6ed;--nofo-muted:#5d5d52;--nofo-muted-dark:#454540;--nofo-border:#e6e6e2;--nofo-display:"Public Sans",sans-serif}.theme-sgg .nofo-glance li{border-top-color:#34a37e}.theme-sgg .nofo-content h2{font-size:2rem}.theme-sgg .nofo-onepage .nofo-content>section+section{border-top-color:#171716}.nofo-crumbs .usa-breadcrumb{padding-top:0;padding-bottom:1rem}.sgg-nofo-card{border:1px solid #e6e6e2;border-left:.5rem solid #34a37e;border-radius:.5rem;padding:1.25rem 1.5rem;margin-top:1.5rem}.sgg-nofo-card h3{margin-top:0}.sgg-jump{columns:2 14rem;column-gap:2rem;padding-left:0;list-style:none;margin:1rem 0 0}.sgg-jump li{break-inside:avoid;margin:0 0 .5rem;max-width:none}.sgg-jump a{display:inline-flex;align-items:flex-start;gap:.25rem;min-height:24px}.sgg-jump .usa-icon{flex:none;margin-top:.15rem}.sgg-new{background:#fff5c2;color:#171716;font-size:.8125rem;font-weight:700;padding:.1rem .4rem;border-radius:2px;margin-left:.5rem;vertical-align:middle}#opportunity-detail-content [id]{scroll-margin-top:calc(var(--nofo-sticky-top) + .5rem)}.usa-nav__submenu[hidden]{display:none}@media(max-width:39.99em){.usa-footer__primary-section .grid-gap-lg{margin-left:-.5rem;margin-right:-.5rem}.usa-footer__primary-section .grid-gap-lg>*{padding-left:.5rem;padding-right:.5rem}}
 .ec-intro{max-width:46rem}
 .ec-toc{columns:2 16rem;column-gap:2rem;padding-left:1.25rem;margin:1rem 0 0}
@@ -330,13 +331,35 @@ function focusTarget(){
 }
 window.addEventListener('hashchange',focusTarget);
 /* "On this page" is static USWDS markup linking to the builder's stable heading ids
-   (USWDS's own script would invent new ids from heading text). This only marks the current section. */
+   (USWDS's own script would invent new ids from heading text). With script, the list shows the
+   steps and opens only the current step's subsections, so it stays short on long NOFOs; the
+   current item comes from scroll position, so short final sections can still be marked.
+   Without script every item stays visible. */
 const navLinks=[...document.querySelectorAll('.usa-in-page-nav__link')];
-if(navLinks.length&&'IntersectionObserver' in window){
-  const byId=new Map(navLinks.map(a=>[a.hash.slice(1),a]));
-  const setCurrent=a=>{navLinks.forEach(l=>{l.classList.remove('usa-current');l.removeAttribute('aria-current');});a.classList.add('usa-current');a.setAttribute('aria-current','location');};
-  const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){const a=byId.get(en.target.id);if(a)setCurrent(a);}});},{rootMargin:'0px 0px -70% 0px'});
-  byId.forEach((a,id)=>{const h=document.getElementById(id);if(h)io.observe(h);});
+if(navLinks.length){
+  const nav=document.querySelector('.usa-in-page-nav');
+  const heads=navLinks.map(a=>({a,li:a.parentElement,h:document.getElementById(a.hash.slice(1))})).filter(x=>x.h);
+  nav.classList.add('nofo-nav--collapsible');
+  let current=null;
+  const setCurrent=x=>{
+    if(!x||x===current)return;current=x;
+    navLinks.forEach(l=>{l.classList.remove('usa-current');l.removeAttribute('aria-current');});
+    x.a.classList.add('usa-current');x.a.setAttribute('aria-current','location');
+    const g=x.li.dataset.group;heads.forEach(y=>y.li.classList.toggle('is-open',y.li.dataset.group===g));
+    const r=x.a.getBoundingClientRect(),br=nav.getBoundingClientRect();
+    if(nav.scrollHeight>nav.clientHeight&&(r.top<br.top||r.bottom>br.bottom))nav.scrollTop+=r.top-br.top-br.height/3;
+  };
+  const update=()=>{
+    const v=getComputedStyle(document.documentElement).getPropertyValue('--nofo-sticky-top').trim();
+    const line=(v.endsWith('px')?parseFloat(v):16)+48;
+    const atEnd=innerHeight+scrollY>=document.documentElement.scrollHeight-4;
+    let pick=heads[0];
+    for(const x of heads){const t=x.h.getBoundingClientRect().top;if(t<=line||(atEnd&&t<innerHeight))pick=x;}
+    setCurrent(pick);
+  };
+  let raf=0;
+  addEventListener('scroll',()=>{if(!raf)raf=requestAnimationFrame(()=>{raf=0;update();});},{passive:true});
+  addEventListener('resize',update);addEventListener('hashchange',update);update();
 }
 if(location.hash)window.addEventListener('load',focusTarget);
 }</script>

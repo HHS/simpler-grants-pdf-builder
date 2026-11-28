@@ -279,6 +279,7 @@ body{background:#fff;color:#1b1b1b;margin:0}
 .nofo-onepage .nofo-content{flex:1 1 auto}}
 .nofo-onepage .nofo-content>section+section{margin-top:3.5rem;padding-top:2rem;border-top:3px solid #1b1b1b}
 .usa-in-page-nav__link:focus{outline:.25rem solid #2491ff;outline-offset:0}
+.nofo-nav--collapsible .usa-in-page-nav__item:not(.usa-in-page-nav__item--primary):not(.is-open){display:none}
 .nofo-backtop{display:inline-flex;align-items:center;gap:.25rem;margin-top:1rem;font-size:.9375rem}
 """
 
@@ -308,13 +309,35 @@ function focusTarget(){
 }
 window.addEventListener('hashchange',focusTarget);
 /* "On this page" is static USWDS markup linking to the builder's stable heading ids
-   (USWDS's own script would invent new ids from heading text). This only marks the current section. */
+   (USWDS's own script would invent new ids from heading text). With script, the list shows the
+   steps and opens only the current step's subsections, so it stays short on long NOFOs; the
+   current item comes from scroll position, so short final sections can still be marked.
+   Without script every item stays visible. */
 const navLinks=[...document.querySelectorAll('.usa-in-page-nav__link')];
-if(navLinks.length&&'IntersectionObserver' in window){
-  const byId=new Map(navLinks.map(a=>[a.hash.slice(1),a]));
-  const setCurrent=a=>{navLinks.forEach(l=>{l.classList.remove('usa-current');l.removeAttribute('aria-current');});a.classList.add('usa-current');a.setAttribute('aria-current','location');};
-  const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){const a=byId.get(en.target.id);if(a)setCurrent(a);}});},{rootMargin:'0px 0px -70% 0px'});
-  byId.forEach((a,id)=>{const h=document.getElementById(id);if(h)io.observe(h);});
+if(navLinks.length){
+  const nav=document.querySelector('.usa-in-page-nav');
+  const heads=navLinks.map(a=>({a,li:a.parentElement,h:document.getElementById(a.hash.slice(1))})).filter(x=>x.h);
+  nav.classList.add('nofo-nav--collapsible');
+  let current=null;
+  const setCurrent=x=>{
+    if(!x||x===current)return;current=x;
+    navLinks.forEach(l=>{l.classList.remove('usa-current');l.removeAttribute('aria-current');});
+    x.a.classList.add('usa-current');x.a.setAttribute('aria-current','location');
+    const g=x.li.dataset.group;heads.forEach(y=>y.li.classList.toggle('is-open',y.li.dataset.group===g));
+    const r=x.a.getBoundingClientRect(),br=nav.getBoundingClientRect();
+    if(nav.scrollHeight>nav.clientHeight&&(r.top<br.top||r.bottom>br.bottom))nav.scrollTop+=r.top-br.top-br.height/3;
+  };
+  const update=()=>{
+    const v=getComputedStyle(document.documentElement).getPropertyValue('--nofo-sticky-top').trim();
+    const line=(v.endsWith('px')?parseFloat(v):16)+48;
+    const atEnd=innerHeight+scrollY>=document.documentElement.scrollHeight-4;
+    let pick=heads[0];
+    for(const x of heads){const t=x.h.getBoundingClientRect().top;if(t<=line||(atEnd&&t<innerHeight))pick=x;}
+    setCurrent(pick);
+  };
+  let raf=0;
+  addEventListener('scroll',()=>{if(!raf)raf=requestAnimationFrame(()=>{raf=0;update();});},{passive:true});
+  addEventListener('resize',update);addEventListener('hashchange',update);update();
 }
 if(location.hash)window.addEventListener('load',focusTarget);
 }"""
@@ -564,7 +587,8 @@ def build(nofo, out):
             text = BeautifulSoup(inner, "html.parser").get_text().replace(": ", ": ")
             primary = " usa-in-page-nav__item--primary" if lvl == "2" else ""
             nav_items.append(
-                f'<li class="usa-in-page-nav__item{primary}"><a class="usa-in-page-nav__link" href="#{hid}">{esc(text)}</a></li>'
+                f'<li class="usa-in-page-nav__item{primary}" data-group="{p["section"]["html_id"]}">'
+                f'<a class="usa-in-page-nav__link" href="#{hid}">{esc(text)}</a></li>'
             )
         secs.append(
             f'<section aria-labelledby="{p["section"]["html_id"]}">{content}'

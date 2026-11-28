@@ -226,7 +226,8 @@ def nofo_page(nofo, opp, chrome_parts, standalone):
             text = BeautifulSoup(inner, "html.parser").get_text()
             primary = " usa-in-page-nav__item--primary" if lvl == "2" else ""
             nav_items.append(
-                f'<li class="usa-in-page-nav__item{primary}"><a class="usa-in-page-nav__link" href="#{hid}">{esc(text)}</a></li>'
+                f'<li class="usa-in-page-nav__item{primary}" data-group="{s["html_id"]}">'
+                f'<a class="usa-in-page-nav__link" href="#{hid}">{esc(text)}</a></li>'
             )
         secs.append(
             f'<section aria-labelledby="{s["html_id"]}">{content}'
