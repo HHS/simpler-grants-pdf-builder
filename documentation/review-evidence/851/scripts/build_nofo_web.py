@@ -79,9 +79,22 @@ def render_facts(pairs, dates=False):
     return f'<dl class="nofo-facts">{"".join(rows)}</dl>'
 
 
+# Checklist glyphs, as the Builder handles them: import maps Word's "¨" (Wingdings) and
+# "☐" to "◻" (content_processing.py), and rendering swaps "◻" for a USWDS checkbox icon
+# (replace_unicode_with_icon.py). The fixture JSON predates the import step, so do both.
+CHECKBOX_GLYPHS = ("\u00a8", "\u2610", "\u25fb", "\u007f")
+
+
+def replace_checkboxes(fragment):
+    box = icon("check_box_outline_blank", "nofo-checkbox")
+    for glyph in CHECKBOX_GLYPHS:
+        fragment = re.sub(re.escape(glyph) + r"[ \u00a0]?", box, fragment)
+    return fragment
+
+
 def enhance(fragment):
-    """USWDS-ify rendered markdown: tables, external links, endnote refs."""
-    soup = BeautifulSoup(fragment, "html.parser")
+    """USWDS-ify rendered markdown: tables, external links, endnote refs, checkboxes."""
+    soup = BeautifulSoup(replace_checkboxes(fragment), "html.parser")
     seen = {}
     for table in soup.find_all("table"):
         table["class"] = ["usa-table", "usa-table--borderless", "nofo-table"]
@@ -257,6 +270,7 @@ body{background:#fff;color:#1b1b1b;margin:0}
 .nofo-glance .v{display:block;font-family:var(--nofo-display);font-size:1.5rem;font-weight:700;line-height:1.25;margin-block:.25rem}
 .nofo-glance .n{display:block;font-size:.9375rem}
 .nofo-table-wrap{margin-block:1rem}
+.nofo-checkbox{width:1.25rem;height:1.25rem;vertical-align:-.25em;margin-right:.35rem;fill:currentColor}
 .nofo-table{font-size:.9375rem;width:100%}
 .nofo-table-wrap .nofo-table th,.nofo-table-wrap .nofo-table td{vertical-align:top;white-space:normal;min-width:10rem}
 .nofo-pager{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--nofo-border);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem}

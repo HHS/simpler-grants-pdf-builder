@@ -78,6 +78,7 @@ body{background:#fff;color:#1b1b1b;margin:0}
 .nofo-glance .v{display:block;font-family:var(--nofo-display);font-size:1.5rem;font-weight:700;line-height:1.25;margin-block:.25rem}
 .nofo-glance .n{display:block;font-size:.9375rem}
 .nofo-table-wrap{margin-block:1rem}
+.nofo-checkbox{width:1.25rem;height:1.25rem;vertical-align:-.25em;margin-right:.35rem;fill:currentColor}
 .nofo-table{font-size:.9375rem;width:100%}
 .nofo-table-wrap .nofo-table th,.nofo-table-wrap .nofo-table td{vertical-align:top;white-space:normal;min-width:10rem}
 .nofo-pager{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--nofo-border);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem}
@@ -104,7 +105,7 @@ body{background:#fff;color:#1b1b1b;margin:0}
 .nofo-backtop{display:inline-flex;align-items:center;gap:.25rem;margin-top:1rem;font-size:.9375rem}body.theme-sgg{--nofo-accent:#286846;--nofo-accent-bg:#dbf6ed;--nofo-muted:#5d5d52;--nofo-muted-dark:#454540;--nofo-border:#e6e6e2;--nofo-display:"Public Sans",sans-serif}.theme-sgg .nofo-glance li{border-top-color:#34a37e}.theme-sgg .nofo-content h2{font-size:2rem}.theme-sgg .nofo-onepage .nofo-content>section+section{border-top-color:#171716}.nofo-crumbs .usa-breadcrumb{padding-top:0;padding-bottom:1rem}.sgg-nofo-card{border:1px solid #e6e6e2;border-left:.5rem solid #34a37e;border-radius:.5rem;padding:1.25rem 1.5rem;margin-top:1.5rem}.sgg-nofo-card h3{margin-top:0}.sgg-jump{columns:2 14rem;column-gap:2rem;padding-left:0;list-style:none;margin:1rem 0 0}.sgg-jump li{break-inside:avoid;margin:0 0 .5rem;max-width:none}.sgg-jump a{display:inline-flex;align-items:flex-start;gap:.25rem;min-height:24px}.sgg-jump .usa-icon{flex:none;margin-top:.15rem}.sgg-new{background:#fff5c2;color:#171716;font-size:.8125rem;font-weight:700;padding:.1rem .4rem;border-radius:2px;margin-left:.5rem;vertical-align:middle}#opportunity-detail-content [id]{scroll-margin-top:calc(var(--nofo-sticky-top) + .5rem)}.usa-nav__submenu[hidden]{display:none}@media(max-width:39.99em){.usa-footer__primary-section .grid-gap-lg{margin-left:-.5rem;margin-right:-.5rem}.usa-footer__primary-section .grid-gap-lg>*{padding-left:.5rem;padding-right:.5rem}}</style>
 </head>
 <body class="theme-sgg">
-<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="arrow_upward" viewBox="0 0 24 24"><path d="m4 12 1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></symbol><symbol id="file_download" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></symbol><symbol id="link" viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></symbol></svg>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="arrow_upward" viewBox="0 0 24 24"><path d="m4 12 1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></symbol><symbol id="check_box_outline_blank" viewBox="0 0 24 24"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></symbol><symbol id="file_download" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></symbol><symbol id="link" viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></symbol></svg>
 <a class="usa-skipnav" href="#nofo-content">Skip to the NOFO text</a>
 <main id="main-content" tabindex="-1">
 <div class="usa-alert usa-alert--warning usa-alert--slim margin-0" role="region" aria-label="About this mockup"><div class="usa-alert__body"><p class="usa-alert__text"><strong>Design mockup, not the live site.</strong> Opportunity data from the Simpler.Grants.gov API via CommonGrants; NOFO text from the NOFO Builder test fixture. <a class="usa-link" href="index.html">About these mockups</a></p></div></div>
@@ -812,17 +813,17 @@ body{background:#fff;color:#1b1b1b;margin:0}
 </thead>
 <tbody>
 <tr>
-<td>¨ <a class="usa-link" href="#30--step-2-get-ready-to-apply--project-abstract"><strong>Project abstract</strong></a></td>
+<td><svg aria-hidden="true" class="usa-icon nofo-checkbox" focusable="false" role="img"><use href="#check_box_outline_blank"></use></svg><a class="usa-link" href="#30--step-2-get-ready-to-apply--project-abstract"><strong>Project abstract</strong></a></td>
 <td>Use the Project Abstract Summary Form.</td>
 <td>1 page</td>
 </tr>
 <tr>
-<td>¨ <a class="usa-link" href="#31--step-2-get-ready-to-apply--project-narrative"><strong>Project narrative</strong></a></td>
+<td><svg aria-hidden="true" class="usa-icon nofo-checkbox" focusable="false" role="img"><use href="#check_box_outline_blank"></use></svg><a class="usa-link" href="#31--step-2-get-ready-to-apply--project-narrative"><strong>Project narrative</strong></a></td>
 <td>Use the Project Narrative Attachment form.</td>
 <td>15 pages</td>
 </tr>
 <tr>
-<td>¨ <a class="usa-link" href="#36--step-2-get-ready-to-apply--budget-narrative"><strong>Budget narrative</strong></a></td>
+<td><svg aria-hidden="true" class="usa-icon nofo-checkbox" focusable="false" role="img"><use href="#check_box_outline_blank"></use></svg><a class="usa-link" href="#36--step-2-get-ready-to-apply--budget-narrative"><strong>Budget narrative</strong></a></td>
 <td>Use the Budget Narrative Attachment form.</td>
 <td>10</td>
 </tr>
@@ -832,27 +833,27 @@ body{background:#fff;color:#1b1b1b;margin:0}
 <td></td>
 </tr>
 <tr>
-<td>¨ Indirect cost agreement</td>
+<td><svg aria-hidden="true" class="usa-icon nofo-checkbox" focusable="false" role="img"><use href="#check_box_outline_blank"></use></svg>Indirect cost agreement</td>
 <td></td>
 <td>None</td>
 </tr>
 <tr>
-<td>¨ Resumes and job descriptions for current and prospective key personnel</td>
+<td><svg aria-hidden="true" class="usa-icon nofo-checkbox" focusable="false" role="img"><use href="#check_box_outline_blank"></use></svg>Resumes and job descriptions for current and prospective key personnel</td>
 <td></td>
 <td>None</td>
 </tr>
 <tr>
-<td>¨ Business assessment of applicant organization</td>
+<td><svg aria-hidden="true" class="usa-icon nofo-checkbox" focusable="false" role="img"><use href="#check_box_outline_blank"></use></svg>Business assessment of applicant organization</td>
 <td></td>
 <td>12 pages</td>
 </tr>
 <tr>
-<td>¨ Organizational chart</td>
+<td><svg aria-hidden="true" class="usa-icon nofo-checkbox" focusable="false" role="img"><use href="#check_box_outline_blank"></use></svg>Organizational chart</td>
 <td></td>
 <td>1 page</td>
 </tr>
 <tr>
-<td>¨ Eligibility documentation</td>
+<td><svg aria-hidden="true" class="usa-icon nofo-checkbox" focusable="false" role="img"><use href="#check_box_outline_blank"></use></svg>Eligibility documentation</td>
 <td></td>
 <td>None</td>
 </tr>
@@ -862,22 +863,22 @@ body{background:#fff;color:#1b1b1b;margin:0}
 <td></td>
 </tr>
 <tr>
-<td>¨ SF-424 (Application for Federal Assistance)</td>
+<td><svg aria-hidden="true" class="usa-icon nofo-checkbox" focusable="false" role="img"><use href="#check_box_outline_blank"></use></svg>SF-424 (Application for Federal Assistance)</td>
 <td></td>
 <td>None</td>
 </tr>
 <tr>
-<td>¨ SF-424A: Budget Information for Non-Construction Programs</td>
+<td><svg aria-hidden="true" class="usa-icon nofo-checkbox" focusable="false" role="img"><use href="#check_box_outline_blank"></use></svg>SF-424A: Budget Information for Non-Construction Programs</td>
 <td></td>
 <td>None</td>
 </tr>
 <tr>
-<td>¨ Project/Performance Site Locations</td>
+<td><svg aria-hidden="true" class="usa-icon nofo-checkbox" focusable="false" role="img"><use href="#check_box_outline_blank"></use></svg>Project/Performance Site Locations</td>
 <td></td>
 <td>None</td>
 </tr>
 <tr>
-<td>¨ Disclosure of Lobbying Activities (SF-LLL)</td>
+<td><svg aria-hidden="true" class="usa-icon nofo-checkbox" focusable="false" role="img"><use href="#check_box_outline_blank"></use></svg>Disclosure of Lobbying Activities (SF-LLL)</td>
 <td></td>
 <td>None</td>
 </tr>

@@ -202,6 +202,34 @@ A sweep of live listings through the CommonGrants API on 2026-11-28. Search resu
 - A listing's single close date can be a final-stage deadline, an administrative horizon (2027-11-13 on every NIH parent K award) or a placeholder (2099-01-01). The NOFO page should own the key dates, and the listing should defer to it.
 - Listing timestamps don't reliably show amendments: one bulk update touched many records on 2026-03-26, and an amended record kept equal created and modified dates. Modifications should be recorded in the NOFO itself, as the Builder's `modifications` field starts to do.
 
+### Builder components not yet designed for the web
+
+Compared against the Builder's design system docs (`DESIGN_STANDARDS.md`, `SCALABLE_NOFO_DESIGN_SYSTEM.md`, `STYLE_GUIDE.md`, `TABLES.md`, the introduction guides), the PDF templates in `nofos/nofos/templates/nofos/` and `nofos/bloom_nofos/templates/includes/`, and the theme CSS, on 2026-11-28.
+
+**Need a web design:**
+
+| Component | In the PDF | Web direction |
+| --- | --- | --- |
+| Cover page | Hero, standard-image or text-only variants; cover image with alt text; OpDiv and HHS logos; title size steps for long titles; deadline list when there are several | A title band with the same variants, logos and responsive type; test very long titles; reuse the multiple-deadline list |
+| "Last modified" cover callout | Links to the Modifications section | Banner under the title block (see the modified-NOFO pattern) |
+| Before you begin / Before you get started | Generated variants (full, HRSA, eRA, sole source, none) or an imported introduction | A registration panel before Step 1 (SAM.gov, Grants.gov, eRA Commons, apply-by time) |
+| Step title pages | Full-page divider with step icon, step breadcrumbs and an "In this step" list | A step header with the icon and an "In this step" list; the sticky nav already gives the breadcrumbs |
+| Step icons | Three styles (border, solid, thin) matched to step names | Icons beside step headings and in the navigation |
+| Note callouts | `note-callout`, `role="note"`, lead-in text, per-theme rule and tint | Same structure with USWDS-compatible colors |
+| Floating key facts / key dates | Right-hand column on the first section (portrait themes) | Decide between the at-a-glance row and a sidebar; on the web the sticky nav already uses that column |
+| Callout icons | Contact icon on "Have questions?"; Adobe icon on the keyboard-help callout | Keep the contact icon; replace the Adobe "Alt+Left Arrow" help with nothing, since browsers have a back button |
+| Tables | Captions, size and width classes, points columns, merged cells, criterion tables | Keep captions and header scope; map width classes; test merged-cell tables on phones |
+| Lettered and roman lists | `type="a"`, `list-lower-roman` and similar | Keep the list types; check screen reader output |
+| H7 and "Maximum points" pseudo-headings | `role="heading" aria-level="7"` | HTML stops at h6 and level-7 support is uneven; consider styled text or folding into h6 |
+| Appendix | Fixed section after Endnotes, plus `section--appendix` for steps after 7 | A labelled back-matter section in the navigation |
+| Subagency and second subagency | Under the agency in the basic information block | Add to the title block |
+| OpDiv themes | 14 OpDivs with color variants and logos | Theme tokens within USWDS so contrast is checked once per theme |
+| Metadata | Author, subject and keywords in the PDF head | Page `<meta>` and the CommonGrants fields above |
+
+**Print-only, no web equivalent needed:** running headers and footers, page numbers, PDF bookmarks (the heading outline does this job), manual page and column break markers (hide them), the Contents page's page numbers and column layouts (replaced by the navigation), landscape orientation, and full-bleed cover pages.
+
+**Fixed in the prototypes:** the application checklist showed Word's "¨" character instead of checkboxes, because the fixture predates the import step that converts it. The generator now applies the same two steps as the Builder, so the checklist shows USWDS checkbox icons.
+
 ## Relation to #851 acceptance criteria
 
 | Criterion | Status in this spike |
