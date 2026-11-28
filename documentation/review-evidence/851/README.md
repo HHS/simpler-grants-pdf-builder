@@ -206,27 +206,30 @@ A sweep of live listings through the CommonGrants API on 2026-11-28. Search resu
 
 Compared against the Builder's design system docs (`DESIGN_STANDARDS.md`, `SCALABLE_NOFO_DESIGN_SYSTEM.md`, `STYLE_GUIDE.md`, `TABLES.md`, the introduction guides), the PDF templates in `nofos/nofos/templates/nofos/` and `nofos/bloom_nofos/templates/includes/`, and the theme CSS, on 2026-11-28.
 
-**Need a web design:**
+Many PDF components exist because a PDF is printed, paginated and self-branded. A web page gets branding and navigation from the site that hosts it, so the test is whether a component carries content or meaning.
 
-| Component | In the PDF | Web direction |
+**Needed: they carry content or meaning.**
+
+| Component | In the PDF | Web treatment |
 | --- | --- | --- |
-| Cover page | Hero, standard-image or text-only variants; cover image with alt text; OpDiv and HHS logos; title size steps for long titles; deadline list when there are several | A title band with the same variants, logos and responsive type; test very long titles; reuse the multiple-deadline list |
-| "Last modified" cover callout | Links to the Modifications section | Banner under the title block (see the modified-NOFO pattern) |
-| Before you begin / Before you get started | Generated variants (full, HRSA, eRA, sole source, none) or an imported introduction | A registration panel before Step 1 (SAM.gov, Grants.gov, eRA Commons, apply-by time) |
-| Step title pages | Full-page divider with step icon, step breadcrumbs and an "In this step" list | A step header with the icon and an "In this step" list; the sticky nav already gives the breadcrumbs |
-| Step icons | Three styles (border, solid, thin) matched to step names | Icons beside step headings and in the navigation |
-| Note callouts | `note-callout`, `role="note"`, lead-in text, per-theme rule and tint | Same structure with USWDS-compatible colors |
-| Floating key facts / key dates | Right-hand column on the first section (portrait themes) | Decide between the at-a-glance row and a sidebar; on the web the sticky nav already uses that column |
-| Callout icons | Contact icon on "Have questions?"; Adobe icon on the keyboard-help callout | Keep the contact icon; replace the Adobe "Alt+Left Arrow" help with nothing, since browsers have a back button |
-| Tables | Captions, size and width classes, points columns, merged cells, criterion tables | Keep captions and header scope; map width classes; test merged-cell tables on phones |
-| Lettered and roman lists | `type="a"`, `list-lower-roman` and similar | Keep the list types; check screen reader output |
-| H7 and "Maximum points" pseudo-headings | `role="heading" aria-level="7"` | HTML stops at h6 and level-7 support is uneven; consider styled text or folding into h6 |
-| Appendix | Fixed section after Endnotes, plus `section--appendix` for steps after 7 | A labelled back-matter section in the navigation |
-| Subagency and second subagency | Under the agency in the basic information block | Add to the title block |
-| OpDiv themes | 14 OpDivs with color variants and logos | Theme tokens within USWDS so contrast is checked once per theme |
-| Metadata | Author, subject and keywords in the PDF head | Page `<meta>` and the CommonGrants fields above |
+| Before you begin / Before you get started | Generated variants (full, HRSA, eRA, sole source) or an imported introduction | Plain content before Step 1: registration steps and the apply-by time |
+| Several deadlines | Deadline list on the cover | The timeline in the several-deadlines pattern |
+| Note callouts | `note-callout`, `role="note"`, bold lead-in | Same structure, simple styling |
+| Table captions, merged cells, criterion tables | `<caption>`, raw HTML tables with `colspan`/`rowspan` | Keep captions and header relationships; test merged cells on phones |
+| Lettered and roman lists | `type="a"`, `list-lower-roman` and similar | Keep the list types, because the text refers to items by letter or numeral |
+| "Maximum points" pseudo-headings | `role="heading" aria-level="7"` | Keep the content; HTML stops at h6 and level-7 support is uneven, so use styled text or h6 |
+| Appendix and Modifications | Fixed back-matter sections | Labelled sections in the navigation; Modifications has a pattern |
+| Subagency and second subagency | Under the agency | One line in the title block |
 
-**Print-only, no web equivalent needed:** running headers and footers, page numbers, PDF bookmarks (the heading outline does this job), manual page and column break markers (hide them), the Contents page's page numbers and column layouts (replaced by the navigation), landscape orientation, and full-bleed cover pages.
+**Not needed: PDF branding or print navigation.**
+
+- Cover variants, hero image and title-size steps: the title block replaces the cover; a cover image is optional decoration.
+- Step title pages, step breadcrumbs and "In this step" lists: they exist because a printout can't scroll. The sticky navigation does this job.
+- Step icons and the three icon styles: decorative, optional for brand continuity.
+- The floating key facts sidebar: a layout choice the at-a-glance row covers.
+- Callout icons: decorative. Drop the Adobe "Alt+Left Arrow" callout entirely.
+- The 14 OpDiv themes: inside Simpler.Grants.gov the site's theme applies. A standalone file might carry the OpDiv logo, but not the full theme system.
+- Running headers and footers, page numbers, PDF bookmarks (the heading outline does this job), page and column break markers (hide them), the Contents page's page numbers and layouts, landscape orientation and table width classes.
 
 **Fixed in the prototypes:** the application checklist showed Word's "¨" character instead of checkboxes, because the fixture predates the import step that converts it. The generator now applies the same two steps as the Builder, so the checklist shows USWDS checkbox icons.
 
