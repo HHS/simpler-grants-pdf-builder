@@ -71,7 +71,11 @@ def create_nofo(request, payload: NofoSchema):
         return return_response
 
     except ValidationError as e:
-        return 400, {"message": "Model validation error", "details": e.message_dict}
+        # _build_document re-raises subsection errors as a list, not a dict.
+        details = (
+            e.message_dict if hasattr(e, "error_dict") else {"__all__": e.messages}
+        )
+        return 400, {"message": "Model validation error", "details": details}
     except Exception as e:
         logger.exception("Unexpected error in create_nofo")
         message = str(e) if settings.DEBUG else "An unexpected error occurred."

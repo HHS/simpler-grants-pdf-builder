@@ -32,7 +32,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let editor;
   const update = () => {
     const text = editor ? editor.getValue() : body.value;
-    const hidden = !note.checked || NOTE_LABEL.test(text);
+    // Drop Markdown emphasis markers so "**Note**:" and "**N.B.**" also count.
+    const firstLine = text.trimStart().split("\n", 1)[0].replace(/\*+|_+/g, "");
+    const hidden = !note.checked || NOTE_LABEL.test(firstLine);
     if (warning.hidden !== hidden) warning.hidden = hidden;
   };
 

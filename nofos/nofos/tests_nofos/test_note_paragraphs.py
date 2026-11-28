@@ -369,6 +369,8 @@ class NoteLabelWarningTests(SimpleTestCase):
             "**NOTE (new applicants):** Keep it.",
             "__Note -__ Keep it.",
             "N.B. Keep it.",
+            "**Note**: Keep it.",
+            "**N.B.** Keep it.",
         ):
             with self.subTest(body=body):
                 self.assertTrue(has_note_label(body))
@@ -583,3 +585,28 @@ class NoteImportReviewFixTests(SimpleTestCase):
         normalize_note_labels(soup)
         self.assertEqual(soup.p.strong.get_text(), "Note for applicants:")
         self.assertEqual(soup.p.get_text(), "Note for applicants: Required: submit it.")
+
+
+class NoteAdminFormTests(TestCase):
+    def test_admin_inline_form_reports_a_headed_note_instead_of_crashing(self):
+        from nofos.admin import SubsectionModelForm
+
+        nofo = Nofo.objects.create(title="Admin note NOFO", group="bloom", opdiv="HRSA")
+        section = Section.objects.create(nofo=nofo, name="Step 3", order=1)
+        note = Subsection.objects.create(
+            section=section, order=1, callout_style="note", body="**Note:** x"
+        )
+        form = SubsectionModelForm(
+            instance=note,
+            data={
+                "name": "Heading",
+                "html_id": note.html_id,
+                "tag": "h4",
+                "order": 1,
+                "callout_box": "on",
+                "callout_style": "note",
+                "body": note.body,
+            },
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("callout_style", form.errors)

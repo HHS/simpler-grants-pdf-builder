@@ -186,6 +186,37 @@ class NofoAPITest(TestCase):
         self.assertEqual(first_section.name, "Step 1: Review the Opportunity")
         self.assertEqual(first_section.subsections.first().name, "Basic information")
 
+    def test_import_headed_note_returns_validation_error(self):
+        """A note subsection can't have a heading (#1437); return 400, not 500."""
+        payload = self.minimal_compliant_payload.copy()
+        payload["sections"] = [
+            {
+                **payload["sections"][0],
+                "subsections": [
+                    {
+                        "name": "Heading",
+                        "html_id": "heading",
+                        "order": 1,
+                        "tag": "h4",
+                        "body": "**Note:** Keep it.",
+                        "callout_box": True,
+                        "callout_style": "note",
+                    }
+                ],
+            }
+        ]
+
+        response = self.client.post(
+            "/api/nofos",
+            data=json.dumps(payload),
+            content_type="application/json",
+            **self.headers,
+        )
+        self.assertEqual(response.status_code, 400)
+        body = response.json()
+        self.assertEqual(body["message"], "Model validation error")
+        self.assertIn("heading", " ".join(body["details"]["__all__"]))
+
     def test_import_nofo_with_subagency_is_okay(self):
         """POST should accept a NOFO payload with subagency set."""
         payload = self.minimal_compliant_payload.copy()
