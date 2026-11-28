@@ -12,7 +12,7 @@
 1. **Publish one long, accessible NOFO page as the default web version**, with a sticky "On this page" navigation, and offer one-page-per-step as an optional view. GOV.UK, USWDS and VA.gov all reserve page-by-page flows for tasks such as forms. They use long pages with in-page navigation for reference reading, which a NOFO is. A single page is also the one self-contained file #851 proposes attaching to an opportunity.
 2. **The Builder's content model already fits a web page.** Sections, subsections, heading tags, callouts and stable `html_id`s render cleanly in USWDS. Two adjustments were needed: re-level headings after the hidden metadata block, and treat "Label: value" callouts as description lists.
 3. **Link the NOFO and the opportunity listing in both directions,** with deep links into NOFO sections from the listing. This needs stable section anchors, which the Builder has, and a way to tell Simpler.Grants.gov about them. CommonGrants has no NOFO-content fields today, so we propose two custom fields (see [CommonGrants](#commongrants)).
-4. **Design for edge cases from the start.** Several of them don't fit the Builder's data model today. Examples: one NOFO posted under several opportunity numbers, many assistance listings, and multi-component NOFOs. See the [edge-case catalog](#edge-cases).
+4. **Design for edge cases from the start.** A sweep of live Simpler.Grants.gov listings found real instances of every case below, plus placeholder dates and amounts. Several of them don't fit the Builder's data model today. Examples: one NOFO posted under several opportunity numbers, many assistance listings, and multi-component NOFOs. See the [edge-case catalog](#edge-cases).
 
 ## What's in this folder
 
@@ -167,8 +167,40 @@ Patterns for each case are on the edge-case pages ([plain USWDS](prototypes/uswd
 | Applications outside Grants.gov | eRA ASSIST, GrantSolutions, agency portals | Content only | "Where to apply" box; apply buttons name the real system |
 | Long or complex content | 190-page NOFOs, merged-cell tables, maps, templates | Supported in PDF | Navigation limited to h2/h3; scrollable tables; alt text; file type and size on attachments |
 | Translations | Spanish versions | Not modeled | Separate page with `lang` set, linked both ways |
+| Placeholder dates and amounts | Close date 2099-01-01 for a rolling program; $0 or $1 minimum awards | Not applicable | Show what the value means ("Rolling", "Not specified"), taking dates and funding from the NOFO |
 
 ![Multi-component comparison and tags](screenshots/edge-uswds-components.png)
+
+#### Real examples on Simpler.Grants.gov
+
+A sweep of live listings through the CommonGrants API on 2026-11-28. Search results don't include attachments, so attachment details come only from records fetched in full. Rows marked ✓ were re-fetched and confirmed by hand.
+
+| Edge case | Listing | What the data shows |
+| --- | --- | --- |
+| Companion numbers | PA-24-190 / PA-24-191 (NIH parent K25) ✓ | Same text except "Clinical Trial Required" or "Not Allowed". PA-24-191 says to apply to "the companion FOA ()" with the link missing. The same pairing holds for K01, K08, K23, K24 and K99. |
+| Omnibus solicitation | NNH25ZDA001N-SBR and others (NASA ROSES 2025) | Each program element is its own listing with a generic description and no attachments; the solicitation lives on NSPIRES |
+| Multi-component | RFA-OH-27-049 (NIOSH, forecasted) | Describes itself as a multi-component NOFO: overall component, cores, and small, large and pilot projects |
+| Tracks merged | RFA-CA-26-010 (NCI, forecasted) | Consolidates a former U01 and U24 into one NOFO with two tracks |
+| Stale status | AFPRA-20-04 (State) | Posted 2020, still Open, no close date |
+| Archived on creation | HHS-2027-ACL-AOA-CGNS-0039 (ACL) | Created, modified and archived on 2026-10-19, no close date |
+| Deadlines missing from data | FA955026S0003 (AFOSR) | White papers due in October through a separate portal; only the December proposal deadline is in the close date |
+| Placeholder close date | OFOP0002825 (State, Austria) ✓ | Close date 2099-01-01 for a rolling program; applications go through the MyGrants portal |
+| Amendments as attachments | FA955026S0003 (AFOSR) | Original announcement plus Amendment_0001 and Amendment_0002 as separate PDFs |
+| Amendment only in text | NNH25ZDA001N-SBR (NASA) | "Amended November 24, 2026" in the description; created and modified dates are equal |
+| Reissue | RFA-FD-25-020, PAR-25-352 | "Reissue of RFA-FD-23-001" in the title; "reissue of PAR-20-118" in the description |
+| Year-over-year | F25AS00283 → F26AS00104 (Fish and Wildlife) | Near-identical text in consecutive years |
+| Single source | PAR-27-009 (NIH, forecasted) | Title begins "Single Source:" |
+| Many assistance listings | PA-24-182, PA-24-191 ✓, PA-24-194 | 27, 23 and 28 listings; some codes are alphanumeric (93.HL6 on RFA-AI-28-002) |
+| Outside Grants.gov | F24AS00022 (Fish and Wildlife) | GrantSolutions only; Grants.gov submissions won't be evaluated |
+| Stub NOFO attachments | PAR-24-295 ✓, PA-24-191 ✓ | "Full Announcement" HTML files of 422 and 420 bytes; RFA-AI-28-002's is 172,679 bytes |
+| Placeholder amounts | HRSA-27-072, USGS CESU G27AS00076–84, OVC-2018-14081 | $0 and $1 minimum awards; a $0 total with a $400,000 maximum |
+| Not a funding opportunity | 72052024RFI00001 (USAID) | An RFI listed as an opportunity, with separate English and Spanish response forms |
+
+**What this means for linking NOFO pages and listings:**
+
+- Companion, component and reissue relationships exist only as free text, so a NOFO page can't find its siblings from listing data. The Builder should store related opportunity numbers, with the relationship, as structured data.
+- A listing's single close date can be a final-stage deadline, an administrative horizon (2027-11-13 on every NIH parent K award) or a placeholder (2099-01-01). The NOFO page should own the key dates, and the listing should defer to it.
+- Listing timestamps don't reliably show amendments: one bulk update touched many records on 2026-03-26, and an amended record kept equal created and modified dates. Modifications should be recorded in the NOFO itself, as the Builder's `modifications` field starts to do.
 
 ## Relation to #851 acceptance criteria
 
@@ -204,6 +236,6 @@ SGG_REPO=/tmp/simpler-grants-gov PYTHON="poetry run python" ./build.sh
 
 1. Decide the default format (one long page, with optional paging) and record it in an ADR.
 2. Agree with the Simpler.Grants.gov team on accepted attachment formats and on linking the NOFO from the listing; consider proposing `nofoDocument` and `nofoSections` for the CommonGrants catalog.
-3. Model the edge cases the Builder can't hold today: several opportunity numbers, several assistance listings, components, and multiple key dates.
+3. Model the edge cases the Builder can't hold today: several opportunity numbers and how they relate (companion, component, reissue), several assistance listings, components, and multiple key dates.
 4. Prototype a Builder HTML export that reuses the PDF rendering, then run the #851 staging demonstration once #844 can attach files.
 5. Run screen-reader and zoom testing, then test with applicants.

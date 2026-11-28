@@ -108,6 +108,7 @@ def patterns():
                 "Each listing links to the same NOFO page; the NOFO links back to every listing, not just one.",
                 "Data: the Builder's single <code>number</code> field needs to become a list. In CommonGrants each opportunity stays separate and points to the same NOFO document.",
                 "Applying under the wrong number is a common, costly error, so say which number fits which applicant.",
+                "Real examples (Simpler.Grants.gov, 2026-11-28): NIH parent K awards come in companion pairs, for example PA-24-190 and PA-24-191 (Clinical Trial Required / Not Allowed). PA-24-191's description says to apply to 'the companion FOA ()' with the link missing. NASA's ROSES 2025 posts each program element as its own listing (NNH25ZDA001N-SBR and others) with a generic description. Companion and reissue links exist only as free text, so the Builder should store them as data.",
             ],
         ),
         (
@@ -134,6 +135,7 @@ def patterns():
                 'Label content, don\'t hide it: a filter that removes text makes the page differ from the PDF and from what a colleague sees. An optional "show only my component" view can come later, with a clear on/off state.',
                 "Tags are text, not color alone, and sit next to the heading so they're read right after it.",
                 'Repeated headings ("Eligibility" for each component) need unique anchors and navigation labels, such as "Eligibility: Component B".',
+                "Real examples: RFA-OH-27-049 (NIOSH Total Worker Health Centers) calls itself a multi-component NOFO, with an overall component, cores and project types; RFA-CA-26-010 merges a former U01 and U24 into one NOFO with two tracks; RESTORE Act GR-RDC-25-001 and -002 are construction and non-construction components posted as separate listings.",
             ],
         ),
         (
@@ -149,7 +151,7 @@ def patterns():
             [
                 "One banner at a time, above the title block, using USWDS alerts with a real heading.",
                 "Never delete a closed NOFO page: recipients cite it for years. A newer version gets a link, not a redirect.",
-                "Live data shows why: a 2020 State Department listing on Simpler.Grants.gov is still marked Forecasted, with no close date.",
+                "Live data shows why: a 2020 State Department listing is still marked Forecasted with no close date, AFPRA-20-04 (posted 2020) is still Open with no close date, and HHS-2027-ACL-AOA-CGNS-0039 was archived the day it was created. A NOFO page should state its own status and dates rather than trusting the listing's.",
             ],
         ),
         (
@@ -170,6 +172,7 @@ def patterns():
                 "State the time zone once, prominently. CommonGrants event times carry no time zone, so the publishing side has to supply it.",
                 '"Passed" and "Next deadline" are words, not only color, and they depend on today\'s date: generate them when the page is published or rebuilt, and say when that was.',
                 "For rolling or recurring due dates, link to the schedule instead of listing years of dates.",
+                "Real examples: the listing's single close date is often only one of several deadlines. AFOSR FA955026S0003 stores the December proposal deadline but not the October white-paper deadline, which goes through a different system; ROSES NNH25ZDA001N-SBR stores the Step-2 date while Step-1 appears only in the description.",
             ],
         ),
         (
@@ -191,6 +194,7 @@ def patterns():
                 "Keep section anchors stable across versions so links shared before the change still work. Builder <code>html_id</code>s are stable today; a re-import must keep them.",
                 "The web page and the PDF show the same version and the same modification date.",
                 "The Builder's Compare tool could generate the change list instead of someone writing it by hand.",
+                "Real examples: AFOSR FA955026S0003 attaches the original announcement plus Amendment_0001 and Amendment_0002 as separate PDFs, leaving applicants to merge them; ROSES records an amendment only in its description, and the record's modified date didn't change. Listing timestamps aren't a reliable amendment signal, so the NOFO should carry its own modification record.",
             ],
         ),
         (
@@ -210,6 +214,7 @@ def patterns():
             [
                 "Returning applicants mostly want the differences. The Compare tool already diffs documents and could draft this list.",
                 "Link both directions: new version to old, and old to new (see the status banners).",
+                "Real examples: RFA-FD-25-020 puts 'Reissue of RFA-FD-23-001' in its title; PAR-25-352 is a reissue of PAR-20-118 according to its description; Fish and Wildlife's F25AS00283 and F26AS00104 are near-identical year-over-year listings.",
                 "Non-competing continuations usually aren't public NOFOs; when one is, say clearly who it is for (next pattern).",
             ],
         ),
@@ -223,6 +228,7 @@ def patterns():
             [
                 "Put it before everything else so ineligible readers stop early.",
                 "Mirror it on the opportunity listing's Eligibility section.",
+                "Real examples: PAR-27-009's title begins 'Single Source:'; USDA's Harvest to Hallways grant is awarded non-competitively to state agencies, with each state's amount in an appendix.",
             ],
         ),
         (
@@ -236,7 +242,7 @@ def patterns():
 <details class="ec-more"><summary>Show 13 more assistance listings</summary><ul>{aln_li(alns_rest)}</ul></details>""",
             [
                 "Show the first few and put the rest behind a native disclosure, which works with keyboard and screen readers without script. The full list stays in the HTML for search and print.",
-                "Data: the Builder stores one assistance listing number as text; CommonGrants and Simpler.Grants.gov already use a list.",
+                "Data: the Builder stores one assistance listing number as text; CommonGrants and Simpler.Grants.gov already use a list. NIH parent K listings carry 23 to 28 each (PA-24-191 has 23), and some codes are alphanumeric, such as 93.HL6, so don't validate them as numbers.",
                 'Joint NOFOs from several agencies or OpDivs need the same treatment for "Issued by" and for contacts. The Builder has two subagency fields today.',
             ],
         ),
@@ -253,6 +259,29 @@ def patterns():
             [
                 "The apply button names the real system, on both the NOFO page and the opportunity listing.",
                 "Registration steps change with the system, so Step 2 content should follow the same field.",
+                "Real examples: Fish and Wildlife's F24AS00022 says applications submitted through Grants.gov won't be evaluated (GrantSolutions only); State Department listings such as OFOP0002825 point to the MyGrants portal; ROSES accepts Grants.gov only on request.",
+            ],
+        ),
+        (
+            "placeholders",
+            "Placeholder dates and amounts",
+            "Listing data sometimes holds stand-in values: a close date far in the future for rolling programs, $0 or $1 minimum awards, or $0 totals.",
+            """
+<span class="ec-frame-label">Show what the value means, not the stored placeholder</span>
+<div class="usa-table-container--scrollable" tabindex="0" role="region" aria-label="Table: Placeholder values and what to show">
+<table class="usa-table usa-table--borderless usa-table--stacked">
+  <thead><tr><th scope="col">Stored value</th><th scope="col">Real example</th><th scope="col">Show instead</th></tr></thead>
+  <tbody>
+    <tr><td data-label="Stored value">Close date 2099-01-01</td><td data-label="Real example">OFOP0002825, rolling State Department program</td><td data-label="Show instead">Rolling: applications reviewed as received</td></tr>
+    <tr><td data-label="Stored value">Same distant close date on every listing</td><td data-label="Real example">NIH parent K awards all close 2027-11-13</td><td data-label="Show instead">Standard due dates, with a link to the schedule</td></tr>
+    <tr><td data-label="Stored value">Minimum award $0 or $1</td><td data-label="Real example">HRSA-27-072 ($0), USGS CESU listings ($1)</td><td data-label="Show instead">Leave out the minimum, or use the NOFO's range</td></tr>
+    <tr><td data-label="Stored value">Total available $0</td><td data-label="Real example">OVC-2018-14081 ($400,000 maximum)</td><td data-label="Show instead">Not specified</td></tr>
+  </tbody>
+</table>
+</div>""",
+            [
+                "Never display a sentinel date or a $0/$1 amount as if it were real. The NOFO page should take dates and funding from the NOFO itself, and the listing should defer to it.",
+                "Other real oddities to plan for: award minimums that are a per-year cap while maximums are a multi-year total (AFOSR), RFIs posted as funding opportunities, the NOFO attached as both .docx and .pdf, and a contact email with invisible characters (HRSA-27-072).",
             ],
         ),
         (
