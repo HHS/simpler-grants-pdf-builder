@@ -1,7 +1,7 @@
 # NOFO web pages: research, prototypes and edge cases — #851
 
 - **Issue:** [#851](https://github.com/HHS/simpler-grants-pdf-builder/issues/851) — Generate a Grants.gov-publishable HTML announcement from NOFO Builder, and redesign the HTML template
-- **Type:** spike. Nothing here changes the Builder application.
+- **Type:** spike, separate from the Builder's existing NOFO HTML. Nothing here changes or reuses Builder application code; see [Relationship to the Builder's existing HTML](#relationship-to-the-builders-existing-html).
 - **Investigation date:** 2026-11-28
 - **Inspected baseline:** upstream `main` at `1f7c527`; HHS/simpler-grants-gov and HHS/simpler-grants-protocol default branches on the same date
 - **Environment:** cloud development container. Agency websites, commongrants.org and simpler.grants.gov pages were blocked by its network policy; GitHub source and the Simpler.Grants.gov API (through a CommonGrants client) were reachable.
@@ -13,6 +13,34 @@
 2. **The Builder's content model already fits a web page.** Sections, subsections, heading tags, callouts and stable `html_id`s render cleanly in USWDS. Two adjustments were needed: re-level headings after the hidden metadata block, and treat "Label: value" callouts as description lists.
 3. **Link the NOFO and the opportunity listing in both directions,** with deep links into NOFO sections from the listing. This needs stable section anchors, which the Builder has, and a way to tell Simpler.Grants.gov about them. CommonGrants has no NOFO-content fields today, so we propose two custom fields (see [CommonGrants](#commongrants)).
 4. **Design for edge cases from the start.** A sweep of live Simpler.Grants.gov listings found real instances of every case below, plus placeholder dates and amounts. Several of them don't fit the Builder's data model today. Examples: one NOFO posted under several opportunity numbers, many assistance listings, and multi-component NOFOs. See the [edge-case catalog](#edge-cases).
+
+## Relationship to the Builder's existing HTML
+
+The Builder already renders every NOFO record as HTML. `NofosDetailView` serves `nofos/templates/nofos/nofo_view.html`, and `nofo_pdf.html`, the same page without the Builder header, is what the PDF service prints. That HTML is the PDF's source, so it is built for print:
+
+- named pages, running headers and page counters;
+- PDF bookmarks;
+- full-bleed covers and step title pages.
+
+It is also only served to signed-in members of the NOFO's group.
+
+**This spike is separate discovery work.** It doesn't change, extend or replace that view. The prototypes come from one-off scripts in `scripts/` that read an exported NOFO record (the fixture JSON) outside the application.
+
+**The scripts copy Builder rules rather than invent them.** Where the prototypes imitate Builder behavior, the rules come from the Builder:
+
+| Behavior | Builder source |
+| --- | --- |
+| Section and subsection order, heading tags, stable `html_id`s | NOFO model fields |
+| Callout boxes and "Label: value" callouts | `includes/callout_box.html`, `callout_box_contents` |
+| Checklist glyphs to checkbox icons | `content_processing.py`, `replace_unicode_with_icon.py` |
+| "Maximum points" detection | `add_classes_to_paragraphs.py` |
+| "Table:" captions | `add_classes_to_tables` |
+| Before you begin text | `includes/byb_page.html` |
+| Several deadlines split on `\|` | the cover template |
+
+A production version should call those Builder functions instead of porting the scripts.
+
+**Suggested path to production:** keep one content pipeline, the same models and template filters, and add a web template set and stylesheet beside the print templates. Restyling `nofo_view.html` isn't recommended, because its structure exists for pagination. Whether the web version is a new view, an export or a variant of `nofo_view` is open for the team. It is #851's "standalone, publishable artifact" question.
 
 ## What's in this folder
 
@@ -252,7 +280,7 @@ Screenshots of the other components: [lettered and roman lists](screenshots/comp
 ## Limitations
 
 - Agency sites, commongrants.org and live simpler.grants.gov pages were not reachable, so some descriptions come from search results, source code or prior knowledge, as marked.
-- The prototypes are generated outside the Builder. A real implementation would be a Builder export that shares its rendering with the PDF templates.
+- The prototypes are generated outside the Builder from an exported record, not from the Builder's own HTML view; see [Relationship to the Builder's existing HTML](#relationship-to-the-builders-existing-html).
 - Automated checks find only part of accessibility problems. Screen-reader, zoom and applicant testing remain.
 - The fixture NOFO has no Step 3, so the navigation goes from Step 2 to Step 4. Its text also has two internal links to Word bookmarks that don't exist (`#_Optional_letter_of`, `#_Completeness__and`), which stay broken in the prototypes. A few source tables are layout tables, and some nested lists come through flat; the export should fix both.
 - The Simpler.Grants.gov mockups use that site's real logo, header, footer and .gov banner, and each page carries a "Design mockup, not the live site" notice. They are for internal review, not for publishing.
