@@ -13,6 +13,7 @@ Link durable guides or topic indexes from this page; individual evidence records
 - [readability/](readability/README.md) — Source-native metrics, Word/PDF upload guidance, safeguards, verification and launch readiness
 - [design-pilot/](design-pilot/README.md) — Local synthetic design contracts, host, candidate access and review
 - [Announcement Services integration](integrations/announcement-services/README.md) — Current manual pilot sources and optional identity/lifecycle foundations
+- [NOFO content contract (proposal)](integrations/nofo-content-contract/README.md) — Proposed component vocabulary, stable keys and JSON shape for rendering NOFOs as web pages from FOAM or the Builder
 - [BUILDER_METRICS.md](BUILDER_METRICS.md) — The usage & quality metrics dashboard at `/nofos/metrics`: what it reports and who can see it
 - [CHANGELOG_BANNER.md](CHANGELOG_BANNER.md) — The site-wide "Latest release" banner driven by `CHANGELOG.md`: when it shows, how long, and the admin off switch
 - [CONTRIBUTION_WORKFLOW.md](CONTRIBUTION_WORKFLOW.md) — Diagram of the contribution workflow for people and AI agents (issue → branch → PR → CI → squash merge → changelog), with what to read at each step
