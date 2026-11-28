@@ -728,7 +728,7 @@ class NoteBareLabelBookmarkTests(SimpleTestCase):
                 self.assertEqual(
                     md(str(soup), escape_misc=False).strip(),
                     # The anchor follows the label so the lead-in stays first.
-                    '**Note:**<a id="_note"></a> Keep the signed form.',
+                    '**Note:** <a id="_note"></a>Keep the signed form.',
                 )
 
     def test_bare_label_before_a_list_keeps_its_bookmark_target(self):
@@ -779,3 +779,60 @@ class NoteLeadInTests(SimpleTestCase):
         for target in ("_a", "_b", "_c", "_d"):
             with self.subTest(target=target):
                 self.assertTrue(any(f'id="{target}"' in note for note in notes))
+
+
+class NoteSecondPassTests(SimpleTestCase):
+    def test_bare_label_with_bookmark_survives_a_second_pass(self):
+        soup = BeautifulSoup(
+            f'<p><strong>Note:</strong><a id="_note" {PRESERVE_BOOKMARK_TARGET_ATTR}="">'
+            "</a></p><p>Keep the signed form.</p>",
+            "html.parser",
+        )
+        normalize_note_labels(soup)
+        # Reimport confirmation stores the HTML without the marker, then
+        # normalizes again.
+        del soup.p[NOTE_CALLOUT_MARKER]
+        stored = BeautifulSoup(str(soup), "html.parser")
+        normalize_note_labels(stored)
+        self.assertTrue(stored.p.has_attr(NOTE_CALLOUT_MARKER))
+        self.assertIsNotNone(stored.find("a", id="_note"))
+        self.assertEqual(stored.p.get_text(), "Note: Keep the signed form.")
+
+
+class NoteBookmarkReimportConfirmationTests(TestCase):
+    def test_reimport_confirmation_keeps_a_bare_label_note_with_a_bookmark(self):
+        user = BloomUser.objects.create_user(
+            email="note-bookmark-reimport@example.test",
+            password=None,
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.client.force_login(user)
+        nofo = Nofo.objects.create(
+            title="Saved", number="OLD-1437B", opdiv="HHS", group="bloom"
+        )
+        section = Section.objects.create(nofo=nofo, name="Original", order=1)
+        Subsection.objects.create(section=section, name="", body="Old", order=1)
+        html = (
+            "<p>Opportunity Number: NEW-1437B</p><p>Opdiv: HHS</p>"
+            '<h1>Step 1: Review the opportunity</h1><p>See <a href="#_note">the note</a>.</p>'
+            '<p><strong>Note:</strong><a id="_note"></a></p><p>Keep the signed form.</p>'
+        )
+        upload = SimpleUploadedFile("note.html", b"x", content_type="text/html")
+        with patch(
+            "nofos.views.parse_uploaded_file_as_html_string", return_value=(html, 0)
+        ):
+            response = self.client.post(
+                reverse("nofos:nofo_import_overwrite", kwargs={"pk": nofo.pk}),
+                {"nofo-import": upload},
+            )
+        self.assertRedirects(
+            response,
+            reverse("nofos:nofo_import_confirm_overwrite", kwargs={"pk": nofo.pk}),
+        )
+        self.client.post(
+            reverse("nofos:nofo_import_confirm_overwrite", kwargs={"pk": nofo.pk})
+        )
+        note = Subsection.objects.get(section__nofo=nofo, callout_style="note")
+        self.assertIn('id="_note"', note.body)
+        self.assertTrue(note.body.startswith("**Note:**"))

@@ -92,7 +92,9 @@ def _join_following_paragraph(soup, paragraph):
         or not following.get_text(strip=True)
     ):
         return
-    paragraph.append(" ")
+    # The space goes right after the label, before any kept bookmark anchors,
+    # so a second pass (reimport confirmation) can still read the label.
+    paragraph.insert(1, " ")
     if following.get("id"):
         # Keep link targets: the Markdown converter retains marked empty anchors.
         target = soup.new_tag("a", id=following["id"])
