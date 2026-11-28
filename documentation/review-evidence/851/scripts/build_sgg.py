@@ -298,6 +298,8 @@ def nofo_page(nofo, opp, chrome_parts, standalone, listing_href="opportunity.htm
         if n
     )
     n_deadlines = len(base.deadlines(nofo))
+    # The date beside the status tag is the opportunity record's lastModifiedAt, not a NOFO
+    # revision date; the NOFO's own revisions show in the "Last modified" banner.
     header = f"""
 <div class="bg-white border-bottom border-base-lighter"><div class="grid-container padding-y-3 tablet-lg:padding-y-4">
   {crumbs}
@@ -312,7 +314,7 @@ def nofo_page(nofo, opp, chrome_parts, standalone, listing_href="opportunity.htm
         <li><span class="k">Assistance listing</span><span class="v">{esc(aln)}</span></li>
         <li><span class="k">Application deadline{'s' if n_deadlines > 1 else ''}</span><span class="v">{base.deadline_html(nofo)}</span></li>
       </ul>
-      <p class="margin-top-0 margin-bottom-0 font-sans-2xs"><span class="usa-tag text-no-uppercase font-sans-2xs radius-sm margin-right-2 {tag_cls}">{esc(status_label)}</span>NOFO last updated: {fmt_date(opp['lastModifiedAt'][:10])}</p>
+      <p class="margin-top-0 margin-bottom-0 font-sans-2xs"><span class="usa-tag text-no-uppercase font-sans-2xs radius-sm margin-right-2 {tag_cls}">{esc(status_label)}</span>Opportunity listing updated: {fmt_date(opp['lastModifiedAt'][:10])}</p>
       <div class="margin-top-2">{base.modified_banner(nofo, sections)}</div>
     </div></div>
     <div class="margin-top-3 tablet-lg:margin-top-0 tablet-lg:margin-left-4">
