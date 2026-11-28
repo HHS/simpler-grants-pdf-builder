@@ -156,3 +156,12 @@
     max-width: calc(100% - 120px - 2rem);
   }
 }
+
+/* Note callouts (#1437): rule and lead-in use this theme's table-header
+   colour on an 8% tint. Checked: rule ≥ 3:1 on white, lead-in ≥ 4.5:1 on the tint. */
+:root {
+  --color--note-rule: #007cba;
+  --color--note-tint: #ebf5f9;
+  /* #007cba is too light for small bold text on the tint; darker lead-in. */
+  --color--note-label: #00639e;
+}

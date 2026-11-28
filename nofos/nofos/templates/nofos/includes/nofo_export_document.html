@@ -63,7 +63,17 @@
               {% if subsection.body %}
                 <div class="{% if subsection.callout_box %}margin-top-4{% else %}margin-top-2{% endif %} margin-bottom-2">
               {% endif %}
-              {% if subsection.callout_box %}
+              {% if subsection.callout_box and subsection.callout_style == "note" %}
+                {# Note callouts export as their plain paragraph so a reimport recreates the note (IMPORT-080). Clearance copies apply the same policy-language stripping and review flags as other subsections. #}
+                <div class="styled-subsection-body">
+                  {% if strip_policy_language and subsection.policy_language_status == "intact" %}
+                    <p>&nbsp;</p><table class="policy-language-stripped-box"><tr><td><em>Standard HHS Department Governance language — omitted from this abbreviated review copy.</em></td></tr></table>
+                  {% else %}
+                    {% if strip_policy_language %}{% with note=subsection|policy_language_export_note %}{% if note %}<p>&nbsp;</p><table class="policy-language-flag-box{% if subsection|policy_language_flag_is_prominent %} policy-language-flag-box--priority{% endif %}"><tr><td>{{ note }}</td></tr></table>{% endif %}{% endwith %}{% endif %}
+                    {{ subsection.body|safe_markdown|introductory_page_links:nofo|add_footnote_ids|add_classes_to_paragraphs|add_captions_to_tables|add_classes_to_lists|convert_paragraphs_to_hrs|truncate_anchor_links_for_docx }}
+                  {% endif %}
+                </div>
+              {% elif subsection.callout_box %}
                 <p>&nbsp;</p> <!-- remove this if grabzit fixes their issue -->
                 <table class="callout-box">
                   <tr>

@@ -352,8 +352,32 @@ class NofoMetadataForm(forms.ModelForm):
 
 
 # body needs a custom field and a custom widget so don't use the factory function
+NOTE_CALLOUT_BOTH_ERROR = "Choose either a callout box or a note, not both."
+NOTE_CALLOUT_HEADING_ERROR = (
+    "A note has no heading. Leave the subsection name and heading level blank, "
+    "or add a new subsection without a heading for the note."
+)
+
+
+def clean_callout_style(form, cleaned_data):
+    """A "Note" callout style is always a callout box without a heading."""
+    style = cleaned_data.get("callout_style") or "box"
+    cleaned_data["callout_style"] = style
+    if style == "note":
+        # The editor offers "Is callout box?" and "Is note?" as one choice.
+        if form.data.get("callout_box"):
+            form.add_error("callout_style", NOTE_CALLOUT_BOTH_ERROR)
+        cleaned_data["callout_box"] = True
+        if cleaned_data.get("name") or cleaned_data.get("tag"):
+            form.add_error("callout_style", NOTE_CALLOUT_HEADING_ERROR)
+    return cleaned_data
+
+
 class SubsectionEditForm(forms.ModelForm):
     body = MartorFormField(required=False)
+    callout_style = forms.ChoiceField(
+        choices=Subsection.CALLOUT_STYLE_CHOICES, required=False
+    )
     edit_version = forms.CharField(widget=forms.HiddenInput, required=False)
     recovery = forms.CharField(widget=forms.HiddenInput, required=False)
 
@@ -364,7 +388,7 @@ class SubsectionEditForm(forms.ModelForm):
 
     class Meta:
         model = Subsection
-        fields = ["name", "tag", "callout_box", "html_class", "body"]
+        fields = ["name", "tag", "callout_box", "callout_style", "html_class", "body"]
         widgets = {
             "name": forms.TextInput(),
         }
@@ -380,13 +404,21 @@ class SubsectionEditForm(forms.ModelForm):
         if tag and not name:
             self.add_error("name", "Subsection name can’t be empty.")
 
+        clean_callout_style(self, cleaned_data)
+
         if (
             self.instance.pk
             and self.instance.section_id
             and self.instance.section.is_introduction
             and not self.instance.tag
         ):
-            if name or tag or cleaned_data.get("callout_box"):
+            # Introductory prose can be a note (imports create them there),
+            # but not a box callout or a heading.
+            is_box = (
+                cleaned_data.get("callout_box")
+                and cleaned_data.get("callout_style") != "note"
+            )
+            if name or tag or is_box:
                 raise forms.ValidationError(
                     "The introductory heading is fixed. Leave this body's title and heading level blank, and edit its content below."
                 )
@@ -396,10 +428,13 @@ class SubsectionEditForm(forms.ModelForm):
 
 class SubsectionCreateForm(forms.ModelForm):
     body = MartorFormField(required=False)
+    callout_style = forms.ChoiceField(
+        choices=Subsection.CALLOUT_STYLE_CHOICES, required=False
+    )
 
     class Meta:
         model = Subsection
-        fields = ["name", "tag", "callout_box", "body"]
+        fields = ["name", "tag", "callout_box", "callout_style", "body"]
         widgets = {
             "name": forms.TextInput(),
         }
@@ -418,6 +453,8 @@ class SubsectionCreateForm(forms.ModelForm):
 
         if tag and not name:
             self.add_error("name", "Subsections with a heading level must have a name.")
+
+        clean_callout_style(self, cleaned_data)
 
         if not name and not body and not tag:
             raise forms.ValidationError(

@@ -1038,6 +1038,38 @@ class Subsection(BaseSubsection):
         Section, on_delete=models.CASCADE, related_name="subsections"
     )
 
+    CALLOUT_STYLE_CHOICES = [
+        ("box", "Box"),
+        ("note", "Note"),
+    ]
+
+    callout_style = models.CharField(
+        "Callout style",
+        max_length=8,
+        choices=CALLOUT_STYLE_CHOICES,
+        default="box",
+        help_text=(
+            "How a callout box displays. A note is a short applicant caveat "
+            "with a left rule and a bold lead-in. Ignored unless this "
+            "subsection is a callout box."
+        ),
+    )
+
+    @property
+    def is_note_callout(self):
+        return self.callout_box and self.callout_style == "note"
+
+    def clean(self, *args, **kwargs):
+        # Every save path (editor, API, admin) runs full_clean(): a note is
+        # always a headingless callout (#1437).
+        if self.callout_style == "note":
+            if self.name or self.tag:
+                raise ValidationError(
+                    {"callout_style": "A note callout can't have a heading."}
+                )
+            self.callout_box = True
+        super().clean(*args, **kwargs)
+
     POLICY_LANGUAGE_STATUS_CHOICES = [
         ("none", "Not policy language"),
         ("intact", "Matches current canonical text"),

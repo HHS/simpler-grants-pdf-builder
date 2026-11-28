@@ -5,7 +5,7 @@ import json
 
 from django.core import signing
 
-EDIT_FIELDS = ("name", "tag", "callout_box", "html_class", "body")
+EDIT_FIELDS = ("name", "tag", "callout_box", "callout_style", "html_class", "body")
 TOKEN_SALT = "nofos.subsection-edit.version"
 RECOVERY_SALT = "nofos.subsection-edit.recovery"
 

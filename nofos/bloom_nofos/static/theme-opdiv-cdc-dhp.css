@@ -367,3 +367,12 @@ table td {
   border-bottom-color: var(--color--table-blue);
   background-color: var(--color--table-blue);
 }
+
+/* Note callouts (#1437): rule and lead-in use this theme's table-header
+   colour on an 8% tint. Checked: rule ≥ 3:1 on white, lead-in ≥ 4.5:1 on the tint. */
+:root {
+  --color--note-rule: #007ac1;
+  --color--note-tint: #ebf4fa;
+  /* #007ac1 is too light for small bold text on the tint; darker lead-in. */
+  --color--note-label: #00639e;
+}

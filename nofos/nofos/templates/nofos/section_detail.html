@@ -115,7 +115,11 @@
       <td class="nofo-edit-table--subsection--callout-box">
         {% if subsection.callout_box %}
         <span class="floating">
-          <span role="img" aria-label="Callout box" title="Callout box">📦</span>
+          {% if subsection.callout_style == "note" %}
+            <span role="img" aria-label="Note callout" title="Note callout">📝</span>
+          {% else %}
+            <span role="img" aria-label="Callout box" title="Callout box">📦</span>
+          {% endif %}
         </span>
         {% endif %}
       </td>

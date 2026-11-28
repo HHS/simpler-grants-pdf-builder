@@ -60,6 +60,7 @@ When you use a task in a suggestion, report, or comment:
 | Subsection | A heading and its content, or a headingless body. This is the main unit you edit. | Usually Heading 3–7 and the content under it; lead introductory prose has no heading |
 | Heading level | Set on headed subsections; the selector offers Heading 2 to Heading 7. | The size and nesting of the heading; follow the design guidance's H1–H6 limit |
 | Callout box | A subsection styled with an accent color to draw attention. | Shaded or colored box |
+| Note callout | A callout with the **Note** style: one short caveat for applicants, with no heading and a bold lead-in such as “Note for applicants:”. See [TASK-NOTE-CALLOUT](#task-note-callout). | Light box with a left rule in the theme colour |
 | Subsection content | Written in **Markdown** in a text editor. Simple tables and lists are Markdown; merged-cell tables and lists requiring source marker semantics are stored as HTML. See [Word list editing](WORD_LIST_IMPORT.md). | Body text, lists, tables |
 | Page break | A per-subsection setting that starts it on a new page. | New page before the heading |
 
@@ -398,6 +399,51 @@ document is organized.
 - Both **Application Due Date** and **Application deadline** can identify
   imported deadline sidebar callouts. Check the saved content and PDF rather
   than changing the heading just to make it match a different template.
+
+<a id="task-note-callout"></a>
+
+### TASK-NOTE-CALLOUT — Add, edit or remove a note callout
+
+A note callout is a short caveat for applicants, such as who a requirement
+applies to. It shows as a light box with a left rule in the theme colour and
+starts with a bold lead-in. Word imports create one for each standalone
+paragraph that starts with a note label, such as `Note:`,
+`Note for applicants:` or `Note (competing supplement applicants):`. See
+[IMPORT-080](IMPORT_RULES.md#import-080--applicant-note-labels-and-note-callouts).
+
+**Steps**
+
+1. To add one, select **Add subsection** where the note belongs. To change one,
+   open it ([TASK-SUBSECTION-EDIT](#task-subsection-edit)). Notes show 📝 in the
+   section's subsection list.
+2. Leave **Subsection name** and **Heading level** blank. Notes have no heading.
+3. Check **Is note?**, next to **Is callout box?**. You can check only one:
+   checking one unchecks the other. **Is note?** is unavailable on subsections
+   with a heading; add a new subsection without a heading instead.
+4. Start the content with a bold lead-in, such as `**Note for applicants:**`,
+   then the note text.
+5. Select **Save subsection**, then **Preview PDF**.
+
+To turn a note into a box callout, check **Is callout box?**. To make it
+ordinary text, uncheck **Is note?**.
+
+**Notes**
+
+- Keep a note to one short paragraph. Use a box callout for content with
+  headings, lists or tables.
+- Notes can't go inside a list or table. Place the note after the list or
+  table it qualifies.
+- NOFOs imported before #1437 keep their notes as ordinary paragraphs with a
+  bold `Note:` label. Reimport the NOFO, or follow these steps, to make them
+  note callouts.
+- If a note doesn't start with a label such as `**Note:**`, the editor shows a
+  warning. You can still save it, but readers then rely on colour alone, and a
+  Word export and reimport won't recreate the note.
+- Keep the lead-in bold. Without bold the lead-in isn't shown in the theme
+  colour.
+- A Word export and reimport keep only a note's first paragraph as the note.
+- In **Before you get started**, text can be a note or plain text, but not a
+  box callout.
 
 ---
 

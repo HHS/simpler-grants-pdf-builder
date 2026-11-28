@@ -182,13 +182,29 @@ p + p {
   margin-top: 10px;
 }
 
-p.nofo-note {
-  color: #565c65; /* USWDS base-dark */
-  font-size: 0.95em;
+/* Note callouts (#1437): a short applicant caveat saved as its own
+   subsection. Each OpDiv theme sets the three --color--note-* values; the
+   fallbacks below are the CDC defaults. */
+.note-callout {
+  border-left: 4px solid var(--color--note-rule, #0057b7);
+  background-color: var(--color--note-tint, #ebf2f9);
+  color: var(--color--black, #000000);
+  padding: 8px 14px 9px;
+  margin: 12px 0;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 
-table .nofo-note--in-table {
-  font-size: 0.95em;
+.note-callout p {
+  margin: 0;
+}
+
+.note-callout p + p {
+  margin-top: 6px;
+}
+
+.note-callout .note-callout__lead-in {
+  color: var(--color--note-label, var(--color--note-rule, #0057b7));
 }
 
 a,
@@ -1185,6 +1201,15 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
     break-after: avoid;
   }
 
+  /* Tag the note as a Div so screen readers don't announce a quotation.
+     Keep a note on the same page as the content before it, such as a table
+     it qualifies (#1349's keep-together, now across subsections). */
+  .note-callout {
+    -prince-pdf-tag-type: Div;
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+
   @prince-pdf {
     /* Open Acrobat with bookmarks panel open by default */
     -prince-pdf-page-mode: show-bookmarks;
@@ -1262,7 +1287,8 @@ https://www.smashingmagazine.com/2015/01/designing-for-print-with-css/#footnotes
   table .page-break-before,
   .page-break--hr--container .page-break-before,
   .page-break-before--heading,
-  .callout-box.page-break-before {
+  .callout-box.page-break-before,
+  .note-callout.page-break-before {
     break-before: page !important;
     page-break-before: always !important;
   }

@@ -4,7 +4,11 @@ from bs4 import BeautifulSoup
 from django import template
 from django.utils.safestring import mark_safe
 
-from ..note_paragraphs import is_note_paragraph
+from ..note_paragraphs import (
+    is_between_list_items,
+    is_in_list_or_table,
+    is_note_paragraph,
+)
 from .utils import _add_class_if_not_exists_to_tag
 
 register = template.Library()
@@ -23,21 +27,18 @@ def add_classes_to_paragraphs(html_string):
 
 
 @register.filter
-def style_note_paragraphs(html_string):
+def keep_tables_with_following_notes(html_string):
+    """Keep a table on the same page as a standalone "Note:" paragraph after it.
+
+    Notes get no paragraph styling of their own: imported standalone notes are
+    note callout subsections (#1437). Notes in list items, table cells or
+    between two items of one list are ordinary paragraphs.
+    """
     soup = BeautifulSoup(html_string, "html.parser")
-    for element in soup.find_all(["p", "td", "th"]):
-        # Markdown tables flatten single-paragraph cells.
-        if element.name != "p" and any(
-            child.name not in {"b", "strong", "em", "i", "span", "a", "sup", "sub"}
-            for child in element.find_all(recursive=False)
-        ):
+    for element in soup.find_all("p"):
+        if is_in_list_or_table(element) or not is_note_paragraph(element):
             continue
-        if not is_note_paragraph(element):
-            continue
-        inside_table = element.name != "p" or element.find_parent(["td", "th"])
-        classname = "nofo-note--in-table" if inside_table else "nofo-note"
-        _add_class_if_not_exists_to_tag(element, classname, element.name)
-        if inside_table:
+        if is_between_list_items(element):
             continue
         for previous in element.previous_siblings:
             if not getattr(previous, "name", None):

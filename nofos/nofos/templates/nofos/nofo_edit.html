@@ -799,7 +799,11 @@ Edit “{{ nofo|nofo_name }}”
           <td class="nofo-edit-table--subsection--callout-box">
             {% if subsection.callout_box %}
               <span class="floating">
-                <span role="img" aria-label="Callout box" title="This subsection is a callout box" class="usa-tooltip" data-position="bottom">📦</span>
+                {% if subsection.callout_style == "note" %}
+                  <span role="img" aria-label="Note callout" title="This subsection is a note callout" class="usa-tooltip" data-position="bottom">📝</span>
+                {% else %}
+                  <span role="img" aria-label="Callout box" title="This subsection is a callout box" class="usa-tooltip" data-position="bottom">📦</span>
+                {% endif %}
               </span>
             {% endif %}
           </td>

@@ -505,6 +505,13 @@ To turn a subsection into a callout box, see
 Word, NOFO Builder treats any 1x1 table as a callout box, so put callout content
 in a 1x1 table before importing.
 
+For a short caveat for applicants, such as who a requirement applies to, use a
+note instead of a callout box. In Word, start its own paragraph with a note
+label, such as `Note:`, `Note for applicants:` or
+`Note (competing supplement applicants):`, and place it after the list or table
+it qualifies, not inside it. NOFO Builder imports it as a note callout. See
+[TASK-NOTE-CALLOUT](EDITOR_TASKS.md#task-note-callout).
+
 ## Endnotes
 
 ### Why does NOFO Builder use endnotes instead of footnotes?

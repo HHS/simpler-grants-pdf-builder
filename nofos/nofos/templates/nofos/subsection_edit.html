@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static nofo_name input_type whitespaceless safe_br %}
+{% load static nofo_name input_type whitespaceless safe_br note_label %}
 
 {% block title %}
   Subsection: {% if subsection.name %}{{ subsection.name }}{% else %}(#{{ subsection.order }}){% endif %}
@@ -24,7 +24,7 @@
     </div>
     <div class="subsection_edit--header">
       <h1 class="font-heading-xl text-bold margin-y-0">Subsection: {% if subsection.name %}{{ subsection.name|safe_br }}{% else %}(#{{ subsection.order }}){% endif %}</h1>
-      {% if subsection.callout_box %}<h2 class="font-heading-lg margin-y-1 text-base"><span aria-hidden="true">📦</span> Callout box</h2>{% endif %}
+      {% if subsection.callout_box %}<h2 class="font-heading-lg margin-y-1 text-base"><span aria-hidden="true">📦</span> {% if subsection.callout_style == "note" %}Note callout{% else %}Callout box{% endif %}</h2>{% endif %}
       {% if subsection.name %}
       <div class="subsection_edit--header--view font-sans-md">
         <a href="{% url 'nofos:nofo_view' nofo.id %}{{ "#"|add:subsection.html_id  }}" target="_blank">View HTML for subsection</a>
@@ -162,13 +162,35 @@
         </div>
       {% endif %}
 
-      <!-- callout_box -->
-      <div class="form-group margin-top-4 width-mobile">
+      <!-- callout_box and callout_style -->
+      <div class="form-group margin-top-4 subsection-callout-options">
         <div class="usa-checkbox">
-          <input class="usa-checkbox__input usa-checkbox__input--tile" id="callout_box" type="checkbox" name="callout_box" {% if form.callout_box.value %}checked{% endif %} {% if subsection.section.is_introduction and not subsection.tag %}disabled{% endif %}>
+          <input class="usa-checkbox__input usa-checkbox__input--tile" id="callout_box" type="checkbox" name="callout_box" {% if form.callout_box.value and form.callout_style.value != "note" %}checked{% endif %} {% if subsection.section.is_introduction and not subsection.tag %}disabled{% endif %}>
           <label class="usa-checkbox__label" for="callout_box">Is callout box?
             <span class="usa-checkbox__label-description">Callout boxes <span aria-hidden="true">(📦)</span> use an accent color to call attention to important content.</span>
           </label>
+        </div>
+        <div class="usa-checkbox">
+          <input class="usa-checkbox__input usa-checkbox__input--tile" id="callout_style" type="checkbox" name="callout_style" value="note" {% if form.callout_style.value == "note" %}checked{% endif %} {% if subsection.tag %}disabled{% endif %} aria-describedby="callout_style--description{% if form.errors.callout_style %} callout_style--error{% endif %}">
+          <label class="usa-checkbox__label" for="callout_style">Is note?
+            {% if subsection.tag %}
+              <span class="usa-checkbox__label-description" id="callout_style--description">Notes <span aria-hidden="true">(📝)</span> have no heading, so this subsection can’t be a note. To add a note, add a new subsection without a heading.</span>
+            {% else %}
+              <span class="usa-checkbox__label-description" id="callout_style--description">Notes <span aria-hidden="true">(📝)</span> are short caveats for applicants. They have no heading and start with a bold lead-in, like “Note for applicants:”.</span>
+            {% endif %}
+          </label>
+        </div>
+      </div>
+      {% if form.errors.callout_style %}
+        <div class="usa-error-message" id="callout_style--error">Error: {{ form.errors.callout_style.0 }}</div>
+      {% endif %}
+      <div id="note-label-warning-region" aria-live="polite" aria-atomic="true">
+        <div id="note-label-warning"
+          class="margin-top-2 padding-1 border-solid border-top-width-0 border-bottom-width-0 border-right-width-0 border-left-width-05 border-accent-warm-dark text-accent-warm-dark"
+          {% if form.callout_style.value != "note" or form.body.value|has_note_label %}hidden{% endif %}>
+          <strong>This note doesn’t start with a note label.</strong>
+          Start the content with a bold lead-in, such as <code>**Note:**</code> or <code>**Note for applicants:**</code>.
+          Without it, only the color shows this is a note, and a Word export and reimport won’t recreate it.
         </div>
       </div>
 
@@ -268,6 +290,7 @@
 {% endblock %}
 
 {% block js_footer %}
+  <script src="{% static 'js/nofos/callout_choice.js' %}" defer></script>
   <script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
   <script type="text/javascript" src="{% static 'plugins/js/jquery.min.js' %}"></script>
   <script type="text/javascript" src="{% static 'plugins/js/bootstrap.min.js' %}"></script>

@@ -15,9 +15,13 @@ class SubsectionSchema(ModelSchema):
             "tag",
             "body",
             "callout_box",
+            "callout_style",
             "html_class",
         ]
-        fields_optional = ["html_class"]  # Fields that should have defaults
+        fields_optional = [
+            "html_class",
+            "callout_style",
+        ]  # Fields that should have defaults
 
 
 class SectionBaseSchema(ModelSchema):

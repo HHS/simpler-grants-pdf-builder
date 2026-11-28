@@ -243,6 +243,7 @@ Once [#1354](https://github.com/HHS/simpler-grants-pdf-builder/pull/1354) is dep
 
 - `<p>&nbsp;</p>` spacers marked `<!-- remove this if grabzit fixes their issue -->` in `composer_export.html` and `nofo_export_document.html` work around a GrabzIt layout issue.
 - Heading IDs and anchor links are shortened for DOCX by the `truncate_anchor_links_for_docx` template tags.
+- Note callouts (#1437) export from `nofo_export_document.html` as their plain paragraph, starting with the bold `Note…:` lead-in, not as a 1×1 table. A 1×1 table would reimport as a box callout, while the paragraph reimports as a note callout under [IMPORT-080](IMPORT_RULES.md#import-080--applicant-note-labels-and-note-callouts). Box callouts still export as single-cell tables. In the clearance copy, notes get the same policy-language stripping and review flags as other subsections.
 
 ## Keeping this page current
 

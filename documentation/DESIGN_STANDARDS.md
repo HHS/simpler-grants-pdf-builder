@@ -30,6 +30,7 @@ publishing.
 - [Lists](#lists)
 - [Links](#links)
 - [Tables](#tables)
+- [Notes](#notes)
 - [Before you publish](#before-you-publish)
 - [Related resources](#related-resources)
 
@@ -166,6 +167,95 @@ If splitting a complex table means repeating some content, such as a row label
 or a shared header, repeat it in each new table. Accessible structure is more
 important than saving space.
 
+## Notes
+
+This is a NOFO Builder pattern (#1437). A note is one short caveat for
+applicants, such as who a requirement applies to or what they must do. It is
+not a summary: use a callout box for key facts, contacts and other
+highlights, and keep table-reading notes, such as what an asterisk means,
+directly below the table.
+
+**How a note looks.** A light box with a 4px left rule in the theme colour, an
+8% tint of that colour and a bold lead-in in the theme colour. Body text stays
+black. There is no icon, heading or rounded corner. It sits at the full text
+width and doesn't split across pages.
+
+**Writing a note**
+
+- Start with a lead-in that names the note and, if it helps, the audience:
+  "Note:", "Note for applicants:" or "Note (competing supplement applicants):".
+  Keep the lead-in to one line.
+- Say what the applicant must do, if anything.
+- Keep it to one short paragraph. Use a callout box for content with headings,
+  lists or tables.
+- Use notes sparingly. More than about two on a page makes each one easier to
+  ignore.
+- Place a note after the list or table it qualifies, never inside it. A note
+  label inside a list item or table cell stays ordinary text.
+
+**Accessibility.** The lead-in is real text, so the note's meaning doesn't
+depend on colour. In HTML the note is `<div class="note-callout" role="note">`.
+In the PDF it is tagged `Div` with a `P` inside, not `BlockQuote`, so screen
+readers don't announce a quotation. Notes don't add headings or bookmarks.
+
+**Theme colours.** Each OpDiv theme sets `--color--note-rule`,
+`--color--note-tint` and `--color--note-label` from its table-header colour.
+The rule needs at least 3:1 against white, and the lead-in at least 4.5:1 on
+the tint. A test checks every selectable theme. FDA and CDC DHP use a darker
+lead-in because their accent blue is too light for small bold text on the
+tint.
+
+| Theme | Rule | Tint | Lead-in | Rule on white | Lead-in on tint |
+| --- | --- | --- | --- | --- | --- |
+| ACF (Light) | `#264a64` | `#eef1f3` | `#264a64` | 9.35:1 | 8.24:1 |
+| ACL (Default) | `#08508f` | `#ebf1f6` | `#08508f` | 8.22:1 | 7.22:1 |
+| ASPR (Light) | `#155197` | `#ecf1f7` | `#155197` | 7.91:1 | 6.96:1 |
+| CDC (Default), also landscape | `#0057b7` | `#ebf2f9` | `#0057b7` | 6.89:1 | 6.10:1 |
+| CDC DGHP | `#20263e` | `#edeef0` | `#20263e` | 14.91:1 | 12.85:1 |
+| CDC DHP | `#007ac1` | `#ebf4fa` | `#00639e` | 4.61:1 | 5.75:1 |
+| CDC IOD | `#672e6b` | `#f3eef3` | `#672e6b` | 9.63:1 | 8.41:1 |
+| CDC NCIPC Blue | `#1a3b66` | `#edeff3` | `#1a3b66` | 11.28:1 | 9.80:1 |
+| CDC NCIPC Teal | `#004c52` | `#ebf1f1` | `#004c52` | 9.74:1 | 8.53:1 |
+| CDC ORR | `#003057` | `#ebeef2` | `#003057` | 13.46:1 | 11.56:1 |
+| CDC (Light), also landscape | `#0057b7` | `#ebf2f9` | `#0057b7` | 6.89:1 | 6.10:1 |
+| CMS (Default) | `#004a86` | `#ebf1f5` | `#004a86` | 9.04:1 | 7.93:1 |
+| CMS (Light) | `#004a86` | `#ebf1f5` | `#004a86` | 9.04:1 | 7.93:1 |
+| FDA | `#007cba` | `#ebf5f9` | `#00639e` | 4.57:1 | 5.78:1 |
+| HRSA (Default, legacy) | `#00345e` | `#ebeff2` | `#00345e` | 12.71:1 | 10.99:1 |
+| HRSA (Light) | `#006699` | `#ebf3f7` | `#006699` | 6.25:1 | 5.56:1 |
+| IHS (Light) | `#012f52` | `#ebeef1` | `#012f52` | 13.73:1 | 11.79:1 |
+| NIH (Light) | `#08508f` | `#ebf1f6` | `#08508f` | 8.22:1 | 7.22:1 |
+| OASH | `#162e51` | `#eceef1` | `#162e51` | 13.60:1 | 11.70:1 |
+| ONC | `#081f7a` | `#ebedf4` | `#081f7a` | 14.12:1 | 12.07:1 |
+| SAMHSA (Light) | `#1a6986` | `#edf3f5` | `#1a6986` | 6.16:1 | 5.50:1 |
+
+**Pagination.** A note stays on the same page as the content just before it,
+such as the table it qualifies, unless the note has its own page break.
+
+**Edge cases**
+
+- **Lead-in without bold.** The note keeps its box and rule, but the lead-in
+  isn't coloured. "Note:" still names it, and reimport still finds it.
+- **Other bold text.** Only a bold note label at the start of the note is
+  coloured. Other bold text in a note stays black.
+- **No lead-in.** The note is shown, but only colour marks it as a note
+  (WCAG 1.4.1), and a Word export and reimport turn it into a plain
+  paragraph. The editor shows a warning until a label is added.
+- **More than one paragraph, a list or a heading.** These display, but a Word
+  export and reimport keep only the first paragraph as the note.
+- **Long notes.** The "lots of content" warning only checks box callouts.
+- **Before you get started.** Introductory text can be a note, or plain text,
+  but not a box callout or a heading.
+- **Headed subsections.** A subsection with a heading can't become a note,
+  because its heading can't be removed. Add a new subsection without a heading
+  for the note instead.
+- **Placement.** Notes always stay in the main text column. They never move
+  to the first section's sidebar, even if they start with "Have questions?".
+
+See [TASK-NOTE-CALLOUT](EDITOR_TASKS.md#task-note-callout) to add or edit a
+note, and [IMPORT-080](IMPORT_RULES.md#import-080--applicant-note-labels-and-note-callouts)
+for how Word imports create them.
+
 ## Before you publish
 
 Check the final PDF against this list.
@@ -185,6 +275,8 @@ Check the final PDF against this list.
   ([style guide: lists](STYLE_GUIDE.md#lists), [lists](#lists)).
 - Endnotes are numbered in order, without reusing a number
   ([FAQ: endnotes](NOFO_BUILDER_FAQ.md#endnotes)).
+- Notes are short, start with a bold lead-in and sit outside lists and tables
+  ([notes](#notes)).
 - No stranded lines, isolated headings, or excess white space
   ([FAQ: page breaks](NOFO_BUILDER_FAQ.md#when-should-i-add-a-manual-page-break)).
 

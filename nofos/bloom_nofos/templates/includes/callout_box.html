@@ -1,6 +1,13 @@
-{% load static martortags callout_box_contents add_classes_to_tables is_floating_callout_box %}
+{% load static martortags callout_box_contents add_classes_to_tables is_floating_callout_box introductory_page_links replace_unicode_with_icon add_footnote_ids add_classes_to_paragraphs note_label %}
 
 {% with body=subsection.body|safe_markdown %}
+{% if subsection.callout_style == "note" %}
+{# IMPORT-080 note callout: a short applicant caveat. The bold lead-in is real text in the body. #}
+<div id="{{ subsection.html_id }}" class="note-callout{% if subsection.html_class %} {{ subsection.html_class }}{% endif %}" role="note">
+  {# Same processing as body text, so citations, endnote links and icons work in notes. #}
+  {{ body|introductory_page_links:nofo|replace_unicode_with_icon|add_footnote_ids|add_classes_to_paragraphs|mark_note_lead_in }}
+</div>
+{% else %}
 {% show_contact_callout_icon subsection.body body break_colons as show_contact_icon %}
 <div {% if not subsection.name %}id="{{ subsection.html_id }}"{% endif %} class="callout-box{% if show_contact_icon %} callout-box--icon callout-box--questions{% endif %}{% if 'Adobe Reader' in subsection.body %} callout-box--icon callout-box--keyboard{% endif %}{% if subsection.html_class %} {{ subsection.html_class }}{% endif %}">
   {% if subsection.name %}
@@ -29,4 +36,5 @@
     {% endif %}
   </div>
 </div>
+{% endif %}
 {% endwith %}

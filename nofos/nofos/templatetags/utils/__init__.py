@@ -502,6 +502,9 @@ def is_application_due_date_callout(subsection):
 def is_floating_callout_box(subsection):
     if not subsection.callout_box:
         return False
+    # Note callouts always stay in the main text column (#1437).
+    if getattr(subsection, "callout_style", "") == "note":
+        return False
     # Imported deadline titles are canonical; accept ordinary case/spacing
     # edits too, without changing the legacy title/body matching below.
     if is_application_due_date_callout(subsection):
