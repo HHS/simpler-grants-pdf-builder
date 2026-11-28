@@ -1,0 +1,11 @@
+{
+  "name": "nofo-html-spike-851",
+  "private": true,
+  "description": "One-off tooling for the #851 NOFO web page prototypes. Not used by the Builder application.",
+  "type": "module",
+  "dependencies": {
+    "@uswds/uswds": "3.8.1",
+    "purgecss": "6.0.0",
+    "sass": "1.77.8"
+  }
+}
