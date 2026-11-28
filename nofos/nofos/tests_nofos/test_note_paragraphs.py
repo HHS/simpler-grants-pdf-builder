@@ -680,3 +680,29 @@ class NoteMarkerInputTests(SimpleTestCase):
                 subsections = result.sections[0]["subsections"]
                 self.assertFalse(any(s.get("callout_style") for s in subsections))
                 self.assertFalse(any(s["is_callout_box"] for s in subsections))
+
+
+class NoteTrailingBreakTests(SimpleTestCase):
+    def normalize(self, html):
+        soup = BeautifulSoup(html, "html.parser")
+        normalize_note_labels(soup)
+        return soup
+
+    def test_bare_label_with_trailing_break_takes_the_next_paragraph(self):
+        for label in ("<strong>Note:</strong><br/>", "Note:<br/> ", "Note: <br/><br/>"):
+            with self.subTest(label=label):
+                soup = self.normalize(f"<p>{label}</p><p>Keep the signed form.</p>")
+                paragraphs = soup.find_all("p")
+                self.assertEqual(len(paragraphs), 1)
+                self.assertEqual(
+                    paragraphs[0].get_text(), "Note: Keep the signed form."
+                )
+                self.assertTrue(paragraphs[0].has_attr(NOTE_CALLOUT_MARKER))
+                self.assertFalse(paragraphs[0].find("br"))
+
+    def test_bare_label_with_trailing_break_before_a_list_is_not_a_note(self):
+        soup = self.normalize(
+            "<p><strong>Note:</strong><br/></p><ul><li>Item</li></ul>"
+        )
+        self.assertFalse(soup.p.has_attr(NOTE_CALLOUT_MARKER))
+        self.assertEqual(soup.p.get_text(), "Note:")

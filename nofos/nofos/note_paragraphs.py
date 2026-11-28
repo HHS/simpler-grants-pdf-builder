@@ -100,6 +100,29 @@ def _join_following_paragraph(soup, paragraph):
     following.decompose()
 
 
+def _strip_trailing_breaks(paragraph):
+    """Drop line breaks and whitespace at the end of a paragraph."""
+    while paragraph.contents:
+        last = paragraph.contents[-1]
+        if (isinstance(last, Tag) and last.name == "br") or (
+            isinstance(last, NavigableString) and not last.strip()
+        ):
+            last.extract()
+        else:
+            break
+
+
+def _has_body(paragraph):
+    """True when a labelled paragraph has text or an image after its label."""
+    for node in paragraph.contents[1:]:
+        if isinstance(node, NavigableString):
+            if node.strip():
+                return True
+        elif node.name == "img" or node.get_text(strip=True) or node.find("img"):
+            return True
+    return False
+
+
 def normalize_note_labels(soup):
     """Normalize only the label, keeping the original inline body nodes.
 
@@ -107,6 +130,10 @@ def normalize_note_labels(soup):
     each one its own "Note" callout subsection.
     """
     for paragraph in soup.find_all("p"):
+        if not _IMPORT_LABEL.match(paragraph.get_text()):
+            continue
+        # A trailing break must not make a bare "Note:" line look like a note.
+        _strip_trailing_breaks(paragraph)
         match = _IMPORT_LABEL.match(paragraph.get_text())
         if not match:
             continue
@@ -141,14 +168,17 @@ def normalize_note_labels(soup):
         label = soup.new_tag("strong")
         label.string = _label_text(match)
         paragraph.insert(0, label)
-        if paragraph.contents[1:]:
+        if _has_body(paragraph):
             paragraph.insert(1, " ")
 
         if paragraph.parent is None or paragraph.parent.name not in _TOP_LEVEL_PARENTS:
             continue
-        if not paragraph.contents[1:]:
+        if not _has_body(paragraph):
+            # A bare label line: drop leftover breaks and take the next paragraph.
+            for leftover in paragraph.contents[1:]:
+                leftover.extract()
             _join_following_paragraph(soup, paragraph)
-        if paragraph.contents[1:] and not is_between_list_items(paragraph):
+        if _has_body(paragraph) and not is_between_list_items(paragraph):
             paragraph[NOTE_CALLOUT_MARKER] = "true"
 
 
