@@ -147,6 +147,10 @@ class NoteParagraphTests(SimpleTestCase):
             "Note that applicants must submit: (1) a budget.",
             "Note the following requirements: budget, narrative.",
             "Notes from the webinar: slides are posted.",
+            # A hyphen inside a word is not a label separator.
+            "Note for first-time applicants who need help completing the form.",
+            # More than eight audience words: left unchanged, not partly converted.
+            "Note for a b c d e f g first-time applicants: Keep it.",
         ):
             with self.subTest(body=body):
                 soup = BeautifulSoup(f"<p>{body}</p>", "html.parser")
@@ -184,6 +188,10 @@ class NoteCalloutImportTests(SimpleTestCase):
     def test_audience_labels_are_standardized_and_kept(self):
         for source, label in (
             ("Note for applicants: Budget.", "Note for applicants:"),
+            (
+                "Note for first-time applicants: Budget.",
+                "Note for first-time applicants:",
+            ),
             ("<strong>Note for applicants:</strong> Budget.", "Note for applicants:"),
             (
                 "Note (competing supplement applicants): Budget.",
