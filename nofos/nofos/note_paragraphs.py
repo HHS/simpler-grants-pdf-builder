@@ -174,9 +174,18 @@ def normalize_note_labels(soup):
         if paragraph.parent is None or paragraph.parent.name not in _TOP_LEVEL_PARENTS:
             continue
         if not _has_body(paragraph):
-            # A bare label line: drop leftover breaks and take the next paragraph.
-            for leftover in paragraph.contents[1:]:
+            # A bare label line: drop leftover breaks and take the next paragraph,
+            # but keep bookmark anchors (direct or inside a wrapper) as link targets.
+            targets = []
+            for leftover in list(paragraph.contents[1:]):
+                if isinstance(leftover, Tag):
+                    if leftover.name == "a" and leftover.get("id"):
+                        targets.append(leftover.extract())
+                        continue
+                    targets.extend(t.extract() for t in leftover.find_all("a", id=True))
                 leftover.extract()
+            for target in targets:
+                paragraph.append(target)
             _join_following_paragraph(soup, paragraph)
         if _has_body(paragraph) and not is_between_list_items(paragraph):
             paragraph[NOTE_CALLOUT_MARKER] = "true"

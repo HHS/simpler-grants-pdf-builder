@@ -25,7 +25,7 @@ from nofos.models import (
     Section,
     Subsection,
 )
-from nofos.nofo_markdown import md
+from nofos.nofo_markdown import PRESERVE_BOOKMARK_TARGET_ATTR, md
 from nofos.note_paragraphs import (
     NOTE_CALLOUT_MARKER,
     has_note_label,
@@ -706,3 +706,31 @@ class NoteTrailingBreakTests(SimpleTestCase):
         )
         self.assertFalse(soup.p.has_attr(NOTE_CALLOUT_MARKER))
         self.assertEqual(soup.p.get_text(), "Note:")
+
+
+class NoteBareLabelBookmarkTests(SimpleTestCase):
+    def test_bare_label_keeps_its_bookmark_target(self):
+        for label in (
+            f'Note:<a id="_note" {PRESERVE_BOOKMARK_TARGET_ATTR}=""></a>',
+            f'<strong>Note:<a id="_note" {PRESERVE_BOOKMARK_TARGET_ATTR}=""></a></strong>',
+            f'Note:<a id="_note" {PRESERVE_BOOKMARK_TARGET_ATTR}=""></a><br/>',
+        ):
+            with self.subTest(label=label):
+                soup = BeautifulSoup(
+                    f"<p>{label}</p><p>Keep the signed form.</p>", "html.parser"
+                )
+                normalize_note_labels(soup)
+                self.assertEqual(len(soup.find_all("p")), 1)
+                self.assertTrue(soup.p.has_attr(NOTE_CALLOUT_MARKER))
+                self.assertEqual(
+                    md(str(soup), escape_misc=False).strip(),
+                    # The anchor follows the label so the lead-in stays first.
+                    '**Note:**<a id="_note"></a> Keep the signed form.',
+                )
+
+    def test_bare_label_before_a_list_keeps_its_bookmark_target(self):
+        soup = BeautifulSoup(
+            '<p>Note:<a id="_note"></a></p><ul><li>Item</li></ul>', "html.parser"
+        )
+        normalize_note_labels(soup)
+        self.assertIsNotNone(soup.find("a", id="_note"))
