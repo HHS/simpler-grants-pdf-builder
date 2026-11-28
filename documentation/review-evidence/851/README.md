@@ -19,8 +19,8 @@
 | Path | Purpose |
 | --- | --- |
 | [`prototypes/index.html`](prototypes/index.html) | Start here locally: links to every prototype. Each page is one self-contained HTML file. |
-| `prototypes/uswds/` | Plain USWDS 3.8.1, no site header or footer: [whole NOFO on one page](prototypes/uswds/one-page.html), [one page per step](prototypes/uswds/step-1-review-the-opportunity.html), [edge-case patterns](prototypes/uswds/edge-cases.html) |
-| `prototypes/simpler-grants/` | Simpler.Grants.gov theme compiled from that site's source: [opportunity listing with a NOFO section](prototypes/simpler-grants/opportunity.html), [NOFO inside the site](prototypes/simpler-grants/nofo.html), [NOFO on its own](prototypes/simpler-grants/nofo-standalone.html) (the attachable file), [edge-case patterns](prototypes/simpler-grants/edge-cases.html) |
+| `prototypes/uswds/` | Plain USWDS 3.8.1, no site header or footer: [whole NOFO on one page](prototypes/uswds/one-page.html), [one page per step](prototypes/uswds/before-you-begin.html), [content components](prototypes/uswds/components.html), [edge-case patterns](prototypes/uswds/edge-cases.html) |
+| `prototypes/simpler-grants/` | Simpler.Grants.gov theme compiled from that site's source: [opportunity listing with a NOFO section](prototypes/simpler-grants/opportunity.html), [NOFO inside the site](prototypes/simpler-grants/nofo.html), [NOFO on its own](prototypes/simpler-grants/nofo-standalone.html) (the attachable file), [content components](prototypes/simpler-grants/components.html), [edge-case patterns](prototypes/simpler-grants/edge-cases.html) |
 | `screenshots/` | Captures of the prototypes, referenced below |
 | `scripts/` | One-off tooling that regenerates the prototypes; see [Reproduce](#reproduce) |
 
@@ -80,7 +80,7 @@ This summary is from the design systems' published guidance as we know it; the s
 - **Tables:** scrollable containers that take keyboard focus, each with a unique accessible name.
 - **Sticky site header:** in-page jumps land below Simpler.Grants.gov's sticky header, so targets are not obscured (WCAG 2.2, 2.4.11).
 - **No smooth scrolling:** on a document this long, smooth scrolling took more than a second to reach a section.
-- **Results (local, 2026-11-28):** axe-core reported 0 violations on all 14 prototype pages. None scroll sideways at 320px. Keyboard paths were tested for the skip link, in-page navigation, section links and cross-page links. The `prototypes/index.html` launcher is not part of the design and was not audited.
+- **Results (local, 2026-11-28):** axe-core reported 0 violations on all 17 prototype pages. None scroll sideways at 320px. Keyboard paths were tested for the skip link, in-page navigation, section links and cross-page links. The `prototypes/index.html` launcher is not part of the design and was not audited.
 
 **USWDS finding:** the USWDS 3.8 in-page navigation script ignores headings' existing IDs. It generates new ones from heading text (for example `#step-2-get-ready-to-apply-2`) and scrolls with `history.pushState`, which never triggers `:target` or moves focus. The prototypes render the in-page navigation as static USWDS markup instead, with a few lines of script to mark the current section.
 
@@ -208,18 +208,22 @@ Compared against the Builder's design system docs (`DESIGN_STANDARDS.md`, `SCALA
 
 Many PDF components exist because a PDF is printed, paginated and self-branded. A web page gets branding and navigation from the site that hosts it, so the test is whether a component carries content or meaning.
 
-**Needed: they carry content or meaning.**
+**Needed: they carry content or meaning.** All eight are prototyped in both themes. The fixture NOFO pages now open with the generated "Before you begin" content. The other seven don't occur in the fixture, so a synthetic sample NOFO (`scripts/data/component-sampler.json`) exercises them on the content components pages ([plain USWDS](prototypes/uswds/components.html), [Simpler.Grants.gov](prototypes/simpler-grants/components.html)).
 
-| Component | In the PDF | Web treatment |
+| Component | In the PDF | Web treatment in the prototypes |
 | --- | --- | --- |
-| Before you begin / Before you get started | Generated variants (full, HRSA, eRA, sole source) or an imported introduction | Plain content before Step 1: registration steps and the apply-by time |
-| Several deadlines | Deadline list on the cover | The timeline in the several-deadlines pattern |
-| Note callouts | `note-callout`, `role="note"`, bold lead-in | Same structure, simple styling |
-| Table captions, merged cells, criterion tables | `<caption>`, raw HTML tables with `colspan`/`rowspan` | Keep captions and header relationships; test merged cells on phones |
-| Lettered and roman lists | `type="a"`, `list-lower-roman` and similar | Keep the list types, because the text refers to items by letter or numeral |
-| "Maximum points" pseudo-headings | `role="heading" aria-level="7"` | Keep the content; HTML stops at h6 and level-7 support is uneven, so use styled text or h6 |
-| Appendix and Modifications | Fixed back-matter sections | Labelled sections in the navigation; Modifications has a pattern |
-| Subagency and second subagency | Under the agency | One line in the title block |
+| Before you begin / Before you get started | Generated variants (full, HRSA, eRA, sole source) or an imported introduction | A section before Step 1, built from the Builder's `byb_page.html` text for the NOFO's variant. Its subheads are real h3s rather than styled paragraphs, so they appear in the navigation. The Adobe keyboard callout is dropped. An imported introduction section is used as is. |
+| Several deadlines | Deadline list on the cover when the field contains `\|` | "Application deadlines" with each date on its own line in the title block, and a list under "Apply by the application due date" |
+| Note callouts | `note-callout`, `role="note"`, bold lead-in | Same structure: a left rule and tint in the theme's accent color, with the lead-in as real bold text |
+| Table captions, merged cells, criterion tables | `<caption>`, raw HTML tables with `colspan`/`rowspan` | A "Table: …" paragraph becomes the `<caption>`, which also names the scroll region; merged header and body cells keep their `scope` and alignment |
+| Lettered and roman lists | `type="a"`, `list-lower-roman` and similar | List types kept, including nesting such as (c)(ii); matched case-sensitively so `a` and `A` stay distinct |
+| "Maximum points" pseudo-headings | `role="heading" aria-level="7"` | A "Maximum points: 20" label under its heading, not a heading |
+| Appendix and Modifications | Fixed back-matter sections | Labelled sections in the navigation; the "Last modified" banner under the title links to Modifications |
+| Subagency and second subagency | Under the agency | Listed under the agency in the title block |
+
+![Content components: title block with subagencies, deadlines and modified banner, then Before you begin](screenshots/components-uswds-title-intro.png)
+
+Screenshots of the other components: [note callout and lettered and roman lists](screenshots/components-uswds-note-lists.png), [caption, points label and merged-cell table](screenshots/components-uswds-tables-points.png), [Simpler.Grants.gov title block](screenshots/components-sgg-title-intro.png), [appendix and modifications](screenshots/components-sgg-appendix-modifications.png).
 
 **Not needed: PDF branding or print navigation.**
 
@@ -250,7 +254,7 @@ Many PDF components exist because a PDF is printed, paginated and self-branded. 
 - Agency sites, commongrants.org and live simpler.grants.gov pages were not reachable, so some descriptions come from search results, source code or prior knowledge, as marked.
 - The prototypes are generated outside the Builder. A real implementation would be a Builder export that shares its rendering with the PDF templates.
 - Automated checks find only part of accessibility problems. Screen-reader, zoom and applicant testing remain.
-- The fixture NOFO has no Step 3, so the navigation goes from Step 2 to Step 4. A few source tables are layout tables, and some nested lists come through flat; the export should fix both.
+- The fixture NOFO has no Step 3, so the navigation goes from Step 2 to Step 4. Its text also has two internal links to Word bookmarks that don't exist (`#_Optional_letter_of`, `#_Completeness__and`), which stay broken in the prototypes. A few source tables are layout tables, and some nested lists come through flat; the export should fix both.
 - The Simpler.Grants.gov mockups use that site's real logo, header, footer and .gov banner, and each page carries a "Design mockup, not the live site" notice. They are for internal review, not for publishing.
 
 ## Reproduce

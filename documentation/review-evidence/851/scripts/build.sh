@@ -26,6 +26,7 @@ USWDS="$HERE/node_modules/@uswds/uswds"
 # 1. Plain USWDS prototypes: one page per step, and the whole NOFO on one page.
 "$PYTHON" build_nofo_web.py "$NOFO_JSON" "$USWDS/dist" "$WORK/uswds"
 "$PYTHON" build_edge_cases.py uswds "$WORK/uswds"
+"$PYTHON" build_components.py uswds "$WORK/uswds"
 node inline_assets.mjs "$WORK/uswds" "$USWDS/dist/img"
 rm -rf "$WORK/uswds/css" "$WORK/uswds/img"
 
@@ -39,6 +40,8 @@ npx sass --no-source-map --style=compressed --quiet-deps \
 "$PYTHON" build_sgg.py "$NOFO_JSON" data/opportunity-ffeeff3a.json "$USWDS/dist" \
   "$SGG_REPO/frontend/public/img/grants-logo.svg" "$WORK/sgg.css" "$WORK/simpler-grants"
 "$PYTHON" build_edge_cases.py sgg "$WORK/simpler-grants" "$USWDS/dist" \
+  "$SGG_REPO/frontend/public/img/grants-logo.svg"
+"$PYTHON" build_components.py sgg "$WORK/simpler-grants" "$USWDS/dist" \
   "$SGG_REPO/frontend/public/img/grants-logo.svg"
 node purge_sgg.mjs "$WORK/simpler-grants" "$USWDS/dist/img"
 

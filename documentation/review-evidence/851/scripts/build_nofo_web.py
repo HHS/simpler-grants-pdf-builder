@@ -82,6 +82,7 @@ def render_facts(pairs, dates=False):
 # Checklist glyphs, as the Builder handles them: import maps Word's "¨" (Wingdings) and
 # "☐" to "◻" (content_processing.py), and rendering swaps "◻" for a USWDS checkbox icon
 # (replace_unicode_with_icon.py). The fixture JSON predates the import step, so do both.
+POINTS_RE = re.compile(r"^\(?\s*Maximum points:\s*([^)]+?)\s*\)?$", re.IGNORECASE)
 CHECKBOX_GLYPHS = ("\u00a8", "\u2610", "\u25fb", "\u007f")
 
 
@@ -96,11 +97,35 @@ def enhance(fragment):
     """USWDS-ify rendered markdown: tables, external links, endnote refs, checkboxes."""
     soup = BeautifulSoup(replace_checkboxes(fragment), "html.parser")
     seen = {}
+    for p in soup.find_all("p"):
+        m = POINTS_RE.match(p.get_text(" ", strip=True))
+        if m:
+            # The Builder makes this role="heading" aria-level="7"; HTML stops at h6 and
+            # level-7 support is uneven, so the web shows it as a label under its heading.
+            p.clear()
+            p["class"] = ["nofo-points"]
+            p.string = f"Maximum points: {m.group(1)}"
     for table in soup.find_all("table"):
         table["class"] = ["usa-table", "usa-table--borderless", "nofo-table"]
+        # "Table: ..." paragraph just before a table becomes its caption, as in the PDF
+        before = table.find_previous_sibling()
+        caption_text = None
+        if before is not None and before.name == "p":
+            text = before.get_text(" ", strip=True)
+            if text.lower().startswith("table:"):
+                caption_text = text.split(":", 1)[1].strip()
+                before.decompose()
+        if caption_text and not table.find("caption"):
+            cap = soup.new_tag("caption")
+            cap.string = caption_text
+            table.insert(0, cap)
+        if table.find("caption"):
+            caption_text = table.find("caption").get_text(" ", strip=True)
         # A focusable scroll container needs a role and a name (WCAG 4.1.2, 2.1.1)
         prev = table.find_previous(re.compile(r"^h[2-6]$"))
-        name = prev.get_text("", strip=False).strip() if prev else "Table"
+        name = caption_text or (
+            prev.get_text("", strip=False).strip() if prev else "Table"
+        )
         seen[name] = seen.get(name, 0) + 1
         if seen[name] > 1:
             name = f"{name} ({seen[name]})"
@@ -152,6 +177,13 @@ def heading(level, hid, inner_html, label_text, extra_class=""):
 def subsection_html(ss, level=None):
     name, tag, body = ss.get("name", ""), ss.get("tag", ""), ss.get("body", "")
     hid = ss["html_id"]
+    if ss.get("callout_style") == "note":
+        # IMPORT-080 note callout: one short caveat, headingless, role="note", with the
+        # bold lead-in kept as real text so meaning doesn't depend on color.
+        inner = md(body).replace(
+            "<p><strong>", '<p><strong class="nofo-note__lead-in">', 1
+        )
+        return f'<div id="{hid}" class="nofo-note" role="note">{inner}</div>'
     if ss.get("callout_box"):
         pairs = label_lines(body)
         is_dates = "date" in name.lower()
@@ -186,6 +218,156 @@ def subsection_html(ss, level=None):
 def step_label(name):
     m = re.match(r"^(Step \d+):\s*(.+)$", name)
     return (m.group(1), m.group(2)) if m else (None, name)
+
+
+# ---------- NOFO-level components ----------
+
+STEP2_RE = re.compile(r"^Step 2\b", re.IGNORECASE)
+
+
+def deadlines(nofo):
+    """The Builder splits several deadlines on "|" (the cover's deadline list)."""
+    return [
+        d.strip() for d in nofo.get("application_deadline", "").split("|") if d.strip()
+    ]
+
+
+def deadline_html(nofo):
+    items = deadlines(nofo)
+    if len(items) > 1:
+        lis = "".join(f"<li>{esc(d)}</li>" for d in items)
+        return f'<ul class="nofo-deadlines">{lis}</ul>'
+    return esc(items[0] if items else "")
+
+
+def agency_lines(nofo):
+    """OpDiv, agency, subagency and second subagency, as in the basic information block."""
+    names = [nofo.get(k, "") for k in ("opdiv", "agency", "subagency", "subagency2")]
+    return "".join(f"<span>{esc(n)}</span>" for n in names if n)
+
+
+def find_basic(sections):
+    for s in sections:
+        for ss in s["subsections"]:
+            if ss.get("name") == "Basic information":
+                return ss
+    return None
+
+
+def step1_section(sections):
+    return next(
+        (s for s in sections if s["name"].lower().startswith("step 1")), sections[0]
+    )
+
+
+def introduction_section(nofo, sections):
+    """The generated "Before you begin" page as a section, from the Builder's
+    byb_page.html text. Variants: full (default), hrsa, era, sole_source, none."""
+    variant = nofo.get("before_you_begin", "full")
+    if variant == "none" or any(s.get("role") == "introduction" for s in sections):
+        return None  # none, or an imported introduction that is already a section
+    step2 = next((s for s in sections if STEP2_RE.match(s["name"])), None)
+    see_step2 = f"\n\n[See {step2['name']}](#{step2['html_id']})" if step2 else ""
+    sam, gg = "[SAM.gov](https://sam.gov)", "[Grants.gov](https://grants.gov)"
+    era = "[eRA Commons](https://grants.nih.gov/grants/guide/url_redirect.htm?id=11123)"
+    if variant == "era":
+        intro = f"secure your {sam}, {gg}, and {era} registrations now. If you are already registered, make sure your registrations are active and up to date."
+    elif variant == "sole_source":
+        intro = f"secure your {sam} registration now. If you are already registered, make sure your registration is active and up to date."
+    else:
+        intro = f"secure your {sam} and {gg} registrations now. If you are already registered, make sure your registrations are active and up to date."
+    subs = [
+        (
+            "",
+            "",
+            "If you believe you are a good candidate for this funding opportunity, "
+            + intro,
+        )
+    ]
+    subs.append(
+        (
+            "SAM.gov registration (this can take several weeks)",
+            "h3",
+            "You must have an active account with SAM.gov. This includes having a Unique Entity Identifier (UEI)."
+            + see_step2,
+        )
+    )
+    if variant in ("full", "era", "hrsa"):
+        subs.append(
+            (
+                "Grants.gov registration (this can take several days)",
+                "h3",
+                "You must have an active Grants.gov registration. Doing so requires a Login.gov registration as well."
+                + see_step2,
+            )
+        )
+    if variant == "era":
+        subs.append(
+            (
+                "eRA Commons registration",
+                "h3",
+                "Once an organization has established its unique organization identifier, organizations can register with eRA Commons in tandem with completing Grants.gov registration. You must have all registrations in place at the time of submission. eRA Commons requires organizations to identify at least one Signing Official (SO) and at least one Program Director/Principal Investigator (PD/PI) account in order to submit an application."
+                + see_step2,
+            )
+        )
+    when = "5:00 p.m. local time" if variant == "era" else "11:59 p.m. Eastern Time"
+    items = deadlines(nofo)
+    if len(items) > 1:
+        due = f"Applications are due by {when}:\n\n" + "\n".join(
+            f"* {d}" for d in items
+        )
+    else:
+        due = f"Applications are due by {when} on {items[0] if items else ''}."
+    subs.append(("Apply by the application due date", "h3", due))
+    title = (
+        "Before you get started"
+        if nofo.get("introductory_page_family") == "get_started"
+        else "Before you begin"
+    )
+    return {
+        "name": title,
+        "html_id": "before-you-begin",
+        "order": 0,
+        "role": "introduction",
+        "subsections": [
+            {
+                "name": n,
+                "tag": t,
+                "body": b,
+                "order": i + 1,
+                "html_id": (
+                    "before-you-begin--"
+                    + re.sub(r"[^a-z0-9]+", "-", n.lower()).strip("-")
+                    if n
+                    else f"before-you-begin--{i}"
+                ),
+            }
+            for i, (n, t, b) in enumerate(subs)
+        ],
+    }
+
+
+def nofo_sections(nofo):
+    """Sections in reading order, with the generated introduction first."""
+    sections = sorted(nofo["sections"], key=lambda s: s["order"])
+    intro = introduction_section(nofo, sections)
+    return ([intro] if intro else []) + sections
+
+
+def modified_banner(nofo, sections):
+    """The cover page's "Last modified" callout, as a banner under the title block."""
+    if not nofo.get("modifications"):
+        return ""
+    mods = next((s for s in sections if s["html_id"] == "modifications"), None)
+    link = (
+        f' <a class="usa-link" href="#{mods["html_id"]}">See all modifications</a>.'
+        if mods
+        else ""
+    )
+    return (
+        '<div class="usa-alert usa-alert--info usa-alert--slim nofo-modified"><div class="usa-alert__body">'
+        f'<p class="usa-alert__text"><strong>Last modified {esc(nofo["modifications"])}.</strong>{link}</p></div></div>'
+    )
 
 
 # ---------- page assembly ----------
@@ -270,6 +452,21 @@ body{background:#fff;color:#1b1b1b;margin:0}
 .nofo-glance .v{display:block;font-family:var(--nofo-display);font-size:1.5rem;font-weight:700;line-height:1.25;margin-block:.25rem}
 .nofo-glance .n{display:block;font-size:.9375rem}
 .nofo-table-wrap{margin-block:1rem}
+.nofo-table caption{text-align:left;font-weight:700;font-size:1rem;padding:0 0 .5rem}
+.nofo-table th[colspan],.nofo-table td[colspan]{text-align:center}
+.nofo-table th[rowspan],.nofo-table td[rowspan]{vertical-align:middle}
+.nofo-note{border-left:4px solid var(--nofo-accent);background:var(--nofo-accent-bg);padding:.5rem 1rem;margin:1rem 0;max-width:46rem}
+.nofo-note p{margin:0}
+.nofo-note p+p{margin-top:.5rem}
+.nofo-note__lead-in{color:var(--nofo-accent)}
+.nofo-points{display:inline-block;font-weight:700;font-size:.9375rem;padding:.1rem .5rem;border:1px solid var(--nofo-border);border-radius:2px;margin:.25rem 0 .75rem}
+.usa-prose ol[type="a" s],.list-lower-alpha{list-style-type:lower-alpha}
+.usa-prose ol[type="A" s],.list-upper-alpha{list-style-type:upper-alpha}
+.usa-prose ol[type="i" s],.list-lower-roman{list-style-type:lower-roman}
+.usa-prose ol[type="I" s],.list-upper-roman{list-style-type:upper-roman}
+.nofo-deadlines{margin:0;padding:0;list-style:none}
+.nofo-deadlines li{margin:0;max-width:none}
+.nofo-title .nofo-modified{margin:0 0 1.25rem;max-width:46rem}
 .nofo-checkbox{width:1.25rem;height:1.25rem;vertical-align:-.25em;margin-right:.35rem;fill:currentColor}
 .nofo-table{font-size:.9375rem;width:100%}
 .nofo-table-wrap .nofo-table th,.nofo-table-wrap .nofo-table td{vertical-align:top;white-space:normal;min-width:10rem}
@@ -386,13 +583,9 @@ def page_shell(title, body, description, script=False):
 
 
 def build(nofo, out):
-    sections = sorted(nofo["sections"], key=lambda s: s["order"])
-    meta = {}
-    basic = None
-    for ss in sections[0]["subsections"]:
-        if ss.get("name") == "Basic information":
-            basic = ss
-            meta = dict(label_lines(ss["body"]) or [])
+    sections = nofo_sections(nofo)
+    basic = find_basic(sections)
+    meta = dict(label_lines(basic["body"]) or []) if basic else {}
     description = meta.get("Metadata subject", nofo.get("tagline", ""))
 
     # file name for each section
@@ -402,10 +595,10 @@ def build(nofo, out):
         pages.append({"section": s, "file": fname})
 
     # key dates / facts for the "at a glance" row on Step 1
-    s1 = {ss.get("name"): ss for ss in sections[0]["subsections"]}
+    s1 = {ss.get("name"): ss for ss in step1_section(sections)["subsections"]}
     dates = dict(label_lines(s1.get("Key dates", {}).get("body", "")) or [])
     deadline = DATE_SPLIT.match(
-        dates.get("Application submission deadline", nofo["application_deadline"])
+        dates.get("Application submission deadline", (deadlines(nofo) or [""])[0])
     )
     funding = s1.get("Funding details", {}).get("body", "")
     total = re.search(r"\$\d[\d,]*\d", funding.split("total funding", 1)[-1])
@@ -415,14 +608,15 @@ def build(nofo, out):
     def title_block(current_label):
         return f"""
 <div class="nofo-title">
-  <p class="nofo-title__agency"><span>{esc(nofo['opdiv'])}</span><span>{esc(nofo['agency'])}</span></p>
+  <p class="nofo-title__agency">{agency_lines(nofo)}</p>
   <h1>{esc(nofo['title'])}</h1>
   <p class="nofo-title__tagline">{esc(nofo.get('tagline', ''))}</p>
   <ul class="nofo-title__meta">
     <li><span class="k">Opportunity number</span><span class="v">{esc(nofo['number'])}</span></li>
     <li><span class="k">Assistance listing</span><span class="v">{esc(meta.get('Assistance Listing', '').strip())}</span></li>
-    <li><span class="k">Application deadline</span><span class="v">{esc(nofo['application_deadline'])}</span></li>
+    <li><span class="k">Application deadline{'s' if len(deadlines(nofo)) > 1 else ''}</span><span class="v">{deadline_html(nofo)}</span></li>
   </ul>
+  {modified_banner(nofo, sections)}
   <ul class="usa-button-group">
     <li class="usa-button-group__item"><a class="usa-button" href="#pdf-download">{icon('file_download')}Download the full NOFO (PDF)</a></li>
     <li class="usa-button-group__item"><a class="usa-button usa-button--outline" href="https://simpler.grants.gov/search?query={esc(nofo['number'])}">Apply on Grants.gov</a></li>
@@ -432,14 +626,14 @@ def build(nofo, out):
     def mock_banner(other_href, other_label):
         return f"""
 <div class="usa-alert usa-alert--info usa-alert--slim nofo-mock">
-  <div class="usa-alert__body"><p class="usa-alert__text"><strong>Design mockup.</strong> Text from {esc(nofo['number'])} in the NOFO Builder test fixtures; not an official notice. <a class="usa-link" href="{other_href}">{other_label}</a></p></div>
+  <div class="usa-alert__body"><p class="usa-alert__text"><strong>Design mockup.</strong> {esc(nofo.get('mock_note') or ('Text from ' + nofo['number'] + ' in the NOFO Builder test fixtures; not an official notice.'))} {'' if nofo.get('mock_note') else f'<a class="usa-link" href="{other_href}">{other_label}</a>'}</p></div>
 </div>"""
 
     def glance():
         items = [
             (
                 "Application deadline",
-                deadline.group(1) if deadline else nofo["application_deadline"],
+                deadline.group(1) if deadline else (deadlines(nofo) or [""])[0],
                 (
                     f"Letter of intent by {DATE_SPLIT.match(dates['Optional letter of intent deadline']).group(1)} (optional)"
                     if "Optional letter of intent deadline" in dates
@@ -553,7 +747,9 @@ def build(nofo, out):
     rendered = {}
     id_page = {}
     for i, p in enumerate(pages):
-        content = section_body(p["section"], include_glance=(i == 0))
+        content = section_body(
+            p["section"], include_glance=(p["section"] is step1_section(sections))
+        )
         for m in re.finditer(r'\sid="([^"]+)"', content):
             id_page[m.group(1)] = p["file"]
         rendered[p["file"]] = (i, content)

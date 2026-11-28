@@ -181,17 +181,10 @@ def chrome(dist, logo):
     return top, bottom
 
 
-def nofo_page(nofo, opp, chrome_parts, standalone):
+def nofo_page(nofo, opp, chrome_parts, standalone, listing_href="opportunity.html"):
     """The NOFO as one long page, in Simpler.Grants.gov styling."""
-    sections = sorted(nofo["sections"], key=lambda s: s["order"])
-    basic = next(
-        (
-            ss
-            for ss in sections[0]["subsections"]
-            if ss.get("name") == "Basic information"
-        ),
-        None,
-    )
+    sections = base.nofo_sections(nofo)
+    basic = base.find_basic(sections)
     meta = dict(base.label_lines(basic["body"]) or []) if basic else {}
 
     secs, nav_items = [], []
@@ -236,14 +229,19 @@ def nofo_page(nofo, opp, chrome_parts, standalone):
     body_html = "".join(secs)
     body_html = re.sub(r'href="(?:[a-z0-9-]+\.html)#', 'href="#', body_html)
 
-    agency = opp["customFields"]["agency"]["value"]
     status = opp["status"]
     status_label = (status.get("customValue") or status["value"]).capitalize()
     aln = meta.get("Assistance Listing", "").strip()
-    listing = "opportunity.html"
+    listing = listing_href
+    # Status tag colors as on Simpler.Grants.gov opportunity pages
+    tag_cls = {
+        "open": "bg-accent-warm-light text-ink",
+        "forecasted": "bg-accent-cool-dark text-white",
+        "closed": "bg-base-dark text-white",
+    }.get(status["value"], "bg-base-lighter text-ink")
     crumbs = (
         ""
-        if standalone
+        if standalone or not listing
         else f"""
   <nav class="usa-breadcrumb nofo-crumbs" aria-label="Breadcrumbs"><ol class="usa-breadcrumb__list">
     <li class="usa-breadcrumb__list-item"><a href="https://simpler.grants.gov/search" class="usa-breadcrumb__link"><span>Search</span></a></li>
@@ -251,11 +249,19 @@ def nofo_page(nofo, opp, chrome_parts, standalone):
     <li class="usa-breadcrumb__list-item usa-current" aria-current="page"><span>Notice of funding opportunity</span></li>
   </ol></nav>"""
     )
-    listing_btn = (
-        f'<a class="usa-button margin-right-0" href="https://simpler.grants.gov/opportunity/{opp["id"]}">View the opportunity listing on Simpler.Grants.gov</a>'
-        if standalone
-        else f'<a class="usa-button margin-right-0" href="{listing}">View the opportunity listing</a>'
+    if standalone:
+        listing_btn = f'<a class="usa-button margin-right-0" href="https://simpler.grants.gov/opportunity/{opp["id"]}">View the opportunity listing on Simpler.Grants.gov</a>'
+    elif listing:
+        listing_btn = f'<a class="usa-button margin-right-0" href="{listing}">View the opportunity listing</a>'
+    else:
+        listing_btn = ""
+    agency_names = [nofo.get(k, "") for k in ("agency", "subagency", "subagency2")]
+    agency_html = "".join(
+        f'<p class="margin-top-0 margin-bottom-1 text-base-dark">{esc(n)}</p>'
+        for n in agency_names
+        if n
     )
+    n_deadlines = len(base.deadlines(nofo))
     header = f"""
 <div class="bg-white border-bottom border-base-lighter"><div class="grid-container padding-y-3 tablet-lg:padding-y-4">
   {crumbs}
@@ -264,13 +270,14 @@ def nofo_page(nofo, opp, chrome_parts, standalone):
   <div class="display-flex flex-column tablet-lg:flex-row">
     <div class="flex-1"><div class="font-sans-sm">
       <p class="margin-top-0 margin-bottom-1">{esc(nofo['opdiv'])}</p>
-      <p class="margin-top-0 margin-bottom-2 text-base-dark">{esc(nofo['agency'])}</p>
-      <ul class="nofo-title__meta">
+      {agency_html}
+      <ul class="nofo-title__meta margin-top-2">
         <li><span class="k">Funding opportunity number</span><span class="v">{esc(nofo['number'])}</span></li>
         <li><span class="k">Assistance listing</span><span class="v">{esc(aln)}</span></li>
-        <li><span class="k">Application deadline</span><span class="v">{esc(nofo['application_deadline'])}</span></li>
+        <li><span class="k">Application deadline{'s' if n_deadlines > 1 else ''}</span><span class="v">{base.deadline_html(nofo)}</span></li>
       </ul>
-      <p class="margin-top-0 margin-bottom-0 font-sans-2xs"><span class="usa-tag text-no-uppercase font-sans-2xs radius-sm margin-right-2 bg-base-lighter text-ink">{esc(status_label)}</span>NOFO last updated: {fmt_date(opp['lastModifiedAt'][:10])}</p>
+      <p class="margin-top-0 margin-bottom-0 font-sans-2xs"><span class="usa-tag text-no-uppercase font-sans-2xs radius-sm margin-right-2 {tag_cls}">{esc(status_label)}</span>NOFO last updated: {fmt_date(opp['lastModifiedAt'][:10])}</p>
+      <div class="margin-top-2">{base.modified_banner(nofo, sections)}</div>
     </div></div>
     <div class="margin-top-3 tablet-lg:margin-top-0 tablet-lg:margin-left-4">
       <div class="opportunity-header__buttons">
@@ -455,6 +462,7 @@ def guide_page(chrome_parts):
         ('Opportunity listing', 'The existing listing page with a new NOFO section: read online, download the PDF, or jump straight to a section.', 'opportunity.html'),
         ('NOFO inside the site', 'The NOFO as a page of the site, with header, footer, breadcrumbs and a link back to the listing.', 'nofo.html'),
         ('NOFO on its own', 'The same NOFO without site chrome: the self-contained file that could be attached to an opportunity (issue #851).', 'nofo-standalone.html'),
+        ('Content components', 'A sample NOFO showing the introduction, several deadlines, subagencies, note callouts, table captions and merged cells, list types, points labels, appendix and modifications.', 'components.html'),
         ('Edge-case patterns', 'Several opportunity numbers, components, status changes, modifications, reissues and other cases.', 'edge-cases.html'),
     ])}
   </ul>
