@@ -2,7 +2,7 @@
 
 - **Status:** proposal for discussion. Not adopted, not implemented.
 - **Related issue:** [#851](https://github.com/HHS/simpler-grants-pdf-builder/issues/851) (Goal 2: whether the web redesign targets FOAM's own template or something the Builder generates)
-- **Source baseline:** `main` at `1f7c527`, reviewed 2026-11-28
+- **Source baseline:** `main` at `1f7c527`, reviewed 2026-11-28; CommonGrants protocol v0.5.0 (HHS/simpler-grants-protocol at `ad104f2`)
 - **Evidence:** the #851 spike in [`review-evidence/851/`](../../review-evidence/851/README.md) (added by PR #1439) has the web prototypes this contract is drawn from
 
 ## Why a contract
@@ -58,19 +58,26 @@ A key names a standard part of a NOFO, independent of its heading text or positi
 
 ### Metadata keys
 
-Metadata reuses [CommonGrants](https://commongrants.org/) field names where they exist, so the same names work in FOAM, the Builder and Simpler.Grants.gov.
+Metadata uses [CommonGrants](https://commongrants.org/) field names **and shapes**, so the same values work in FOAM, the Builder and Simpler.Grants.gov without translation. See [Relationship to CommonGrants](#relationship-to-commongrants).
 
-| Key | Builder field | CommonGrants |
+| Key | Builder field | CommonGrants shape |
 | --- | --- | --- |
-| `title` | `title` | `title` |
-| `identifiers.opp:us:fon` | `number` | `identifiers["opp:us:fon"]` |
-| `identifiers.opp:us:aln` | `assistance_listing_number` | `identifiers["opp:us:aln"]` |
-| `funders.primary` | `opdiv` | `funders.primary` |
-| `funders.agency`, `funders.subagency`, `funders.subagency2` | `agency`, `subagency`, `subagency2` | `funders.otherOrgs` |
-| `keyDates.closeDate` | `application_deadline` (first date) | `keyDates.closeDate` |
-| `keyDates.otherDates.*` | Other dates in the NOFO text | `keyDates.otherDates` |
-| `tagline` | `tagline` | None (custom field) |
-| `modifiedAt` | `modifications` | None (custom field) |
+| `title` | `title` | `title` (string) |
+| `identifiers.opp:us:fon` | `number` | Identifier: `{registry: {code: "opp:us:fon"}, id}` |
+| `identifiers.opp:us:aln` | `assistance_listing_number` | Identifier: `{registry: {code: "opp:us:aln"}, id}` |
+| `funders.primary` | `opdiv` | Organization reference: `{name}` (`id` is assigned by the hosting system) |
+| `funders.otherOrgs.agency`, `funders.otherOrgs.subagency`, `funders.otherOrgs.subagency2` | `agency`, `subagency`, `subagency2` | Organization references keyed by role |
+| `keyDates.closeDate` | `application_deadline` (first date) | Single-date event: `{name, eventType: "singleDate", date, time?, description?}` |
+| `keyDates.otherDates.*` | Other dates in the NOFO text | Events keyed by name |
+
+Values CommonGrants has no field for go in the document's `extensions` block, not alongside the CommonGrants fields:
+
+| Extension | Builder field | Why it's an extension |
+| --- | --- | --- |
+| `timeZone` | None (the NOFO text states it) | CommonGrants event times have no time zone |
+| `tagline` | `tagline` | No CommonGrants field |
+| `modifiedAt` | `modifications` | No amendment model in CommonGrants |
+| `relatedOpportunities` | None (free text today) | No CommonGrants field for companion, component or reissue links |
 
 ### Section keys (draft)
 
@@ -168,16 +175,40 @@ Content without a key is still valid: it renders as an unkeyed `section` or `sub
 
 ## JSON shape
 
-A content owner exports, or a renderer reads, one document per NOFO version. Bodies are Markdown, as the Builder stores them; a JSON Schema would follow once the shape is agreed.
+A content owner exports, or a renderer reads, one document per NOFO version. It has three parts:
+
+- `opportunity`: metadata as a subset of the CommonGrants opportunity, in exactly its shapes;
+- `extensions`: values CommonGrants has no field for;
+- `sections`: the NOFO's content, keyed where it matches a standard part.
+
+Bodies are Markdown, as the Builder stores them. A JSON Schema would follow once the shape is agreed, reusing the CommonGrants schemas for the `opportunity` part.
 
 ```json
 {
   "contractVersion": "0.1.0",
-  "metadata": {
+  "opportunity": {
     "title": "Rural Health Workforce Pathways",
-    "identifiers": { "opp:us:fon": "HRSA-27-101", "opp:us:aln": "93.000" },
-    "funders": { "primary": "Health Resources and Services Administration (HRSA)", "agency": "Bureau of Health Workforce" },
-    "keyDates": { "closeDate": { "date": "2027-01-15", "time": "23:59", "timeZone": "America/New_York" } },
+    "identifiers": {
+      "opp:us:fon": { "registry": { "code": "opp:us:fon" }, "id": "HRSA-27-101" },
+      "opp:us:aln": { "registry": { "code": "opp:us:aln" }, "id": "93.000" }
+    },
+    "funders": {
+      "primary": { "name": "Health Resources and Services Administration (HRSA)" },
+      "otherOrgs": { "agency": { "name": "Bureau of Health Workforce" } }
+    },
+    "keyDates": {
+      "closeDate": {
+        "name": "Application deadline",
+        "eventType": "singleDate",
+        "date": "2027-01-15",
+        "time": "23:59:00",
+        "description": "Applications are due by 11:59 p.m. Eastern Time."
+      }
+    }
+  },
+  "extensions": {
+    "timeZone": "America/New_York",
+    "tagline": "Helping rural communities grow their health workforce.",
     "modifiedAt": null,
     "relatedOpportunities": [{ "fon": "HRSA-27-102", "relationship": "companion" }]
   },
@@ -195,7 +226,21 @@ A content owner exports, or a renderer reads, one document per NOFO version. Bod
 }
 ```
 
-`relatedOpportunities` comes from the #851 edge-case findings: companion, component and reissue relationships currently exist only as free text in listings.
+`relatedOpportunities` comes from the #851 edge-case findings: companion, component and reissue relationships currently exist only as free text in listings. The time zone is repeated in the event's `description` so a CommonGrants-only reader still sees it.
+
+## Relationship to CommonGrants
+
+CommonGrants is the protocol Simpler.Grants.gov already serves for opportunity listings. This contract fits around it in three layers:
+
+1. **Listing metadata is CommonGrants.** The `opportunity` part uses CommonGrants shapes exactly, so a NOFO page and its listing describe the same opportunity in the same format.
+2. **The listing links to the NOFO through CommonGrants custom fields.** CommonGrants allows extensions only in `customFields`, so the opportunity record would point to the NOFO with two custom fields, as proposed in the #851 evidence: `nofoDocument` (web page and PDF addresses, version, contract version) and `nofoSections` (each keyed section's key, title and address). The section keys there are the keys defined here, which lets Simpler.Grants.gov build "go straight to" links from data instead of heading text.
+3. **NOFO content is a separate document.** CommonGrants has no model for NOFO content and doesn't allow extra top-level fields. Putting a whole NOFO into custom fields would also make every listing response very large. The contract document is its own type, linked from the listing.
+
+Gaps to raise with the CommonGrants maintainers:
+
+- **Time zones:** event times have no time zone, so a deadline such as "11:59 p.m. Eastern" can't be stated precisely. Options are a protocol change, or a custom field until one lands; this contract carries `extensions.timeZone` meanwhile.
+- **Related opportunities:** no field for companion, component or reissue relationships. A custom field is the natural first step.
+- **NOFO custom fields:** propose `nofoDocument` and `nofoSections` for the shared custom-field catalog.
 
 ## Assigning keys
 
@@ -226,6 +271,6 @@ The contract uses semantic versions. Adding a component or key is a minor change
 
 - Does eRA want FOAM to render this design, and what is FOAM's stack and data model?
 - Who maintains the contract and CSS, and how do design changes get approved across HHS, NIH and Simpler.Grants.gov?
-- Should keys and `relatedOpportunities` go into the CommonGrants custom-field catalog (the `nofoSections` proposal in the #851 evidence)?
+- Will the CommonGrants maintainers accept `nofoDocument`, `nofoSections` and a related-opportunities field into the custom-field catalog, and add time zones to events?
 - How are amendments represented, so the web page and PDF always show the same version?
 - Who runs the accessibility conformance checks for pages FOAM publishes?
