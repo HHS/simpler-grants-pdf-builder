@@ -79,7 +79,7 @@ def is_in_list_or_table(element):
     return bool(element.find_parent(["li", "td", "th"]))
 
 
-def _join_following_paragraph(paragraph):
+def _join_following_paragraph(soup, paragraph):
     """Give a bare "Note:" label line the text of the paragraph that follows it."""
     following = _next_block(paragraph)
     if (
@@ -92,7 +92,7 @@ def _join_following_paragraph(paragraph):
     paragraph.append(" ")
     if following.get("id"):
         # Keep link targets: the Markdown converter retains marked empty anchors.
-        target = following.new_tag("a", id=following["id"])
+        target = soup.new_tag("a", id=following["id"])
         target[PRESERVE_BOOKMARK_TARGET_ATTR] = ""
         paragraph.append(target)
     for child in list(following.contents):
@@ -147,7 +147,7 @@ def normalize_note_labels(soup):
         if paragraph.parent is None or paragraph.parent.name not in _TOP_LEVEL_PARENTS:
             continue
         if not paragraph.contents[1:]:
-            _join_following_paragraph(paragraph)
+            _join_following_paragraph(soup, paragraph)
         if paragraph.contents[1:] and not is_between_list_items(paragraph):
             paragraph[NOTE_CALLOUT_MARKER] = "true"
 
