@@ -28,7 +28,9 @@ from nofos.models import (
 from nofos.nofo_markdown import PRESERVE_BOOKMARK_TARGET_ATTR, md
 from nofos.note_paragraphs import (
     NOTE_CALLOUT_MARKER,
+    NOTE_LEAD_IN_CLASS,
     has_note_label,
+    mark_note_lead_in,
     normalize_note_labels,
 )
 from nofos.pdf_service import generate_nofo_pdf
@@ -299,6 +301,7 @@ class NoteCalloutRenderTests(SimpleTestCase):
         self.assertEqual(note["role"], "note")
         self.assertEqual(note["id"], "note-1")
         self.assertEqual(note.strong.get_text(), "Note for applicants:")
+        self.assertIn(NOTE_LEAD_IN_CLASS, note.strong["class"])
         self.assertFalse(html.select(".callout-box"))
 
 
@@ -734,3 +737,45 @@ class NoteBareLabelBookmarkTests(SimpleTestCase):
         )
         normalize_note_labels(soup)
         self.assertIsNotNone(soup.find("a", id="_note"))
+
+
+class NoteLeadInTests(SimpleTestCase):
+    def lead_ins(self, html):
+        soup = BeautifulSoup(mark_note_lead_in(html), "html.parser")
+        return [el.get_text() for el in soup.select(f".{NOTE_LEAD_IN_CLASS}")]
+
+    def test_only_an_opening_note_label_is_the_lead_in(self):
+        self.assertEqual(
+            self.lead_ins("<p><strong>Note for applicants:</strong> Keep it.</p>"),
+            ["Note for applicants:"],
+        )
+        for html in (
+            "<p>Keep the <strong>signed</strong> form.</p>",
+            "<p><strong>Important</strong> deadline change.</p>",
+            "<p>Note: Keep the <strong>signed</strong> form.</p>",
+            "<p>Intro.</p><p><strong>Note:</strong> Second paragraph.</p>",
+        ):
+            with self.subTest(html=html):
+                self.assertEqual(self.lead_ins(html), [])
+
+    def test_bookmark_targets_survive_every_note_shape(self):
+        html = (
+            "<html><body><h1>Step 1</h1>"
+            '<p>See <a href="#_a">A</a> <a href="#_b">B</a> <a href="#_c">C</a> '
+            '<a href="#_d">D</a>.</p>'
+            '<p><strong>Note:</strong><a id="_a"></a></p><p>Bare with anchor.</p>'
+            '<p><strong>Note:</strong></p><p><a id="_b"></a>Joined.</p>'
+            '<p>Note: Anchor <a id="_c"></a>inside.</p>'
+            '<p><strong>Note:</strong><br/></p><p id="_d">Joined with an id.</p>'
+            "</body></html>"
+        )
+        result = process_document_content(html, builder_import=True)
+        notes = [
+            md("".join(str(tag) for tag in s["body"]), escape_misc=False)
+            for s in result.sections[0]["subsections"]
+            if s.get("callout_style") == "note"
+        ]
+        self.assertEqual(len(notes), 4)
+        for target in ("_a", "_b", "_c", "_d"):
+            with self.subTest(target=target):
+                self.assertTrue(any(f'id="{target}"' in note for note in notes))

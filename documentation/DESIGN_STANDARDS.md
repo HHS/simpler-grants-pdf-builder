@@ -236,6 +236,8 @@ such as the table it qualifies, unless the note has its own page break.
 
 - **Lead-in without bold.** The note keeps its box and rule, but the lead-in
   isn't coloured. "Note:" still names it, and reimport still finds it.
+- **Other bold text.** Only a bold note label at the start of the note is
+  coloured. Other bold text in a note stays black.
 - **No lead-in.** The note is shown, but only colour marks it as a note
   (WCAG 1.4.1), and a Word export and reimport turn it into a plain
   paragraph. The editor shows a warning until a label is added.

@@ -2,7 +2,7 @@
 
 import re
 
-from bs4 import NavigableString, Tag
+from bs4 import BeautifulSoup, NavigableString, Tag
 
 from .nofo_markdown import PRESERVE_BOOKMARK_TARGET_ATTR
 
@@ -29,6 +29,9 @@ _TOP_LEVEL_PARENTS = {"body", "[document]"}
 # Marks a standalone note paragraph for the section parser. Set and removed
 # during Builder import only; it is never stored.
 NOTE_CALLOUT_MARKER = "data-nofo-note-callout"
+
+# Render-time class for a note's lead-in, so only that text gets the theme colour.
+NOTE_LEAD_IN_CLASS = "note-callout__lead-in"
 
 
 def _label_text(match):
@@ -197,6 +200,29 @@ def has_note_label(markdown):
     # Drop Markdown emphasis markers so "**Note**:" and "**N.B.**" also count.
     first_line = (markdown or "").lstrip().split("\n", 1)[0]
     return bool(_IMPORT_LABEL.match(re.sub(r"\*+|_+", "", first_line)))
+
+
+def mark_note_lead_in(html):
+    """Add NOTE_LEAD_IN_CLASS to a note's lead-in: bold text that opens the
+    first paragraph and is a whole note label, such as "Note for applicants:".
+    Other bold text in the note is left alone."""
+    soup = BeautifulSoup(html, "html.parser")
+    paragraph = soup.find("p")
+    if paragraph:
+        first = next(
+            (
+                node
+                for node in paragraph.contents
+                if not (isinstance(node, NavigableString) and not node.strip())
+            ),
+            None,
+        )
+        if isinstance(first, Tag) and first.name in {"strong", "b"}:
+            text = first.get_text().strip()
+            match = _IMPORT_LABEL.match(text)
+            if match and match.end() == len(text):
+                first["class"] = first.get("class", []) + [NOTE_LEAD_IN_CLASS]
+    return str(soup)
 
 
 def is_note_paragraph(element):

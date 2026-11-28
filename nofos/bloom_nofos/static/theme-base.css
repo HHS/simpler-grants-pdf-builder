@@ -203,7 +203,7 @@ p + p {
   margin-top: 6px;
 }
 
-.note-callout p:first-child > strong:first-child {
+.note-callout .note-callout__lead-in {
   color: var(--color--note-label, var(--color--note-rule, #0057b7));
 }
 
