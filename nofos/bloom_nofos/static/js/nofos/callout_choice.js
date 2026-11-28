@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // "**Note:**" or "**Note for applicants:**". Keep the pattern in sync with
 // _IMPORT_LABEL and has_note_label in nofos/nofos/note_paragraphs.py.
 const NOTE_LABEL =
-  /^\s*(?:\*\*|__|\*|_)?\s*(?:(?:please\s+)?notes?(?:\s+for(?:\s+[^\s:()–—]+){1,8})?(?:\s*\([^()]{1,80}\))?\s*[:\-–—]|n\.\s*b\.(?:\s*[:\-–—])?(?=\s|$))/i;
+  /^\s*(?:\*\*|__|\*|_)?\s*(?:(?:please\s+)?notes?(?:\s+for(?:\s+(?![-–—](?:\s|$))[^\s:()–—]+){1,8})?(?:\s*\([^()]{1,80}\))?\s*[:\-–—]|n\.\s*b\.(?:\s*[:\-–—])?(?=\s|$))/i;
 
 document.addEventListener("DOMContentLoaded", () => {
   const note = document.getElementById("callout_style");

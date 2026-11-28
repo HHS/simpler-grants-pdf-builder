@@ -354,8 +354,8 @@ class NofoMetadataForm(forms.ModelForm):
 # body needs a custom field and a custom widget so don't use the factory function
 NOTE_CALLOUT_BOTH_ERROR = "Choose either a callout box or a note, not both."
 NOTE_CALLOUT_HEADING_ERROR = (
-    "A note has no heading. Clear the subsection name and heading level, "
-    "or choose the Box callout style."
+    "A note has no heading. Leave the subsection name and heading level blank, "
+    "or add a new subsection without a heading for the note."
 )
 
 

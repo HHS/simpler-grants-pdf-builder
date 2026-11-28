@@ -6,7 +6,9 @@ from unittest.mock import patch
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from bs4 import BeautifulSoup
+from constance.test import override_config
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.template import Context, Template
 from django.test import SimpleTestCase, TestCase
@@ -15,7 +17,15 @@ from users.models import BloomUser
 
 from nofos.content_processing import process_document_content
 from nofos.forms import SubsectionCreateForm, SubsectionEditForm
-from nofos.models import THEME_CHOICES, Nofo, Section, Subsection
+from nofos.models import (
+    THEME_CHOICES,
+    Nofo,
+    PolicyLanguageSlot,
+    PolicyLanguageVariant,
+    Section,
+    Subsection,
+)
+from nofos.nofo_markdown import md
 from nofos.note_paragraphs import (
     NOTE_CALLOUT_MARKER,
     has_note_label,
@@ -25,6 +35,7 @@ from nofos.pdf_service import generate_nofo_pdf
 from nofos.templatetags.add_classes_to_paragraphs import (
     keep_tables_with_following_notes,
 )
+from nofos.templatetags.utils import is_floating_callout_box
 from nofos.tests_nofos.test_editable_introduction import fy27_docx
 
 
@@ -274,7 +285,7 @@ class NoteCalloutRenderTests(SimpleTestCase):
         html = self.render(
             '{% include "includes/callout_box.html" with subsection=subsection nofo=nofo only %}',
             subsection=subsection,
-            nofo=SimpleNamespace(icon_style=""),
+            nofo=SimpleNamespace(icon_style="", has_imported_introduction=True),
         )
         note = html.select_one("div.note-callout")
         self.assertEqual(note["role"], "note")
@@ -436,3 +447,139 @@ class NoteCalloutEditorTests(TestCase):
                 self.assertEqual(warning.has_attr("hidden"), hidden)
                 self.assertFalse(page.select_one("#callout_style").has_attr("disabled"))
                 self.assertTrue(page.select_one("#callout_box").has_attr("disabled"))
+
+
+class NoteCalloutReviewFixTests(TestCase):
+    """Copilot review follow-ups on #1438."""
+
+    def setUp(self):
+        self.user = BloomUser.objects.create_user(
+            email="note-review@example.test",
+            password=None,
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.client.force_login(self.user)
+        self.nofo = Nofo.objects.create(
+            title="Note review NOFO", group="bloom", opdiv="HRSA"
+        )
+        self.section = Section.objects.create(
+            nofo=self.nofo, name="Step 3", html_id="step-3", order=1
+        )
+
+    @override_config(HHS_NOFO_POLICY_EXPORT_ENABLED=True)
+    def test_clearance_export_strips_intact_policy_language_notes(self):
+        slot = PolicyLanguageSlot.objects.create(
+            slot_key="TEST-NOTE-SPAN",
+            name="Note span",
+            slot_type="fixed",
+            template_version="v1",
+            match_scope="span_within_subsection",
+        )
+        PolicyLanguageVariant.objects.create(
+            slot=slot, canonical_text="Distinctive policy note text."
+        )
+        Subsection.objects.create(
+            section=self.section,
+            order=1,
+            callout_box=True,
+            callout_style="note",
+            body="**Note:** Distinctive policy note text.",
+            policy_language_status="intact",
+        )
+        url = reverse("nofos:nofo_export", kwargs={"pk": self.nofo.pk})
+        stripped = self.client.get(url + "?policy_stripped=1").content.decode()
+        self.assertNotIn("Distinctive policy note text", stripped)
+        self.assertIn("policy-language-stripped-box", stripped)
+        self.assertIn(
+            "Distinctive policy note text", self.client.get(url).content.decode()
+        )
+
+    def test_notes_never_float(self):
+        values = dict(callout_box=True, name="", body="**Have questions?** Call us.")
+        self.assertTrue(
+            is_floating_callout_box(SimpleNamespace(callout_style="box", **values))
+        )
+        self.assertFalse(
+            is_floating_callout_box(SimpleNamespace(callout_style="note", **values))
+        )
+
+    def test_model_rejects_headed_notes_and_makes_notes_callouts(self):
+        with self.assertRaises(ValidationError):
+            Subsection.objects.create(
+                section=self.section,
+                order=1,
+                name="Heading",
+                tag="h4",
+                callout_style="note",
+                body="Text",
+            )
+        note = Subsection.objects.create(
+            section=self.section, order=1, callout_style="note", body="**Note:** x"
+        )
+        self.assertTrue(note.callout_box)
+
+    def test_headed_subsections_cannot_become_notes_in_the_editor(self):
+        headed = Subsection.objects.create(
+            section=self.section,
+            order=1,
+            name="Key facts",
+            tag="h4",
+            callout_box=True,
+            body="Text",
+        )
+        page = BeautifulSoup(
+            self.client.get(
+                reverse(
+                    "nofos:subsection_edit",
+                    args=[self.nofo.pk, self.section.pk, headed.pk],
+                )
+            ).content,
+            "html.parser",
+        )
+        note = page.select_one("#callout_style")
+        self.assertTrue(note.has_attr("disabled"))
+        self.assertIn(
+            "add a new subsection without a heading",
+            page.select_one("#callout_style--description").get_text(),
+        )
+
+    def test_note_bodies_get_body_text_processing(self):
+        subsection = SimpleNamespace(
+            body='**Note:** See the source.<a href="#endnote-1" id="endnote-ref-manual-1">[1]</a>',
+            callout_box=True,
+            callout_style="note",
+            html_id="note-1",
+            html_class="",
+            name="",
+            tag="",
+        )
+        html = BeautifulSoup(
+            Template(
+                '{% include "includes/callout_box.html" with subsection=subsection nofo=nofo only %}'
+            ).render(Context({"subsection": subsection, "nofo": self.nofo})),
+            "html.parser",
+        )
+        link = html.select_one(".note-callout a#endnote-ref-manual-1")
+        self.assertEqual(link["aria-label"], "Endnote 1")
+
+
+class NoteImportReviewFixTests(SimpleTestCase):
+    def test_joined_paragraph_keeps_its_link_target(self):
+        soup = BeautifulSoup(
+            '<p><strong>Note:</strong></p><p id="bookmark-1">Keep it.</p>',
+            "html.parser",
+        )
+        normalize_note_labels(soup)
+        self.assertEqual(
+            md(str(soup), escape_misc=False).strip(),
+            '**Note:** <a id="bookmark-1"></a>Keep it.',
+        )
+
+    def test_audience_stops_at_a_dash_separator(self):
+        soup = BeautifulSoup(
+            "<p>Note for applicants - Required: submit it.</p>", "html.parser"
+        )
+        normalize_note_labels(soup)
+        self.assertEqual(soup.p.strong.get_text(), "Note for applicants:")
+        self.assertEqual(soup.p.get_text(), "Note for applicants: Required: submit it.")

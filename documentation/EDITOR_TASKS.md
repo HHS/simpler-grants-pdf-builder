@@ -418,7 +418,8 @@ paragraph that starts with a note label, such as `Note:`,
    section's subsection list.
 2. Leave **Subsection name** and **Heading level** blank. Notes have no heading.
 3. Check **Is note?**, next to **Is callout box?**. You can check only one:
-   checking one unchecks the other.
+   checking one unchecks the other. **Is note?** is unavailable on subsections
+   with a heading; add a new subsection without a heading instead.
 4. Start the content with a bold lead-in, such as `**Note for applicants:**`,
    then the note text.
 5. Select **Save subsection**, then **Preview PDF**.

@@ -244,6 +244,11 @@ such as the table it qualifies, unless the note has its own page break.
 - **Long notes.** The "lots of content" warning only checks box callouts.
 - **Before you get started.** Introductory text can be a note, or plain text,
   but not a box callout or a heading.
+- **Headed subsections.** A subsection with a heading can't become a note,
+  because its heading can't be removed. Add a new subsection without a heading
+  for the note instead.
+- **Placement.** Notes always stay in the main text column. They never move
+  to the first section's sidebar, even if they start with "Have questions?".
 
 See [TASK-NOTE-CALLOUT](EDITOR_TASKS.md#task-note-callout) to add or edit a
 note, and [IMPORT-080](IMPORT_RULES.md#import-080--applicant-note-labels-and-note-callouts)

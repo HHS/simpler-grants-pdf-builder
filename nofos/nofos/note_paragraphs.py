@@ -4,6 +4,8 @@ import re
 
 from bs4 import NavigableString, Tag
 
+from .nofo_markdown import PRESERVE_BOOKMARK_TARGET_ATTR
+
 # IMPORT-080: "Note", "Notes", "Please note" or "N.B.", optionally followed by
 # an audience ("for" plus up to eight words) and/or a bracketed audience, then a
 # colon or dash. Ordinary sentences such as "Note that…" never match.
@@ -11,7 +13,7 @@ _IMPORT_LABEL = re.compile(
     r"""^\s*(?:
         (?:please\s+)?notes?
         (?P<audience>
-            (?:\s+for(?:\s+[^\s:()–—]+){1,8})?
+            (?:\s+for(?:\s+(?![-–—](?:\s|$))[^\s:()–—]+){1,8})?
             (?:\s*\([^()]{1,80}\))?
         )
         \s*[:\-–—]
@@ -88,6 +90,11 @@ def _join_following_paragraph(paragraph):
     ):
         return
     paragraph.append(" ")
+    if following.get("id"):
+        # Keep link targets: the Markdown converter retains marked empty anchors.
+        target = following.new_tag("a", id=following["id"])
+        target[PRESERVE_BOOKMARK_TARGET_ATTR] = ""
+        paragraph.append(target)
     for child in list(following.contents):
         paragraph.append(child.extract())
     following.decompose()

@@ -171,9 +171,13 @@
           </label>
         </div>
         <div class="usa-checkbox">
-          <input class="usa-checkbox__input usa-checkbox__input--tile" id="callout_style" type="checkbox" name="callout_style" value="note" {% if form.callout_style.value == "note" %}checked{% endif %} aria-describedby="callout_style--description{% if form.errors.callout_style %} callout_style--error{% endif %}">
+          <input class="usa-checkbox__input usa-checkbox__input--tile" id="callout_style" type="checkbox" name="callout_style" value="note" {% if form.callout_style.value == "note" %}checked{% endif %} {% if subsection.tag %}disabled{% endif %} aria-describedby="callout_style--description{% if form.errors.callout_style %} callout_style--error{% endif %}">
           <label class="usa-checkbox__label" for="callout_style">Is note?
-            <span class="usa-checkbox__label-description" id="callout_style--description">Notes <span aria-hidden="true">(📝)</span> are short caveats for applicants. They have no heading and start with a bold lead-in, like “Note for applicants:”.</span>
+            {% if subsection.tag %}
+              <span class="usa-checkbox__label-description" id="callout_style--description">Notes <span aria-hidden="true">(📝)</span> have no heading, so this subsection can’t be a note. To add a note, add a new subsection without a heading.</span>
+            {% else %}
+              <span class="usa-checkbox__label-description" id="callout_style--description">Notes <span aria-hidden="true">(📝)</span> are short caveats for applicants. They have no heading and start with a bold lead-in, like “Note for applicants:”.</span>
+            {% endif %}
           </label>
         </div>
       </div>

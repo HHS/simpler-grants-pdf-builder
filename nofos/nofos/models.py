@@ -1059,6 +1059,17 @@ class Subsection(BaseSubsection):
     def is_note_callout(self):
         return self.callout_box and self.callout_style == "note"
 
+    def clean(self, *args, **kwargs):
+        # Every save path (editor, API, admin) runs full_clean(): a note is
+        # always a headingless callout (#1437).
+        if self.callout_style == "note":
+            if self.name or self.tag:
+                raise ValidationError(
+                    {"callout_style": "A note callout can't have a heading."}
+                )
+            self.callout_box = True
+        super().clean(*args, **kwargs)
+
     POLICY_LANGUAGE_STATUS_CHOICES = [
         ("none", "Not policy language"),
         ("intact", "Matches current canonical text"),
