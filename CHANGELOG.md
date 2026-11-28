@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning since version 1.0.0.
 
+## [3.67.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.66.0...nofos-v3.67.0) (2026-11-28)
+
+
+### Features
+
+* save applicant notes as note callouts ([#1437](https://github.com/HHS/simpler-grants-pdf-builder/issues/1437)) ([#1438](https://github.com/HHS/simpler-grants-pdf-builder/issues/1438)) ([1f7c527](https://github.com/HHS/simpler-grants-pdf-builder/commit/1f7c527073f07be4139f5760d6a530008c669311))
+
+
+### Bug Fixes
+
+* upgrade zstd and shadow packages in the Builder image ([#1435](https://github.com/HHS/simpler-grants-pdf-builder/issues/1435)) ([344046a](https://github.com/HHS/simpler-grants-pdf-builder/commit/344046a3dc141afe7247975958bbb706eda36625))
+
 ## [3.66.0](https://github.com/HHS/simpler-grants-pdf-builder/compare/nofos-v3.65.0...nofos-v3.66.0) (2026-11-25)
 
 
