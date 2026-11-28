@@ -103,6 +103,15 @@ matchMedia('(min-width: 64em)').addEventListener('change',m=>{if(m.matches)close
 }"""
 
 
+FONT_CSS = ""
+
+
+def set_fonts(dist):
+    """Embed Public Sans, the site's only typeface, from the USWDS package."""
+    global FONT_CSS
+    FONT_CSS = base.font_css(Path(dist) / "fonts", ["Public Sans"])
+
+
 def data_uri(path, mime):
     return f"data:{mime};base64,{base64.b64encode(Path(path).read_bytes()).decode()}"
 
@@ -503,8 +512,7 @@ def shell(title, body, extra_js=""):
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(title)}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..800;1,400..700&display=swap" rel="stylesheet">
+<style>{FONT_CSS}</style>
 <style>/*CSS*/</style>
 </head>
 <body class="theme-sgg">
@@ -537,6 +545,7 @@ def main():
         Path(sys.argv[6]),
     )
     out.mkdir(parents=True, exist_ok=True)
+    set_fonts(dist)
     parts = chrome(dist, logo)
     pages = {
         "opportunity.html": shell(
@@ -565,7 +574,10 @@ def main():
     css = css.replace('"Public Sans Web"', '"Public Sans"').replace(
         "Public Sans Web", '"Public Sans"'
     )
-    css = re.sub(r"@import url\([^)]*\);?", "", css)
+    # Drop remote imports (the theme's unused Newsreader serif) and the byte-order mark,
+    # so pages load nothing from other hosts.
+    css = css.replace("\ufeff", "")
+    css = re.sub(r"@import\s*(?:url\([^)]*\)|\"[^\"]*\"|'[^']*')[^;]*;?", "", css)
     local = base.LOCAL_CSS.strip() + SGG_VARS
     sprite = Path(dist / "img/sprite.svg").read_text()
     for name, html_text in pages.items():

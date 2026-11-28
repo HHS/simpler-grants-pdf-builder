@@ -9,6 +9,7 @@ Produces two variants from the same content:
 No site header or footer: the output is the content region an agency site would wrap.
 """
 
+import base64
 import html
 import json
 import re
@@ -390,13 +391,39 @@ def modified_banner(nofo, sections):
 
 # ---------- page assembly ----------
 
-FONTS = (
-    '<link rel="preconnect" href="https://fonts.googleapis.com">'
-    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-    '<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400'
-    "&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=Roboto+Mono"
-    '&display=swap" rel="stylesheet">'
-)
+# Fonts are embedded from the USWDS package's own woff2 files, so each page works
+# offline and as a standalone attachment. Only the weights the pages use.
+FONT_FILES = {
+    "Source Sans 3": [
+        (400, "normal", "source-sans-pro/sourcesanspro-regular-webfont.woff2"),
+        (400, "italic", "source-sans-pro/sourcesanspro-italic-webfont.woff2"),
+        (600, "normal", "source-sans-pro/sourcesanspro-semibold-webfont.woff2"),
+        (700, "normal", "source-sans-pro/sourcesanspro-bold-webfont.woff2"),
+    ],
+    "Merriweather": [
+        (700, "normal", "merriweather/Latin-Merriweather-Bold.woff2"),
+    ],
+    "Public Sans": [
+        (400, "normal", "public-sans/PublicSans-Regular.woff2"),
+        (400, "italic", "public-sans/PublicSans-Italic.woff2"),
+        (600, "normal", "public-sans/PublicSans-SemiBold.woff2"),
+        (700, "normal", "public-sans/PublicSans-Bold.woff2"),
+    ],
+}
+
+
+def font_css(fonts_dir, families):
+    """@font-face rules with the font files inlined as data URIs."""
+    rules = []
+    for family in families:
+        for weight, style, rel in FONT_FILES[family]:
+            data = base64.b64encode((Path(fonts_dir) / rel).read_bytes()).decode()
+            rules.append(
+                f'@font-face{{font-family:"{family}";font-style:{style};font-weight:{weight};'
+                f'font-display:swap;src:url(data:font/woff2;base64,{data}) format("woff2")}}'
+            )
+    return "".join(rules)
+
 
 LOCAL_CSS = """
 /* USWDS 3.8.1 is the design system: tokens, components and type come from it.
@@ -582,7 +609,7 @@ def page_shell(title, body, description, script=False):
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(description)}">
-{FONTS}
+<link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/uswds.min.css">
 <link rel="stylesheet" href="css/nofo-web.css">
 </head>
@@ -848,6 +875,9 @@ def copy_assets(dist, out):
     (out / "css").mkdir(parents=True, exist_ok=True)
     (out / "css/uswds.min.css").write_text(css)
     (out / "css/nofo-web.css").write_text(LOCAL_CSS.strip() + "\n")
+    (out / "css/fonts.css").write_text(
+        font_css(dist / "fonts", ["Source Sans 3", "Merriweather"]) + "\n"
+    )
     refs = sorted(set(re.findall(r"\.\./img/([^)\"']+)", css)))
     for r in refs + ["sprite.svg"]:
         src = dist / "img" / r

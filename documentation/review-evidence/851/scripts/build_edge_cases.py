@@ -370,6 +370,7 @@ def main():
         import build_sgg as sgg
 
         dist, logo = Path(sys.argv[3]), Path(sys.argv[4])
+        sgg.set_fonts(dist)
         top, bottom = sgg.chrome(dist, logo)
         page = sgg.shell(
             "Edge-case patterns | NOFO pages in Simpler.Grants.gov",

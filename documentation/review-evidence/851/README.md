@@ -63,7 +63,7 @@ A production version should call those Builder functions instead of porting the 
 
 | Path | Purpose |
 | --- | --- |
-| [`prototypes/index.html`](prototypes/index.html) | Start here locally: links to every prototype. Each page is one self-contained HTML file. |
+| [`prototypes/index.html`](prototypes/index.html) | Start here locally: links to every prototype. Each page is one self-contained HTML file, with CSS, icons, images and fonts inline, and works offline. |
 | `prototypes/uswds/` | Plain USWDS 3.8.1, no site header or footer: [whole NOFO on one page](prototypes/uswds/one-page.html), [one page per step](prototypes/uswds/before-you-begin.html), [content components](prototypes/uswds/components.html), [edge-case patterns](prototypes/uswds/edge-cases.html) |
 | `prototypes/simpler-grants/` | Simpler.Grants.gov theme compiled from that site's source: [opportunity listing with a NOFO section](prototypes/simpler-grants/opportunity.html), [NOFO inside the site](prototypes/simpler-grants/nofo.html), [NOFO on its own](prototypes/simpler-grants/nofo-standalone.html) (the attachable file), [content components](prototypes/simpler-grants/components.html), [edge-case patterns](prototypes/simpler-grants/edge-cases.html) |
 | `screenshots/` | Captures of the prototypes, referenced below |
@@ -77,7 +77,7 @@ All prototype content comes from the CMS-2U2-25-001 NOFO in the Builder's test f
 
 - **Source inspection:** the Builder's models and fixtures; the Simpler.Grants.gov frontend (USWDS theme settings, header, footer and opportunity page components); and the CommonGrants protocol's TypeSpec models, docs and custom-field catalog.
 - **Live data:** the Simpler.Grants.gov opportunity records for CMS-2U2-25-001 (`ffeeff3a-…`) and PAR-24-295 (`ab679839-…`), fetched through a CommonGrants API client.
-- **Prototypes:** generated from the fixture by the scripts in `scripts/`. The Simpler.Grants.gov theme is compiled from that repo's `_uswds-theme.scss` and custom styles, not approximated.
+- **Prototypes:** generated from the fixture by the scripts in `scripts/`. The Simpler.Grants.gov theme is compiled from that repo's `_uswds-theme.scss` and custom styles, not approximated. Fonts (Source Sans and Merriweather for plain USWDS, Public Sans for Simpler.Grants.gov) are embedded from the USWDS package's own woff2 files, only the weights the pages use, so nothing loads from Google Fonts or any other host.
 - **Local tests:** Chromium through Playwright, axe-core 4.10.2 (WCAG 2.0, 2.1 and 2.2 A/AA plus best-practice rules), keyboard paths, and reflow at 320px.
 - **Not done:** screen-reader testing, zoom at 200%/400%, usability testing with applicants, or a deployed Simpler.Grants.gov staging demo (#851 Goal 1).
 
@@ -291,7 +291,7 @@ Screenshots of the other components: [lettered and roman lists](screenshots/comp
 | Recommendation for the Builder generating and attaching its own HTML/PDF | Partly: a self-contained single-page file is prototyped, and a CommonGrants extension is proposed. Attaching through the API depends on #844 |
 | Redesigned template reviewed against WCAG 2.1 AA | Prototype passes automated WCAG 2.2 AA checks; manual and screen-reader review still needed |
 | Findings documented | This record |
-| Supported HTML-and-assets format documented | Partly: the prototypes show that one self-contained file works (inline CSS, icons and images; about 140–280 KB). Simpler.Grants.gov's accepted types, size limits and script policy still need confirming with that team |
+| Supported HTML-and-assets format documented | Partly: the prototypes show that one self-contained file works, with CSS, icons, images and fonts inline (about 155–460 KB; the embedded fonts account for about 130–175 KB). Pages make no requests to other hosts. Simpler.Grants.gov's accepted types, size limits and script policy still need confirming with that team |
 | Works without Builder internal pages or authenticated assets | Yes for the prototypes; the production export path isn't built |
 | Staging demonstration | Not done |
 

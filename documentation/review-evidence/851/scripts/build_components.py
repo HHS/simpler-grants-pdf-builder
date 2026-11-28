@@ -39,6 +39,7 @@ def main():
     import build_sgg as sgg
 
     dist, logo = Path(sys.argv[3]), Path(sys.argv[4])
+    sgg.set_fonts(dist)
     parts = sgg.chrome(dist, logo)
     body = sgg.nofo_page(nofo, nofo["opportunity"], parts, False, listing_href=None)
     page = sgg.shell(
