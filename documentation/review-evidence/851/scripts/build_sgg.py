@@ -462,7 +462,7 @@ def guide_page(chrome_parts):
         ('Opportunity listing', 'The existing listing page with a new NOFO section: read online, download the PDF, or jump straight to a section.', 'opportunity.html'),
         ('NOFO inside the site', 'The NOFO as a page of the site, with header, footer, breadcrumbs and a link back to the listing.', 'nofo.html'),
         ('NOFO on its own', 'The same NOFO without site chrome: the self-contained file that could be attached to an opportunity (issue #851).', 'nofo-standalone.html'),
-        ('Content components', 'A sample NOFO showing the introduction, several deadlines, subagencies, note callouts, table captions and merged cells, list types, points labels, appendix and modifications.', 'components.html'),
+        ('Content components', 'A sample NOFO showing the introduction, several deadlines, subagencies, table captions and merged cells, list types, points labels, appendix and modifications.', 'components.html'),
         ('Edge-case patterns', 'Several opportunity numbers, components, status changes, modifications, reissues and other cases.', 'edge-cases.html'),
     ])}
   </ul>

@@ -208,13 +208,12 @@ Compared against the Builder's design system docs (`DESIGN_STANDARDS.md`, `SCALA
 
 Many PDF components exist because a PDF is printed, paginated and self-branded. A web page gets branding and navigation from the site that hosts it, so the test is whether a component carries content or meaning.
 
-**Needed: they carry content or meaning.** All eight are prototyped in both themes. The fixture NOFO pages now open with the generated "Before you begin" content. The other seven don't occur in the fixture, so a synthetic sample NOFO (`scripts/data/component-sampler.json`) exercises them on the content components pages ([plain USWDS](prototypes/uswds/components.html), [Simpler.Grants.gov](prototypes/simpler-grants/components.html)).
+**Needed: they carry content or meaning.** All seven are prototyped in both themes. The fixture NOFO pages now open with the generated "Before you begin" content. The other six don't occur in the fixture, so a synthetic sample NOFO (`scripts/data/component-sampler.json`) exercises them on the content components pages ([plain USWDS](prototypes/uswds/components.html), [Simpler.Grants.gov](prototypes/simpler-grants/components.html)).
 
 | Component | In the PDF | Web treatment in the prototypes |
 | --- | --- | --- |
 | Before you begin / Before you get started | Generated variants (full, HRSA, eRA, sole source) or an imported introduction | A section before Step 1, built from the Builder's `byb_page.html` text for the NOFO's variant. Its subheads are real h3s rather than styled paragraphs, so they appear in the navigation. The Adobe keyboard callout is dropped. An imported introduction section is used as is. |
 | Several deadlines | Deadline list on the cover when the field contains `\|` | "Application deadlines" with each date on its own line in the title block, and a list under "Apply by the application due date" |
-| Note callouts | `note-callout`, `role="note"`, bold lead-in | Same structure: a left rule and tint in the theme's accent color, with the lead-in as real bold text |
 | Table captions, merged cells, criterion tables | `<caption>`, raw HTML tables with `colspan`/`rowspan` | A "Table: …" paragraph becomes the `<caption>`, which also names the scroll region; merged header and body cells keep their `scope` and alignment |
 | Lettered and roman lists | `type="a"`, `list-lower-roman` and similar | List types kept, including nesting such as (c)(ii); matched case-sensitively so `a` and `A` stay distinct |
 | "Maximum points" pseudo-headings | `role="heading" aria-level="7"` | A "Maximum points: 20" label under its heading, not a heading |
@@ -223,7 +222,7 @@ Many PDF components exist because a PDF is printed, paginated and self-branded. 
 
 ![Content components: title block with subagencies, deadlines and modified banner, then Before you begin](screenshots/components-uswds-title-intro.png)
 
-Screenshots of the other components: [note callout and lettered and roman lists](screenshots/components-uswds-note-lists.png), [caption, points label and merged-cell table](screenshots/components-uswds-tables-points.png), [Simpler.Grants.gov title block](screenshots/components-sgg-title-intro.png), [appendix and modifications](screenshots/components-sgg-appendix-modifications.png).
+Screenshots of the other components: [lettered and roman lists](screenshots/components-uswds-lists.png), [caption, points label and merged-cell table](screenshots/components-uswds-tables-points.png), [Simpler.Grants.gov title block](screenshots/components-sgg-title-intro.png), [appendix and modifications](screenshots/components-sgg-appendix-modifications.png).
 
 **Not needed: PDF branding or print navigation.**
 
@@ -231,6 +230,7 @@ Screenshots of the other components: [note callout and lettered and roman lists]
 - Step title pages, step breadcrumbs and "In this step" lists: they exist because a printout can't scroll. The sticky navigation does this job.
 - Step icons and the three icon styles: decorative, optional for brand continuity.
 - The floating key facts sidebar: a layout choice the at-a-glance row covers.
+- Note callouts: the PDF draws them as a tinted box, but on the web the text stands on its own. The bold lead-in ("Note for current recipients:") already marks it as a note, so it renders as an ordinary paragraph.
 - Callout icons: decorative. Drop the Adobe "Alt+Left Arrow" callout entirely.
 - The 14 OpDiv themes: inside Simpler.Grants.gov the site's theme applies. A standalone file might carry the OpDiv logo, but not the full theme system.
 - Running headers and footers, page numbers, PDF bookmarks (the heading outline does this job), page and column break markers (hide them), the Contents page's page numbers and layouts, landscape orientation and table width classes.

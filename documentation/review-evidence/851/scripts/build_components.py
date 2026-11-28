@@ -4,9 +4,9 @@ Usage: python build_components.py uswds <out_dir>
        python build_components.py sgg <out_dir> <uswds_dist> <sgg_logo.svg>
 
 The sampler (data/component-sampler.json) exercises the content components a web
-NOFO needs: the generated introduction, several deadlines, subagencies, note
-callouts, table captions and merged cells, lettered and roman lists, points
-labels, the appendix and modifications.
+NOFO needs: the generated introduction, several deadlines, subagencies, table
+captions and merged cells, lettered and roman lists, points labels, the appendix
+and modifications. Its Builder note renders as ordinary text on the web.
 """
 
 import json

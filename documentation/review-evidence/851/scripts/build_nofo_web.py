@@ -178,12 +178,9 @@ def subsection_html(ss, level=None):
     name, tag, body = ss.get("name", ""), ss.get("tag", ""), ss.get("body", "")
     hid = ss["html_id"]
     if ss.get("callout_style") == "note":
-        # IMPORT-080 note callout: one short caveat, headingless, role="note", with the
-        # bold lead-in kept as real text so meaning doesn't depend on color.
-        inner = md(body).replace(
-            "<p><strong>", '<p><strong class="nofo-note__lead-in">', 1
-        )
-        return f'<div id="{hid}" class="nofo-note" role="note">{inner}</div>'
+        # The PDF draws Builder notes (IMPORT-080) as a tinted box. The web version
+        # shows them as ordinary text: the bold lead-in already says it's a note.
+        return f'<div id="{hid}">{md(body)}</div>'
     if ss.get("callout_box"):
         pairs = label_lines(body)
         is_dates = "date" in name.lower()
@@ -455,10 +452,6 @@ body{background:#fff;color:#1b1b1b;margin:0}
 .nofo-table caption{text-align:left;font-weight:700;font-size:1rem;padding:0 0 .5rem}
 .nofo-table th[colspan],.nofo-table td[colspan]{text-align:center}
 .nofo-table th[rowspan],.nofo-table td[rowspan]{vertical-align:middle}
-.nofo-note{border-left:4px solid var(--nofo-accent);background:var(--nofo-accent-bg);padding:.5rem 1rem;margin:1rem 0;max-width:46rem}
-.nofo-note p{margin:0}
-.nofo-note p+p{margin-top:.5rem}
-.nofo-note__lead-in{color:var(--nofo-accent)}
 .nofo-points{display:inline-block;font-weight:700;font-size:.9375rem;padding:.1rem .5rem;border:1px solid var(--nofo-border);border-radius:2px;margin:.25rem 0 .75rem}
 .usa-prose ol[type="a" s],.list-lower-alpha{list-style-type:lower-alpha}
 .usa-prose ol[type="A" s],.list-upper-alpha{list-style-type:upper-alpha}
