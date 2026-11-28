@@ -279,12 +279,23 @@ def step1_section(sections):
     )
 
 
-def introduction_section(nofo, sections):
-    """The generated "Before you begin" page as a section, from the Builder's
-    byb_page.html text. Variants: full (default), hrsa, era, sole_source, none."""
-    variant = nofo.get("before_you_begin", "full")
-    if variant == "none" or any(s.get("role") == "introduction" for s in sections):
-        return None  # none, or an imported introduction that is already a section
+HRSA_REQUIREMENTS = (
+    "All activities proposed in your application and budget narrative must align with "
+    "applicable laws and policies, including but not limited to statutes, executive "
+    "orders, federal regulations and applicable judicial holdings. Accordingly, "
+    "discretionary awards shall not be used to fund, promote, encourage, subsidize, or "
+    "facilitate; racial preferences or other forms of racial discrimination by the "
+    "recipient, including activities where race or intentional proxies for race will be "
+    "used as a selection criterion for employment or program participation; denial by "
+    "the recipient of the sex binary in humans, or the belief that sex is a chosen or "
+    "mutable characteristic; illegal immigration; or any other initiatives that "
+    "compromise public safety. If an application does not align, the application will "
+    "not receive funding to the extent permitted by law and applicable court orders."
+)
+
+
+def _legacy_registration(variant, sections):
+    """byb_page.html: intro paragraph and registration subheads with Step 2 links."""
     step2 = next((s for s in sections if STEP2_RE.match(s["name"])), None)
     see_step2 = f"\n\n[See {step2['name']}](#{step2['html_id']})" if step2 else ""
     sam, gg = "[SAM.gov](https://sam.gov)", "[Grants.gov](https://grants.gov)"
@@ -329,15 +340,98 @@ def introduction_section(nofo, sections):
                 + see_step2,
             )
         )
-    when = "5:00 p.m. local time" if variant == "era" else "11:59 p.m. Eastern Time"
+    return subs
+
+
+def _get_started_registration(variant):
+    """byb_registration_get_started.html: "Get registered" with detailed steps."""
+    subs = [("Get registered", "h3", "")]
+    subs.append(
+        (
+            "SAM.gov",
+            "h4",
+            (
+                "Your organization must have an active account with SAM.gov to apply unless you are "
+                "exempt under 2 CFR 25. SAM.gov registration can take **several weeks**.\n\n"
+                "To register:\n\n"
+                "* Go to [SAM.gov Entity Registration](https://sam.gov/content/entity-registration) and "
+                "select Get Started. On the same page, you can also find the Entity Registration "
+                "Checklist for the information you will need to register.\n"
+                "* Your organization must agree to the [financial assistance general certifications and "
+                "representations](https://www.hhs.gov/sites/default/files/financial-assistance-general-certification-representations.pdf) "
+                "specifically. The certifications for contracts are different.\n\n"
+                "When you register, your organization will also receive its required Unique Entity "
+                "Identifier (UEI).\n\n"
+                "Once you register:\n\n"
+                "* Your organization will have to maintain its registration throughout the life of any award.\n"
+                "* If your organization has multiple UEIs, use the one associated with your physical location."
+            ),
+        )
+    )
+    if variant != "sole_source":
+        subs.append(
+            (
+                "Grants.gov",
+                "h4",
+                (
+                    "To apply for this opportunity, your organization and the people who will work on "
+                    "your application must have an active account with "
+                    "[Grants.gov](https://grants.gov/applicants/applicant-registration). You can follow "
+                    "the step-by-step instructions at the Grants.gov "
+                    "[Quick Start Guide for Applicants](http://www.grants.gov/quick-start-guide/applicants).\n\n"
+                    "We recommend that you register and set up your organization's account **at least "
+                    "four weeks** before the application deadline."
+                ),
+            )
+        )
+    if variant == "era":
+        subs.append(
+            (
+                "eRA Commons",
+                "h4",
+                (
+                    "To apply for this opportunity, your organization must register in "
+                    "[eRA Commons](https://public.era.nih.gov/commonsplus/public/login.era?TARGET=https%3A%2F%2Fpublic.era.nih.gov%3A443%2Fcommons). "
+                    "Your senior and key personnel must also register and affiliate their accounts with "
+                    "your organization's account.\n\n"
+                    "We recommend that you register and set up your organization's account **at least "
+                    "four weeks** before the application deadline."
+                ),
+            )
+        )
+    return subs
+
+
+def introduction_section(nofo, sections):
+    """The generated introduction as a section, from the Builder's templates.
+
+    Families: legacy "Before you begin" (byb_page.html) or "Before you get
+    started" (byb_registration_get_started.html). Variants: full (default),
+    hrsa, era, sole_source, none.
+    """
+    variant = nofo.get("before_you_begin", "full")
+    family = nofo.get("introductory_page_family", "")
+    if variant == "none" or any(s.get("role") == "introduction" for s in sections):
+        return None  # none, or an imported introduction that is already a section
+    subs = (
+        _get_started_registration(variant)
+        if family == "get_started"
+        else _legacy_registration(variant, sections)
+    )
     items = deadlines(nofo)
     if len(items) > 1:
-        due = f"Applications are due by {when}:\n\n" + "\n".join(
+        # The template uses Eastern Time for a deadline list, whatever the variant.
+        due = "Applications are due by 11:59 p.m. Eastern Time:\n\n" + "\n".join(
             f"* {d}" for d in items
         )
     else:
+        when = "5:00 p.m. local time" if variant == "era" else "11:59 p.m. Eastern Time"
         due = f"Applications are due by {when} on {items[0] if items else ''}."
+    # The get-started PDF tags this h4 under "Get registered"; on the web it is a
+    # sibling h3, because the due date isn't part of registration.
     subs.append(("Apply by the application due date", "h3", due))
+    if variant == "hrsa" and family != "get_started":
+        subs.append(("Application and funding requirements", "h3", HRSA_REQUIREMENTS))
     title = (
         "Before you get started"
         if nofo.get("introductory_page_family") == "get_started"
@@ -523,7 +617,6 @@ body{background:#fff;color:#1b1b1b;margin:0}
 .nofo-onepage .usa-in-page-nav-container{display:block}
 .nofo-onepage .usa-in-page-nav{display:block;margin:0 0 2rem;padding:1rem 1.25rem;border:1px solid var(--nofo-border);border-radius:.25rem}
 .nofo-onepage .usa-in-page-nav__nav{position:static;max-height:none;padding:0;margin:0}
-.nofo-onepage .usa-in-page-nav__item:not(.usa-in-page-nav__item--primary){display:none}
 @media(min-width:64em){
 .nofo-onepage .usa-in-page-nav-container{display:flex;gap:3rem;align-items:flex-start}
 .nofo-onepage .usa-in-page-nav{order:2;flex:0 0 16rem;position:sticky;top:var(--nofo-sticky-top);max-height:calc(100vh - var(--nofo-sticky-top) - 1rem);overflow-y:auto;margin:0;padding:0;border:0}
@@ -532,6 +625,7 @@ body{background:#fff;color:#1b1b1b;margin:0}
 .nofo-onepage .nofo-content>section+section{margin-top:3.5rem;padding-top:2rem;border-top:3px solid #1b1b1b}
 .usa-in-page-nav__link:focus{outline:.25rem solid #2491ff;outline-offset:0}
 .nofo-nav--collapsible .usa-in-page-nav__item:not(.usa-in-page-nav__item--primary):not(.is-open){display:none}
+@media(max-width:63.99em){.nofo-onepage .nofo-nav--collapsible .usa-in-page-nav__item:not(.usa-in-page-nav__item--primary){display:none}}
 .nofo-backtop{display:inline-flex;align-items:center;gap:.25rem;margin-top:1rem;font-size:.9375rem}
 """
 
@@ -807,7 +901,7 @@ def build(nofo, out):
 <a class="usa-skipnav" href="#nofo-content">Skip to {esc(s['name'])}</a>
 <main class="nofo-page">
 {mock_banner('one-page.html', 'Compare: the whole NOFO on one page')}
-{title_block(s['name'])}
+{fix_links(title_block(s['name']), f)}
 <div class="nofo-layout">
 {sidenav(i)}
 <article class="nofo-content usa-prose" id="nofo-content" tabindex="-1">

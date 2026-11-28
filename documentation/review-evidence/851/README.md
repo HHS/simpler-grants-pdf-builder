@@ -22,14 +22,14 @@
 
 **Long navigation lists and short sections:**
 
-- **The list shows the steps and opens only the current step's subsections.** For this NOFO that keeps it 260–380px tall, instead of 956px with every subsection listed. The full list is taller than an 820px laptop window, and much longer for a large NIH NOFO.
+- **The list shows the steps and opens only the current step's subsections.** For this NOFO that keeps it about 340–460px tall, depending on the step and theme, instead of 956–1,007px (26 items) with every subsection listed. The full list is taller than an 820px laptop window, and much longer for a large NIH NOFO.
 - **Short final sections still work.** The list is sticky and capped at the window height, so it never stretches the page. The current item comes from scroll position, so Endnotes is marked even though it is too short to reach the top of the window.
-- **Without JavaScript, every item stays visible.** Screen reader users move by headings, so the list doesn't need every subsection to be accessible.
+- **Without JavaScript, every item stays visible**, on phones as well as desktops. Screen reader users move by headings, so the list doesn't need every subsection to be accessible.
 - **On phones, the step list sits above the text** instead of in a sidebar.
 
 **Optional: one page per step.** Shorter pages for first-time readers, modeled on GOV.UK's multi-part guides, with side navigation and previous/next links. It must always link to the whole NOFO on one page ("View all steps on one page"), as GOV.UK does with its printable guide.
 
-The image is composed from prototype screenshots taken on 2026-11-28 at 1280×820. The "before" panel is the single page with the collapsing behavior turned off.
+The image is composed from prototype screenshots taken on 2026-11-28 at 1280×820; heights were measured at that size with the current step open. The "before" panel is the single page with the collapsing behavior turned off.
 
 ## Relationship to the Builder's existing HTML
 
@@ -111,7 +111,7 @@ This summary is from the design systems' published guidance as we know it; the s
 ![The whole NOFO on one page, plain USWDS](screenshots/uswds-one-page-desktop.png)
 
 - **Title block:** OpDiv, agency, title, tagline, opportunity number, assistance listing and deadline. The PDF download is the main action, because applicant research says most people print the NOFO.
-- **Navigation:** a sticky "On this page" list on the single page. It shows the steps and opens only the current step's subsections, so it stays 260–380px tall instead of about 750px for this NOFO, and much less than the full list would be for a long NIH NOFO ([screenshot](screenshots/uswds-nav-current-step.png)). The current item follows scroll position, so short final sections such as Endnotes are marked when you reach them. Without script, every h2 and h3 item stays visible. Headings remain the main way screen reader users move around, so the navigation doesn't need to list every one. On the step pages, a sticky side navigation whose current step expands, plus previous/next links and "View all steps on one page" ([screenshot](screenshots/uswds-step-pages-desktop.png)). On phones the navigation sits above the text ([screenshot](screenshots/uswds-phone.png)).
+- **Navigation:** a sticky "On this page" list on the single page. It shows the steps and opens only the current step's subsections, so it stays about 340–460px tall instead of 956–1,007px for this NOFO, and much less than the full list would be for a long NIH NOFO ([screenshot](screenshots/uswds-nav-current-step.png)). The current item follows scroll position, so short final sections such as Endnotes are marked when you reach them. Without script, every h2 and h3 item stays visible. Headings remain the main way screen reader users move around, so the navigation doesn't need to list every one. On the step pages, a sticky side navigation whose current step expands, plus previous/next links and "View all steps on one page" ([screenshot](screenshots/uswds-step-pages-desktop.png)). On phones the navigation sits above the text ([screenshot](screenshots/uswds-phone.png)).
 - **Content mapping:** callouts become USWDS summary boxes. "Label: value" callouts (key facts, key dates, funding) become description lists. Cross-references between steps are rewritten to point to the right page. The "Basic information" metadata block is not shown; its values fill the title block and the page's meta description.
 
 ### Accessibility
@@ -258,7 +258,7 @@ Many PDF components exist because a PDF is printed, paginated and self-branded. 
 
 | Component | In the PDF | Web treatment in the prototypes |
 | --- | --- | --- |
-| Before you begin / Before you get started | Generated variants (full, HRSA, eRA, sole source) or an imported introduction | A section before Step 1, built from the Builder's `byb_page.html` text for the NOFO's variant. Its subheads are real h3s rather than styled paragraphs, so they appear in the navigation. The Adobe keyboard callout is dropped. An imported introduction section is used as is. |
+| Before you begin / Before you get started | Generated variants (full, HRSA, eRA, sole source) or an imported introduction | A section before Step 1 with the Builder's text for each family and variant. Legacy "Before you begin" (`byb_page.html`): intro, SAM.gov, Grants.gov (not sole source), eRA Commons (eRA), apply-by, and for HRSA the "Application and funding requirements" section. "Before you get started" (`byb_registration_get_started.html`): "Get registered" with the detailed SAM.gov steps (2 CFR 25 exemption, Entity Registration, certifications, UEI), Grants.gov and eRA Commons, then apply-by. Subheads are real headings, so they appear in the navigation; apply-by is a sibling h3 rather than the PDF's h4 under "Get registered". The Adobe keyboard callout is dropped. An imported introduction section is used as is. |
 | Several deadlines | Deadline list on the cover when the field contains `\|` | "Application deadlines" with each date on its own line in the title block, and a list under "Apply by the application due date" |
 | Table captions, merged cells, criterion tables | `<caption>`, raw HTML tables with `colspan`/`rowspan` | A "Table: …" paragraph becomes the `<caption>`, which also names the scroll region; merged header and body cells keep their `scope` and alignment |
 | Lettered and roman lists | `type="a"`, `list-lower-roman` and similar | List types kept, including nesting such as (c)(ii); matched case-sensitively so `a` and `A` stay distinct |
