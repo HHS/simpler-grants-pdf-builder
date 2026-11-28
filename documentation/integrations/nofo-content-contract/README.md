@@ -236,11 +236,41 @@ CommonGrants is the protocol Simpler.Grants.gov already serves for opportunity l
 2. **The listing links to the NOFO through CommonGrants custom fields.** CommonGrants allows extensions only in `customFields`, so the opportunity record would point to the NOFO with two custom fields, as proposed in the #851 evidence: `nofoDocument` (web page and PDF addresses, version, contract version) and `nofoSections` (each keyed section's key, title and address). The section keys there are the keys defined here, which lets Simpler.Grants.gov build "go straight to" links from data instead of heading text.
 3. **NOFO content is a separate document.** CommonGrants has no model for NOFO content and doesn't allow extra top-level fields. Putting a whole NOFO into custom fields would also make every listing response very large. The contract document is its own type, linked from the listing.
 
-Gaps to raise with the CommonGrants maintainers:
+The gaps this contract works around are listed in the next section.
 
-- **Time zones:** event times have no time zone, so a deadline such as "11:59 p.m. Eastern" can't be stated precisely. Options are a protocol change, or a custom field until one lands; this contract carries `extensions.timeZone` meanwhile.
-- **Related opportunities:** no field for companion, component or reissue relationships. A custom field is the natural first step.
-- **NOFO custom fields:** propose `nofoDocument` and `nofoSections` for the shared custom-field catalog.
+## Gaps between CommonGrants and NOFO content
+
+Patterns that Builder NOFOs and live Simpler.Grants.gov listings show, compared with CommonGrants v0.5.0. Evidence comes from the CMS-2U2-25-001 fixture and the listings recorded in the #851 evidence. Each gap has a suggested route:
+
+- **Protocol:** a change to the CommonGrants core models;
+- **Catalog:** a new field in the shared custom-field catalog;
+- **Docs:** guidance on using existing fields.
+
+| NOFO pattern | CommonGrants today | Gap | Evidence | Suggested route |
+| --- | --- | --- | --- | --- |
+| NOFO content: steps, sections, eligibility and review criteria, application requirements | No model; extensions only in `customFields` | No home for NOFO content or its structure | Every NOFO | Catalog: `nofoDocument` and `nofoSections` linking to a separate content document (this contract) |
+| Deadlines at a stated time in a stated zone ("11:59 p.m. Eastern Time") | Events have `date` and `time`, no time zone | A deadline can't be stated precisely | Every NOFO | Protocol: a time zone on events; this contract carries `extensions.timeZone` meanwhile |
+| Several deadlines with meaning: required or optional letter of intent, pre-application then invited application, rounds | `closeDate` plus untyped `otherDates` | No event types such as letter of intent or pre-application, and no required/optional flag | CMS fixture (optional LOI); AFOSR FA955026S0003 white papers; NASA NNH25ZDA001N two steps | Protocol or Catalog: typed key-date roles |
+| Rolling or continuous applications | A single `closeDate` | No way to say "rolling", which leads to placeholder dates | State Department OFOP0002825 (close date 2099-01-01) | Protocol: an application-period type, or Docs: leave `closeDate` null and describe the period |
+| Companion, component and reissue opportunities | Nothing | Relationships exist only as free text | NIH PA-24-190/191 ("companion FOA ()"); RFA-FD-25-020 reissue | Catalog: related opportunities with a relationship type |
+| Funding structure: base plus optional add-on, per-year versus whole-period amounts, period of performance | Min, max, total, counts and free-text `details` | No per-year versus total distinction, no add-on amounts, no period of performance | CMS fixture ($250,000 base plus $125,000 add-on over 3 years); AFOSR minimum is a yearly cap, maximum a 3-year total | Protocol: amount basis and performance period |
+| Components or tracks with their own eligibility, funding and deadlines | One funding block per opportunity; competitions (experimental) have dates and applicant types but no funding | No per-component funding | NIOSH RFA-OH-27-049; NCI RFA-CA-26-010; RESTORE Act GR-RDC-25-001/002 | Protocol: funding on competitions |
+| Several contacts by role (program, budget, grants management) | `contactInfo` custom field holds one contact | No list of contacts with roles | CMS fixture "Agency contacts" | Catalog: contacts as a list with roles |
+| Limited competition or single source | `acceptedApplicantTypes` and free-text eligibility details | No limited-competition flag | NIH PAR-27-009 ("Single Source"); USDA non-competitive formula grant | Catalog: competition type |
+| Applications submitted outside Grants.gov | One `additionalInfo` link | No field naming the application system | Fish and Wildlife F24AS00022 (GrantSolutions only); State Department MyGrants listings | Catalog: application system and address |
+| Statuses beyond forecasted, open and closed | `custom` with a free-text value | Archived and cancelled aren't standard values | Simpler.Grants.gov uses `custom` with "archived" | Protocol: add archived and cancelled |
+| Amendments and versions | `lastModifiedAt` only | No amendment record, and timestamps aren't reliable | AFOSR amendment PDFs; NASA amendment only in the description, with created and modified dates equal | Protocol or Catalog: an amendment list with dates and summaries |
+| What an attachment is | File with name, type and size | No role, such as NOFO, amendment, template or FAQ | AFOSR's six attachments; NIH stub "Full Announcement" files of 420–422 bytes | Catalog: a role on attachments |
+| Rich text | `description`, `details` and `instructions` are untyped strings | HTML, Markdown or plain text isn't specified | Simpler.Grants.gov descriptions carry inline-styled HTML; the Builder stores Markdown | Protocol: a declared format, or Docs: one required format |
+| Translations | Nothing | No language or alternate-language versions | USAID 72052024RFI00001 (separate English and Spanish forms) | Protocol: language and alternates |
+| Agency hierarchy (OpDiv, agency, subagencies) | `funders.primary` plus `otherOrgs` keyed by role | Role names aren't defined | Builder `agency`, `subagency`, `subagency2` | Docs: a shared role vocabulary |
+
+Documentation gaps, where the field exists but guidance doesn't:
+
+- **Unknown values:** no rule that an unknown value should be null rather than a placeholder such as $0, $1 or 2099-01-01. Live listings use all three.
+- **Time zones:** no statement of which zone an event's `time` is in.
+- **Organization roles:** no shared names for `funders.otherOrgs` keys.
+- **Applicant types:** `non_profit_with_501c3` and `nonprofit_without_501c3` are spelled differently.
 
 ## Assigning keys
 
@@ -271,6 +301,6 @@ The contract uses semantic versions. Adding a component or key is a minor change
 
 - Does eRA want FOAM to render this design, and what is FOAM's stack and data model?
 - Who maintains the contract and CSS, and how do design changes get approved across HHS, NIH and Simpler.Grants.gov?
-- Will the CommonGrants maintainers accept `nofoDocument`, `nofoSections` and a related-opportunities field into the custom-field catalog, and add time zones to events?
+- Which of the [gaps](#gaps-between-commongrants-and-nofo-content) will the CommonGrants maintainers take as protocol changes, catalog fields or documentation, starting with `nofoDocument`, `nofoSections`, related opportunities and time zones?
 - How are amendments represented, so the web page and PDF always show the same version?
 - Who runs the accessibility conformance checks for pages FOAM publishes?
