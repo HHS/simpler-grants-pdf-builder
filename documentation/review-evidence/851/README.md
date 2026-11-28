@@ -9,10 +9,27 @@
 
 ## Summary
 
-1. **Publish one long, accessible NOFO page as the default web version**, with a sticky "On this page" navigation, and offer one-page-per-step as an optional view. GOV.UK, USWDS and VA.gov all reserve page-by-page flows for tasks such as forms. They use long pages with in-page navigation for reference reading, which a NOFO is. A single page is also the one self-contained file #851 proposes attaching to an opportunity.
+1. **Publish one long, accessible NOFO page as the default web version**, with a sticky "On this page" navigation that lists the steps and opens only the current step, and offer one-page-per-step as an optional view ([Navigation recommendation](#navigation-recommendation)). GOV.UK, USWDS and VA.gov all reserve page-by-page flows for tasks such as forms. They use long pages with in-page navigation for reference reading, which a NOFO is. A single page is also the one self-contained file #851 proposes attaching to an opportunity.
 2. **The Builder's content model already fits a web page.** Sections, subsections, heading tags, callouts and stable `html_id`s render cleanly in USWDS. Two adjustments were needed: re-level headings after the hidden metadata block, and treat "Label: value" callouts as description lists.
 3. **Link the NOFO and the opportunity listing in both directions,** with deep links into NOFO sections from the listing. This needs stable section anchors, which the Builder has, and a way to tell Simpler.Grants.gov about them. CommonGrants has no NOFO-content fields today, so we propose two custom fields (see [CommonGrants](#commongrants)).
 4. **Design for edge cases from the start.** A sweep of live Simpler.Grants.gov listings found real instances of every case below, plus placeholder dates and amounts. Several of them don't fit the Builder's data model today. Examples: one NOFO posted under several opportunity numbers, many assistance listings, and multi-component NOFOs. See the [edge-case catalog](#edge-cases).
+
+## Navigation recommendation
+
+![Navigation recommendation: one long page by default with a short sticky list; one page per step as an optional view](screenshots/navigation-recommendation.png)
+
+**Default: the whole NOFO on one page.** GOV.UK, USWDS and VA.gov all use long pages with in-page navigation for reference reading, and keep page-by-page flows for tasks such as forms. Applicants search, print and jump between steps, which a single page supports. It is also the one self-contained file #851 proposes attaching to an opportunity.
+
+**Long navigation lists and short sections:**
+
+- **The list shows the steps and opens only the current step's subsections.** For this NOFO that keeps it 260–380px tall, instead of 956px with every subsection listed. The full list is taller than an 820px laptop window, and much longer for a large NIH NOFO.
+- **Short final sections still work.** The list is sticky and capped at the window height, so it never stretches the page. The current item comes from scroll position, so Endnotes is marked even though it is too short to reach the top of the window.
+- **Without JavaScript, every item stays visible.** Screen reader users move by headings, so the list doesn't need every subsection to be accessible.
+- **On phones, the step list sits above the text** instead of in a sidebar.
+
+**Optional: one page per step.** Shorter pages for first-time readers, modeled on GOV.UK's multi-part guides, with side navigation and previous/next links. It must always link to the whole NOFO on one page ("View all steps on one page"), as GOV.UK does with its printable guide.
+
+The image is composed from prototype screenshots taken on 2026-11-28 at 1280×820. The "before" panel is the single page with the collapsing behavior turned off.
 
 ## Relationship to the Builder's existing HTML
 
