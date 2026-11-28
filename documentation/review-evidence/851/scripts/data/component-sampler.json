@@ -1,0 +1,162 @@
+{
+  "_comment": "Synthetic NOFO for the #851 component prototypes. Content is illustrative, not a real funding opportunity. Field names follow the NOFO Builder export (see nofos/nofos/fixtures/json/cms-u2u-25-001.json).",
+  "mock_note": "Sample content that exercises every NOFO content component; not a real funding opportunity.",
+  "title": "Nurse Faculty Pathways (sample NOFO)",
+  "number": "SAMPLE-27-001",
+  "opdiv": "Health Resources and Services Administration (HRSA)",
+  "agency": "Bureau of Health Workforce",
+  "subagency": "Division of Nursing and Public Health",
+  "subagency2": "Nursing Education and Practice Branch",
+  "tagline": "Helping schools of nursing grow and keep their faculty.",
+  "application_deadline": "January 15, 2027 | April 15, 2027",
+  "modifications": "March 3, 2027",
+  "before_you_begin": "full",
+  "introductory_page_family": "",
+  "opportunity": {
+    "id": "sample-27-001",
+    "title": "Nurse Faculty Pathways (sample NOFO)",
+    "status": {"value": "open", "customValue": null},
+    "lastModifiedAt": "2027-03-03T00:00:00Z"
+  },
+  "sections": [
+    {
+      "name": "Step 1: Review the Opportunity",
+      "html_id": "step-1-review-the-opportunity",
+      "order": 1,
+      "subsections": [
+        {
+          "name": "Basic information",
+          "html_id": "1--step-1-review-the-opportunity--basic-information",
+          "order": 1,
+          "tag": "h3",
+          "body": "Assistance Listing: 93.000 (sample)\n\nMetadata subject: A sample NOFO that shows how NOFO content components appear on the web.\n\n",
+          "callout_box": false
+        },
+        {
+          "name": "Summary",
+          "html_id": "2--step-1-review-the-opportunity--summary",
+          "order": 2,
+          "tag": "h4",
+          "body": "This program funds schools of nursing to recruit, prepare and keep nurse faculty. There are two application rounds; apply in the round that fits your timeline.\n\n",
+          "callout_box": false
+        },
+        {
+          "name": "",
+          "html_id": "3--step-1-review-the-opportunity--",
+          "order": 3,
+          "tag": "",
+          "body": "**Note for current recipients:** If you have an active award under this program, apply in the second round only.\n\n",
+          "callout_box": true,
+          "callout_style": "note"
+        },
+        {
+          "name": "Eligible applicants",
+          "html_id": "4--step-1-review-the-opportunity--eligible-applicants",
+          "order": 4,
+          "tag": "h4",
+          "body": "<p>You may apply if you are one of the following:</p>\n<ol type=\"a\">\n<li>An accredited school of nursing.</li>\n<li>A health care facility that partners with a school of nursing.</li>\n<li>A state or local government that funds nurse education, including:\n<ol type=\"i\">\n<li>State boards of nursing.</li>\n<li>Workforce development agencies.</li>\n</ol>\n</li>\n</ol>\n<p>Applicants in category (c)(ii) must include a letter of support from a school of nursing.</p>\n\n",
+          "callout_box": false
+        }
+      ]
+    },
+    {
+      "name": "Step 2: Get Ready to Apply",
+      "html_id": "step-2-get-ready-to-apply",
+      "order": 2,
+      "subsections": [
+        {
+          "name": "Get registered",
+          "html_id": "5--step-2-get-ready-to-apply--get-registered",
+          "order": 1,
+          "tag": "h3",
+          "body": "Register with SAM.gov and Grants.gov before you apply. Registration can take several weeks.\n\n",
+          "callout_box": false
+        }
+      ]
+    },
+    {
+      "name": "Step 4: Learn About Review and Award",
+      "html_id": "step-4-learn-about-review-and-award",
+      "order": 3,
+      "subsections": [
+        {
+          "name": "Merit review",
+          "html_id": "6--step-4-learn-about-review-and-award--merit-review",
+          "order": 1,
+          "tag": "h3",
+          "body": "Table: Merit review criteria\n\n| Criterion | Points |\n| --- | --- |\n| Need | 20 |\n| Response | 40 |\n| Evaluation | 20 |\n| Capacity | 20 |\n\n",
+          "callout_box": false
+        },
+        {
+          "name": "Criterion 1: Need",
+          "html_id": "7--step-4-learn-about-review-and-award--criterion-1-need",
+          "order": 2,
+          "tag": "h4",
+          "body": "(Maximum points: 20)\n\nDescribe the faculty shortage in your area and how it affects the number of nurses you can train.\n\n",
+          "callout_box": false
+        },
+        {
+          "name": "Budget review",
+          "html_id": "8--step-4-learn-about-review-and-award--budget-review",
+          "order": 3,
+          "tag": "h4",
+          "body": "<p>Table: Expected budget by year and round</p>\n<table>\n<thead>\n<tr><th scope=\"col\" rowspan=\"2\">Cost category</th><th scope=\"colgroup\" colspan=\"2\">Round 1</th><th scope=\"colgroup\" colspan=\"2\">Round 2</th></tr>\n<tr><th scope=\"col\">Year 1</th><th scope=\"col\">Year 2</th><th scope=\"col\">Year 1</th><th scope=\"col\">Year 2</th></tr>\n</thead>\n<tbody>\n<tr><th scope=\"row\">Faculty salaries</th><td>$300,000</td><td>$310,000</td><td>$250,000</td><td>$260,000</td></tr>\n<tr><th scope=\"row\">Student support</th><td>$80,000</td><td>$80,000</td><td>$60,000</td><td>$60,000</td></tr>\n<tr><th scope=\"row\">Evaluation</th><td colspan=\"2\">$40,000 across both years</td><td colspan=\"2\">$30,000 across both years</td></tr>\n</tbody>\n</table>\n\n",
+          "callout_box": false
+        }
+      ]
+    },
+    {
+      "name": "Endnotes",
+      "html_id": "endnotes",
+      "order": 4,
+      "subsections": [
+        {
+          "name": "",
+          "html_id": "1--endnotes--",
+          "order": 1,
+          "tag": "",
+          "body": "<ol><li id=\"endnote-1\"><p>Sample endnote text. <a href=\"#5--step-2-get-ready-to-apply--get-registered\">↑</a></p></li></ol>\n",
+          "callout_box": false
+        }
+      ]
+    },
+    {
+      "name": "Appendix",
+      "html_id": "appendix",
+      "order": 5,
+      "subsections": [
+        {
+          "name": "Appendix A: Logic model template",
+          "html_id": "1--appendix--appendix-a-logic-model-template",
+          "order": 1,
+          "tag": "h3",
+          "body": "Use this structure for the logic model in your project narrative: inputs, activities, outputs, short-term outcomes and long-term outcomes.\n\n",
+          "callout_box": false
+        },
+        {
+          "name": "Appendix B: Letter of support checklist",
+          "html_id": "2--appendix--appendix-b-letter-of-support-checklist",
+          "order": 2,
+          "tag": "h3",
+          "body": "A letter of support names the partner, describes what it will contribute, and is signed by someone who can commit the partner's resources.\n\n",
+          "callout_box": false
+        }
+      ]
+    },
+    {
+      "name": "Modifications",
+      "html_id": "modifications",
+      "order": 6,
+      "subsections": [
+        {
+          "name": "",
+          "html_id": "1--modifications--",
+          "order": 1,
+          "tag": "",
+          "body": "| Modification description | Date updated |\n|--------------------------|--------------|\n| Added a second application round (April 15, 2027). See [Before you begin](#before-you-begin). | March 3, 2027 |\n\n",
+          "callout_box": false
+        }
+      ]
+    }
+  ]
+}
