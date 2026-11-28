@@ -243,6 +243,27 @@ def agency_lines(nofo):
     return "".join(f"<span>{esc(n)}</span>" for n in names if n)
 
 
+def heading_levels(subsections, skip=None):
+    """Rendered heading level for each named subsection, keyed by html_id.
+
+    Keeps the source hierarchy when a heading is hidden (the "Basic information"
+    metadata block) or a level is skipped: each heading sits one level below its
+    nearest real ancestor, so source siblings stay siblings (WCAG 1.3.1). Section
+    titles are h2, so subsections start at h3.
+    """
+    stack, levels = [], {}  # stack of (source level, rendered level)
+    for ss in sorted(subsections, key=lambda x: x["order"]):
+        if ss is skip or not (ss.get("tag") and ss.get("name")):
+            continue
+        source = int(ss["tag"][1])
+        while stack and stack[-1][0] >= source:
+            stack.pop()
+        rendered = (stack[-1][1] if stack else 2) + 1
+        levels[ss["html_id"]] = rendered
+        stack.append((source, rendered))
+    return levels
+
+
 def find_basic(sections):
     for s in sections:
         for ss in s["subsections"]:
@@ -671,15 +692,11 @@ def build(nofo, out):
         parts.append(heading(2, s["html_id"], f"{step_html}{esc(label)}", s["name"]))
         if include_glance:
             parts.append(glance())
-        prev = 2
+        levels = heading_levels(s["subsections"], skip=basic)
         for ss in sorted(s["subsections"], key=lambda x: x["order"]):
             if ss is basic:
                 continue  # document metadata: used for the title block and <meta>, not shown
-            level = None
-            if ss.get("tag") and ss.get("name"):
-                # never skip a level (WCAG 1.3.1): h2 -> h4 becomes h2 -> h3
-                level = min(int(ss["tag"][1]), prev + 1)
-                prev = level
+            level = levels.get(ss["html_id"])
             parts.append(subsection_html(ss, level))
         return enhance("\n".join(parts))
 

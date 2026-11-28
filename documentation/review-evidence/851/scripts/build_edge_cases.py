@@ -46,6 +46,7 @@ CSS = """
 .ec-toc li{break-inside:avoid;margin-bottom:.35rem}
 .ec-pattern{margin-top:3.5rem;padding-top:2rem;border-top:2px solid var(--nofo-border)}
 .ec-pattern>h2{margin:0 0 .5rem;font-size:1.75rem}
+.ec-pattern [id]{scroll-margin-top:calc(var(--nofo-sticky-top) + .5rem)}
 .ec-when{max-width:46rem;margin:0 0 1rem}
 .ec-frame{border:1px dashed #a9aeb1;border-radius:.5rem;padding:1.25rem;margin:1rem 0;background:#fff}
 .ec-frame-label{display:block;font-size:.8125rem;font-weight:700;color:var(--nofo-muted);margin:0 0 .75rem}

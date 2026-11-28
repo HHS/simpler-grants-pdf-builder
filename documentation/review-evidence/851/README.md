@@ -104,9 +104,10 @@ This summary is from the design systems' published guidance as we know it; the s
 - **Target highlight:** the heading a link takes you to gets a gold border and tint, distinct from blue keyboard focus. It is kept in Windows high contrast mode, and its fade-in respects reduced-motion settings.
 - **Focus follows the link:** after any in-page jump, keyboard and screen reader focus moves to that heading.
 - **Section links on every heading:** 32px targets (WCAG 2.2 requires at least 24px), named "Link to this section: …", placed outside the heading so its accessible name stays clean. Clicking one updates the URL, copies the link and announces the result. Links use the Builder's `html_id`s, so they stay stable.
-- **Structure:** one h1 and a main landmark per page, labelled navigation, a skip link, `aria-current` on the current step and section, and no skipped heading levels. Hiding the metadata block had made Step 1 jump from h2 to h4; headings are re-leveled.
+- **Structure:** one h1 and a main landmark per page, labelled navigation, a skip link, `aria-current` on the current step and section, and no skipped heading levels. When a heading is hidden (the metadata block) or the source skips a level, each heading is placed one level below its nearest real ancestor, so source siblings stay siblings: Summary, Key facts, Key dates and Funding details are all h3.
 - **Tables:** scrollable containers that take keyboard focus, each with a unique accessible name.
-- **Sticky site header:** in-page jumps land below Simpler.Grants.gov's sticky header, so targets are not obscured (WCAG 2.2, 2.4.11).
+- **Sticky site header:** in-page jumps, including the edge-case gallery's contents links, land below Simpler.Grants.gov's sticky header, so targets are not obscured (WCAG 2.2, 2.4.11).
+- **Mobile menu:** the Simpler.Grants.gov menu is modal on phones. While it's open the rest of the page is inert and Tab and Shift+Tab wrap inside it; Escape or Close restores the page and returns focus to Menu.
 - **No smooth scrolling:** on a document this long, smooth scrolling took more than a second to reach a section.
 - **Results (local, 2026-11-28):** axe-core reported 0 violations on all 17 prototype pages. None scroll sideways at 320px. Keyboard paths were tested for the skip link, in-page navigation, section links and cross-page links. The `prototypes/index.html` launcher is not part of the design and was not audited.
 
@@ -290,7 +291,7 @@ Screenshots of the other components: [lettered and roman lists](screenshots/comp
 ```bash
 git clone --depth 1 https://github.com/HHS/simpler-grants-gov /tmp/simpler-grants-gov
 cd documentation/review-evidence/851/scripts
-SGG_REPO=/tmp/simpler-grants-gov PYTHON="poetry run python" ./build.sh
+SGG_REPO=/tmp/simpler-grants-gov PYTHON="$(poetry env info --executable)" ./build.sh
 ```
 
 `build.sh` installs USWDS 3.8.1, Sass and PurgeCSS into `scripts/node_modules` (ignored by git), generates every prototype from the fixture, and replaces `prototypes/`. Python needs `markdown` and `beautifulsoup4`, both already in the Builder's Poetry environment. The committed prototypes are this script's output from 2026-11-28; an earlier rebuild matched them except for trailing whitespace, which the script now strips.
