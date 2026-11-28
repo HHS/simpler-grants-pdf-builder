@@ -2678,6 +2678,9 @@ def process_document_content(
     # Private processing state is server-derived, never an input format signal.
     if soup.body:
         soup.body.attrs.pop("data-nofo-introductory-content-mode", None)
+    # The note callout marker is set only by IMPORT-080; never trust it from input.
+    for marked in soup.select(f"[{NOTE_CALLOUT_MARKER}]"):
+        del marked[NOTE_CALLOUT_MARKER]
     if builder_import:
         from .introductory_page import (
             capture_introductory_page,

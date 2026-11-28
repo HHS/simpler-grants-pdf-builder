@@ -154,9 +154,9 @@ from .nofo import (
     get_theme_warning_opdiv,
     is_hrsa_nofo_import,
     modifications_update_announcement_text,
-    normalize_fy27_key_facts_spacing,
     nofo_has_appendix_section,
     nofo_has_end_notes_section,
+    normalize_fy27_key_facts_spacing,
     overwrite_nofo,
     parse_uploaded_file_as_html_string,
     preserve_subsection_metadata,
@@ -172,6 +172,7 @@ from .nofo import (
     upload_cover_image_to_s3,
 )
 from .nofo_document_context import get_nofo_document_context
+from .note_paragraphs import normalize_note_labels
 from .pdf_metadata import PDF_METADATA_FIELDS, is_missing_pdf_metadata_value
 from .pdf_service import PDFGenerationError, generate_nofo_pdf
 from .policy_language import (
@@ -1521,6 +1522,10 @@ class NofosConfirmReimportView(GroupAccessObjectMixin, View):
             return redirect("nofos:nofo_import_overwrite", pk=nofo.id)
 
         soup = BeautifulSoup(reimport_data["soup"], "html.parser")
+        # The stored HTML is already processed, but the import-only note marker
+        # was removed before storage. Mark standalone notes again (IMPORT-080);
+        # this is idempotent for labels that are already standardized.
+        normalize_note_labels(soup)
         top_heading_level = resolve_section_heading_level(builder_import_content(soup))
 
         sections = BaseNofoImportView.get_sections_and_subsections_from_soup(

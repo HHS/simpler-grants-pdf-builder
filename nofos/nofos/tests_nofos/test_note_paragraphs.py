@@ -610,3 +610,65 @@ class NoteAdminFormTests(TestCase):
         )
         self.assertFalse(form.is_valid())
         self.assertIn("callout_style", form.errors)
+
+
+REIMPORT_HTML = (
+    "<p>Opportunity Number: NEW-1437</p><p>Opdiv: HHS</p>"
+    "<h1>Step 1: Review the opportunity</h1><p>Intro.</p>"
+    "<p>Note for applicants: Keep the signed form.</p><p>After.</p>"
+)
+
+
+class NoteReimportConfirmationTests(TestCase):
+    def test_reimport_confirmation_keeps_note_callouts(self):
+        user = BloomUser.objects.create_user(
+            email="note-reimport@example.test",
+            password=None,
+            group="bloom",
+            force_password_reset=False,
+        )
+        self.client.force_login(user)
+        nofo = Nofo.objects.create(
+            title="Saved", number="OLD-1437", opdiv="HHS", group="bloom"
+        )
+        section = Section.objects.create(nofo=nofo, name="Original", order=1)
+        Subsection.objects.create(section=section, name="", body="Old", order=1)
+        upload = SimpleUploadedFile("note.html", b"x", content_type="text/html")
+        with patch(
+            "nofos.views.parse_uploaded_file_as_html_string",
+            return_value=(REIMPORT_HTML, 0),
+        ):
+            response = self.client.post(
+                reverse("nofos:nofo_import_overwrite", kwargs={"pk": nofo.pk}),
+                {"nofo-import": upload},
+            )
+        # The opportunity number changed, so Builder asks for confirmation.
+        self.assertRedirects(
+            response,
+            reverse("nofos:nofo_import_confirm_overwrite", kwargs={"pk": nofo.pk}),
+        )
+        self.assertNotIn(
+            NOTE_CALLOUT_MARKER, self.client.session["reimport_data"]["soup"]
+        )
+        self.client.post(
+            reverse("nofos:nofo_import_confirm_overwrite", kwargs={"pk": nofo.pk})
+        )
+        note = Subsection.objects.get(section__nofo=nofo, callout_style="note")
+        self.assertTrue(note.callout_box)
+        self.assertEqual(
+            note.body.strip(), "**Note for applicants:** Keep the signed form."
+        )
+
+
+class NoteMarkerInputTests(SimpleTestCase):
+    def test_marker_in_uploaded_html_is_ignored(self):
+        html = (
+            "<html><body><h1>Step 1</h1>"
+            f'<p {NOTE_CALLOUT_MARKER}="true">Ordinary text.</p></body></html>'
+        )
+        for builder_import in (True, False):
+            with self.subTest(builder_import=builder_import):
+                result = process_document_content(html, builder_import=builder_import)
+                subsections = result.sections[0]["subsections"]
+                self.assertFalse(any(s.get("callout_style") for s in subsections))
+                self.assertFalse(any(s["is_callout_box"] for s in subsections))
